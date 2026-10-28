@@ -6,7 +6,7 @@ When a number, a flow or a structure reads better as a picture, the agent writes
 
 **Diagrams** (`mermaid`): every common kind of Mermaid diagram, from flowcharts, sequence, class, state and ER diagrams to Gantt charts, git graphs, mind maps, timelines, sankeys and kanban boards. They're laid out by pele, the renderer t3code uses, and drawn by Swarm itself in its own colours, with no browser behind it. Click one to see it full size.
 
-**Math** (`math`): TeX typeset by KaTeX, the typesetter t3code uses, in its own fonts: fractions, roots, sums and integrals with their limits, matrices, cases and aligned equations. `$$…$$` in a reply's text, and in a diagram's labels, is typeset too.
+**Math** (`math`): TeX typeset by KaTeX, the typesetter t3code uses, in its own fonts: fractions, roots, sums and integrals with their limits, matrices, cases and aligned equations. Math in a reply's own text is typeset too, `$x$` in the line and `$$…$$` on its own, and so is `$$…$$` in a diagram's labels.
 
 **Pictures** (`svg`): a whole SVG, its text included, in the theme's colours where it asks for them.
 

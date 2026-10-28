@@ -52,6 +52,15 @@ test("display math in a reply's text is typeset, with no frame", async (t) => {
 	await w.screenshot("display-math-dark");
 });
 
+test("math within a sentence is typeset in the line, and prices stay prices", async (t) => {
+	const w = await open(t, "Inline math:\n\nThe area is $\\pi r^2$, the angle \\(\\alpha + \\beta\\), and the harmonic sum grows like $\\sum_{k=1}^n \\frac{1}{k} \\approx \\ln n$ as $n \\to \\infty$. It cost $5 and $10 to run.");
+	await w.see("It cost $5 and $10 to run.");
+	await new Promise((r) => setTimeout(r, 1500));
+	await w.screenshot("inline-math");
+	await w.dark(true);
+	await w.screenshot("inline-math-dark");
+});
+
 test("what isn't Mermaid shows its source, saying so", async (t) => {
 	const w = await open(t, "The plan:\n\n```mermaid\nroadmap\n  Q1: ship\n```");
 	await w.see("Couldn't draw this diagram");

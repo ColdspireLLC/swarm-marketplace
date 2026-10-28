@@ -76,6 +76,38 @@ function mathDrawn(code: string): Drawn {
 	return { kind: "Math", light: mathScene(t, 10), label: "Math: " + tex };
 }
 
+// Inline math, by its TeX and size: typeset once.
+const inlineCache = new Map<string, { scene: Scene; baseline: number } | null>();
+
+/** Math within text, as Swarm sets it in a line: KaTeX's text style, at the text's size; nothing for TeX it can't read, which shows as written. */
+function inlineMath(tex: string, size: number): Child {
+	const key = size + "\0" + tex;
+	let hit = inlineCache.get(key);
+	if (hit === undefined) {
+		try {
+			const t = typeset(tex.trim(), size * 1.21, false);
+			hit = { scene: mathScene(t, 0), baseline: Math.max(t.h, 0.01) };
+		} catch {
+			hit = null;
+		}
+		if (inlineCache.size > 500) inlineCache.delete(inlineCache.keys().next().value!);
+		inlineCache.set(key, hit);
+	}
+	if (!hit) return null;
+	const s = hit.scene;
+	return (
+		<ui.canvas
+			label={"Math: " + tex}
+			width={s.width}
+			height={s.height}
+			baseline={hit.baseline}
+			draw={(g) => {
+				for (const op of s.ops) op(g);
+			}}
+		/>
+	);
+}
+
 function svgDrawn(code: string): Drawn {
 	const src = code.trim();
 	if (!/^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(src)) throw new Error("An SVG starts with <svg.");
@@ -214,6 +246,9 @@ export function renderFence({ thread, args }: RenderContext): Child {
 	if (view === "table" && !drawn?.table) view = "drawing";
 	if (!drawn) view = "code";
 	const what = kind.title.toLowerCase();
+
+	// Math within a reply's text ($x$): a canvas Swarm sets in the line, its baseline on the line's.
+	if (args.from === "inline") return inlineMath(code, Number(args.size) || 14);
 
 	// Display math in a reply's text ($$…$$): the formula alone, as text has it, no frame.
 	if (args.from === "math") {
