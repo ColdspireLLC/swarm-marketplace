@@ -58,6 +58,7 @@ activations, frames and edge labels as Mermaid has them.
 - Prefer a ```` ```chart ```` for numbers: it has hover values and a data
   table. Use Mermaid's `pie` and `xychart-beta` when the reply is already
   Mermaid.
+- A title after the language (```` ```mermaid title="Request flow" ````) heads the drawing.
 - `classDef`, `style` and themes are drawn as Swarm's colours; links and
   images in a diagram are not followed or shown.
 - Keep labels short and diagrams under about 40 nodes. A wide one scales

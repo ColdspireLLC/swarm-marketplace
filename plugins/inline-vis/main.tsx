@@ -288,9 +288,21 @@ export function renderFence({ thread, args }: RenderContext): Child {
 		<ui.column align="stretch" border="border" radius="card" background="raised" clip>
 			<ui.row align="center" gap="s1" padding="s1 s2 s1 s3" style={{ borderBottom: "1px solid divider" }}>
 				<ui.icon icon={kind.icon} tone="faint" size="sm" margin="s0 s1 s0 s0" />
-				<ui.text tone="muted" size="sm" grow={1} shrink={1} maxLines={1}>
-					{streaming ? `Drawing the ${what}…` : failed ? `Couldn't draw this ${what}` : drawn!.kind}
-				</ui.text>
+				{args.title && !failed ? (
+					// A titled fence names itself; its kind follows, muted.
+					<ui.row align="center" gap="s2" grow={1} shrink={1}>
+						<ui.text size="sm" shrink={1} maxLines={1}>
+							{args.title}
+						</ui.text>
+						<ui.text tone="faint" size="sm" maxLines={1}>
+							{streaming ? "Drawing…" : drawn!.kind}
+						</ui.text>
+					</ui.row>
+				) : (
+					<ui.text tone="muted" size="sm" grow={1} shrink={1} maxLines={1}>
+						{streaming ? `Drawing the ${what}…` : failed ? `Couldn't draw this ${what}` : drawn!.kind}
+					</ui.text>
+				)}
 				{streaming ? <ui.spinner /> : null}
 				{drawn ? viewButton(key, "drawing", view, kind.icon, language === "chart" ? "Show the chart" : language === "svg" ? "Show the picture" : language === "math" ? "Show the math" : "Show the diagram") : null}
 				{drawn?.table ? viewButton(key, "table", view, "rows", "Show the data") : null}

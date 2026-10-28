@@ -61,6 +61,13 @@ test("math within a sentence is typeset in the line, and prices stay prices", as
 	await w.screenshot("inline-math-dark");
 });
 
+test("a titled fence shows its title", async (t) => {
+	const w = await open(t, "The flow:\n\n```mermaid title=\"Request flow\"\nflowchart LR\n  A[Client] --> B[Server]\n```");
+	await w.see("Request flow");
+	await w.see("Flowchart");
+	await w.screenshot("titled");
+});
+
 test("what isn't Mermaid shows its source, saying so", async (t) => {
 	const w = await open(t, "The plan:\n\n```mermaid\nroadmap\n  Q1: ship\n```");
 	await w.see("Couldn't draw this diagram");
