@@ -1,6 +1,7 @@
 # The catalog's check (ci/check.sh), with a Swarm built from coldspire/swarm's
-# main: nothing is published to download yet. coldspire/swarm lets this
-# project's job token clone it (Settings, CI/CD, Job token permissions).
+# main: nothing is published to download yet. coldspire/swarm and
+# coldspire/mygo let this project's job token clone them (Settings, CI/CD,
+# Job token permissions). Swarm builds without cgo, so Go's own image does.
 
 workflow:
     rules:
@@ -11,18 +12,14 @@ workflow:
 
 variables:
     SWARM_REF: main
-    # Swarm's own CI image: Go, with what the headless window draws with.
-    SWARM_CI_IMAGE: registry.gitlab.coldspire.com/coldspire/swarm/ci:bookworm-caaf4824d34b
 
 check:
     tags: ["docker"]
-    image: $SWARM_CI_IMAGE
+    image: golang:1.26-bookworm
     timeout: 20m
     variables:
         CGO_ENABLED: "0"
         GOTOOLCHAIN: auto
-        GOMODCACHE: /cache/swarm/go-mod
-        GOCACHE: /cache/swarm/go-build
     script:
         - command -v jq >/dev/null || (apt-get update -qq && apt-get install -y -qq jq >/dev/null)
         - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.coldspire.com/".insteadOf "https://gitlab.coldspire.com/"

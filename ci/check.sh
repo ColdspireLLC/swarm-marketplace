@@ -16,7 +16,7 @@ SWARM_DATA_DIR=$work/data "$SWARM" marketplace add . --yes
 SWARM_DATA_DIR=$work/data "$SWARM" marketplace list
 
 # An entry kept in this repository: its folder, its id, its tags' prefix.
-here=https://github.com/coldspire/swarm-marketplace.git
+here=https://github.com/ColdspireLLC/swarm-marketplace.git
 "$JQ" -c '.plugins[]' marketplace.json | while read -r p; do
 	id=$("$JQ" -r .id <<<"$p")
 	url=$("$JQ" -r '.source.git.url // empty' <<<"$p")

@@ -6,9 +6,9 @@ and the catalog Swarm reads them from. Every Swarm lists it first, as
 with `swarm plugin install marketplace:swarm/ID`.
 
 It lives on GitLab, [coldspire/swarm-marketplace](https://gitlab.coldspire.com/coldspire/swarm-marketplace),
-and is mirrored to GitHub, [coldspire/swarm-marketplace](https://github.com/coldspire/swarm-marketplace),
+and is mirrored to GitHub, [ColdspireLLC/swarm-marketplace](https://github.com/ColdspireLLC/swarm-marketplace),
 which is where Swarm reads it:
-`https://raw.githubusercontent.com/coldspire/swarm-marketplace/main/marketplace.json`.
+`https://raw.githubusercontent.com/ColdspireLLC/swarm-marketplace/main/marketplace.json`.
 
 ## What's here
 

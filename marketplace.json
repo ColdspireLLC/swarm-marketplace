@@ -14,7 +14,7 @@
       "overview": "plugins/inline-vis/PLUGIN_OVERVIEW.md",
       "source": {
         "git": {
-          "url": "https://github.com/coldspire/swarm-marketplace.git",
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
           "subdir": "plugins/inline-vis",
           "range": "^1.0.0",
           "tagPrefix": "inline-vis/"
