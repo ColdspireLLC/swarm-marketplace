@@ -159,6 +159,16 @@ function len(v: unknown, em: number): number {
 	return m[2] === "px" ? +m[1] : +m[1] * em;
 }
 
+/** The em in a node of KaTeX's .sizing.reset-sizeN.sizeM classes, which spans and glyphs alike carry. */
+function sized(classes: string[], em: number): number {
+	const reset = classes.find((c) => c.startsWith("reset-size"));
+	const size = classes.find((c) => /^size\d+$/.test(c));
+	if (reset && size && (classes.includes("sizing") || classes.includes("fontsize-ensurer"))) {
+		return (em * SIZES[+size.slice(4) - 1]) / SIZES[+reset.slice(10) - 1];
+	}
+	return em;
+}
+
 function minW0(style: any, em: number): number {
 	return len(style.minWidth, em);
 }
@@ -186,12 +196,7 @@ export function lay(n: any, ctx: Ctx): Box {
 	const classes: string[] = (n.classes ?? []).filter(Boolean);
 	const style = n.style ?? {};
 	if (classes.includes("strut") || classes.includes("vlist-s") || classes.includes("pstrut")) return EMPTY;
-	let em = ctx.em;
-	const reset = classes.find((c) => c.startsWith("reset-size"));
-	const size = classes.find((c) => /^size\d+$/.test(c));
-	if (reset && size && (classes.includes("sizing") || classes.includes("fontsize-ensurer"))) {
-		em = (em * SIZES[+size.slice(4) - 1]) / SIZES[+reset.slice(10) - 1];
-	}
+	const em = sized(classes, ctx.em);
 	const inner: Ctx = { em, font: fontOf(ctx.font, classes), color: typeof style.color === "string" ? style.color : ctx.color };
 	const ml = len(style.marginLeft, ctx.em), mr = len(style.marginRight, ctx.em);
 	const pl = len(style.paddingLeft, ctx.em), pr = len(style.paddingRight, ctx.em);
@@ -330,8 +335,8 @@ function glyph(n: any, ctx: Ctx): Box {
 	const classes: string[] = (n.classes ?? []).filter(Boolean);
 	const font = fontOf(ctx.font, classes);
 	const style = n.style ?? {};
-	const em = ctx.em;
-	const ml = len(style.marginLeft, em), mr = len(style.marginRight, em);
+	const em = sized(classes, ctx.em);
+	const ml = len(style.marginLeft, ctx.em), mr = len(style.marginRight, ctx.em);
 	const text: string = n.text.replace(/\u200b/g, "");
 	const face = faceOf(font);
 	let w = (n.width ?? 0) * em;
@@ -348,7 +353,8 @@ function glyph(n: any, ctx: Ctx): Box {
 	const top = len(style.top, em);
 	const color = typeof style.color === "string" ? style.color : ctx.color;
 	const items: Item[] = text ? [{ kind: "glyph", x: ml, y: top, text, font: face, size: em, color }] : [];
-	return { w: ml + w + mr, h: (n.height ?? 0) * em - top, d: (n.depth ?? 0) * em + top, items };
+	// KaTeX scales a sized glyph's height and depth into its parent's em, not its width.
+	return { w: ml + w + mr, h: (n.height ?? 0) * ctx.em - top, d: (n.depth ?? 0) * ctx.em + top, items };
 }
 
 /** KaTeX's SVG (a root's sign, a stretchy delimiter or arrow): its paths, scaled to its height, cut at its box's width. */

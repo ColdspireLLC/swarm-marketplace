@@ -76,8 +76,10 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
   `\left…\right`, `\begin{pmatrix|bmatrix|cases|aligned}`, `\text{}`,
   `\mathbb`, `\mathcal`, accents, `\xrightarrow{}`… One formula a
   fence; several in one with `\begin{aligned}` or `\qquad` between them.
-- Only fences are drawn: `$…$` in a sentence shows as written, so keep
-  inline math to plain text (x², n log n) or give it a fence.
+- `$$…$$` on lines of its own in your text is typeset the same way,
+  without the fence's frame: use it for a formula in the middle of an
+  explanation. `$…$` inside a sentence shows as written, so keep inline
+  math to plain text (x², n log n).
 - In a Mermaid label, `$$…$$` is typeset the same way:
   `A["$$\frac{dy}{dx}$$"]`.
 

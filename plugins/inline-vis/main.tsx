@@ -215,6 +215,24 @@ export function renderFence({ thread, args }: RenderContext): Child {
 	if (!drawn) view = "code";
 	const what = kind.title.toLowerCase();
 
+	// Display math in a reply's text ($$…$$): the formula alone, as text has it, no frame.
+	if (args.from === "math") {
+		if (failed || !drawn) {
+			return (
+				<ui.text tone="muted" mono selectable tooltip={failed?.message} align="center">
+					{code}
+				</ui.text>
+			);
+		}
+		return (
+			<ui.pressable label={"Expand: " + drawn.label} tooltip="Expand" onClick={() => expand(drawn)} style={{ cursor: "zoom-in", alignSelf: "stretch", width: "100%", display: "flex", flexDirection: "column" }}>
+				<ui.row justify="center" style={{ width: "100%" }}>
+					{drawing(drawn)}
+				</ui.row>
+			</ui.pressable>
+		);
+	}
+
 	let body: Child;
 	if (view === "code") {
 		body = <ui.source text={code} language={sourceLanguage(language)} />;

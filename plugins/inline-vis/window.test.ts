@@ -42,6 +42,16 @@ test("math that isn't TeX says why", async (t) => {
 	await w.screenshot("math-error");
 });
 
+test("display math in a reply's text is typeset, with no frame", async (t) => {
+	const w = await open(t, "Euler's identity ties five constants together:\n\n$$\ne^{i\\pi} + 1 = 0\n$$\n\nAnd the Gaussian integral:\n\n$$\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}$$");
+	await w.see("And the Gaussian integral:");
+	await w.gone("Copy the source");
+	await new Promise((r) => setTimeout(r, 1500));
+	await w.screenshot("display-math");
+	await w.dark(true);
+	await w.screenshot("display-math-dark");
+});
+
 test("what isn't Mermaid shows its source, saying so", async (t) => {
 	const w = await open(t, "The plan:\n\n```mermaid\nroadmap\n  Q1: ship\n```");
 	await w.see("Couldn't draw this diagram");
