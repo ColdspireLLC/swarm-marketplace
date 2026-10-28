@@ -2,37 +2,111 @@
   "$schema": "./plugin.schema.json",
   "id": "flux",
   "name": "Flux",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Issues from a Flux tracker: agents read and update them with swarm flux, a thread attached to an issue keeps it current, and each thread's Flux panel attaches one. Ported from bb's Flux plugin.",
   "icon": "icon.svg",
   "main": "main.tsx",
   "permissions": {
-    "api": ["read"],
+    "api": [
+      "read"
+    ],
     "storage": true,
-    "network": ["*"],
+    "network": [
+      "*"
+    ],
     "threads": true,
     "mentions": true
   },
   "settings": [
-    { "key": "url", "title": "Flux URL", "type": "text", "default": "", "placeholder": "https://flux.example.com", "description": "The address you open Flux at." },
-    { "key": "token", "title": "API token", "type": "secret", "description": "From Flux: Settings, API tokens." },
-    { "key": "connections", "title": "More Fluxes", "type": "secret", "description": "Other Fluxes, kept by the Flux page. A JSON list of id, url and token." }
+    {
+      "key": "url",
+      "title": "Flux URL",
+      "type": "text",
+      "default": "",
+      "placeholder": "https://flux.example.com",
+      "description": "The address you open Flux at."
+    },
+    {
+      "key": "token",
+      "title": "API token",
+      "type": "secret",
+      "description": "From Flux: Settings, API tokens."
+    },
+    {
+      "key": "connections",
+      "title": "More Fluxes",
+      "type": "secret",
+      "description": "Other Fluxes, kept by the Flux page. A JSON list of id, url and token."
+    }
   ],
   "commands": [
-    { "name": "help", "description": "The commands" },
-    { "name": "status", "usage": "[--json]", "description": "The Flux connection, workspace, and signed-in account" },
-    { "name": "list", "usage": "[--project KEY] [--status S] [--assignee me] [-q TEXT] [--all]", "description": "Issues, open ones first, grouped by status" },
-    { "name": "show", "usage": "[ISSUE]", "description": "An issue with its description, sub-issues, and comments" },
-    { "name": "create", "usage": "--title T [--project KEY] [--description MD]", "description": "Create an issue" },
-    { "name": "update", "usage": "[ISSUE] [--status S] [--description MD] …", "description": "Change an issue" },
-    { "name": "comment", "usage": "[ISSUE] --body MD", "description": "Comment on an issue in Markdown" },
-    { "name": "start", "usage": "ISSUE", "description": "Attach this thread to an issue and move it to In Progress" },
-    { "name": "detach", "usage": "[ISSUE]", "description": "Detach this thread from an issue" },
-    { "name": "projects", "description": "Flux projects and the Swarm projects they're linked to" },
-    { "name": "link", "usage": "KEY [--none]", "description": "Link a Flux project to this thread's Swarm project" },
-    { "name": "labels", "usage": "[create NAME [--color C]]", "description": "Workspace labels, or make one" },
-    { "name": "members", "description": "Workspace members and their @usernames" },
-    { "name": "open", "usage": "[ISSUE]", "description": "Print an issue's link in Flux" }
+    {
+      "name": "help",
+      "description": "The commands"
+    },
+    {
+      "name": "status",
+      "usage": "[--json]",
+      "description": "The Flux connection, workspace, and signed-in account"
+    },
+    {
+      "name": "list",
+      "usage": "[--project KEY] [--status S] [--assignee me] [-q TEXT] [--all]",
+      "description": "Issues, open ones first, grouped by status"
+    },
+    {
+      "name": "show",
+      "usage": "[ISSUE]",
+      "description": "An issue with its description, sub-issues, and comments"
+    },
+    {
+      "name": "create",
+      "usage": "--title T [--project KEY] [--description MD]",
+      "description": "Create an issue"
+    },
+    {
+      "name": "update",
+      "usage": "[ISSUE] [--status S] [--description MD] …",
+      "description": "Change an issue"
+    },
+    {
+      "name": "comment",
+      "usage": "[ISSUE] --body MD",
+      "description": "Comment on an issue in Markdown"
+    },
+    {
+      "name": "start",
+      "usage": "ISSUE",
+      "description": "Attach this thread to an issue and move it to In Progress"
+    },
+    {
+      "name": "detach",
+      "usage": "[ISSUE]",
+      "description": "Detach this thread from an issue"
+    },
+    {
+      "name": "projects",
+      "description": "Flux projects and the Swarm projects they're linked to"
+    },
+    {
+      "name": "link",
+      "usage": "KEY [--none]",
+      "description": "Link a Flux project to this thread's Swarm project"
+    },
+    {
+      "name": "labels",
+      "usage": "[create NAME [--color C]]",
+      "description": "Workspace labels, or make one"
+    },
+    {
+      "name": "members",
+      "description": "Workspace members and their @usernames"
+    },
+    {
+      "name": "open",
+      "usage": "[ISSUE]",
+      "description": "Print an issue's link in Flux"
+    }
   ],
   "tools": [
     {
@@ -43,13 +117,28 @@
       "input": {
         "type": "object",
         "properties": {
-          "issue": { "type": "string", "description": "Issue key, e.g. ABC-12" },
-          "images": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "maxItems": 5, "description": "Which images, by their N in [Image N]. Defaults to the first 5." }
+          "issue": {
+            "type": "string",
+            "description": "Issue key, e.g. ABC-12"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxItems": 5,
+            "description": "Which images, by their N in [Image N]. Defaults to the first 5."
+          }
         },
-        "required": ["issue"]
+        "required": [
+          "issue"
+        ]
       }
     }
   ],
-  "hooks": ["message"],
+  "hooks": [
+    "message"
+  ],
   "skills": "skills"
 }

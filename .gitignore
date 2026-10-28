@@ -1,7 +1,7 @@
 node_modules/
-.swarm-bundle.js
 *.zip
 test-shots/
 # Written by swarm plugin types, for the Swarm you have.
 swarm.d.ts
 plugin.schema.json
+# A plugin's .swarm-bundle.js is committed: an install from git runs it (ci/bundle.sh).

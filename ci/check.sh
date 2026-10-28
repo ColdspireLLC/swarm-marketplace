@@ -32,8 +32,9 @@ done
 for dir in plugins/*/; do
 	id=$(basename "$dir")
 	"$JQ" -e --arg id "$id" '.plugins[] | select(.id == $id)' marketplace.json >/dev/null || { echo "$dir has no entry in marketplace.json"; exit 1; }
-	if [ -f "$dir/package.json" ] && [ ! -f "$dir/.swarm-bundle.js" ]; then
-		echo "$id has packages but no .swarm-bundle.js: an install has no node_modules (ci/bundle.sh $id)"
+	# Committed, not only here: an install from git has only what's committed.
+	if [ -f "$dir/package.json" ] && ! git ls-files --error-unmatch "$dir/.swarm-bundle.js" >/dev/null 2>&1; then
+		echo "$id has packages but no committed .swarm-bundle.js: an install has no node_modules (ci/bundle.sh $id, then commit it)"
 		exit 1
 	fi
 	echo "== $id"
