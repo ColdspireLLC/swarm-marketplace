@@ -1,5 +1,6 @@
 import { expect, test } from "swarm/testing";
 import { DARK, drawChart, fmt, LIGHT, looseJSON, niceTicks, parseChart, slices } from "./src/chart";
+import { typeset } from "./src/math";
 import { drawMermaid } from "./src/mermaid";
 import { colorOf, dashes, flatten, parseXML, svgScene } from "./src/svgcanvas";
 import { clip, textWidth, wrap } from "./src/text";
@@ -131,6 +132,53 @@ test("a big flowchart is drawn quickly", () => {
 	const t0 = Date.now();
 	expect(drawMermaid(lines.join("\n"), LIGHT, LIGHT).light.width).toBeGreaterThan(0);
 	expect(Date.now() - t0).toBeLessThan(5000);
+});
+
+// ---- Math ----
+
+test("TeX is typeset in KaTeX's fonts, its parts where KaTeX puts them", () => {
+	const t = typeset("x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", 18);
+	const glyphs = t.items.filter((i) => i.kind === "glyph") as any[];
+	expect([...glyphs.map((g) => g.text).join("")].sort().join("")).toBe([..."x=−b±b2−4ac2a"].sort().join(""));
+	expect(glyphs.find((g) => g.text === "x").font).toBe("KaTeX_Math-Italic");
+	expect(glyphs.find((g) => g.text === "=").font).toBe("KaTeX_Main-Regular");
+	// The numerator above the baseline, the denominator below it.
+	const y = (text: string) => glyphs.find((g) => g.text.includes(text)).y;
+	expect(y("4")).toBeLessThan(0);
+	expect(y("±")).toBeLessThan(0);
+	expect(y("a") === undefined).toBe(false);
+	expect(Math.max(...glyphs.filter((g) => g.text.includes("2")).map((g) => g.y))).toBeGreaterThan(0);
+	expect(t.items.some((i) => i.kind === "rule")).toBe(true);
+	expect(t.items.some((i) => i.kind === "path")).toBe(true);
+	expect(t.h).toBeGreaterThan(18);
+	expect(t.d).toBeGreaterThan(5);
+});
+
+test("a run of text is as wide as its characters", () => {
+	const one = typeset("\\text{if}", 18), two = typeset("\\text{i}\\text{f}", 18);
+	expect(Math.round(one.w)).toBe(Math.round(two.w));
+});
+
+test("stretchy arrows keep their heads, and fonts follow the commands", () => {
+	const t = typeset("A \\xrightarrow{f} B \\quad \\mathbb{R} \\mathcal{O} \\mathbf{v} \\sum", 18);
+	const path = t.items.find((i) => i.kind === "path") as any;
+	expect(path.ox).toBeLessThan(0);
+	const fonts = (t.items.filter((i) => i.kind === "glyph") as any[]).map((g) => g.text + ":" + g.font);
+	expect(fonts).toContain("R:KaTeX_AMS-Regular");
+	expect(fonts).toContain("O:KaTeX_Caligraphic-Regular");
+	expect(fonts).toContain("v:KaTeX_Main-Bold");
+	expect(fonts).toContain("∑:KaTeX_Size2-Regular");
+});
+
+test("TeX that's wrong throws KaTeX's reason", () => {
+	expect(() => typeset("\\frac{1}{", 18)).toThrow("expected '}'");
+	expect(() => typeset("\\nosuchcommand", 18)).toThrow("Undefined control sequence");
+});
+
+test("math in a diagram's label is drawn", () => {
+	const d = drawMermaid('flowchart LR\n  A["$$\\frac{a}{b}$$"] --> B', LIGHT, LIGHT);
+	expect(d.light.texts).toContain("a");
+	expect(d.light.texts).toContain("b");
 });
 
 // ---- SVG to canvas ----

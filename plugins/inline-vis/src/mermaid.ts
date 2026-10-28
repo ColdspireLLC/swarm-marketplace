@@ -3,6 +3,7 @@ import { detectType, render } from "../vendor/pele/pele.js";
 import type { Scene } from "./scene";
 import { svgScene } from "./svgcanvas";
 import { textWidth } from "./text";
+import { svg as mathSvg, typeset } from "./math";
 
 // ```mermaid: laid out and drawn by pele (Obsidian's Mermaid renderer,
 // which t3code draws its diagrams with), its SVG then drawn with Swarm's
@@ -48,6 +49,14 @@ export function drawMermaid(src: string, light: ColorValue[], dark: ColorValue[]
 		images: false,
 		// The author's direction: a wide diagram scales down to fit rather than turning.
 		autoDirection: false,
+		// $$…$$ in a label, typeset as a math fence is; TeX KaTeX can't read stays as it's written.
+		math: (tex: string, size: number) => {
+			try {
+				return mathSvg(typeset(tex, size * 1.1, false));
+			} catch {
+				return null;
+			}
+		},
 	});
 	const kind = NAMES[r.type] ?? "Diagram";
 	const lightScene = svgScene(r.svg, light);

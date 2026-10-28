@@ -19,6 +19,8 @@ for (const [name, s] of Object.entries(SAMPLES)) {
 		const w = await open(t, s.reply);
 		await w.see(s.see);
 		await w.see("Copy the source");
+		// Math's fonts are the plugin's, which the window loads as it first shows them.
+		if (name.includes("math")) await new Promise((r) => setTimeout(r, 1500));
 		await w.screenshot(name);
 		await w.dark(true);
 		await w.see(s.see);
@@ -31,6 +33,13 @@ test("a broken chart says why, and shows its source", async (t) => {
 	await w.see("Couldn't draw this chart");
 	await w.see('"type" is one of bar, line, area, scatter, pie, donut, not "radar".');
 	await w.screenshot("error");
+});
+
+test("math that isn't TeX says why", async (t) => {
+	const w = await open(t, "The sum:\n\n```math\n\\frac{1}{\n```");
+	await w.see("Couldn't draw this math");
+	await w.see("Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{1}{");
+	await w.screenshot("math-error");
 });
 
 test("what isn't Mermaid shows its source, saying so", async (t) => {

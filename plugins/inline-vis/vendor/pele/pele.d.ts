@@ -18,6 +18,8 @@ export interface RenderOptions {
 	links?: boolean;
 	images?: boolean;
 	now?: number | Date;
+	/** $$…$$ in labels, typeset: an SVG of width by height, its baseline where pele puts it. */
+	math?: (tex: string, size: number) => { svg: string; width: number; height: number } | null | undefined;
 }
 
 export interface RenderResult {

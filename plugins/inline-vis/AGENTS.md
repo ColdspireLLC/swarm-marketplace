@@ -1,1 +1,1 @@
-Swarm draws ```chart (JSON), ```mermaid (every common Mermaid diagram) and ```svg fences in your replies as pictures. When data or a structure reads better drawn, write one; the inline-vis skill has their syntax.
+Swarm draws ```math (TeX), ```chart (JSON), ```mermaid (every common Mermaid diagram) and ```svg fences in your replies as pictures. When math, data or a structure reads better drawn, write one; the inline-vis skill has their syntax.

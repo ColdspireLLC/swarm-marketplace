@@ -1,6 +1,6 @@
 ---
 name: inline-vis
-description: "Show a chart, a Mermaid diagram (flowchart, sequence, class, state, ER, Gantt, git graph, mind map, timeline and more) or an SVG picture drawn inline in your reply in Swarm, with a ```chart, ```mermaid or ```svg fence. Use it when data, a flow, an architecture or a comparison reads better as a picture than as text or a table."
+description: "Show math (TeX), a chart, a Mermaid diagram (flowchart, sequence, class, state, ER, Gantt, git graph, mind map, timeline and more) or an SVG picture drawn inline in your reply in Swarm, with a ```math, ```chart, ```mermaid or ```svg fence. Use it when data, a flow, an architecture or a comparison reads better as a picture than as text or a table."
 ---
 
 # Inline visualizations
@@ -62,6 +62,24 @@ activations, frames and edge labels as Mermaid has them.
   images in a diagram are not followed or shown.
 - Keep labels short and diagrams under about 40 nodes. A wide one scales
   down in the reply; the user can expand it to the window.
+
+## ```math
+
+TeX, typeset by KaTeX (as t3code does) in its own fonts, centred on a
+line of its own: equations, derivations, matrices.
+
+```math
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+```
+
+- KaTeX's TeX: fractions, roots, scripts, big operators with limits,
+  `\left…\right`, `\begin{pmatrix|bmatrix|cases|aligned}`, `\text{}`,
+  `\mathbb`, `\mathcal`, accents, `\xrightarrow{}`… One formula a
+  fence; several in one with `\begin{aligned}` or `\qquad` between them.
+- Only fences are drawn: `$…$` in a sentence shows as written, so keep
+  inline math to plain text (x², n log n) or give it a fence.
+- In a Mermaid label, `$$…$$` is typeset the same way:
+  `A["$$\frac{dy}{dx}$$"]`.
 
 ## ```svg
 

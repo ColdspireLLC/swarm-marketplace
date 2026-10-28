@@ -1,6 +1,6 @@
 # Inline visualizations
 
-A Swarm plugin that draws an agent's ```` ```chart ````, ```` ```mermaid ```` and
+A Swarm plugin that draws an agent's ```` ```math ````, ```` ```chart ````, ```` ```mermaid ```` and
 ```` ```svg ```` fences in its reply, with Swarm's own canvas: no browser,
 no network. A drawing expands to the window on a click. `skills/inline-vis/SKILL.md` is what the agents read, and the
 fences' whole syntax.
@@ -11,6 +11,10 @@ fences' whole syntax.
   palette, with light and dark steps.
 - `src/mermaid.ts`: Mermaid's diagrams, laid out by pele
   (`vendor/pele`, Obsidian's renderer, MIT), measured with Inter's widths.
+- `src/math.ts`: TeX through KaTeX (`vendor/katex`, MIT, with its fonts):
+  KaTeX's HTML tree read as its CSS lays it out, into glyphs, rules and
+  paths, drawn in KaTeX's fonts (the canvas's `font`, Swarm after 0.1.0),
+  or written as SVG for pele's `$$…$$` labels.
 - `src/svgcanvas.ts`: an SVG drawn with the canvas's commands, text
   included, pele's colours as Swarm's (Swarm's own SVG pictures have no
   text).

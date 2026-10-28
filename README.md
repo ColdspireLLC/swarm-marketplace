@@ -25,7 +25,7 @@ which is where Swarm reads it:
 
 | Plugin | What it does |
 | --- | --- |
-| [Inline visualizations](plugins/inline-vis) | Charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply. |
+| [Inline visualizations](plugins/inline-vis) | Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply. |
 
 ## Listing a plugin
 

@@ -7,9 +7,9 @@
     {
       "id": "inline-vis",
       "displayName": "Inline visualizations",
-      "description": "Charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply.",
+      "description": "Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply.",
       "icon": "plugins/inline-vis/icon.svg",
-      "tags": ["charts", "diagrams", "mermaid", "agents"],
+      "tags": ["math", "charts", "diagrams", "mermaid", "agents"],
       "author": "Coldspire",
       "overview": "plugins/inline-vis/PLUGIN_OVERVIEW.md",
       "source": {

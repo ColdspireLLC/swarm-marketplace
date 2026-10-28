@@ -380,6 +380,49 @@ block-beta
   draw --> window
 `, "The blocks:"),
 	},
+	"math-quadratic": {
+		see: "Math",
+		reply: fence("math", String.raw`
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+`, "The roots:"),
+	},
+	"math-calculus": {
+		see: "Math",
+		reply: fence("math", String.raw`
+\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}, \qquad \sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}, \qquad \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}
+`, "A few classics:"),
+	},
+	"math-matrix": {
+		see: "Math",
+		reply: fence("math", String.raw`
+A = \begin{pmatrix} a_{11} & a_{12} & \cdots & a_{1n} \\ a_{21} & a_{22} & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ a_{m1} & a_{m2} & \cdots & a_{mn} \end{pmatrix},
+\quad \det\begin{bmatrix} a & b \\ c & d \end{bmatrix} = ad - bc
+`, "The matrix:"),
+	},
+	"math-cases": {
+		see: "Math",
+		reply: fence("math", String.raw`
+|x| = \begin{cases} x & \text{if } x \ge 0 \\ -x & \text{otherwise} \end{cases}
+\qquad
+\begin{aligned} (a+b)^2 &= a^2 + 2ab + b^2 \\ &\le 2\left(a^2 + b^2\right) \end{aligned}
+`, "Piecewise, and aligned:"),
+	},
+	"math-symbols": {
+		see: "Math",
+		reply: fence("math", String.raw`
+\forall \varepsilon > 0\ \exists \delta > 0 : |x - a| < \delta \Rightarrow |f(x) - L| < \varepsilon,
+\quad \mathbb{R}^n, \ \mathcal{O}(n \log n), \ \hat{\theta}, \ \vec{v} \cdot \overline{w}, \ \sqrt[3]{x}, \ A \xrightarrow{\ f\ } B,
+\ \left\{ \frac{p}{q} \,\middle|\, q \neq 0 \right\}
+`, "The symbols:"),
+	},
+	"mermaid-math": {
+		see: "Flowchart",
+		reply: fence("mermaid", `
+flowchart LR
+  A["$$x^2 + y^2 = r^2$$"] --> B["$$\\frac{dy}{dx} = -\\frac{x}{y}$$"]
+  B --> C[Slope of the tangent]
+`, "Implicit differentiation:"),
+	},
 	"mermaid-pie": {
 		see: "Pie chart",
 		reply: fence("mermaid", `

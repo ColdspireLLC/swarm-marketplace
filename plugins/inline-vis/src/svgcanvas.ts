@@ -328,6 +328,8 @@ interface Style {
 	fontWeight: number;
 	anchor: "start" | "middle" | "end";
 	mono: boolean;
+	/** A KaTeX font, which math's SVG names (math.ts); "" for Swarm's sans. */
+	font: string;
 }
 
 // Inter's ascent, in ems (its typo metrics, which its fsSelection asks for):
@@ -371,7 +373,10 @@ function inherit(s: Style, a: { [name: string]: string }, palette: ColorValue[])
 	if (a["font-size"] !== undefined) t.fontSize = num(a["font-size"], s.fontSize);
 	if (a["font-weight"] !== undefined) t.fontWeight = weightOf(a["font-weight"]);
 	if (a["text-anchor"] !== undefined) t.anchor = a["text-anchor"] === "middle" ? "middle" : a["text-anchor"] === "end" ? "end" : "start";
-	if (a["font-family"] !== undefined) t.mono = /mono|--_fm/.test(a["font-family"]);
+	if (a["font-family"] !== undefined) {
+		t.mono = /mono|--_fm/.test(a["font-family"]);
+		t.font = /^KaTeX_[\w-]+$/.test(a["font-family"].trim()) ? a["font-family"].trim() : "";
+	}
 	if (a.font !== undefined) {
 		const size = /(\d+(?:\.\d+)?)px/.exec(a.font);
 		if (size) t.fontSize = +size[1];
@@ -457,7 +462,13 @@ function drawText(b: Builder, n: Node, s: Style, palette: ColorValue[]) {
 			if (t.trim()) {
 				const lx = left;
 				b.texts.push(t);
-				b.ops.push((g) => g.text(lx, top, t, { fill, opacity: r.style.opacity * r.style.fillOpacity }, { size, weight: r.style.fontWeight, align: "start", baseline: "top" }));
+				const font = r.style.font;
+				if (font) {
+					// Math's glyphs: KaTeX's font, at the baseline SVG gives.
+					b.ops.push((g) => g.text(lx, r.y, t, { fill, opacity: r.style.opacity * r.style.fillOpacity }, { size, font, baseline: "alphabetic" }));
+				} else {
+					b.ops.push((g) => g.text(lx, top, t, { fill, opacity: r.style.opacity * r.style.fillOpacity }, { size, weight: r.style.fontWeight, align: "start", baseline: "top" }));
+				}
 			}
 			left += textWidth(t, size, r.style.fontWeight);
 		}
@@ -542,11 +553,32 @@ function walk(b: Builder, n: Node, s: Style, palette: ColorValue[]) {
 			b.ops.push((g) => g.save());
 			transform(b, a.transform);
 		}
-		if (c.tag === "g" || c.tag === "svg" || c.tag === "a") walk(b, c, t, palette);
+		if (c.tag === "svg") nested(b, c, t, palette);
+		else if (c.tag === "g" || c.tag === "a") walk(b, c, t, palette);
 		else if (c.tag === "text") drawText(b, c, t, palette);
 		else shape(b, c, t);
 		if (moved) b.ops.push((g) => g.restore());
 	}
+}
+
+/** An svg in an svg (math in a label, a root's sign): at its x and y, its viewBox scaled to its size, cut to it. */
+function nested(b: Builder, n: Node, s: Style, palette: ColorValue[]) {
+	const a = n.attrs;
+	const x = num(a.x), y = num(a.y), w = num(a.width), h = num(a.height);
+	const vb = (a.viewBox ?? "").split(/[\s,]+/).map(Number);
+	b.ops.push((g) => {
+		g.save();
+		g.translate(x, y);
+		if (w > 0 && h > 0 && a.overflow !== "visible") g.clip(0, 0, w, h);
+		if (vb.length === 4 && vb[2] > 0 && vb[3] > 0 && w > 0 && h > 0) {
+			const slice = /slice/.test(a.preserveAspectRatio ?? "");
+			const k = slice ? Math.max(w / vb[2], h / vb[3]) : Math.min(w / vb[2], h / vb[3]);
+			g.scale(k, k);
+			g.translate(-vb[0], -vb[1]);
+		}
+	});
+	walk(b, n, s, palette);
+	b.ops.push((g) => g.restore());
 }
 
 /** pele's SVG as a scene, in Swarm's colours and palette's series. */
@@ -560,7 +592,7 @@ export function svgScene(svg: string, palette: ColorValue[]): Scene & { title?: 
 	const b = new Builder(w, h);
 	const base: Style = {
 		fill: "text", stroke: null, strokeWidth: 1, dash: [], opacity: 1, fillOpacity: 1, strokeOpacity: 1,
-		fontSize: 16, fontWeight: 400, anchor: "start", mono: false,
+		fontSize: 16, fontWeight: 400, anchor: "start", mono: false, font: "",
 	};
 	const s = inherit(base, a, palette);
 	const scaled = vb.length === 4 && vb.every((v) => isFinite(v)) && (vb[2] !== w || vb[3] !== h || vb[0] || vb[1]);

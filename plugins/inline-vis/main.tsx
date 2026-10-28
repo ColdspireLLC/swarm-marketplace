@@ -2,6 +2,7 @@
 // drawn in the reply, with Swarm's own canvas. src/ has how each is laid out.
 import { ui, type Child, type IconName, type RenderContext } from "swarm";
 import { type Chart, chartTable, DARK, describeChart, drawChart, LIGHT, parseChart } from "./src/chart";
+import { FONTS, mathError, scene as mathScene, typeset } from "./src/math";
 import { drawMermaid } from "./src/mermaid";
 import type { Scene } from "./src/scene";
 import { svgScene } from "./src/svgcanvas";
@@ -23,7 +24,11 @@ const KIND: { [lang: string]: { title: string; icon: IconName } } = {
 	chart: { title: "Chart", icon: "chart-bar" },
 	mermaid: { title: "Diagram", icon: "sitemap" },
 	svg: { title: "Picture", icon: "image" },
+	math: { title: "Math", icon: "math-function" },
 };
+
+// A math fence's em, in pixels: KaTeX's 1.21em of a reply's text.
+const MATH_EM = 18;
 
 // What's drawn, by the fence's language and code, so a render that comes
 // again (each frame the reply streams, each update) doesn't lay it out again.
@@ -52,11 +57,24 @@ function chartDrawn(c: Chart): Drawn {
 function build(language: string, code: string): Drawn {
 	if (language === "chart") return chartDrawn(parseChart(code));
 	if (language === "mermaid") return drawMermaid(code, LIGHT, DARK);
+	if (language === "math") return mathDrawn(code);
 	return svgDrawn(code);
 }
 
 // What only Swarm's picture renderer draws of an SVG.
 const PICTURE_ONLY = /<(linearGradient|radialGradient|use|symbol|clipPath|mask|pattern|filter|image|foreignObject|marker|style)\b|url\(/i;
+
+function mathDrawn(code: string): Drawn {
+	const tex = code.trim();
+	if (!tex) throw new Error("The math is empty.");
+	let t;
+	try {
+		t = typeset(tex, MATH_EM, true);
+	} catch (e) {
+		throw mathError(e);
+	}
+	return { kind: "Math", light: mathScene(t, 10), label: "Math: " + tex };
+}
 
 function svgDrawn(code: string): Drawn {
 	const src = code.trim();
@@ -140,7 +158,7 @@ function viewButton(key: string, view: View, current: View, icon: IconName, labe
 }
 
 function sourceLanguage(language: string) {
-	return language === "chart" ? "json" : language === "svg" ? "xml" : language;
+	return language === "chart" ? "json" : language === "svg" ? "xml" : language === "math" ? "latex" : language;
 }
 
 // ---- Expanded ----
@@ -221,7 +239,7 @@ export function renderFence({ thread, args }: RenderContext): Child {
 					{streaming ? `Drawing the ${what}…` : failed ? `Couldn't draw this ${what}` : drawn!.kind}
 				</ui.text>
 				{streaming ? <ui.spinner /> : null}
-				{drawn ? viewButton(key, "drawing", view, kind.icon, language === "chart" ? "Show the chart" : language === "svg" ? "Show the picture" : "Show the diagram") : null}
+				{drawn ? viewButton(key, "drawing", view, kind.icon, language === "chart" ? "Show the chart" : language === "svg" ? "Show the picture" : language === "math" ? "Show the math" : "Show the diagram") : null}
 				{drawn?.table ? viewButton(key, "table", view, "rows", "Show the data") : null}
 				{drawn ? viewButton(key, "code", view, "code", "Show the source") : null}
 				{drawn ? <ui.iconButton icon="maximize" label="Expand" tooltip="Expand" onClick={() => expand(drawn)} /> : null}
@@ -241,6 +259,7 @@ export function renderFence({ thread, args }: RenderContext): Child {
 }
 
 export function activate() {
-	ui.codeFence({ id: "inline-vis", languages: ["chart", "mermaid", "svg"], render: renderFence });
+	for (const [family, src] of Object.entries(FONTS)) ui.font({ family, src });
+	ui.codeFence({ id: "inline-vis", languages: ["chart", "mermaid", "svg", "math"], render: renderFence });
 	ui.overlay({ id: "expanded", width: EXPANDED_WIDTH, bare: true, render: () => renderExpanded() });
 }
