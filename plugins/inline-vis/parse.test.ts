@@ -3,6 +3,7 @@ import { DARK, drawChart, fmt, LIGHT, looseJSON, niceTicks, parseChart, slices }
 import { typeset } from "./src/math";
 import { drawMermaid } from "./src/mermaid";
 import { colorOf, dashes, flatten, parseXML, svgScene } from "./src/svgcanvas";
+import { chartSoFar, skeleton } from "./src/skeleton";
 import { clip, textWidth, wrap } from "./src/text";
 
 // ---- Charts ----
@@ -220,4 +221,27 @@ test("an SVG's text is laid at its baseline, anchored as a line", () => {
 	const s = svgScene(`<svg width="100" height="40"><text x="50" y="20" text-anchor="middle" font-size="10"><tspan x="50" y="20">one</tspan><tspan x="50" y="32">two</tspan></text></svg>`, LIGHT);
 	expect(s.texts).toEqual(["one", "two"]);
 	expect(s.width).toBe(100);
+});
+
+test("a drawing on its way is a skeleton the size it will be", () => {
+	const specs = [
+		`{ "type": "bar", "title": "T", "x": ["a", "b", "c"], "series": [{ "name": "s", "data": [1, 2, 3] }] }`,
+		`{ "type": "line", "x": [1, 2, 3, 4], "series": [{ "name": "s", "data": [1, 2, 3, 4] }] }`,
+		`{ "type": "area", "height": 400, "x": ["a", "b"], "series": [{ "name": "s", "data": [1, 2] }] }`,
+		`{ "type": "scatter", "series": [{ "name": "s", "data": [[1, 2], [3, 4]] }] }`,
+		`{ "type": "bar", "horizontal": true, "x": ["a", "b", "c", "d", "e", "f", "g"], "series": [{ "name": "s", "data": [1, 2, 3, 4, 5, 6, 7] }] }`,
+		`{ "type": "pie", "title": "T", "subtitle": "U", "x": ["a", "b", "c"], "series": [{ "name": "s", "data": [1, 2, 3] }] }`,
+		`{ "type": "donut", "x": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"], "series": [{ "name": "s", "data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }] }`,
+	];
+	for (const spec of specs) {
+		const drawn = drawChart(parseChart(spec), LIGHT);
+		const s = skeleton("chart", spec);
+		expect([s.width, s.height]).toEqual([drawn.width, drawn.height]);
+		expect(s.texts).toEqual([]);
+	}
+	// As it streams: a partial spec still has a skeleton, of what it says so far.
+	expect(chartSoFar(`{ "type": "donut", "ti`)).toEqual({ type: "donut", height: undefined, horizontal: false, labels: undefined, title: false, subtitle: false });
+	expect(skeleton("chart", `{ "ty`).height).toBe(300);
+	for (const lang of ["mermaid", "svg", "math"]) expect(skeleton(lang, "").ops.length).toBeGreaterThan(0);
+	expect(skeleton("mermaid", "sequenceDiagram\n  A->>B: hi").height).toBe(260);
 });

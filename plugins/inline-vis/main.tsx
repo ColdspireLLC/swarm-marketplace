@@ -5,6 +5,7 @@ import { type Chart, chartTable, DARK, describeChart, drawChart, LIGHT, parseCha
 import { FONTS, mathError, scene as mathScene, typeset } from "./src/math";
 import { drawMermaid } from "./src/mermaid";
 import type { Scene } from "./src/scene";
+import { skeleton } from "./src/skeleton";
 import { svgScene } from "./src/svgcanvas";
 
 type View = "drawing" | "table" | "code";
@@ -232,6 +233,16 @@ function renderExpanded(): Child {
 	);
 }
 
+/** A drawing still streaming: its skeleton, a light passing over it. Not the code as it's written. */
+function drawingSoon(language: string, code: string, label: string): Child {
+	const s = skeleton(language, code);
+	return (
+		<ui.row justify="center" padding="s3 s3 s4" style={{ width: "100%", animation: { name: "shimmer" } }}>
+			{canvas(s, label, s.width)}
+		</ui.row>
+	);
+}
+
 /** A fence's frame, as Swarm draws a code block's: its kind, its views, Expand, Copy, and what it shows. */
 export function renderFence({ thread, args }: RenderContext): Child {
 	const language = (args.language || "").toLowerCase();
@@ -252,6 +263,7 @@ export function renderFence({ thread, args }: RenderContext): Child {
 
 	// Display math in a reply's text ($$…$$): the formula alone, as text has it, no frame.
 	if (args.from === "math") {
+		if (streaming) return drawingSoon(language, code, "Typesetting the math");
 		if (failed || !drawn) {
 			return (
 				<ui.text tone="muted" mono selectable tooltip={failed?.message} align="center">
@@ -269,7 +281,9 @@ export function renderFence({ thread, args }: RenderContext): Child {
 	}
 
 	let body: Child;
-	if (view === "code") {
+	if (streaming) {
+		body = drawingSoon(language, code, `Drawing the ${what}`);
+	} else if (view === "code") {
 		body = <ui.source text={code} language={sourceLanguage(language)} />;
 	} else if (view === "table") {
 		body = <ui.column padding="s3 s4">{table(drawn!.table!)}</ui.column>;
@@ -286,7 +300,8 @@ export function renderFence({ thread, args }: RenderContext): Child {
 
 	return (
 		<ui.column align="stretch" border="border" radius="card" background="raised" clip>
-			<ui.row align="center" gap="s1" padding="s1 s2 s1 s3" style={{ borderBottom: "1px solid divider" }}>
+			{/* As tall with its buttons as without, while it streams: the frame doesn't jump when they come. */}
+			<ui.row align="center" gap="s1" padding="s1 s2 s1 s3" style={{ borderBottom: "1px solid divider", minHeight: 29 }}>
 				<ui.icon icon={kind.icon} tone="faint" size="sm" margin="s0 s1 s0 s0" />
 				{args.title && !failed ? (
 					// A titled fence names itself; its kind follows, muted.
@@ -303,7 +318,6 @@ export function renderFence({ thread, args }: RenderContext): Child {
 						{streaming ? `Drawing the ${what}…` : failed ? `Couldn't draw this ${what}` : drawn!.kind}
 					</ui.text>
 				)}
-				{streaming ? <ui.spinner /> : null}
 				{drawn ? viewButton(key, "drawing", view, kind.icon, language === "chart" ? "Show the chart" : language === "svg" ? "Show the picture" : language === "math" ? "Show the math" : "Show the diagram") : null}
 				{drawn?.table ? viewButton(key, "table", view, "rows", "Show the data") : null}
 				{drawn ? viewButton(key, "code", view, "code", "Show the source") : null}
