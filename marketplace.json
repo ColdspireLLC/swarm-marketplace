@@ -5,29 +5,6 @@
   "description": "Plugins reviewed by Coldspire.",
   "plugins": [
     {
-      "id": "inline-vis",
-      "displayName": "Inline visualizations",
-      "description": "Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply.",
-      "icon": "plugins/inline-vis/icon.svg",
-      "tags": [
-        "math",
-        "charts",
-        "diagrams",
-        "mermaid",
-        "agents"
-      ],
-      "author": "Coldspire",
-      "overview": "plugins/inline-vis/PLUGIN_OVERVIEW.md",
-      "source": {
-        "git": {
-          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
-          "subdir": "plugins/inline-vis",
-          "range": "^1.0.0",
-          "tagPrefix": "inline-vis/"
-        }
-      }
-    },
-    {
       "id": "flux",
       "displayName": "Flux",
       "description": "Flux issues in Swarm: agents read and update them, a thread attached to an issue keeps it current, and each thread has its issue beside it.",
@@ -46,28 +23,6 @@
           "subdir": "plugins/flux",
           "range": "^1.0.0",
           "tagPrefix": "flux/"
-        }
-      }
-    },
-    {
-      "id": "plugin-dev",
-      "displayName": "Plugin development",
-      "description": "Skills for your agents to build Swarm plugins and submit them to Swarm's marketplace.",
-      "icon": "plugins/plugin-dev/icon.svg",
-      "tags": [
-        "plugins",
-        "skills",
-        "agents",
-        "developers"
-      ],
-      "author": "Coldspire",
-      "overview": "plugins/plugin-dev/PLUGIN_OVERVIEW.md",
-      "source": {
-        "git": {
-          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
-          "subdir": "plugins/plugin-dev",
-          "range": "^1.0.0",
-          "tagPrefix": "plugin-dev/"
         }
       }
     }
