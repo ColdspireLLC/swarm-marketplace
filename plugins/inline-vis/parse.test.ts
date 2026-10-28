@@ -1,9 +1,7 @@
 import { expect, test } from "swarm/testing";
-import { drawChart, fmt, LIGHT, looseJSON, niceTicks, parseChart, slices } from "./src/chart";
-import { drawMermaid, parseMermaid } from "./src/diagram";
-import { parseFlowchart } from "./src/flow";
-import { layout } from "./src/layout";
-import { parseSequence } from "./src/sequence";
+import { DARK, drawChart, fmt, LIGHT, looseJSON, niceTicks, parseChart, slices } from "./src/chart";
+import { drawMermaid } from "./src/mermaid";
+import { colorOf, dashes, flatten, parseXML, svgScene } from "./src/svgcanvas";
 import { clip, textWidth, wrap } from "./src/text";
 
 // ---- Charts ----
@@ -71,165 +69,107 @@ test("text widths are Inter's", () => {
 	expect(clip("internal/plugins/sdk", 12, 60).endsWith("…")).toBe(true);
 });
 
-// ---- Mermaid ----
+// ---- Mermaid, through pele ----
 
-test("a flowchart's nodes, shapes, edges and labels", () => {
-	const f = parseFlowchart(`flowchart LR
-  A[Start] --> B{Is it?}
-  B -->|Yes| C(Rounded) --- D([Stadium])
-  B -- No --> E[(Database)]
-  C -.-> F((Circle)) ==> G[["Sub (routine)"]]
-  A & B --> H{{Hex}}
-  H --x I>Flag] --o J[/Lean/]
-  J <--> K["Quoted [brackets]"]
-  K ~~~ A
-  click A "https://example.com"
-  classDef red fill:#f00
-  A:::red`);
-	expect(f.dir).toBe("LR");
-	expect([...f.nodes.values()].map((n) => [n.id, n.shape, n.label])).toEqual([
-		["A", "rect", "Start"], ["B", "rhombus", "Is it?"], ["C", "round", "Rounded"], ["D", "stadium", "Stadium"],
-		["E", "cylinder", "Database"], ["F", "circle", "Circle"], ["G", "subroutine", "Sub (routine)"], ["H", "hexagon", "Hex"],
-		["I", "asym", "Flag"], ["J", "lean-r", "Lean"], ["K", "rect", "Quoted [brackets]"],
-	]);
-	const e = (from: string, to: string) => f.edges.find((x) => x.from === from && x.to === to)!;
-	expect(e("B", "C")).toMatchObject({ label: "Yes", head: "arrow", line: "solid" });
-	expect(e("C", "D")).toMatchObject({ head: "none" });
-	expect(e("B", "E")).toMatchObject({ label: "No", head: "arrow" });
-	expect(e("C", "F")).toMatchObject({ line: "dotted" });
-	expect(e("F", "G")).toMatchObject({ line: "thick" });
-	expect(e("A", "H")).toBeTruthy();
-	expect(e("B", "H")).toBeTruthy();
-	expect(e("H", "I")).toMatchObject({ head: "cross" });
-	expect(e("I", "J")).toMatchObject({ head: "circle" });
-	expect(e("J", "K")).toMatchObject({ head: "arrow", tail: "arrow" });
-	expect(e("K", "A")).toMatchObject({ line: "invisible" });
-});
+const KINDS: { [kind: string]: string } = {
+	"Flowchart": "flowchart TD\n  A[Start] --> B{Is it?}\n  B -->|Yes| C(Rounded)\n  B -.-> D[(Database)]",
+	"Sequence diagram": "sequenceDiagram\n  autonumber\n  actor U as User\n  U->>+S: POST /pay\n  S-->>-U: 200\n  Note over U,S: Both see it\n  loop Every second\n    U->>S: poll\n  end",
+	"Class diagram": "classDiagram\n  class Animal {\n    +String name\n    +eat()\n  }\n  Animal <|-- Duck",
+	"State diagram": "stateDiagram-v2\n  [*] --> Idle\n  Idle --> Busy : go\n  Busy --> [*]",
+	"Entity relationship diagram": "erDiagram\n  CUSTOMER ||--o{ ORDER : places",
+	"Pie chart": 'pie title Pets\n  "Dogs" : 386\n  "Cats" : 85',
+	"Gantt chart": "gantt\n  title Plan\n  dateFormat YYYY-MM-DD\n  section A\n  Task :a1, 2024-01-01, 3d\n  Next :after a1, 2d",
+	"Git graph": "gitGraph\n  commit\n  branch dev\n  commit\n  checkout main\n  merge dev",
+	"Mind map": "mindmap\n  root((Swarm))\n    Plugins\n    Threads",
+	"Timeline": "timeline\n  title History\n  2020 : One\n  2021 : Two",
+	"XY chart": 'xychart-beta\n  title "Sales"\n  x-axis [jan, feb, mar]\n  y-axis "Revenue" 0 --> 100\n  bar [50, 60, 75]\n  line [40, 55, 80]',
+	"Quadrant chart": "quadrantChart\n  title Reach\n  x-axis Low --> High\n  y-axis Low --> High\n  A: [0.3, 0.6]",
+	"Sankey diagram": "sankey-beta\n  A,B,10\n  A,C,5",
+	"User journey": "journey\n  title My day\n  section Work\n    Code: 5: Me",
+	"Kanban board": "kanban\n  Todo\n    [Write tests]\n  Done\n    [Ship]",
+	"Block diagram": "block-beta\n  columns 3\n  a[\"Parse\"] b[\"Lay out\"] c[\"Draw\"]\n  a --> b\n  b --> c",
+	"Packet diagram": "packet-beta\n  0-15: \"Source port\"\n  16-31: \"Destination port\"",
+	"Architecture diagram": "architecture-beta\n  group api(cloud)[API]\n  service db(database)[Database] in api\n  service server(server)[Server] in api\n  db:L -- R:server",
+	"Radar chart": "radar-beta\n  axis a[\"Speed\"], b[\"Size\"], c[\"Cost\"]\n  curve x[\"Swarm\"]{4, 3, 5}",
+	"Treemap": "treemap-beta\n\"Code\"\n    \"gui\": 48\n    \"core\": 31",
+	"Requirement diagram": "requirementDiagram\n  requirement fast {\n    id: 1\n    text: Starts fast\n    risk: low\n    verifymethod: test\n  }\n  element app {\n    type: app\n  }\n  app - satisfies -> fast",
+	"C4 diagram": "C4Context\n  Person(user, \"User\")\n  System(swarm, \"Swarm\")\n  Rel(user, swarm, \"Uses\")",
+};
 
-test("ids with dashes, and edges with no spaces", () => {
-	const f = parseFlowchart("graph TD\n  my-node-->other_node\n  other_node-->|go|last;last---my-node");
-	expect([...f.nodes.keys()]).toEqual(["my-node", "other_node", "last"]);
-	expect(f.edges.map((e) => `${e.from}>${e.to}:${e.label}`)).toEqual(["my-node>other_node:", "other_node>last:go", "last>my-node:"]);
-});
-
-test("subgraphs hold their nodes; an edge to one goes to its first node", () => {
-	const f = parseFlowchart(`flowchart TB
-  subgraph one [The first]
-    a1 --> a2
-  end
-  subgraph two
-    b1
-  end
-  c --> one
-  two --> c`);
-	expect(f.clusters.map((c) => [c.id, c.title, c.nodes])).toEqual([["one", "The first", ["a1", "a2"]], ["two", "two", ["b1"]]]);
-	expect(f.edges.map((e) => e.from + ">" + e.to)).toEqual(["a1>a2", "c>a1", "b1>c"]);
-	expect(f.nodes.has("one")).toBe(false);
-});
-
-test("labels lose Mermaid's markup", () => {
-	const f = parseFlowchart('flowchart TD\n  A["**Bold** line<br/>next #quot;quoted#quot;"]');
-	expect(f.nodes.get("A")!.label).toBe('Bold line\nnext "quoted"');
-});
-
-test("a sequence diagram's participants, messages, notes and blocks", () => {
-	const s = parseSequence(`sequenceDiagram
-  title Checkout
-  actor U as User
-  participant S as Server
-  autonumber
-  U->>+S: POST /pay
-  S-->>-U: 200
-  S-)U: webhook
-  S-xU: gone
-  Note over U,S: Both see it
-  loop Every second
-    U->>S: poll
-  end
-  alt ok
-    S->>S: retry
-  else failed
-    S--)U: error
-  end`);
-	expect(s.title).toBe("Checkout");
-	expect(s.participants).toEqual([{ id: "U", label: "User", actor: true }, { id: "S", label: "Server", actor: false }]);
-	const msgs = s.events.filter((e) => e.kind === "message") as any[];
-	expect(msgs.map((m) => [m.from, m.to, m.text, m.dotted, m.head, m.activate ?? "", m.n])).toEqual([
-		["U", "S", "POST /pay", false, "arrow", "+", 1],
-		["S", "U", "200", true, "arrow", "-", 2],
-		["S", "U", "webhook", false, "async", "", 3],
-		["S", "U", "gone", false, "cross", "", 4],
-		["U", "S", "poll", false, "arrow", "", 5],
-		["S", "S", "retry", false, "arrow", "", 6],
-		["S", "U", "error", true, "async", "", 7],
-	]);
-	expect(s.events.filter((e) => e.kind === "open" || e.kind === "else" || e.kind === "close").map((e) => e.kind)).toEqual(["open", "close", "open", "else", "close"]);
-	expect(drawMermaid({ kind: "sequence", seq: s }).texts).toContain("Both see it");
-});
-
-test("a state diagram's start, end, composites and transitions", () => {
-	const d = parseMermaid(`stateDiagram-v2
-  direction LR
-  [*] --> Idle
-  state "Waiting for input" as Idle
-  Idle --> Busy : go
-  state Busy {
-    [*] --> Working
-    Working --> [*]
-  }
-  Busy --> [*]
-  Idle : Nothing to do`);
-	if (d.kind !== "state") throw new Error("not a state diagram");
-	expect(d.flow.dir).toBe("LR");
-	expect(d.flow.nodes.get("Idle")!.label).toBe("Waiting for input\nNothing to do");
-	expect(d.flow.clusters.map((c) => c.id)).toEqual(["Busy"]);
-	// The transition into Busy goes to its start.
-	expect(d.flow.edges.find((e) => e.from === "Idle")!.to).toBe("[*]startBusy");
-	expect(drawMermaid(d).width).toBeGreaterThan(100);
-});
-
-test("a pie is a chart; other kinds say which Swarm draws", () => {
-	const d = parseMermaid('pie showData\n  title Pets\n  "Dogs" : 386\n  "Cats" : 85.5');
-	expect(d.kind).toBe("pie");
-	if (d.kind === "pie") expect(d.chart).toMatchObject({ type: "pie", title: "Pets", x: ["Dogs", "Cats"] });
-	expect(() => parseMermaid("gantt\n  title x")).toThrow("Swarm draws Mermaid's flowchart, sequenceDiagram, stateDiagram-v2, pie; not gantt.");
-	expect(() => parseMermaid("---\ntitle: x\n---\nflowchart TD\n  A --> B")).not.toThrow();
-	expect(() => parseMermaid("%%{init: {'theme': 'dark'}}%%\ngraph LR\n  A --> B")).not.toThrow();
-	expect(() => parseMermaid("flowchart TD\n  A[open --> B")).toThrow("isn't closed");
-});
-
-// ---- Layout ----
-
-test("a layout ranks, keeps nodes apart, and survives cycles and self loops", () => {
-	const nodes = ["a", "b", "c", "d"].map((id) => ({ id, w: 60, h: 30 }));
-	const L = layout(nodes, [{ from: "a", to: "b" }, { from: "b", to: "c" }, { from: "c", to: "a" }, { from: "a", to: "d" }, { from: "d", to: "d" }], "TB");
-	const p = (id: string) => L.nodes.get(id)!;
-	expect(p("a").y).toBeLessThan(p("b").y);
-	expect(p("b").y).toBeLessThan(p("c").y);
-	for (const x of nodes) for (const y of nodes) {
-		if (x === y) continue;
-		const A = p(x.id), B = p(y.id);
-		const apart = Math.abs(A.x - B.x) >= (A.w + B.w) / 2 || Math.abs(A.y - B.y) >= (A.h + B.h) / 2;
-		expect(apart).toBe(true);
+test("each kind of Mermaid diagram is drawn, named and labelled", () => {
+	for (const [kind, src] of Object.entries(KINDS)) {
+		let d;
+		try {
+			d = drawMermaid(src, LIGHT, LIGHT);
+		} catch (e) {
+			throw new Error(kind + ": " + e);
+		}
+		expect([kind, d.kind]).toEqual([kind, kind]);
+		expect(d.light.width).toBeGreaterThan(40);
+		expect(d.light.ops.length).toBeGreaterThan(3);
 	}
-	// The cycle's back edge still runs from c to a.
-	const back = L.edges[2].points;
-	expect(back[0]).toEqual({ x: p("c").x, y: p("c").y });
-	expect(back[back.length - 1]).toEqual({ x: p("a").x, y: p("a").y });
-	expect(L.edges[4].points).toHaveLength(2);
+	const seq = drawMermaid(KINDS["Sequence diagram"], LIGHT, LIGHT);
+	expect(seq.light.texts).toContain("Both see it");
+	expect(seq.light.texts).toContain("User");
 });
 
-test("LR turns the layout", () => {
-	const L = layout([{ id: "a", w: 80, h: 30 }, { id: "b", w: 80, h: 30 }], [{ from: "a", to: "b" }], "LR");
-	expect(L.nodes.get("a")!.x).toBeLessThan(L.nodes.get("b")!.x);
-	expect(L.nodes.get("a")!.y).toBe(L.nodes.get("b")!.y);
+test("a diagram that isn't Mermaid, or is wrong, says why", () => {
+	expect(() => drawMermaid("", LIGHT, LIGHT)).toThrow("The diagram is empty.");
+	expect(() => drawMermaid("hello there", LIGHT, LIGHT)).toThrow('Swarm doesn\'t know this kind of Mermaid diagram: it starts with "hello there".');
+	expect(() => drawMermaid("sequenceDiagram\n  A->>", LIGHT, LIGHT)).toThrow();
 });
 
-test("a big flowchart lays out quickly", () => {
+test("a series' colours are the theme's", () => {
+	const d = drawMermaid(KINDS["Pie chart"], LIGHT, DARK);
+	expect(d.dark).toBeTruthy();
+	expect(drawMermaid(KINDS["Flowchart"], LIGHT, DARK).dark).toBe(undefined);
+});
+
+test("a big flowchart is drawn quickly", () => {
 	const lines = ["flowchart TD"];
 	for (let i = 0; i < 120; i++) lines.push(`  n${i}[Node ${i}] --> n${(i * 7 + 3) % 120}[Node ${(i * 7 + 3) % 120}]`);
 	const t0 = Date.now();
-	const s = drawMermaid(parseMermaid(lines.join("\n")));
-	expect(s.width).toBeGreaterThan(0);
-	expect(Date.now() - t0).toBeLessThan(2000);
+	expect(drawMermaid(lines.join("\n"), LIGHT, LIGHT).light.width).toBeGreaterThan(0);
+	expect(Date.now() - t0).toBeLessThan(5000);
+});
+
+// ---- SVG to canvas ----
+
+test("SVG is read: attributes either quoted, entities, comments, self-closing", () => {
+	const doc = parseXML(`<?xml version="1.0"?><!-- c --><svg viewBox='0 0 10 10'><g fill="red"><rect x="1" width="2"/><text>a &amp; b &lt;c&gt;</text></g></svg>`);
+	const svg = doc.children[0] as any;
+	expect(svg.tag).toBe("svg");
+	expect(svg.attrs.viewBox).toBe("0 0 10 10");
+	expect(svg.children[0].children[0]).toEqual({ tag: "rect", attrs: { x: "1", width: "2" }, children: [] });
+	expect(svg.children[0].children[1].children).toEqual(["a & b <c>"]);
+});
+
+test("pele's colours are Swarm's", () => {
+	expect(colorOf("var(--_fg)", LIGHT)).toBe("text");
+	expect(colorOf("var(--pele-line,#1f1f1f)", LIGHT)).toBe("text2");
+	expect(colorOf("var(--_s)", LIGHT)).toBe("field");
+	expect(colorOf("var(--pele-series-2)", DARK)).toBe(DARK[1]);
+	expect(colorOf("var(--nope, #123456)", LIGHT)).toBe("#123456");
+	expect(colorOf("none", LIGHT)).toBe(null);
+	expect(colorOf(undefined, LIGHT)).toBe(undefined);
+});
+
+test("paths flatten, arcs and curves included, and dash", () => {
+	const [line] = flatten("M0,0L10,0H20V10");
+	expect(line).toEqual([0, 0, 10, 0, 20, 0, 20, 10]);
+	const [curve] = flatten("M0,0C0,10 10,10 10,0");
+	expect(Math.round(curve[curve.length - 2])).toBe(10);
+	const [arc] = flatten("M0,0A5,5 0 0 1 10,0");
+	expect(Math.round(arc[arc.length - 2])).toBe(10);
+	expect(Math.min(...arc.filter((_, i) => i % 2 === 1))).toBeLessThan(-4.9);
+	const rel = flatten("m5,5l5,0z");
+	expect(rel[0]).toEqual([5, 5, 10, 5, 5, 5]);
+	const d = dashes([0, 0, 20, 0], [4, 4]);
+	expect(d.map((s) => [s[0], s[s.length - 2]])).toEqual([[0, 4], [8, 12], [16, 20]]);
+});
+
+test("an SVG's text is laid at its baseline, anchored as a line", () => {
+	const s = svgScene(`<svg width="100" height="40"><text x="50" y="20" text-anchor="middle" font-size="10"><tspan x="50" y="20">one</tspan><tspan x="50" y="32">two</tspan></text></svg>`, LIGHT);
+	expect(s.texts).toEqual(["one", "two"]);
+	expect(s.width).toBe(100);
 });

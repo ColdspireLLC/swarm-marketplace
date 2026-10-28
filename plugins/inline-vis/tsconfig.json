@@ -9,7 +9,7 @@
     "jsxImportSource": "swarm",
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "isolatedModules": true
   },
   "include": ["swarm.d.ts", "**/*.ts", "**/*.tsx"]

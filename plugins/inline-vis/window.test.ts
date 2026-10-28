@@ -33,10 +33,24 @@ test("a broken chart says why, and shows its source", async (t) => {
 	await w.screenshot("error");
 });
 
-test("a kind of Mermaid it doesn't draw shows its source", async (t) => {
-	const w = await open(t, "The classes:\n\n```mermaid\nclassDiagram\n  Animal <|-- Duck\n```");
+test("what isn't Mermaid shows its source, saying so", async (t) => {
+	const w = await open(t, "The plan:\n\n```mermaid\nroadmap\n  Q1: ship\n```");
 	await w.see("Couldn't draw this diagram");
-	await w.see("Animal <|-- Duck");
+	await w.see('Swarm doesn\'t know this kind of Mermaid diagram: it starts with "roadmap".');
+	await w.screenshot("mermaid-error");
+});
+
+test("a drawing expands over the window", async (t) => {
+	const w = await open(t, SAMPLES.sequence.reply);
+	await w.see("Sequence diagram");
+	await w.click("Expand");
+	await w.see("Close the drawing");
+	await w.see("Opens Settings, Plugins");
+	await w.screenshot("expanded");
+	await w.dark(true);
+	await w.screenshot("expanded-dark");
+	await w.click("Close the drawing");
+	await w.gone("Close the drawing");
 });
 
 test("the data and the source are a click away", async (t) => {

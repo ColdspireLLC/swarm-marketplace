@@ -107,7 +107,7 @@ export const SAMPLES: { [name: string]: { reply: string; see: string } } = {
 }`, "The pipeline's 82 minutes:"),
 	},
 	flowchart: {
-		see: "Diagram",
+		see: "Flowchart",
 		reply: fence("mermaid", `
 flowchart TD
   A[Agent writes a reply] --> B{Has a fence?}
@@ -120,7 +120,7 @@ flowchart TD
 `, "This is how a fence reaches the window:"),
 	},
 	"flowchart-lr": {
-		see: "Diagram",
+		see: "Flowchart",
 		reply: fence("mermaid", `
 flowchart LR
   subgraph Devbox
@@ -136,7 +136,7 @@ flowchart LR
 `, "Where each piece runs:"),
 	},
 	sequence: {
-		see: "Diagram",
+		see: "Sequence diagram",
 		reply: fence("mermaid", `
 sequenceDiagram
   autonumber
@@ -159,7 +159,7 @@ sequenceDiagram
 `, "What happens as you search the store:"),
 	},
 	state: {
-		see: "Diagram",
+		see: "State diagram",
 		reply: fence("mermaid", `
 stateDiagram-v2
   [*] --> Off
@@ -172,8 +172,216 @@ stateDiagram-v2
   Failed --> [*] : remove
 `, "A plugin's states:"),
 	},
+	class: {
+		see: "Class diagram",
+		reply: fence("mermaid", `
+classDiagram
+  class Plugin {
+    +String id
+    +String version
+    +activate()
+    +deactivate()
+  }
+  class Runtime {
+    +Limits limits
+    +install(source)
+    +start(id)
+  }
+  class Marketplace {
+    +String name
+    +Listing[] plugins
+  }
+  Runtime "1" --> "*" Plugin : runs
+  Runtime --> Marketplace : reads
+  Marketplace o-- Plugin : lists
+`, "How the pieces relate:"),
+	},
+	er: {
+		see: "Entity relationship diagram",
+		reply: fence("mermaid", `
+erDiagram
+  PROJECT ||--o{ THREAD : has
+  THREAD ||--|{ TURN : takes
+  THREAD }o--o| WORKTREE : "works in"
+  PROJECT {
+    string id
+    string dir
+  }
+  THREAD {
+    string id
+    string title
+    string status
+  }
+`, "The tables:"),
+	},
+	gantt: {
+		see: "Gantt chart",
+		reply: fence("mermaid", `
+gantt
+  title The marketplace
+  dateFormat YYYY-MM-DD
+  section Catalog
+  Repository and CI      :done, a1, 2026-10-26, 2d
+  GitHub mirror          :done, a2, after a1, 1d
+  section Swarm
+  Built-in catalog       :active, b1, 2026-10-27, 3d
+  Reviewed marks         :b2, after b1, 2d
+  section Plugins
+  Inline visualizations  :c1, 2026-10-28, 4d
+`, "Where it stands:"),
+	},
+	git: {
+		see: "Git graph",
+		reply: fence("mermaid", `
+gitGraph
+  commit id: "init"
+  branch marketplace
+  commit id: "catalog"
+  commit id: "official"
+  checkout main
+  commit id: "icon"
+  merge marketplace
+  commit id: "release"
+`, "The branches:"),
+	},
+	mindmap: {
+		see: "Mind map",
+		reply: fence("mermaid", `
+mindmap
+  root((Swarm))
+    Threads
+      Worktrees
+      Agents
+    Plugins
+      Marketplace
+      Fences
+    Hosts
+`, "What Swarm is made of:"),
+	},
+	timeline: {
+		see: "Timeline",
+		reply: fence("mermaid", `
+timeline
+  title Swarm's plugins
+  October 21 : Plugin runtime
+  October 24 : Plugin UI : Canvas
+  October 27 : Marketplaces
+  October 28 : Swarm's own catalog : Inline visualizations
+`, "How it got here:"),
+	},
+	xychart: {
+		see: "XY chart",
+		reply: fence("mermaid", `
+xychart-beta
+  title "Installs a week"
+  x-axis [w1, w2, w3, w4, w5, w6]
+  y-axis "Installs" 0 --> 500
+  bar [120, 180, 240, 310, 380, 460]
+  line [100, 170, 230, 300, 360, 440]
+`, "Installs so far:"),
+	},
+	quadrant: {
+		see: "Quadrant chart",
+		reply: fence("mermaid", `
+quadrantChart
+  title Effort against value
+  x-axis Low effort --> High effort
+  y-axis Low value --> High value
+  quadrant-1 Plan them
+  quadrant-2 Do them now
+  quadrant-3 Leave them
+  quadrant-4 Maybe later
+  Math in diagrams: [0.8, 0.45]
+  Expand: [0.2, 0.7]
+  More kinds: [0.45, 0.85]
+  Fence titles: [0.15, 0.3]
+`, "What to do next:"),
+	},
+	sankey: {
+		see: "Sankey diagram",
+		reply: fence("mermaid", `
+sankey-beta
+  Agents,Claude Code,52
+  Agents,Cursor,31
+  Agents,Grok,17
+  Claude Code,Merged,40
+  Claude Code,Abandoned,12
+  Cursor,Merged,22
+  Cursor,Abandoned,9
+  Grok,Merged,11
+  Grok,Abandoned,6
+`, "Where the threads went:"),
+	},
+	journey: {
+		see: "User journey",
+		reply: fence("mermaid", `
+journey
+  title Installing a plugin
+  section Find it
+    Open Settings: 5: User
+    Search the store: 4: User
+  section Install it
+    Read what it asks: 3: User
+    Grant it: 4: User, Swarm
+  section Use it
+    Ask for a chart: 5: User, Agent
+`, "The path a user takes:"),
+	},
+	kanban: {
+		see: "Kanban board",
+		reply: fence("mermaid", `
+kanban
+  Todo
+    [Math in labels]
+    [Fence titles]
+  Doing
+    [Mermaid through pele]
+  Done
+    [Official marketplace]
+    [Muted icons]
+`, "The board:"),
+	},
+	architecture: {
+		see: "Architecture diagram",
+		reply: fence("mermaid", `
+architecture-beta
+  group app(cloud)[Swarm app]
+  service window(server)[Window] in app
+  service core(database)[Core] in app
+  service plugins(disk)[Plugin runtime] in app
+  service github(internet)[GitHub]
+  window:R -- L:core
+  core:R -- L:plugins
+  plugins:B -- T:github
+`, "Where the pieces run:"),
+	},
+	c4: {
+		see: "C4 diagram",
+		reply: fence("mermaid", `
+C4Context
+  title Swarm's marketplace
+  Person(user, "User", "Installs plugins")
+  System(swarm, "Swarm", "Runs agents and plugins")
+  System_Ext(github, "GitHub", "Hosts the catalog")
+  Rel(user, swarm, "Browses the store in")
+  Rel(swarm, github, "Reads marketplace.json from")
+`, "The context:"),
+	},
+	block: {
+		see: "Block diagram",
+		reply: fence("mermaid", `
+block-beta
+  columns 3
+  fence["Fence"] space parse["pele"]
+  space:3
+  draw["Canvas"] space window["Window"]
+  fence --> parse
+  parse --> draw
+  draw --> window
+`, "The blocks:"),
+	},
 	"mermaid-pie": {
-		see: "Languages",
+		see: "Pie chart",
 		reply: fence("mermaid", `
 pie title Languages
   "Go" : 71.4
@@ -184,14 +392,20 @@ pie title Languages
 `, "The repository by language:"),
 	},
 	svg: {
-		see: "SVG",
+		see: "Picture",
 		reply: fence("svg", `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" width="320" height="120">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 120" width="340" height="120" font-family="sans-serif">
   <title>Three stages</title>
-  <rect x="4" y="30" width="88" height="60" rx="10" fill="#2a78d6"/>
-  <rect x="116" y="30" width="88" height="60" rx="10" fill="#eb6834"/>
-  <rect x="228" y="30" width="88" height="60" rx="10" fill="#1baf7a"/>
-  <path d="M92 60h24M204 60h24" stroke="#888" stroke-width="3"/>
+  <rect x="4" y="30" width="92" height="60" rx="10" fill="#2a78d6"/>
+  <rect x="124" y="30" width="92" height="60" rx="10" fill="#eb6834"/>
+  <rect x="244" y="30" width="92" height="60" rx="10" fill="#1baf7a"/>
+  <path d="M96 60h28M216 60h28" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+  <g fill="#fff" font-size="14" font-weight="600" text-anchor="middle">
+    <text x="50" y="65">Parse</text>
+    <text x="170" y="65">Lay out</text>
+    <text x="290" y="65">Draw</text>
+  </g>
+  <text x="170" y="112" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.6">each fence, as it arrives</text>
 </svg>`, "The three stages:"),
 	},
 };

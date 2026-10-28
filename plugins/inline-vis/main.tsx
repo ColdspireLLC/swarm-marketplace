@@ -2,24 +2,27 @@
 // drawn in the reply, with Swarm's own canvas. src/ has how each is laid out.
 import { ui, type Child, type IconName, type RenderContext } from "swarm";
 import { type Chart, chartTable, DARK, describeChart, drawChart, LIGHT, parseChart } from "./src/chart";
-import { type Diagram, drawMermaid, parseMermaid } from "./src/diagram";
+import { drawMermaid } from "./src/mermaid";
 import type { Scene } from "./src/scene";
+import { svgScene } from "./src/svgcanvas";
 
 type View = "drawing" | "table" | "code";
 
 interface Drawn {
+	/** What it is, as its frame names it: "Chart", "Sequence diagram"… */
+	kind: string;
 	/** The scenes, light and dark (one, when the drawing is in Swarm's colours alone). */
 	light: Scene;
 	dark?: Scene;
 	label: string;
 	table?: { columns: string[]; rows: string[][] };
-	svg?: string;
+	svg?: { src: string; width: number; height: number };
 }
 
 const KIND: { [lang: string]: { title: string; icon: IconName } } = {
 	chart: { title: "Chart", icon: "chart-bar" },
 	mermaid: { title: "Diagram", icon: "sitemap" },
-	svg: { title: "SVG", icon: "image" },
+	svg: { title: "Picture", icon: "image" },
 };
 
 // What's drawn, by the fence's language and code, so a render that comes
@@ -43,20 +46,17 @@ export function draw(language: string, code: string): Drawn | Error {
 }
 
 function chartDrawn(c: Chart): Drawn {
-	return { light: drawChart(c, LIGHT), dark: drawChart(c, DARK), label: describeChart(c), table: chartTable(c) };
+	return { kind: "Chart", light: drawChart(c, LIGHT), dark: drawChart(c, DARK), label: describeChart(c), table: chartTable(c) };
 }
 
 function build(language: string, code: string): Drawn {
 	if (language === "chart") return chartDrawn(parseChart(code));
-	if (language === "mermaid") {
-		const d: Diagram = parseMermaid(code);
-		if (d.kind === "pie") return chartDrawn(d.chart);
-		const what = d.kind === "sequence" ? "Sequence diagram" : d.kind === "state" ? "State diagram" : "Flowchart";
-		const scene = drawMermaid(d);
-		return { light: scene, label: `${what}: ${scene.texts.filter(Boolean).slice(0, 12).join(", ")}` };
-	}
+	if (language === "mermaid") return drawMermaid(code, LIGHT, DARK);
 	return svgDrawn(code);
 }
+
+// What only Swarm's picture renderer draws of an SVG.
+const PICTURE_ONLY = /<(linearGradient|radialGradient|use|symbol|clipPath|mask|pattern|filter|image|foreignObject|marker|style)\b|url\(/i;
 
 function svgDrawn(code: string): Drawn {
 	const src = code.trim();
@@ -65,12 +65,23 @@ function svgDrawn(code: string): Drawn {
 	const bytes = new TextEncoder().encode(src);
 	let bin = "";
 	for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-	const empty: Scene = { width: 1, height: 1, ops: [], texts: [] };
+	const open = /<svg\b[^>]*>/i.exec(src)![0];
+	const attr = (name: string) => new RegExp(`\\s${name}\\s*=\\s*["']([^"']*)["']`, "i").exec(open)?.[1];
+	const vb = (attr("viewBox") ?? "").split(/[\s,]+/).map(Number);
+	const width = parseFloat(attr("width") ?? "") || vb[2] || 300;
+	const height = parseFloat(attr("height") ?? "") || vb[3] || 150;
 	const title = /<title>([^<]*)<\/title>/i.exec(src)?.[1]?.trim();
-	return { light: empty, label: title || "A picture", svg: "data:image/svg+xml;base64," + btoa(bin) };
+	// Drawn with the canvas, its text and all, when it uses only what the canvas draws; else as a
+	// picture, which has gradients, clips and masks but no text.
+	if (!PICTURE_ONLY.test(src)) {
+		const scene = svgScene(src, LIGHT);
+		return { kind: "Picture", light: scene, label: title || scene.title || "A picture" };
+	}
+	const empty: Scene = { width: 1, height: 1, ops: [], texts: [] };
+	return { kind: "Picture", light: empty, label: title || "A picture", svg: { src: "data:image/svg+xml;base64," + btoa(bin), width, height } };
 }
 
-function canvas(s: Scene, label: string, extra?: object): Child {
+function canvas(s: Scene, label: string, maxWidth: number, extra?: object): Child {
 	return (
 		<ui.canvas
 			label={label}
@@ -79,20 +90,25 @@ function canvas(s: Scene, label: string, extra?: object): Child {
 			draw={(g) => {
 				for (const op of s.ops) op(g);
 			}}
-			maxWidth={s.width}
+			maxWidth={maxWidth}
 			{...extra}
 		/>
 	);
 }
 
-function drawing(d: Drawn): Child {
-	if (d.svg) return <ui.image src={d.svg} alt={d.label} />;
-	if (!d.dark) return canvas(d.light, d.label);
+/** The drawing, at most maxWidth wide: its own width in a reply, larger expanded. */
+function drawing(d: Drawn, maxWidth?: number): Child {
+	if (d.svg) {
+		const w = maxWidth ?? d.svg.width;
+		return <ui.image src={d.svg.src} alt={d.label} width={w} height={(w * d.svg.height) / d.svg.width} />;
+	}
+	const w = maxWidth ?? d.light.width;
+	if (!d.dark) return canvas(d.light, d.label, w);
 	// The palette has its own steps for each theme: one canvas a theme, the other hidden.
 	return (
-		<ui.column align="stretch" grow={1} maxWidth={d.light.width}>
-			{canvas(d.light, d.label, { key: "light", style: { dark: { display: "none" } } })}
-			{canvas(d.dark, d.label, { key: "dark", style: { display: "none", dark: { display: "flex" } } })}
+		<ui.column align="stretch" grow={1} maxWidth={w}>
+			{canvas(d.light, d.label, w, { key: "light", style: { dark: { display: "none" } } })}
+			{canvas(d.dark, d.label, w, { key: "dark", style: { display: "none", dark: { display: "flex" } } })}
 		</ui.column>
 	);
 }
@@ -127,7 +143,46 @@ function sourceLanguage(language: string) {
 	return language === "chart" ? "json" : language === "svg" ? "xml" : language;
 }
 
-/** A fence's frame, as Swarm draws a code block's: its kind, its views, Copy, and what it shows. */
+// ---- Expanded ----
+
+// The overlay's width, and the most of the window's height a drawing takes in it.
+const EXPANDED_WIDTH = 1200;
+const EXPANDED_HEIGHT = 720;
+
+let expanded: Drawn | null = null;
+
+function expand(d: Drawn) {
+	expanded = d;
+	ui.showOverlay("expanded");
+}
+
+/** The drawing as large as the overlay lets it be: twice its size at most, and no taller than the window's room. */
+function renderExpanded(): Child {
+	const d = expanded;
+	if (!d) return null;
+	const w = d.svg ? d.svg.width : d.light.width;
+	const h = d.svg ? d.svg.height : d.light.height;
+	const fit = Math.max(160, Math.min(w * 2, EXPANDED_WIDTH - 64, (w * EXPANDED_HEIGHT) / h));
+	return (
+		<ui.column align="stretch">
+			<ui.row align="center" gap="s2" padding="s3 s3 s3 s5" style={{ borderBottom: "1px solid divider" }}>
+				<ui.text weight={600} grow={1} shrink={1} maxLines={1}>
+					{d.kind}
+				</ui.text>
+				<ui.iconButton icon="x" label="Close the drawing" tooltip="Close (Esc)" onClick={() => ui.hideOverlay("expanded")} />
+			</ui.row>
+			<ui.scroll maxHeight={EXPANDED_HEIGHT + 48}>
+				<ui.column align="center" padding="s5">
+					<ui.row justify="center" align="center" width={fit} maxWidth={EXPANDED_WIDTH - 64}>
+						{drawing(d, fit)}
+					</ui.row>
+				</ui.column>
+			</ui.scroll>
+		</ui.column>
+	);
+}
+
+/** A fence's frame, as Swarm draws a code block's: its kind, its views, Expand, Copy, and what it shows. */
 export function renderFence({ thread, args }: RenderContext): Child {
 	const language = (args.language || "").toLowerCase();
 	const code = args.code || "";
@@ -149,9 +204,12 @@ export function renderFence({ thread, args }: RenderContext): Child {
 		body = <ui.column padding="s3 s4">{table(drawn!.table!)}</ui.column>;
 	} else {
 		body = (
-			<ui.row justify="center" padding="s2 s3 s3">
-				{drawing(drawn!)}
-			</ui.row>
+			// The whole drawing is a button: a click expands it. As wide as the frame, so the canvas has its width.
+			<ui.pressable label={"Expand: " + drawn!.label} tooltip="Expand" onClick={() => expand(drawn!)} style={{ cursor: "zoom-in", alignSelf: "stretch", width: "100%", display: "flex", flexDirection: "column" }}>
+				<ui.row justify="center" padding="s3 s3 s4" style={{ width: "100%" }}>
+					{drawing(drawn!)}
+				</ui.row>
+			</ui.pressable>
 		);
 	}
 
@@ -160,12 +218,13 @@ export function renderFence({ thread, args }: RenderContext): Child {
 			<ui.row align="center" gap="s1" padding="s1 s2 s1 s3" style={{ borderBottom: "1px solid divider" }}>
 				<ui.icon icon={kind.icon} tone="faint" size="sm" margin="s0 s1 s0 s0" />
 				<ui.text tone="muted" size="sm" grow={1} shrink={1} maxLines={1}>
-					{streaming ? `Drawing the ${what}…` : failed ? `Couldn't draw this ${what}` : kind.title}
+					{streaming ? `Drawing the ${what}…` : failed ? `Couldn't draw this ${what}` : drawn!.kind}
 				</ui.text>
 				{streaming ? <ui.spinner /> : null}
 				{drawn ? viewButton(key, "drawing", view, kind.icon, language === "chart" ? "Show the chart" : language === "svg" ? "Show the picture" : "Show the diagram") : null}
 				{drawn?.table ? viewButton(key, "table", view, "rows", "Show the data") : null}
 				{drawn ? viewButton(key, "code", view, "code", "Show the source") : null}
+				{drawn ? <ui.iconButton icon="maximize" label="Expand" tooltip="Expand" onClick={() => expand(drawn)} /> : null}
 				{streaming ? null : <ui.iconButton icon="copy" label="Copy the source" tooltip="Copy the source" onClick={() => ui.copy(code)} />}
 			</ui.row>
 			{failed ? (
@@ -183,4 +242,5 @@ export function renderFence({ thread, args }: RenderContext): Child {
 
 export function activate() {
 	ui.codeFence({ id: "inline-vis", languages: ["chart", "mermaid", "svg"], render: renderFence });
+	ui.overlay({ id: "expanded", width: EXPANDED_WIDTH, bare: true, render: () => renderExpanded() });
 }

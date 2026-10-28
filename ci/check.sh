@@ -12,7 +12,8 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
 echo "== the catalog"
-SWARM_DATA_DIR=$work/data "$SWARM" marketplace add . --yes
+# Under another name: swarm is the one Swarm reads from GitHub itself.
+SWARM_DATA_DIR=$work/data "$SWARM" marketplace add . --name swarm-check --yes
 SWARM_DATA_DIR=$work/data "$SWARM" marketplace list
 
 # An entry kept in this repository: its folder, its id, its tags' prefix.

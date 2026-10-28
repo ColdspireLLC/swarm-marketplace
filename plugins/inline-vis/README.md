@@ -2,17 +2,18 @@
 
 A Swarm plugin that draws an agent's ```` ```chart ````, ```` ```mermaid ```` and
 ```` ```svg ```` fences in its reply, with Swarm's own canvas: no browser,
-no network. `skills/inline-vis/SKILL.md` is what the agents read, and the
+no network. A drawing expands to the window on a click. `skills/inline-vis/SKILL.md` is what the agents read, and the
 fences' whole syntax.
 
 - `main.tsx`: the fence's frame (its views: the drawing, its data as a
   table, its source; Copy), and a cache of what's drawn.
 - `src/chart.ts`: charts from a JSON spec, in dataviz's validated
   palette, with light and dark steps.
-- `src/flow.ts`, `src/sequence.ts`, `src/diagram.ts`: Mermaid's
-  flowcharts, state, sequence and pie diagrams, read and drawn.
-- `src/layout.ts`: a layered graph layout (ranks, fewer crossings, nodes
-  over their neighbours, subgraphs kept whole).
+- `src/mermaid.ts`: Mermaid's diagrams, laid out by pele
+  (`vendor/pele`, Obsidian's renderer, MIT), measured with Inter's widths.
+- `src/svgcanvas.ts`: an SVG drawn with the canvas's commands, text
+  included, pele's colours as Swarm's (Swarm's own SVG pictures have no
+  text).
 - `src/text.ts`: Inter's advances, since a canvas can't measure text.
 
 ```
