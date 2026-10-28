@@ -48,6 +48,28 @@
           "tagPrefix": "flux/"
         }
       }
+    },
+    {
+      "id": "plugin-dev",
+      "displayName": "Plugin development",
+      "description": "Skills for your agents to build Swarm plugins and submit them to Swarm's marketplace.",
+      "icon": "plugins/plugin-dev/icon.svg",
+      "tags": [
+        "plugins",
+        "skills",
+        "agents",
+        "developers"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/plugin-dev/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/plugin-dev",
+          "range": "^1.0.0",
+          "tagPrefix": "plugin-dev/"
+        }
+      }
     }
   ]
 }

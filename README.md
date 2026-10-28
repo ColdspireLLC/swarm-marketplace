@@ -27,15 +27,23 @@ which is where Swarm reads it:
 | --- | --- |
 | [Inline visualizations](plugins/inline-vis) | Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply. |
 | [Flux](plugins/flux) | Flux issues in Swarm, for you and your agents. |
+| [Plugin development](plugins/plugin-dev) | Skills for your agents to build Swarm plugins and submit them here. |
 
 ## Listing a plugin
 
-Open a merge request that adds your plugin's entry to `marketplace.json`,
-with its icon (an SVG, PNG or WebP of 1 MB at most) and its
-`PLUGIN_OVERVIEW.md` beside it in `listings/ID/` when its code lives
-elsewhere. The code stays in your repository or package: the entry points
-at a public git repository and a range of its tags (`"range": "^1.0.0"`),
-or an npm package, so updates come as you tag them.
+Open a pull request on GitHub,
+[ColdspireLLC/swarm-marketplace](https://github.com/ColdspireLLC/swarm-marketplace),
+or a merge request on Coldspire's GitLab if you have it there. It adds
+your plugin's entry to `marketplace.json`, with its icon (an SVG glyph in
+`currentColor`, which Swarm tints, or a PNG; 1 MB at most) and its
+`PLUGIN_OVERVIEW.md` in `listings/ID/`. The code stays in your repository
+or package: the entry points at a public git repository and a range of
+its tags (`"range": "^1.0.0"`), or an npm package, so updates come as you
+tag them. GitHub is a mirror, so Coldspire brings a pull request there
+into GitLab, where it's merged, and it comes back with the mirror.
+
+The **Plugin development** plugin here gives an agent the
+`submit-a-plugin` skill, which does all of this with you.
 
 Before you open it:
 
@@ -45,7 +53,13 @@ Before you open it:
 3. Ask for what it needs and no more. Coldspire reads the code at the
    tag your range allows, and what it asks to be granted, before it
    merges; a new major version that asks for more is reviewed again.
-4. Run `ci/check.sh` with your Swarm: `ci/check.sh $(command -v swarm)`.
+4. A plugin with npm packages installed from git runs from its kept
+   bundle, `.swarm-bundle.js`: commit it (`swarm plugin pack`, and copy
+   it out of the .zip).
+5. Run `ci/check.sh` with your Swarm: `ci/check.sh $(command -v swarm)`.
+
+Swarm reads the catalog from GitHub's raw files, which GitHub caches for
+five minutes: a change reaches Swarms within that, as they read it again.
 
 ## Releasing a plugin kept here
 
