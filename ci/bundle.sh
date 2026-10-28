@@ -8,7 +8,7 @@
 #   ci/bundle.sh ID [SWARM]
 set -euo pipefail
 cd "$(dirname "$0")/.."
-id=${1:?give the plugin's id}
+id=${1:?give the plugin ID}
 SWARM=${2:-${SWARM:-swarm}}
 dir=plugins/$id
 [ -f "$dir/package.json" ] || { echo "$id has no packages: it runs as it is, with no bundle"; exit 0; }
