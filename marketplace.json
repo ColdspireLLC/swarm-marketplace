@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "name": "swarm",
+  "displayName": "Swarm",
+  "description": "Plugins reviewed by Coldspire.",
+  "plugins": [
+    {
+      "id": "inline-vis",
+      "displayName": "Inline visualizations",
+      "description": "Charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply.",
+      "icon": "plugins/inline-vis/icon.svg",
+      "tags": ["charts", "diagrams", "mermaid", "agents"],
+      "author": "Coldspire",
+      "overview": "plugins/inline-vis/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/coldspire/swarm-marketplace.git",
+          "subdir": "plugins/inline-vis",
+          "range": "^1.0.0",
+          "tagPrefix": "inline-vis/"
+        }
+      }
+    }
+  ]
+}

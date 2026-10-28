@@ -1,0 +1,36 @@
+# The catalog's check (ci/check.sh), with a Swarm built from coldspire/swarm's
+# main: nothing is published to download yet. coldspire/swarm lets this
+# project's job token clone it (Settings, CI/CD, Job token permissions).
+
+workflow:
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+        - if: $CI_COMMIT_TAG
+        - if: $CI_PIPELINE_SOURCE == "web"
+
+variables:
+    SWARM_REF: main
+    # Swarm's own CI image: Go, with what the headless window draws with.
+    SWARM_CI_IMAGE: registry.gitlab.coldspire.com/coldspire/swarm/ci:bookworm-caaf4824d34b
+
+check:
+    tags: ["docker"]
+    image: $SWARM_CI_IMAGE
+    timeout: 20m
+    variables:
+        CGO_ENABLED: "0"
+        GOTOOLCHAIN: auto
+        GOMODCACHE: /cache/swarm/go-mod
+        GOCACHE: /cache/swarm/go-build
+    script:
+        - command -v jq >/dev/null || (apt-get update -qq && apt-get install -y -qq jq >/dev/null)
+        - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.coldspire.com/".insteadOf "https://gitlab.coldspire.com/"
+        - git clone --depth 1 --branch "$SWARM_REF" --recurse-submodules --shallow-submodules https://gitlab.coldspire.com/coldspire/swarm.git /tmp/swarm-src
+        - (cd /tmp/swarm-src && go build -o /usr/local/bin/swarm .)
+        - ci/check.sh /usr/local/bin/swarm
+    artifacts:
+        when: always
+        paths:
+            - plugins/*/test-shots/
+        expire_in: 2 weeks

@@ -1,0 +1,1 @@
+Swarm draws ```chart (JSON), ```mermaid (flowchart, sequence, state, pie) and ```svg fences in your replies as pictures. When data or a structure reads better drawn, write one; the inline-vis skill has their syntax.

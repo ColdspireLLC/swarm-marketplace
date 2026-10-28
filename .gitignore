@@ -1,0 +1,7 @@
+node_modules/
+.swarm-bundle.js
+*.zip
+test-shots/
+# Written by swarm plugin types, for the Swarm you have.
+swarm.d.ts
+plugin.schema.json

@@ -1,0 +1,12 @@
+{
+  "$schema": "./plugin.schema.json",
+  "id": "inline-vis",
+  "name": "Inline visualizations",
+  "version": "1.0.0",
+  "description": "Charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply. An agent writes a ```chart, ```mermaid or ```svg fence, and Swarm shows it drawn, with its data and its source a click away.",
+  "author": "Coldspire",
+  "icon": "icon.svg",
+  "main": "main.tsx",
+  "skills": "skills",
+  "instructions": "AGENTS.md"
+}
