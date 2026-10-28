@@ -13,7 +13,7 @@ fences' whole syntax.
   (`vendor/pele`, Obsidian's renderer, MIT), measured with Inter's widths.
 - `src/math.ts`: TeX through KaTeX (`vendor/katex`, MIT, with its fonts):
   KaTeX's HTML tree read as its CSS lays it out, into glyphs, rules and
-  paths, drawn in KaTeX's fonts (the canvas's `font`, Swarm after 0.1.0),
+  paths, drawn in KaTeX's fonts (the canvas's `font`, Swarm 0.1.0 on),
   or written as SVG for pele's `$$…$$` labels.
 - `src/svgcanvas.ts`: an SVG drawn with the canvas's commands, text
   included, pele's colours as Swarm's (Swarm's own SVG pictures have no
