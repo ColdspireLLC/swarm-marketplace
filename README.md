@@ -25,9 +25,12 @@ which is where Swarm reads it:
 
 | Plugin | What it does |
 | --- | --- |
-| [Inline visualizations](plugins/inline-vis) | Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply. |
 | [Flux](plugins/flux) | Flux issues in Swarm, for you and your agents. |
-| [Plugin development](plugins/plugin-dev) | Skills for your agents to build Swarm plugins and submit them here. |
+
+Swarm's own plugins, Inline visualizations, Plugin development and the
+Thread list, come with Swarm and are kept in its repository
+([`plugins/`](https://gitlab.coldspire.com/coldspire/swarm/-/tree/main/plugins)),
+not here: they're updated with Swarm, and their IDs are reserved.
 
 ## Listing a plugin
 
@@ -42,7 +45,7 @@ its tags (`"range": "^1.0.0"`), or an npm package, so updates come as you
 tag them. GitHub is a mirror, so Coldspire brings a pull request there
 into GitLab, where it's merged, and it comes back with the mirror.
 
-The **Plugin development** plugin here gives an agent the
+The **Plugin development** plugin, which comes with Swarm, gives an agent the
 `submit-a-plugin` skill, which does all of this with you.
 
 Before you open it:
@@ -66,7 +69,7 @@ five minutes: a change reaches Swarms within that, as they read it again.
 1. Bump `version` in `plugins/ID/plugin.json`. A plugin with packages
    (a `package.json`) runs from its kept bundle, as an install has no
    `node_modules`: write it with `ci/bundle.sh ID` and commit it. Merge.
-2. Tag the merge `ID/vX.Y.Z` (`git tag inline-vis/v1.1.0 && git push origin inline-vis/v1.1.0`).
+2. Tag the merge `ID/vX.Y.Z` (`git tag flux/v1.1.0 && git push origin flux/v1.1.0`).
 3. The tag reaches GitHub with the mirror, and Swarms that installed it
    find the update (`swarm plugin outdated`, or the plugin's page).
 
