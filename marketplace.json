@@ -9,7 +9,13 @@
       "displayName": "Inline visualizations",
       "description": "Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply.",
       "icon": "plugins/inline-vis/icon.svg",
-      "tags": ["math", "charts", "diagrams", "mermaid", "agents"],
+      "tags": [
+        "math",
+        "charts",
+        "diagrams",
+        "mermaid",
+        "agents"
+      ],
       "author": "Coldspire",
       "overview": "plugins/inline-vis/PLUGIN_OVERVIEW.md",
       "source": {
@@ -18,6 +24,28 @@
           "subdir": "plugins/inline-vis",
           "range": "^1.0.0",
           "tagPrefix": "inline-vis/"
+        }
+      }
+    },
+    {
+      "id": "flux",
+      "displayName": "Flux",
+      "description": "Flux issues in Swarm: agents read and update them, a thread attached to an issue keeps it current, and each thread has its issue beside it.",
+      "icon": "plugins/flux/icon.svg",
+      "tags": [
+        "issues",
+        "tracker",
+        "flux",
+        "agents"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/flux/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/flux",
+          "range": "^1.0.0",
+          "tagPrefix": "flux/"
         }
       }
     }

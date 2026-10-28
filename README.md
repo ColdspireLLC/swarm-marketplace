@@ -26,6 +26,7 @@ which is where Swarm reads it:
 | Plugin | What it does |
 | --- | --- |
 | [Inline visualizations](plugins/inline-vis) | Math, charts, Mermaid diagrams and SVG pictures, drawn in the agent's reply. |
+| [Flux](plugins/flux) | Flux issues in Swarm, for you and your agents. |
 
 ## Listing a plugin
 
@@ -48,7 +49,9 @@ Before you open it:
 
 ## Releasing a plugin kept here
 
-1. Bump `version` in `plugins/ID/plugin.json` and merge it.
+1. Bump `version` in `plugins/ID/plugin.json`. A plugin with packages
+   (a `package.json`) runs from its kept bundle, as an install has no
+   `node_modules`: write it with `ci/bundle.sh ID` and commit it. Merge.
 2. Tag the merge `ID/vX.Y.Z` (`git tag inline-vis/v1.1.0 && git push origin inline-vis/v1.1.0`).
 3. The tag reaches GitHub with the mirror, and Swarms that installed it
    find the update (`swarm plugin outdated`, or the plugin's page).

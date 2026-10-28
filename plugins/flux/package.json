@@ -1,0 +1,29 @@
+{
+  "name": "swarm-plugin-flux",
+  "private": true,
+  "type": "module",
+  "description": "Flux issues in Swarm.",
+  "dependencies": {
+    "@mixmark-io/domino": "^2.2.0",
+    "@tiptap/core": "^3.30.5",
+    "@tiptap/extension-code-block-lowlight": "^3.30.5",
+    "@tiptap/extension-image": "^3.30.5",
+    "@tiptap/extension-mention": "^3.30.5",
+    "@tiptap/extension-table": "^3.30.5",
+    "@tiptap/extension-task-item": "^3.30.5",
+    "@tiptap/extension-task-list": "^3.30.5",
+    "@tiptap/pm": "^3.30.5",
+    "@tiptap/starter-kit": "^3.30.5",
+    "@tiptap/y-tiptap": "^3.0.9",
+    "lib0": "^0.2.119",
+    "lowlight": "^3.3.0",
+    "marked": "^18.1.0",
+    "turndown": "^7.2.4",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.32",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/turndown": "^5.0.6"
+  }
+}
