@@ -22,7 +22,10 @@ request.
 Its page of Settings (Settings, Plugins, Flux; or Flux settings… in the
 board's Flux menu) connects it: a Flux's URL and an API token, tried with
 Flux before they're kept, more Fluxes beside it, Resync and Disconnect,
-and which Swarm project each Flux project's agents work in. From the
+and which Swarm project each Flux project's agents work in. A Flux on
+your own network, a LAN's address or Tailscale's, needs Reach your own
+network granted (Settings, Plugins, Flux), as Swarm keeps plugins off
+your network unless you say. From the
 command line:
 
 ```
