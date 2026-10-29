@@ -2,10 +2,12 @@
 // the window; what it reports is written into the issue, descriptions
 // through the live Yjs document.
 import swarm, { call, ui } from "swarm";
-import { Avatar, type ImageOf } from "./view";
+import { Avatar, Markdown, type ImageOf } from "./view";
 import { clearDraft, drafted, editDraft, finishUpload, setDraft } from "./drafts";
 import type { Flux } from "./service";
 import type { Issue } from "./contract";
+import { startPrompt } from "./prompt";
+import { StatusIcon } from "./view";
 
 export function mentionOptions(flux: Flux) {
 	return [
@@ -33,20 +35,48 @@ function upload(flux: Flux, key: string, file: { id: string; name: string; type:
 	);
 }
 
-export function DescriptionEditor({ flux, issue, markdown, image }: { flux: Flux; issue: Issue; markdown: string; image: ImageOf }) {
+/**
+ * What of a description Swarm's editor can't keep: Flux's tables and
+ * callouts, which its Markdown flattens. Saved from Swarm, they'd change
+ * in Flux, so such a description shows as it is, to edit in Flux.
+ */
+function unkept(html: string): string | null {
+	const table = /<table[\s>]/i.test(html);
+	const callout = /data-type="callout"/i.test(html);
+	if (table && callout) return "a table and a callout";
+	if (table) return "a table";
+	if (callout) return "a callout";
+	return null;
+}
+
+export function DescriptionEditor({ flux, issue, markdown, html = "", image }: { flux: Flux; issue: Issue; markdown: string; html?: string; image: ImageOf }) {
+	const has = unkept(html);
+	if (has) {
+		return (
+			<ui.box style={{ gap: 14, minHeight: "50vh" }}>
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }}>
+					<ui.icon icon="info" style={{ width: 14, height: 14, color: "text2", flexShrink: 0 }} />
+					<ui.text style={{ flex: 1, minWidth: 0, fontSize: "small", color: "text2" }}>{`This description has ${has}, which Swarm can't edit without changing. Edit it in Flux.`}</ui.text>
+					<ui.link label="Edit in Flux" href={flux.issueUrl(issue)} style={{ fontSize: "small" }} />
+				</ui.box>
+				<Markdown md={markdown} image={image} />
+			</ui.box>
+		);
+	}
 	const key = `desc:${flux.id}:${issue.id}`;
 	const save = (md: string) => flux.replaceDescription(issue.id, md);
 	return (
 		<ui.editor
 			key={key}
 			value={drafted(key, markdown)}
-			placeholder="Add description..."
+			placeholder="Add description…"
 			label="Description"
 			options={mentionOptions(flux)}
 			images={editorImages(drafted(key, markdown), image)}
 			onChange={(value) => editDraft(key, value, save)}
 			onUpload={(file) => upload(flux, key, file, "issue_image", save)}
-			style={{ minHeight: 96, fontSize: 15 }}
+			// As Flux's (min-h-[50vh]): the description is the page's, and a click anywhere in it writes there.
+			style={{ minHeight: "50vh", fontSize: 15, boxShadow: "none" }}
 		/>
 	);
 }
@@ -99,49 +129,121 @@ let approval = "";
 let branch = "";
 let prompt = "";
 let seeded = "";
+let imageIds: string[] = [];
 let starting: string | null = null;
 let busy = false;
+// The Swarm project it starts in: the Flux project's link, else one of its name, else the only one.
+let swarmProject = "";
+let swarmProjects: { id: string; name: string }[] | null = null;
 
-export function startAgent(issueId: string | null) {
+/** Opens Start agent's dialog for the issue, as bb's: over whatever shows it. */
+export function startAgent(issueId: string) {
 	starting = issueId;
 	seeded = "";
+	ui.showOverlay("flux-start");
 }
 
-export function isStarting(issueId: string) {
-	return starting === issueId;
+function closeStart() {
+	starting = null;
+	ui.hideOverlay("flux-start");
 }
 
-/** Swarm's pickers, then a thread linked to the issue both ways. */
-export function StartAgent({ flux, issue, markdown }: { flux: Flux; issue: Issue; markdown: string }) {
+/** Start agent's dialog: the issue it's for, what starting does, Swarm's pickers and the issue's prompt. */
+export function StartAgentDialog({ flux }: { flux: Flux }) {
+	const issue = starting ? flux.issue(starting) : undefined;
+	if (!issue) return null;
+	return <StartAgent flux={flux} issue={issue} />;
+}
+
+function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 	if (seeded !== issue.id) {
 		seeded = issue.id;
-		prompt = `Work on ${issue.key}: ${issue.title}\n\n${markdown.trim()}\n\nKeep the Flux issue current as you work. Move it to review when the work is ready to look at.`;
+		// bb's prompt: the issue, its description with its images numbered, and where the rest is.
+		const start = startPrompt(flux.detail(issue.id), flux.baseUrl);
+		prompt = start.prompt;
+		imageIds = start.imageIds;
+		swarmProject = "";
+		void loadProjects(flux, issue);
 	}
+	const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
+	const shown = swarmProjects?.find((p) => p.id === swarmProject)?.name ?? (swarmProjects ? "Choose a project" : "…");
+	const moves = issue.status === "backlog" || issue.status === "todo";
+	const images = imageIds.length;
 	return (
-		<ui.box style={{ gap: 10, padding: "s4", borderRadius: "card", border: "1px solid border", backgroundColor: "raised" }}>
-			<ui.text style={{ fontWeight: 600 }}>Start an agent</ui.text>
-			<ui.text style={{ fontSize: "small", color: "text2" }}>The thread is linked to {issue.key}. Its merge request moves the issue to review, and merging completes it.</ui.text>
-			<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+		<ui.box label={`Start an agent on ${issue.key}`} keys={["Escape"]} onKeyDown={closeStart} style={{ position: "relative", gap: 14, padding: 20 }}>
+			<ui.iconButton icon="x" label="Close" style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28 }} onClick={closeStart} />
+			<ui.box style={{ gap: 6 }}>
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }}>
+					<StatusIcon status={issue.status} size={16} />
+					<ui.text style={{ fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }}>{issue.key}</ui.text>
+					<ui.text style={{ fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }} maxLines={1}>{issue.title.trim() || "Untitled"}</ui.text>
+				</ui.box>
+				<ui.text style={{ fontSize: 14, color: "text2" }}>
+					{`The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}`}
+				</ui.text>
+			</ui.box>
+			<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+				<ui.menu label={`Swarm project: ${shown}`} tooltip={fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : undefined} style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }}>
+					<ui.icon icon="folder" style={{ width: 14, height: 14, color: "currentColor" }} />
+					<ui.text style={{ fontSize: 13, color: "currentColor" }} maxLines={1}>{shown}</ui.text>
+					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
+					{(swarmProjects ?? []).map((p) => <ui.item key={p.id} checked={p.id === swarmProject} onClick={() => { swarmProject = p.id; }}>{p.name}</ui.item>)}
+				</ui.menu>
 				{ui.agentPicker({ provider, value: model, effort, onChange: (value) => { provider = value.provider; model = value.model; effort = value.effort ?? ""; } })}
 				{ui.modePicker({ provider, value: approval, onChange: (value) => { approval = value; } })}
 				{ui.branchPicker({ value: branch, onChange: (value) => { branch = value; } })}
 			</ui.box>
-			<ui.field key="agent-prompt" value={prompt} multiline placeholder="What should the agent do?" onChange={(value) => { prompt = value; }} />
-			<ui.box style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
-				<ui.button kind="ghost" onClick={() => { starting = null; }}>Cancel</ui.button>
-				<ui.button kind="primary" disabled={busy || !prompt.trim()} onClick={() => void run(flux, issue)}>{busy ? "Starting…" : "Start"}</ui.button>
+			<ui.field key={"agent-prompt-" + issue.id} value={prompt} multiline autoFocus placeholder="What should the agent do?" keys={["Mod+Enter"]} onKeyDown={() => void run(flux, issue)} onChange={(value) => { prompt = value; }} style={{ minHeight: 160, maxHeight: "46vh", fontSize: 14 }} />
+			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
+				<ui.button kind="ghost" size="sm" onClick={closeStart}>Cancel</ui.button>
+				<ui.button kind="primary" size="sm" icon="bot" disabled={busy || !prompt.trim()} tooltip="⌘ Enter" onClick={() => void run(flux, issue)}>{busy ? "Starting…" : "Start"}</ui.button>
 			</ui.box>
 		</ui.box>
 	);
 }
 
+async function loadProjects(flux: Flux, issue: Issue) {
+	let projects: { id: string; name: string }[] = [];
+	try {
+		projects = (await call("Projects", {})).map((p) => ({ id: p.id, name: p.name }));
+	} catch {
+		// None to pick from.
+	}
+	const found = (await projectFor(flux, issue)) ?? "";
+	// Another issue's Start agent opened meanwhile: this answer isn't its.
+	if (seeded !== issue.id) return;
+	swarmProjects = projects;
+	if (!swarmProject) swarmProject = found;
+	ui.update();
+}
+
 async function run(flux: Flux, issue: Issue) {
-	if (busy) return;
+	if (busy || !prompt.trim()) return;
 	busy = true;
 	ui.update();
 	try {
-		const project = await projectFor(flux, issue);
-		const text = prompt.trim();
+		const project = swarmProject || (await projectFor(flux, issue));
+		// Flux shows its images only to its members: they go along as the prompt's pictures, where it numbers them.
+		const pictures: { type: string; data: Uint8Array }[] = [];
+		// The prompt's [Image N], by N, to its picture's place among those that came.
+		const placed = new Map<number, number>();
+		for (const [i, id] of imageIds.entries()) {
+			try {
+				const asset = await flux.requireClient().asset(id);
+				// What a thread starts with: PNG, JPEG, GIF or WebP, 5 MB at most; the rest stay mentions.
+				const type = asset.contentType.split(";")[0]!.trim().toLowerCase();
+				if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(type) || asset.bytes.byteLength > 5 << 20) continue;
+				pictures.push({ type, data: new Uint8Array(asset.bytes) });
+				placed.set(i + 1, pictures.length);
+			} catch {
+				// Said below; its mention stays as it was.
+			}
+		}
+		const failed = imageIds.length - pictures.length;
+		const text = prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num: string) => {
+			const at = placed.get(Number(num));
+			return at ? `[Image #${at}]` : whole;
+		});
 		const spawned = await swarm.threads.spawn({
 			project,
 			provider: provider || undefined,
@@ -150,16 +252,23 @@ async function run(flux: Flux, issue: Issue) {
 			approval: approval || undefined,
 			worktree: true,
 			branch: branch || undefined,
-			title: `${issue.key} ${issue.title}`,
+			title: `${issue.key} · ${issue.title}`,
 			prompt: text,
+			images: pictures,
 			metadata: { issueId: issue.id, issueKey: issue.key, connectionId: flux.id },
 		});
-		await flux.attach(issue.id, spawned.id, true);
-		await flux.addComment(issue.id, `Started an agent on this issue.`, { name: provider || "Agent", provider: provider || "swarm", threadId: spawned.id }).catch(() => {});
-		starting = null;
-		prompt = "";
+		if (failed) ui.toast(failed === imageIds.length ? `${issue.key}'s images weren't attached.` : `${failed} of ${issue.key}'s images weren't attached.`);
+		try {
+			await flux.attach(issue.id, spawned.id, true);
+			// Where this project's work happens, for next time.
+			const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
+			if (fluxProject && !fluxProject.swarmProjectId && project && swarmProjects?.some((p) => p.id === project)) flux.link(fluxProject.id, project);
+		} catch (e) {
+			ui.toast(`The agent started, but ${issue.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
+		}
+		closeStart();
 		ui.openThread(spawned.id);
-		ui.toast(`Started on ${issue.key}.`);
+		ui.toast(`Agent started on ${issue.key}.`);
 	} catch (error) {
 		ui.toast(error instanceof Error ? error.message : String(error));
 	} finally {

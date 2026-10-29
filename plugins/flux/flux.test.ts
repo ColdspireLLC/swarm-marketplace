@@ -1,4 +1,5 @@
 import { expect, test, type Request, type T } from "swarm/test";
+import manifest from "./plugin.json";
 
 // A Flux of the test's: its sync API over items with versions, as Flux's
 // backend has it (pull since a version, atomic pushes refused on a stale
@@ -16,7 +17,7 @@ interface Stored {
 	body: Record<string, unknown> | null;
 }
 
-async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean } = {}) {
+async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean } = {}) {
 	let version = 0;
 	const items = new Map<string, Stored>();
 	const put = (id: string, body: Record<string, unknown> | null) => {
@@ -42,19 +43,49 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 		issue("s21", "p2", 21, "Sub-issues stay with their parent", "progress", "medium", ["u1"], [], "s18");
 		issue("s30", "p2", 30, "Display options stick", "todo", "none", ["u2"], ["l2"], null);
 	}
+	const statuses = ["backlog", "todo", "progress", "review", "complete"];
+	for (let n = 0; n < (opts.many ?? 0); n++) {
+		put(`m${n}`, { type: "issue", projectId: "p1", number: 100 + n, title: `Issue number ${n}`, description: `<p>${"A long description. ".repeat(1000)}</p>`, status: statuses[n % 5], priority: "medium", assigneeIds: ["u1"], labelIds: ["l1"], subscriberIds: ["u1"], creatorId: "u1", dueDate: null, parentId: null, position: 10 + n });
+	}
+	if (opts.marks) {
+		// A project with no emoji or icon: its key's letter on its color.
+		put("p3", { type: "project", key: "NUD", name: "Nudge", mark: { type: "color", color: "green" }, position: 2, nextNumber: 2 });
+		put("n1", { type: "issue", projectId: "p3", number: 1, title: "Bob's picture shows", description: "", status: "todo", priority: "urgent", assigneeIds: ["u2"], labelIds: ["l1"], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 50 });
+	}
+	if (opts.rich) {
+		put("r1", { type: "issue", projectId: "p1", number: 9, title: "Plan the release", description: '<p>Before we ship:</p><table><tbody><tr><th><p>Step</p></th><th><p>Owner</p></th></tr><tr><td><p>Notes</p></td><td><p>Ada</p></td></tr></tbody></table><div data-type="callout" data-mark=\'{"type":"emoji","value":"💡"}\'><p>Freeze on Friday.</p></div><hr><p>The end.</p>', status: "todo", priority: "none", assigneeIds: [], labelIds: [], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 60 });
+	}
 	put("c1", { type: "comment", issueId: "i1", authorId: "u1", body: "<p>Seen on Safari too: <code>?next=</code> is dropped.</p>" });
+	if (opts.talk) {
+		// A comment that mentions a member and a project, shows a picture, and was edited; and an agent's.
+		const said = `<p><span data-type="mention" class="mention" data-id="u2" data-label="bob">@bob</span> can you check <span data-type="mention" class="mention" data-id="p1" data-label="ABC">@ABC</span>?</p><p><img src="/assets/${ASSET}" alt="the loop"></p>`;
+		put("c2", { type: "comment", issueId: "i1", authorId: "u1", body: said.replace("check", "look at") });
+		put("l9", { type: "label", name: "Later", color: "gray" });
+		put("c2", { type: "comment", issueId: "i1", authorId: "u1", body: said });
+		put("c3", { type: "comment", issueId: "i1", authorId: "u1", body: "<p>Plan settled.</p>", agent: { name: "Claude Code", provider: "claude-code", threadId: "th_gone" } });
+	}
 	let conflict = !!opts.conflictOnce;
 	const docs = new Set<string>();
+	// down: Flux's proxy answering 503, as when Flux is away.
+	const away = { down: false };
+	// hold: the first pull waits for release(), as a first sync of a big workspace does.
+	const held = { release: () => {} };
+	const pulled = opts.hold ? new Promise<void>((done) => { held.release = done; }) : Promise.resolve();
 	const srv = await t.server((req: Request) => {
+		if (away.down) return { status: 503, json: { message: "Service Unavailable" } };
 		if (req.headers["authorization"] !== "Bearer tok") return { status: 401, json: { message: "no" } };
 		const path = req.path;
 		if (path === "/user") return { json: ME };
-		if (path === "/workspace") return { json: { id: "w1", name: "Coldspire", slug: "coldspire", latestVersion: version } };
-		if (path === "/workspace/members") return { json: { members: [ME, { ...ME, id: "u2", username: "bob", name: "Bob", email: "bob@example.com" }] } };
+		if (path === "/workspace") return { json: { id: opts.workspace ? "w-" + opts.workspace.toLowerCase() : "w1", name: opts.workspace ?? "Coldspire", slug: (opts.workspace ?? "coldspire").toLowerCase(), latestVersion: version } };
+		if (path === "/workspace/members") return { json: { members: [ME, { ...ME, id: "u2", username: "bob", name: "Bob", email: "bob@example.com", avatarUrl: opts.marks ? `/assets/${ASSET}` : null }] } };
 		if (path.startsWith("/sync/pull/")) {
+			// Pages of the limit asked, as Flux's (200 when none, 1000 at most).
 			const since = Number(path.split("/").pop());
-			const out = [...items.values()].filter((i) => i.version > since).sort((a, b) => a.version - b.version);
-			return { json: { items: out, nextVersion: out.length ? out[out.length - 1]!.version : Math.max(since, 0), hasMore: false, latestVersion: version } };
+			const limit = Math.min(Number(new URLSearchParams(req.query).get("limit") ?? 200) || 200, 1000);
+			const newer = [...items.values()].filter((i) => i.version > since).sort((a, b) => a.version - b.version);
+			const out = newer.slice(0, limit);
+			const reply = { json: { items: out, nextVersion: out.length ? out[out.length - 1]!.version : Math.max(since, 0), hasMore: newer.length > limit, latestVersion: version } };
+			return opts.hold ? pulled.then(() => reply) : reply;
 		}
 		if (path === "/sync/push" && req.method === "POST") {
 			const { ops } = req.json() as { ops: { id: string; type: string; itemId: string; baseVersion: number; body?: Record<string, unknown> }[] };
@@ -84,11 +115,13 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 		if (path === `/assets/${ASSET}`) return { headers: { "content-type": "image/png" }, base64: PNG };
 		return { status: 404, json: { message: "Not found" } };
 	});
-	await t.set("url", srv.url);
-	await t.set("token", "tok");
-	await t.until(async () => (await t.run("status")).stdout.includes("Flux: ready"), { what: "Flux ready" });
 	const pushes = () => srv.requests.filter((r) => r.path === "/sync/push").map((r) => r.json().ops);
-	return { srv, items, pushes };
+	if (!opts.unset) {
+		await t.set("url", srv.url);
+		await t.set("token", "tok");
+		if (!opts.hold) await t.until(async () => (await t.run("status")).stdout.includes("Flux: ready"), { what: "Flux ready" });
+	}
+	return { srv, items, pushes, away, put, held };
 }
 
 test("not set up, it says so", async (t) => {
@@ -106,7 +139,7 @@ test("not set up, it says so", async (t) => {
 	await w.resize(1280, 800);
 	await w.click("Flux");
 	await w.see("Connect Flux");
-	await w.see("Make one in Flux, under Settings, API tokens.");
+	await w.see("Make one in Flux, under");
 	expect(await w.has("Set Flux's URL in Settings, Plugins, Flux.")).toBe(false);
 	await w.screenshot("flux-setup");
 	await w.dark(true);
@@ -114,6 +147,564 @@ test("not set up, it says so", async (t) => {
 	await w.resize(760, 800);
 	await w.screenshot("flux-setup-narrow-dark");
 	await w.dark(false);
+});
+
+test("the page's Connect tries the token, then keeps it", async (t) => {
+	const { srv } = await flux(t, { unset: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Connect Flux");
+	await w.click("https://flux.example.com");
+	await w.type(srv.url);
+	await w.click("flux_…");
+	await w.type("wrong");
+	await w.click("Connect");
+	// Flux refused it: it says so where it was typed, and keeps nothing.
+	await w.see("Flux rejected the API token. Create a new one in Flux under Settings → API tokens.");
+	expect((await t.run("status")).stdout).toContain("Flux: unconfigured");
+	await w.screenshot("flux-setup-refused");
+	await w.click("Flux rejected the API token. Create a new one in Flux under Settings → API tokens.");
+	await w.click("flux_…");
+	await w.key("Mod+A");
+	await w.type("tok");
+	await w.key("Enter");
+	await t.until(async () => (await t.run("status")).stdout.includes("Flux: ready"), { what: "Flux ready" });
+	await w.see("Fix the login redirect");
+	expect((await t.run("status")).stdout).toContain(srv.url);
+	// The token was typed as dots.
+	expect(await w.has("tok")).toBe(false);
+});
+
+test("Flux's page of Settings connects, adds another, switches and disconnects", async (t) => {
+	const first = await flux(t, { unset: true });
+	const second = await flux(t, { unset: true, workspace: "Syntad" });
+	const w = await t.window();
+	await w.resize(1280, 900);
+	// Swarm's own form draws none of the settings the page keeps.
+	await w.settings("Plugins");
+	// Its row, by its version, as the plugin is named in the sidebar too.
+	await w.click(manifest.version);
+	await w.see("Its page of Settings");
+	expect(await w.has("Flux URL for Flux")).toBe(false);
+	expect(await w.has("More Fluxes for Flux")).toBe(false);
+	await w.click("Open Flux");
+	await w.see("Connect Flux");
+	await w.screenshot("flux-settings-empty");
+	await w.click("https://flux.example.com");
+	await w.type(first.srv.url);
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.click("Connect");
+	await w.see("Connected to Coldspire");
+	const host = first.srv.url.replace(/^https?:\/\//, "");
+	await w.see(`Ada Lovelace · ${host} · 2 issues synced`);
+	await w.see("Where agents work");
+	await w.see("Alpha");
+	await w.screenshot("flux-settings");
+	await w.dark(true);
+	await w.screenshot("flux-settings-dark");
+	await w.dark(false);
+
+	// Another Flux, which is then the active one.
+	await w.click("Add another Flux");
+	await w.click("https://flux.example.com");
+	await w.type(second.srv.url);
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.click("Connect");
+	await w.see("Connected to Syntad");
+	await w.see("Active");
+	await t.until(async () => (await t.run("status")).stdout.includes("Workspace: Syntad"), { what: "Syntad active" });
+	await w.screenshot("flux-settings-two");
+	// The same Flux twice is refused.
+	await w.click("Add another Flux");
+	await w.click("https://flux.example.com");
+	await w.type(first.srv.url);
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.click("Connect");
+	await w.see(`Coldspire at ${first.srv.url} is connected already: change its token there.`);
+	await w.click("Cancel");
+	// Use switches back.
+	await w.click("Use");
+	await t.until(async () => (await t.run("status")).stdout.includes("Workspace: Coldspire"), { what: "Coldspire active" });
+	// The cards redrawn: Active on Coldspire's, Use on Syntad's, so Resync is where it's shown.
+	await t.until(async () => {
+		const texts = await w.texts();
+		return texts.indexOf("Active") > texts.indexOf("Connected to Coldspire") && texts.indexOf("Active") < texts.indexOf("Connected to Syntad");
+	}, { what: "Coldspire's card active" });
+
+	// Resync pulls everything again.
+	const pulls = () => first.srv.requests.filter((r) => r.path === "/sync/pull/-1").length;
+	const before = pulls();
+	await w.click("Resync");
+	await t.until(() => pulls() > before, { what: "a pull from the start" });
+	await w.see("Connected to Coldspire");
+
+	// Disconnecting the first leaves Syntad, the first now, and forgets the token.
+	await w.click(`Disconnect ${host}`);
+	await w.gone(`Disconnect ${host}`);
+	await t.until(async () => (await t.run("status")).stdout.includes("Workspace: Syntad"), { what: "Syntad, the first now" });
+	await w.see("Connected to Syntad");
+	expect((await t.run("status")).stdout).toContain(second.srv.url);
+	await w.click(`Disconnect ${second.srv.url.replace(/^https?:\/\//, "")}`);
+	await w.see("Connect Flux");
+	expect((await t.run("status")).stdout).toContain("Flux: unconfigured");
+});
+
+test("Where agents work links a Flux project to a Swarm project", async (t) => {
+	await flux(t);
+	const [project] = await t.call("Projects", {});
+	const w = await t.window();
+	await w.resize(1280, 900);
+	// The board's Flux menu opens its page of Settings.
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	await w.click("Coldspire");
+	await w.click("Flux settings…");
+	await w.see("Where agents work");
+	await w.click("Swarm project for Alpha: Not linked");
+	await w.click(project!.name);
+	await w.see(`Swarm project for Alpha: ${project!.name}`);
+	expect((await t.run("projects")).stdout).toContain(`→ ${project!.id}`);
+	await w.screenshot("flux-settings-linked");
+	await w.click(`Swarm project for Alpha: ${project!.name}`);
+	await w.click("Not linked");
+	await w.see("Swarm project for Alpha: Not linked");
+});
+
+test("a refused token is fixed on the page", async (t) => {
+	const { srv } = await flux(t, { unset: true });
+	await t.set("url", srv.url);
+	await t.set("token", "old");
+	const w = await t.window();
+	await w.resize(1280, 900);
+	await w.settings("Flux");
+	await w.see(`${srv.url.replace(/^https?:\/\//, "")} needs a new API token`);
+	await w.screenshot("flux-settings-refused");
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.key("Enter");
+	await w.see("Connected to Coldspire");
+	// Swarm told it the URL and the token together: it never tried the old token with the new URL again.
+	expect(srv.requests.filter((r) => r.path === "/user" && r.headers["authorization"] === "Bearer old").length).toBe(1);
+	// Following Flux's events, as a Flux set up from the start does.
+	await t.until(() => srv.requests.some((r) => r.path === "/sync/events"), { what: "the event stream" });
+});
+
+test("what Flux answers that it can't read is said in a line, and logged", async (t) => {
+	let user: "ok" | "visitor" = "ok";
+	const srv = await t.server((req: Request) => {
+		if (req.path === "/user") return user === "ok" ? { json: ME } : { status: 204 };
+		if (req.path === "/workspace") return { headers: { "content-type": "text/html" }, body: "<!doctype html><html><body>Flux</body></html>" };
+		return { status: 404, json: { message: "Not found" } };
+	});
+	await t.set("url", srv.url);
+	await t.set("token", "tok");
+	const said = `${srv.url} answered GET /workspace with a web page, not Flux's API. Check the Flux URL: the address you open Flux at.`;
+	await t.until(async () => (await t.run("status")).stdout.includes(said), { what: "the web page said" });
+	expect((await t.log(20)).some((line) => line.includes(said))).toBe(true);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Can't load Flux");
+	await w.see(said);
+	expect(await w.has("No issues assigned to you")).toBe(false);
+	await w.screenshot("flux-unreadable");
+	await w.click("Flux settings");
+	await w.see(`Can't connect to ${srv.url.replace(/^https?:\/\//, "")}`);
+	// A token Flux doesn't know as one gets a 204 from GET /user: refused.
+	user = "visitor";
+	await t.set("token", "flux_unknown");
+	await t.until(async () => (await t.run("status")).stdout.includes("Flux: unauthorized"), { what: "refused" });
+});
+
+test("an empty board shows Flux's art", async (t) => {
+	await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("Active");
+	await w.see("Nothing in progress");
+	await w.screenshot("flux-empty");
+	// The project menu's trigger keeps the ghost's background while it's open.
+	await w.click("Coldspire");
+	await w.see("Flux settings…");
+	await w.screenshot("flux-menu-open");
+	await w.key("Escape");
+	await w.gone("Flux settings…");
+	// So does the project menu's.
+	await w.click("Project: All projects");
+	await w.see("Alpha");
+	await w.screenshot("flux-project-menu-open");
+	await w.dark(true);
+	await w.screenshot("flux-project-menu-open-dark");
+	await w.dark(false);
+	await w.key("Escape");
+	await w.dark(true);
+	await w.screenshot("flux-empty-dark");
+	await w.dark(false);
+});
+
+test("the first sync shows the board's shape, shimmering, then the board", async (t) => {
+	const { held } = await flux(t, { demo: true, hold: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Loading Flux…");
+	await w.screenshot("flux-loading");
+	await w.dark(true);
+	await w.screenshot("flux-loading-dark");
+	await w.dark(false);
+	// The list's shape, chosen while it comes.
+	await w.click("Display");
+	await w.see("Show completed issues");
+	await w.click("List");
+	await w.click("Display");
+	await w.gone("Show completed issues");
+	await w.screenshot("flux-loading-list");
+	held.release();
+	await w.see("Fix the login redirect");
+	await w.gone("Loading Flux…");
+});
+
+test("sub-issues are filed in place, one per Enter, as Flux's", async (t) => {
+	const { items } = await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 1000);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Fix the login redirect");
+	await w.click("Add sub-issues");
+	await w.see("Sub-issue title");
+	// Flux's defaults: Todo, the parent's priority, its assignees when you're one.
+	await w.see("Status: Todo");
+	await w.see("Priority: High");
+	await w.see("Assignees: Ada Lovelace");
+	await w.type("Reproduce on Safari");
+	await w.key("Enter");
+	await w.see("Reproduce on Safari");
+	await w.type("Write the fix");
+	await w.screenshot("flux-sub-composer");
+	await w.dark(true);
+	await w.screenshot("flux-sub-composer-dark");
+	await w.dark(false);
+	await w.key("Mod+Shift+Enter");
+	await w.gone("Sub-issue title");
+	await w.see("Write the fix");
+	const subs = () => [...items.values()].filter((i) => i.body?.parentId === "i1");
+	await t.until(() => subs().length === 2, { what: "two sub-issues pushed" });
+	expect(subs().map((i) => i.body!.title).sort()).toEqual(["Reproduce on Safari", "Write the fix"]);
+	expect(subs().every((i) => i.body!.priority === "high" && (i.body!.assigneeIds as string[]).includes("u1"))).toBe(true);
+	await w.see("0/2");
+	// ⌘⇧O opens it again; Escape closes it.
+	await w.click("Activity");
+	await w.key("Mod+Shift+O");
+	await w.see("Sub-issue title");
+	await w.key("Escape");
+	await w.gone("Sub-issue title");
+	// Its display: ordering, and what each row shows.
+	await w.click("Sub-issue display options");
+	await w.see("Display properties");
+	await w.screenshot("flux-subs-display");
+	await w.click("ID");
+	await w.gone("Display properties");
+	await t.sleep(300);
+	await w.screenshot("flux-subs");
+});
+
+test("comments as Flux's: mentions, pictures, agents, Edited, times", async (t) => {
+	await flux(t, { talk: true });
+	const w = await t.window();
+	await w.resize(1280, 1400);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Fix the login redirect");
+	await w.see("Plan settled.");
+	await w.see(" · Edited");
+	await w.see("Claude Code");
+	await w.see(" for Ada Lovelace");
+	await w.see("@bob");
+	// The picture is Flux's, read with the token, not a broken link.
+	await w.see("the loop");
+	await t.sleep(400);
+	await w.screenshot("flux-comments");
+	await w.dark(true);
+	await w.screenshot("flux-comments-dark");
+	await w.dark(false);
+	// A project's chip opens it.
+	await w.click("@ABC");
+	await w.see("Write the docs");
+});
+
+test("a big workspace syncs, is kept on disk, and draws", async (t) => {
+	await flux(t, { many: 500 });
+	expect((await t.run("status")).stdout).toContain("Issues synced: 502");
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.see("Issue number 0");
+	await w.screenshot("flux-big");
+	const texts = (await w.texts()).join("\n");
+	expect(texts).not.toContain("its recording is");
+	expect(texts).not.toContain("out of memory");
+	// Ordered by hand, a card dragged to a column's foot scrolls it.
+	await w.click("Display");
+	await w.see("Show completed issues");
+	await w.click("Ordering: Priority");
+	await w.see("Last created");
+	await w.click("Manual");
+	await w.see("Ordering: Manual");
+	await w.click("Display");
+	await w.gone("Show completed issues");
+	await w.drag("Issue number 0", "Issue number 20", { place: "below", shot: "flux-drag-scroll" });
+	await w.see("Issue number 60");
+	// Started again, it has its copy before Flux answers.
+	await t.reload();
+	await t.until(async () => (await t.run("status")).stdout.includes("Issues synced: 502"), { what: "the copy kept" });
+}, { timeout: 120_000 });
+
+test("marks, avatars and menus' icons, as Flux draws them", async (t) => {
+	const { srv } = await flux(t, { marks: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.see("Bob's picture shows");
+	await w.see("Nudge");
+	// Bob's picture is Flux's, read with the token.
+	await t.until(() => srv.requests.some((r) => r.path === `/assets/${ASSET}` && r.headers["authorization"] === "Bearer tok"), { what: "Bob's avatar read" });
+	await w.screenshot("flux-marks");
+	await w.dark(true);
+	await w.screenshot("flux-marks-dark");
+	await w.dark(false);
+	await w.click("Bob's picture shows");
+	await w.see("Properties");
+	await w.click("Status: Todo");
+	await w.see("In Review");
+	await t.sleep(300);
+	await w.resize(1280, 800);
+	await w.screenshot("flux-status-menu");
+	await w.key("Escape");
+	await w.click("Priority: Urgent");
+	await w.see("Medium");
+	await w.screenshot("flux-priority-menu");
+	await w.key("Escape");
+});
+
+test("the description's / menu is Flux's, a popover at the caret", async (t) => {
+	const { srv } = await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Write the docs");
+	await w.click("Description");
+	await w.type("/");
+	await w.see("Insert a block");
+	await w.see("Track tasks with checkboxes");
+	// A popover: the page under it stays where it was.
+	await w.see("Add sub-issues");
+	await w.screenshot("flux-slash");
+	await w.dark(true);
+	await w.screenshot("flux-slash-dark");
+	await w.dark(false);
+	await w.type("hea");
+	await w.gone("Bullet list");
+	await w.see("Heading 2");
+	await w.type("zzz");
+	await w.see("No matching commands");
+	for (let i = 0; i < 6; i++) await w.key("Backspace");
+	// The keys choose, as Flux's: Down twice, Enter.
+	await w.key("Down");
+	await w.key("Down");
+	await w.screenshot("flux-slash-keys");
+	await w.key("Enter");
+	await w.gone("Insert a block");
+	await w.type("Steps");
+	// Escape closes it, leaving what was typed.
+	await w.key("Enter");
+	await w.type("/");
+	await w.see("Insert a block");
+	await w.key("Escape");
+	await w.gone("Insert a block");
+	await w.key("Backspace");
+	// A divider, from its keyword.
+	await w.type("/hr");
+	await w.see("Separate sections");
+	await w.key("Enter");
+	await w.gone("Insert a block");
+	await w.type("After the rule");
+	await w.screenshot("flux-divider");
+	await t.until(() => srv.requests.some((r) => r.path.startsWith("/sync/docs/")), { what: "the description written", timeout: 15000 }).catch(() => {});
+});
+
+test("dragging a card opens a gap where it lands, as Flux's board", async (t) => {
+	const { items } = await flux(t, { demo: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.see("Pages fill the content area");
+	// Ordered by priority, a column says so, and a card lands in its place.
+	await w.drag("Write the docs", "Pages fill the content area", { shot: "flux-drag-sorted" });
+	await t.until(() => items.get("i2")!.body!.status === "todo", { what: "the status pushed" });
+	// By hand, a gap opens at the pointer, and the card takes its place.
+	await w.click("Display");
+	await w.see("Show completed issues");
+	await w.click("Ordering: Priority");
+	await w.see("Last created");
+	await w.click("Manual");
+	await w.see("Ordering: Manual");
+	await w.click("Display");
+	await w.gone("Show completed issues");
+	await w.drag("Display options stick", "Pages fill the content area", { place: "above", shot: "flux-drag-gap" });
+	await t.until(() => {
+		const moved = items.get("s30")!.body!;
+		const top = items.get("s12")!.body!;
+		return (moved.position as number) < (top.position as number);
+	}, { what: "the card placed above" });
+	await w.dark(true);
+	await w.drag("Write the docs", "Fix the login redirect", { place: "below", shot: "flux-drag-gap-dark" });
+	await w.dark(false);
+	// The list, too: one gap through every group; a row dropped in another
+	// group takes its status.
+	await w.click("Display");
+	await w.click("List");
+	await w.click("Display");
+	await w.gone("Show completed issues");
+	await w.drag("Start an agent from the issue", "Fix the login redirect", { place: "above", shot: "flux-drag-list" });
+	await t.until(() => {
+		const moved = items.get("s3")!.body!;
+		return moved.status === "todo" && (moved.position as number) < (items.get("i1")!.body!.position as number);
+	}, { what: "the row moved into Todo, first" });
+});
+
+test("a description Swarm can't keep shows as it is, to edit in Flux", async (t) => {
+	await flux(t, { rich: true });
+	// Agents read its table as Markdown's.
+	const show = (await t.run("show", "ABC-9")).stdout;
+	expect(show).toContain("| Step | Owner |");
+	expect(show).toContain("| Notes | Ada |");
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Plan the release");
+	await w.see("This description has a table and a callout, which Swarm can't edit without changing. Edit it in Flux.");
+	await w.see("Owner");
+	await w.see("The end.");
+	expect(await w.has("Description")).toBe(false);
+	expect(show).toContain("\n---\n");
+	await w.screenshot("flux-unkept");
+});
+
+test("keys, the palette, delete and move, as Flux's", async (t) => {
+	const { items } = await flux(t, { demo: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.see("Write the docs");
+	// j moves a cursor that shows; S opens the palette for it; Enter takes the first.
+	await w.click("Find a view");
+	await w.click("All issues");
+	await w.key("j");
+	await w.key("s");
+	await w.click("Change status…");
+	await w.screenshot("flux-palette");
+	await w.dark(true);
+	await w.screenshot("flux-palette-dark");
+	await w.dark(false);
+	await w.type("rev");
+	await w.key("Enter");
+	await w.gone("Change status…");
+	await t.until(() => [...items.values()].some((it) => it.body?.status === "review" && it.body?.title !== "Follow the event stream"), { what: "a status set from the keys" });
+	// A card's chips pick in place, as Flux's.
+	await w.click("Labels: Feature");
+	await w.see("New label…");
+	await w.screenshot("flux-chip-menu");
+	await w.key("Escape");
+	await w.click("Priority: Medium");
+	await w.see("No priority");
+	await w.click("No priority");
+	await t.until(() => ["s7", "s21"].some((id) => items.get(id)!.body!.priority === "none"), { what: "the priority set in place" });
+	// Delete asks first; Cancel keeps it.
+	await w.rightClick("Write the docs");
+	// The menu open, done opening, before its item's clicked.
+	await w.see("Move to project");
+	await t.sleep(300);
+	await w.click("Delete");
+	await w.see("Delete this issue?");
+	await w.screenshot("flux-confirm");
+	await w.click("Cancel");
+	await w.gone("Delete this issue?");
+	expect(items.get("i2")!.deleted).toBe(false);
+	// Moved to another project, it takes a number free there, and its page follows it.
+	await w.click("Write the docs");
+	await w.see("Add sub-issues");
+	await w.key("Shift+P");
+	await w.click("Move to project…");
+	await w.type("swa");
+	await w.key("Enter");
+	await t.until(() => items.get("i2")!.body!.projectId === "p2", { what: "the move pushed" });
+	const number = items.get("i2")!.body!.number as number;
+	const taken = [...items.values()].filter((it) => it.id !== "i2" && it.body?.type === "issue" && it.body?.projectId === "p2").map((it) => it.body!.number);
+	expect(taken.includes(number)).toBe(false);
+	await w.see(`SWARM-${number}`);
+	// A due date typed, as Flux reads it.
+	await w.key("Shift+D");
+	await w.see("Set due date…");
+	await w.click("Custom…");
+	await w.gone("Set due date…");
+	await w.see("Next month");
+	await w.type("2 weeks");
+	await w.screenshot("flux-due-picker");
+	await w.key("Enter");
+	const due = new Date();
+	due.setDate(due.getDate() + 14);
+	const local = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, "0")}-${String(due.getDate()).padStart(2, "0")}`;
+	await t.until(() => items.get("i2")!.body!.dueDate === local, { what: "two weeks from today pushed" });
+	// Deleted, its comments go with it.
+	await w.key("Mod+Backspace");
+	await w.see("Delete this issue?");
+	await w.click("Delete");
+	await t.until(() => items.get("i2")!.deleted, { what: "the issue deleted" });
+});
+
+test("changes made offline wait, and go when Flux is back", async (t) => {
+	const { items, away, put } = await flux(t, { demo: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.see("Write the docs");
+	away.down = true;
+	// Changed while Flux is away: shown at once, and waiting.
+	await w.click("Write the docs");
+	await w.see("Add sub-issues");
+	await w.key("Shift+1");
+	await w.see("1 waiting to send", { timeout: 15000 });
+	await w.see("Urgent");
+	expect(items.get("i2")!.body!.priority).toBe("none");
+	// An issue deleted in Flux meanwhile: a change to it can't be sent.
+	await w.key("Escape");
+	await w.click("Fix the login redirect");
+	await w.see("Add sub-issues");
+	await w.key("Shift+2");
+	await w.see("2 waiting to send");
+	await w.screenshot("flux-offline");
+	put("i1", null);
+	away.down = false;
+	await w.click("Retry now");
+	await t.until(() => items.get("i2")!.body!.priority === "urgent", { what: "the change sent" });
+	await w.see("A change made offline wasn't sent");
+	await w.screenshot("flux-dropped");
+	await w.click("Dismiss");
+	await w.gone("A change made offline wasn't sent");
+	expect(await w.has("waiting to send")).toBe(false);
 });
 
 test("status, list and show, as bb flux has them", async (t) => {
@@ -183,6 +774,46 @@ test("a thread's agent starts on an issue, is told of it, and comments as itself
 	expect((await t.run("start", "ABC-1")).stderr).toContain("not running in a Swarm thread");
 });
 
+test("Start agent seeds bb's prompt, sends the issue's images, and remembers the project", async (t) => {
+	const { items } = await flux(t);
+	const th = await t.thread("say Hello.");
+	await th.idle();
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Fix the login redirect");
+	await w.click("Start agent");
+	await w.see("Its image goes along as an attachment.");
+	await w.see("Starting moves it to In Progress.");
+	// The only Swarm project, Alpha linked to none.
+	await w.see("Swarm project: project");
+	await w.screenshot("flux-start-agent");
+	await w.dark(true);
+	await w.screenshot("flux-start-agent-dark");
+	await w.dark(false);
+	// A dialog, as bb's: Escape leaves it, and the board's card opens it in place.
+	await w.key("Escape");
+	await w.gone("Its image goes along as an attachment.");
+	await w.click("Start agent");
+	await w.see("Its image goes along as an attachment.");
+	await w.click("Start");
+	await w.see("Agent started on ABC-1.");
+	await t.until(() => items.get("i1")!.body!.status === "progress", { what: "the issue in progress" });
+	// No comment of its own: the agent's own say what it does.
+	expect([...items.values()].some((i) => i.body?.type === "comment" && i.body.issueId === "i1" && String(i.body.body ?? "").includes("Started an agent"))).toBe(false);
+	// Its thread got bb's prompt, its picture where the prompt numbers it.
+	await w.see("ABC-1 · Fix the login redirect");
+	await w.see("Work on Flux issue ABC-1: Fix the login redirect");
+	await w.screenshot("flux-started-thread");
+	// Alpha now starts its agents in that Swarm project.
+	expect((await t.run("status")).code).toBe(0);
+	await w.click("Flux");
+	await w.settings("flux");
+	await w.see("Where agents work");
+	expect(await w.has("Swarm project for Alpha: Not linked")).toBe(false);
+});
+
 test("the agent looks at an issue's images", async (t) => {
 	await flux(t);
 	const th = await t.thread('tool flux_issue_images {"issue": "ABC-1"}');
@@ -242,6 +873,17 @@ test("each thread's Flux panel attaches an issue, and shows it", async (t) => {
 	await w.type("@");
 	await w.see("Flux issues");
 	await w.screenshot("flux-mention");
+	await w.key("Escape");
+	// Picked, it goes after what's typed, as a mention the agent is told of.
+	await w.key("Backspace");
+	await w.type("First, read the logs.");
+	await w.click("ABC-2 Write the docs");
+	// One draft still, the issue after its text, not a draft of its own.
+	await t.sleep(500);
+	const texts = await w.texts();
+	expect(texts.filter((x) => x.startsWith("Draft: ")).length).toBe(1);
+	expect(texts.includes("Draft: First, read the logs.")).toBe(true);
+	await w.screenshot("flux-home-picked");
 });
 
 test("the board opens an issue, and a status change is pushed", async (t) => {
@@ -306,8 +948,12 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	// The selection bar.
 	await w.rightClick("Write the docs");
 	await w.click("Due date");
-	await w.click("In a week");
-	await t.until(() => !!items.get("i2")!.body!.dueDate, { what: "the due date pushed" });
+	await w.click("In one week");
+	// The local calendar's day, not UTC's.
+	const week = new Date();
+	week.setDate(week.getDate() + 7);
+	const local = `${week.getFullYear()}-${String(week.getMonth() + 1).padStart(2, "0")}-${String(week.getDate()).padStart(2, "0")}`;
+	await t.until(() => items.get("i2")!.body!.dueDate === local, { what: "a week from today pushed" });
 	await w.click("Fix the login redirect", { mod: true });
 	await w.see("1 selected");
 	await w.click("Write the docs");
@@ -326,8 +972,35 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.dark(true);
 	await w.screenshot("flux-new-issue-dark");
 	await w.dark(false);
-	await w.key("Escape");
+	// Its chips say what's picked, as Flux's: everyone assigned, how many labels.
+	await w.click("Assignee");
+	await w.click("Ada Lovelace (you)");
+	await w.click("Assignee: Ada Lovelace");
+	await w.see("Ada Lovelace (you)");
+	// Bob by the keys: his name is a card's avatar's too, behind the dialog.
+	await w.key("Down");
+	await w.key("Down");
+	await w.key("Enter");
+	await w.see("Assignee: Ada Lovelace, Bob");
+	await w.click("Labels");
+	await w.key("Down");
+	await w.key("Enter");
+	await w.see("1 label");
+	await w.screenshot("flux-new-issue-picked");
+	// Made, it stays on the board, and says so, with Open, as Flux's.
+	await w.click("Issue title");
+	await w.type("Ship the toast");
+	await w.key("Mod+Enter");
 	await w.gone("Create more");
+	await w.see("Open");
+	const made = [...items.values()].find((it) => it.body?.title === "Ship the toast");
+	expect(!!made).toBe(true);
+	expect(made!.body!.assigneeIds).toEqual(["u1", "u2"]);
+	expect(made!.body!.labelIds).toEqual(["l1"]);
+	await w.see("Fix the login redirect");
+	await w.click("Open");
+	await w.see("Add sub-issues");
+	await w.key("Escape");
 	await w.click("Fix the login redirect");
 	await w.see("Description");
 	await w.see("Sub-issues");
@@ -348,6 +1021,32 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.key("Enter");
 	await t.until(() => items.get("i1")!.body!.title === "Fix the login redirect on Safari", { what: "the title pushed", timeout: 10000 });
 	await w.gone("Issue title");
+	// Escape leaves it as it was, what was typed saved or not.
+	await w.click("Title");
+	await w.click("Issue title");
+	await w.key("End");
+	await w.type(" and Firefox");
+	await t.sleep(600);
+	await w.key("Escape");
+	await w.gone("Issue title");
+	await t.until(() => items.get("i1")!.body!.title === "Fix the login redirect on Safari", { what: "the title put back", timeout: 10000 });
+	await w.see("Fix the login redirect on Safari");
+	// Left mid-edit, its title isn't another issue's to go back to.
+	await w.click("Title");
+	await w.see("Issue title");
+	await w.click("Keep the redirect's query");
+	await w.see("Sub-issue of");
+	await w.click("Title");
+	await w.see("Issue title");
+	await w.key("Escape");
+	await w.gone("Issue title");
+	await t.sleep(300);
+	expect(items.get("i3")!.body!.title).toBe("Keep the redirect's query");
+	// That Escape was the field's: the page stays; the next goes back.
+	expect((await w.texts()).some((x) => x.includes("Sub-issue of"))).toBe(true);
+	await w.key("Escape");
+	await w.gone("Sub-issue of");
+	await w.see("Activity");
 	// Escape, from the page rather than a field, goes back to the board.
 	await w.click("Activity");
 	await w.key("Escape");
@@ -358,6 +1057,7 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.see("Sub-issue of");
 	await w.click("ABC-1 Fix the login redirect on Safari");
 	await w.gone("Sub-issue of");
+	console.log("DBG", items.get("i1")!.body!.title);
 	await w.see("Sub-issues");
 	// Narrow, with Swarm's sidebar hidden: the properties are chips under
 	// the title, as bb's are, and the board scrolls sideways.
@@ -375,6 +1075,12 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.see("Backlog");
 	await w.see("Coldspire");
 	await w.screenshot("flux-board-narrow");
+	// Narrow, the board settles column by column, as Flux's: a little way
+	// goes back, past halfway on to the next.
+	await w.scroll("Backlog", 120);
+	await w.screenshot("flux-board-snap-back");
+	await w.scroll("Backlog", 260);
+	await w.screenshot("flux-board-snap-next");
 	await w.dark(true);
 	await w.screenshot("flux-board-narrow-dark");
 });

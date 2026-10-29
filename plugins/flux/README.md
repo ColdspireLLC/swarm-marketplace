@@ -19,6 +19,12 @@ takes `--flux NAME` for one of them. A thread started on an issue is
 linked both ways, and the issue's status follows that thread's merge
 request.
 
+Its page of Settings (Settings, Plugins, Flux; or Flux settings… in the
+board's Flux menu) connects it: a Flux's URL and an API token, tried with
+Flux before they're kept, more Fluxes beside it, Resync and Disconnect,
+and which Swarm project each Flux project's agents work in. From the
+command line:
+
 ```
 swarm plugin install examples/plugins/flux
 swarm plugin set flux url https://flux.example.com

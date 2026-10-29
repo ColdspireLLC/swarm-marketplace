@@ -11,24 +11,24 @@ var __commonJS = (cb, mod) => function __require() {
     throw mod = 0, e;
   }
 };
-var __export = (target, all2) => {
+var __export = (target2, all2) => {
   for (var name in all2)
-    __defProp(target, name, { get: all2[name], enumerable: true });
+    __defProp(target2, name, { get: all2[name], enumerable: true });
 };
-var __copyProps = (to, from3, except, desc) => {
-  if (from3 && typeof from3 === "object" || typeof from3 === "function") {
-    for (let key of __getOwnPropNames(from3))
+var __copyProps = (to, from4, except, desc) => {
+  if (from4 && typeof from4 === "object" || typeof from4 === "function") {
+    for (let key of __getOwnPropNames(from4))
       if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from3[key], enumerable: !(desc = __getOwnPropDesc(from3, key)) || desc.enumerable });
+        __defProp(to, key, { get: () => from4[key], enumerable: !(desc = __getOwnPropDesc(from4, key)) || desc.enumerable });
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+var __toESM = (mod, isNodeMode, target2) => (target2 = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
   // If the importer is in node compatibility mode or this is not an ESM
   // file that has been converted to a CommonJS file using a Babel-
   // compatible transform (i.e. "__esModule" has not been set), then set
   // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target2, "default", { value: mod, enumerable: true }) : target2,
   mod
 ));
 
@@ -102,10 +102,10 @@ var require_UIEvent = __commonJS({
     }
     UIEvent.prototype = Object.create(Event.prototype, {
       constructor: { value: UIEvent },
-      initUIEvent: { value: function(type, bubbles, cancelable, view, detail) {
+      initUIEvent: { value: function(type, bubbles, cancelable, view, detail2) {
         this.initEvent(type, bubbles, cancelable);
         this.view = view;
-        this.detail = detail;
+        this.detail = detail2;
       } }
     });
   }
@@ -127,8 +127,8 @@ var require_MouseEvent = __commonJS({
     }
     MouseEvent.prototype = Object.create(UIEvent.prototype, {
       constructor: { value: MouseEvent },
-      initMouseEvent: { value: function(type, bubbles, cancelable, view, detail, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget) {
-        this.initEvent(type, bubbles, cancelable, view, detail);
+      initMouseEvent: { value: function(type, bubbles, cancelable, view, detail2, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget) {
+        this.initEvent(type, bubbles, cancelable, view, detail2);
         this.screenX = screenX;
         this.screenY = screenY;
         this.clientX = clientX;
@@ -512,11 +512,11 @@ var require_EventTarget = __commonJS({
       //
       _dispatchEvent: function _dispatchEvent(event, trusted) {
         if (typeof trusted !== "boolean") trusted = false;
-        function invoke(target, event2) {
+        function invoke(target2, event2) {
           var type = event2.type, phase = event2.eventPhase;
-          event2.currentTarget = target;
-          if (phase !== Event.CAPTURING_PHASE && target._handlers && target._handlers[type]) {
-            var handler = target._handlers[type];
+          event2.currentTarget = target2;
+          if (phase !== Event.CAPTURING_PHASE && target2._handlers && target2._handlers[type]) {
+            var handler = target2._handlers[type];
             var rv;
             if (typeof handler === "function") {
               rv = handler.call(event2.currentTarget, event2);
@@ -540,7 +540,7 @@ var require_EventTarget = __commonJS({
                 break;
             }
           }
-          var list2 = target._listeners && target._listeners[type];
+          var list2 = target2._listeners && target2._listeners[type];
           if (!list2) return;
           list2 = list2.slice();
           for (var i3 = 0, n2 = list2.length; i3 < n2; i3++) {
@@ -2290,8 +2290,8 @@ var require_select = __commonJS({
       ":empty": function(el) {
         return !el.firstChild;
       },
-      ":not": function(sel) {
-        var test = compileGroup(sel);
+      ":not": function(sel2) {
+        var test = compileGroup(sel2);
         return function(el) {
           return !test(el);
         };
@@ -2341,13 +2341,13 @@ var require_select = __commonJS({
       ":focus": function(el) {
         return el === el.ownerDocument.activeElement;
       },
-      ":is": function(sel) {
-        return compileGroup(sel);
+      ":is": function(sel2) {
+        return compileGroup(sel2);
       },
       // :matches is an older name for :is; see
       // https://github.com/w3c/csswg-drafts/issues/3258
-      ":matches": function(sel) {
-        return selectors[":is"](sel);
+      ":matches": function(sel2) {
+        return selectors[":is"](sel2);
       },
       ":nth-match": function(param, last2) {
         var args2 = param.split(/\s*,\s*/), arg = args2.shift(), test = compileGroup(args2.join(","));
@@ -2597,39 +2597,39 @@ var require_select = __commonJS({
     rules2.ident = replace2(rules2.ident, "cssid", rules2.cssid);
     rules2.str_escape = replace2(rules2.str_escape, "escape", rules2.escape);
     var compile2 = function(sel_) {
-      var sel = sel_.replace(/^\s+|\s+$/g, ""), test, filter = [], buff = [], subject, qname, cap, op, ref;
-      while (sel) {
-        if (cap = rules2.qname.exec(sel)) {
-          sel = sel.substring(cap[0].length);
+      var sel2 = sel_.replace(/^\s+|\s+$/g, ""), test, filter = [], buff = [], subject, qname, cap, op, ref;
+      while (sel2) {
+        if (cap = rules2.qname.exec(sel2)) {
+          sel2 = sel2.substring(cap[0].length);
           qname = decodeid(cap[1]);
           buff.push(tok(qname, true));
-        } else if (cap = rules2.simple.exec(sel)) {
-          sel = sel.substring(cap[0].length);
+        } else if (cap = rules2.simple.exec(sel2)) {
+          sel2 = sel2.substring(cap[0].length);
           qname = "*";
           buff.push(tok(qname, true));
           buff.push(tok(cap));
         } else {
           throw new SyntaxError("Invalid selector.");
         }
-        while (cap = rules2.simple.exec(sel)) {
-          sel = sel.substring(cap[0].length);
+        while (cap = rules2.simple.exec(sel2)) {
+          sel2 = sel2.substring(cap[0].length);
           buff.push(tok(cap));
         }
-        if (sel[0] === "!") {
-          sel = sel.substring(1);
+        if (sel2[0] === "!") {
+          sel2 = sel2.substring(1);
           subject = makeSubject();
           subject.qname = qname;
           buff.push(subject.simple);
         }
-        if (cap = rules2.ref.exec(sel)) {
-          sel = sel.substring(cap[0].length);
+        if (cap = rules2.ref.exec(sel2)) {
+          sel2 = sel2.substring(cap[0].length);
           ref = combinators.ref(makeSimple(buff), decodeid(cap[1]));
           filter.push(ref.combinator);
           buff = [];
           continue;
         }
-        if (cap = rules2.combinator.exec(sel)) {
-          sel = sel.substring(cap[0].length);
+        if (cap = rules2.combinator.exec(sel2)) {
+          sel2 = sel2.substring(cap[0].length);
           op = cap[1] || cap[2] || cap[3];
           if (op === ",") {
             filter.push(combinators.noop(makeSimple(buff)));
@@ -2646,7 +2646,7 @@ var require_select = __commonJS({
       }
       test = makeTest(filter);
       test.qname = qname;
-      test.sel = sel;
+      test.sel = sel2;
       if (subject) {
         subject.lname = test.qname;
         subject.test = test;
@@ -2708,25 +2708,25 @@ var require_select = __commonJS({
       };
     };
     var makeSubject = function() {
-      var target;
+      var target2;
       function subject(el) {
         var node2 = el.ownerDocument, scope = node2.getElementsByTagName(subject.lname), i2 = scope.length;
         while (i2--) {
-          if (subject.test(scope[i2]) && target === el) {
-            target = null;
+          if (subject.test(scope[i2]) && target2 === el) {
+            target2 = null;
             return true;
           }
         }
-        target = null;
+        target2 = null;
       }
       subject.simple = function(el) {
-        target = el;
+        target2 = el;
         return true;
       };
       return subject;
     };
-    var compileGroup = function(sel) {
-      var test = compile2(sel), tests = [test];
+    var compileGroup = function(sel2) {
+      var test = compile2(sel2), tests = [test];
       while (test.sel) {
         test = compile2(test.sel);
         tests.push(test);
@@ -2739,8 +2739,8 @@ var require_select = __commonJS({
         }
       };
     };
-    var find3 = function(sel, node2) {
-      var results = [], test = compile2(sel), scope = node2.getElementsByTagName(test.qname), i2 = 0, el;
+    var find3 = function(sel2, node2) {
+      var results = [], test = compile2(sel2), scope = node2.getElementsByTagName(test.qname), i2 = 0, el;
       while (el = scope[i2++]) {
         if (test(el)) results.push(el);
       }
@@ -2759,32 +2759,32 @@ var require_select = __commonJS({
       }
       return results;
     };
-    module.exports = exports = function(sel, context2) {
+    module.exports = exports = function(sel2, context2) {
       var id2, r;
-      if (context2.nodeType !== 11 && sel.indexOf(" ") === -1) {
-        if (sel[0] === "#" && context2.rooted && /^#[A-Z_][-A-Z0-9_]*$/i.test(sel)) {
+      if (context2.nodeType !== 11 && sel2.indexOf(" ") === -1) {
+        if (sel2[0] === "#" && context2.rooted && /^#[A-Z_][-A-Z0-9_]*$/i.test(sel2)) {
           if (context2.doc._hasMultipleElementsWithId) {
-            id2 = sel.substring(1);
+            id2 = sel2.substring(1);
             if (!context2.doc._hasMultipleElementsWithId(id2)) {
               r = context2.doc.getElementById(id2);
               return r ? [r] : [];
             }
           }
         }
-        if (sel[0] === "." && /^\.\w+$/.test(sel)) {
-          return context2.getElementsByClassName(sel.substring(1));
+        if (sel2[0] === "." && /^\.\w+$/.test(sel2)) {
+          return context2.getElementsByClassName(sel2.substring(1));
         }
-        if (/^\w+$/.test(sel)) {
-          return context2.getElementsByTagName(sel);
+        if (/^\w+$/.test(sel2)) {
+          return context2.getElementsByTagName(sel2);
         }
       }
-      return find3(sel, context2);
+      return find3(sel2, context2);
     };
     exports.selectors = selectors;
     exports.operators = operators;
     exports.combinators = combinators;
-    exports.matches = function(el, sel) {
-      var test = { sel };
+    exports.matches = function(el, sel2) {
+      var test = { sel: sel2 };
       do {
         test = compile2(test.sel);
         if (test(el)) {
@@ -3684,23 +3684,23 @@ var require_Element = __commonJS({
       // same qname
       _removeQName: { value: function(attr) {
         var qname = attr.name;
-        var target = this._attrsByQName[qname];
-        if (Array.isArray(target)) {
-          var idx = target.indexOf(attr);
+        var target2 = this._attrsByQName[qname];
+        if (Array.isArray(target2)) {
+          var idx = target2.indexOf(attr);
           utils.assert(idx !== -1);
-          if (target.length === 2) {
-            this._attrsByQName[qname] = target[1 - idx];
+          if (target2.length === 2) {
+            this._attrsByQName[qname] = target2[1 - idx];
             if (this._attributes) {
               this._attributes[qname] = this._attrsByQName[qname];
             }
           } else {
-            target.splice(idx, 1);
+            target2.splice(idx, 1);
             if (this._attributes && this._attributes[qname] === attr) {
-              this._attributes[qname] = target[0];
+              this._attributes[qname] = target2[0];
             }
           }
         } else {
-          utils.assert(target === attr);
+          utils.assert(target2 === attr);
           this._attrsByQName[qname] = void 0;
           if (this._attributes) {
             this._attributes[qname] = void 0;
@@ -4347,11 +4347,11 @@ var require_ProcessingInstruction = __commonJS({
     module.exports = ProcessingInstruction;
     var Node6 = require_Node();
     var CharacterData = require_CharacterData();
-    function ProcessingInstruction(doc4, target, data) {
+    function ProcessingInstruction(doc4, target2, data) {
       CharacterData.call(this);
       this.nodeType = Node6.PROCESSING_INSTRUCTION_NODE;
       this.ownerDocument = doc4;
-      this.target = target;
+      this.target = target2;
       this._data = data;
     }
     var nodeValue = {
@@ -5217,17 +5217,17 @@ var require_CSSStyleDeclaration = __commonJS({
     module.exports = function(elt) {
       const style = new CSSStyleDeclaration(elt);
       const handler = {
-        get: function(target, property) {
-          return property in target ? target[property] : target.getPropertyValue(dasherizeProperty(property));
+        get: function(target2, property) {
+          return property in target2 ? target2[property] : target2.getPropertyValue(dasherizeProperty(property));
         },
-        has: function(target, key) {
+        has: function(target2, key) {
           return true;
         },
-        set: function(target, property, value) {
-          if (property in target) {
-            target[property] = value;
+        set: function(target2, property, value) {
+          if (property in target2) {
+            target2[property] = value;
           } else {
-            target.setProperty(dasherizeProperty(property), value ?? void 0);
+            target2.setProperty(dasherizeProperty(property), value ?? void 0);
           }
           return true;
         }
@@ -5798,10 +5798,10 @@ var require_htmlelts = __commonJS({
               this
             );
             parser.parse(v2 === null ? "" : String(v2), true);
-            var target = this instanceof htmlNameToImpl.template ? this.content : this;
-            while (target.hasChildNodes())
-              target.removeChild(target.firstChild);
-            target.appendChild(parser._asDocumentFragment());
+            var target2 = this instanceof htmlNameToImpl.template ? this.content : this;
+            while (target2.hasChildNodes())
+              target2.removeChild(target2.firstChild);
+            target2.appendChild(parser._asDocumentFragment());
           }
         },
         style: { get: function() {
@@ -7432,7 +7432,7 @@ var require_Document = __commonJS({
     var events = require_events();
     var xml = require_xmlnames();
     var html = require_htmlelts();
-    var svg = require_svg();
+    var svg2 = require_svg();
     var utils = require_utils();
     var MUTATE = require_MutationConstants();
     var NAMESPACE = utils.NAMESPACE;
@@ -7526,9 +7526,9 @@ var require_Document = __commonJS({
       // from the renderer.
       // XXX: I should probably move this to the window object
       _dispatchRendererEvent: { value: function(targetNid, type, details) {
-        var target = this._nodes[targetNid];
-        if (!target) return;
-        target._dispatchEvent(new Event(type, details), true);
+        var target2 = this._nodes[targetNid];
+        if (!target2) return;
+        target2._dispatchEvent(new Event(type, details), true);
       } },
       nodeName: { value: "#document" },
       nodeValue: {
@@ -7554,10 +7554,10 @@ var require_Document = __commonJS({
       createDocumentFragment: { value: function() {
         return new DocumentFragment(this);
       } },
-      createProcessingInstruction: { value: function(target, data) {
-        if (!xml.isValidName(target) || data.indexOf("?>") !== -1)
+      createProcessingInstruction: { value: function(target2, data) {
+        if (!xml.isValidName(target2) || data.indexOf("?>") !== -1)
           utils.InvalidCharacterError();
-        return new ProcessingInstruction(this, target, data);
+        return new ProcessingInstruction(this, target2, data);
       } },
       createAttribute: { value: function(localName) {
         localName = String(localName);
@@ -7598,7 +7598,7 @@ var require_Document = __commonJS({
         if (namespace === NAMESPACE.HTML) {
           return html.createElement(this, localName, prefix);
         } else if (namespace === NAMESPACE.SVG) {
-          return svg.createElement(this, localName, prefix);
+          return svg2.createElement(this, localName, prefix);
         }
         return new Element2(this, localName, namespace, prefix);
       } },
@@ -11008,18 +11008,18 @@ var require_HTMLParser = __commonJS({
       }
       return false;
     };
-    HTMLParser2.ElementStack.prototype.elementInSpecificScope = function(target, set2) {
+    HTMLParser2.ElementStack.prototype.elementInSpecificScope = function(target2, set2) {
       for (var i2 = this.elements.length - 1; i2 >= 0; i2--) {
         var elt = this.elements[i2];
-        if (elt === target) return true;
+        if (elt === target2) return true;
         if (isA(elt, set2)) return false;
       }
       return false;
     };
-    HTMLParser2.ElementStack.prototype.elementTypeInSpecificScope = function(target, set2) {
+    HTMLParser2.ElementStack.prototype.elementTypeInSpecificScope = function(target2, set2) {
       for (var i2 = this.elements.length - 1; i2 >= 0; i2--) {
         var elt = this.elements[i2];
-        if (elt instanceof target) return true;
+        if (elt instanceof target2) return true;
         if (isA(elt, set2)) return false;
       }
       return false;
@@ -18246,7 +18246,10 @@ var require_core = __commonJS({
 });
 
 // main.tsx
-import swarm3, { call as call4, hook, on as on2, settings as settings2, tool, ui as ui5 } from "swarm";
+import swarm3, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui12 } from "swarm";
+
+// src/pictures.ts
+import { ui } from "swarm";
 
 // src/assets.ts
 var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
@@ -18270,8 +18273,11 @@ function fluxAssetId(src, baseUrl) {
   return id2 && ASSET_ID_PATTERN.test(id2) ? id2.toLowerCase() : null;
 }
 
-// src/cli.ts
-import { call, command as command2 } from "swarm";
+// src/hub.ts
+import { settings, storage as storage3 } from "swarm";
+
+// src/service.ts
+import swarm, { storage as storage2 } from "swarm";
 
 // node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -19021,8 +19027,8 @@ function defineLazy(object2, key, getter) {
 function objectClone(obj) {
   return Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));
 }
-function assignProp(target, prop, value) {
-  Object.defineProperty(target, prop, {
+function assignProp(target2, prop, value) {
+  Object.defineProperty(target2, prop, {
     value,
     writable: true,
     enumerable: true,
@@ -19036,8 +19042,8 @@ function rawShape(def) {
 function sourceShape(schema2) {
   return rawShape(schema2._zod.def) ?? schema2._zod.def.shape;
 }
-function deferProp(target, key, getter) {
-  Object.defineProperty(target, key, {
+function deferProp(target2, key, getter) {
+  Object.defineProperty(target2, key, {
     get() {
       const value = getter();
       assignProp(this, key, value);
@@ -19047,36 +19053,36 @@ function deferProp(target, key, getter) {
     configurable: true
   });
 }
-function putProp(target, key, value) {
-  if (key in target)
-    assignProp(target, key, value);
+function putProp(target2, key, value) {
+  if (key in target2)
+    assignProp(target2, key, value);
   else
-    target[key] = value;
+    target2[key] = value;
 }
-function mirrorShape(target, source, keys3, wrap2) {
+function mirrorShape(target2, source, keys3, wrap2) {
   const raw = sourceShape(source);
   for (const key of keys3) {
     const desc = Object.getOwnPropertyDescriptor(raw, key);
     if (!desc.enumerable)
       continue;
     if (desc.get) {
-      deferProp(target, key, () => {
+      deferProp(target2, key, () => {
         const value = source._zod.def.shape[key];
         return wrap2 ? wrap2(value, key) : value;
       });
     } else
-      putProp(target, key, wrap2 ? wrap2(desc.value, key) : desc.value);
+      putProp(target2, key, wrap2 ? wrap2(desc.value, key) : desc.value);
   }
 }
-function mirrorProps(target, source) {
+function mirrorProps(target2, source) {
   for (const key of Reflect.ownKeys(source)) {
     const desc = Object.getOwnPropertyDescriptor(source, key);
     if (!desc.enumerable)
       continue;
     if (desc.get)
-      deferProp(target, key, () => source[key]);
+      deferProp(target2, key, () => source[key]);
     else
-      putProp(target, key, desc.value);
+      putProp(target2, key, desc.value);
   }
 }
 function mergeDefs(...defs) {
@@ -19255,35 +19261,35 @@ function normalizeParams(_params) {
   return params2;
 }
 function createTransparentProxy(getter) {
-  let target;
+  let target2;
   return new Proxy({}, {
     get(_2, prop, receiver) {
-      target ?? (target = getter());
-      return Reflect.get(target, prop, receiver);
+      target2 ?? (target2 = getter());
+      return Reflect.get(target2, prop, receiver);
     },
     set(_2, prop, value, receiver) {
-      target ?? (target = getter());
-      return Reflect.set(target, prop, value, receiver);
+      target2 ?? (target2 = getter());
+      return Reflect.set(target2, prop, value, receiver);
     },
     has(_2, prop) {
-      target ?? (target = getter());
-      return Reflect.has(target, prop);
+      target2 ?? (target2 = getter());
+      return Reflect.has(target2, prop);
     },
     deleteProperty(_2, prop) {
-      target ?? (target = getter());
-      return Reflect.deleteProperty(target, prop);
+      target2 ?? (target2 = getter());
+      return Reflect.deleteProperty(target2, prop);
     },
     ownKeys(_2) {
-      target ?? (target = getter());
-      return Reflect.ownKeys(target);
+      target2 ?? (target2 = getter());
+      return Reflect.ownKeys(target2);
     },
     getOwnPropertyDescriptor(_2, prop) {
-      target ?? (target = getter());
-      return Reflect.getOwnPropertyDescriptor(target, prop);
+      target2 ?? (target2 = getter());
+      return Reflect.getOwnPropertyDescriptor(target2, prop);
     },
     defineProperty(_2, prop, descriptor) {
-      target ?? (target = getter());
-      return Reflect.defineProperty(target, prop, descriptor);
+      target2 ?? (target2 = getter());
+      return Reflect.defineProperty(target2, prop, descriptor);
     }
   });
 }
@@ -19766,10 +19772,10 @@ function $constructor(name, initializer3, proto, params2) {
       let up = own2;
       while (up && up !== ctorProto)
         up = Object.getPrototypeOf(up);
-      const target = up ?? own2;
-      if (!initialized.has(target)) {
-        initialized.add(target);
-        members(target, protoMembers);
+      const target2 = up ?? own2;
+      if (!initialized.has(target2)) {
+        initialized.add(target2);
+        members(target2, protoMembers);
       }
     }
     const proto2 = _2.prototype;
@@ -31281,8 +31287,8 @@ function withParser(schema2, parser) {
     installCompiledUserMethods(clone2, schema2, parser);
   return clone2;
 }
-function installCompiledUserMethods(target, source, parser) {
-  const targetAny = target;
+function installCompiledUserMethods(target2, source, parser) {
+  const targetAny = target2;
   const sourceAny = source;
   if (typeof sourceAny.safeParse === "function") {
     const originalSafeParse = sourceAny.safeParse;
@@ -33885,26 +33891,26 @@ function _stringFormat(Class2, format, fnOrRegex, _params = {}) {
 }
 
 // node_modules/zod/v4/core/to-json-schema.js
-function assignProps(target, ...sources) {
+function assignProps(target2, ...sources) {
   for (const source of sources) {
     for (const key of Reflect.ownKeys(source)) {
       if (Object.prototype.propertyIsEnumerable.call(source, key)) {
-        assignProp(target, key, source[key]);
+        assignProp(target2, key, source[key]);
       }
     }
   }
-  return target;
+  return target2;
 }
 function initializeContext(params2) {
-  let target = params2?.target ?? "draft-2020-12";
-  if (target === "draft-4")
-    target = "draft-04";
-  if (target === "draft-7")
-    target = "draft-07";
+  let target2 = params2?.target ?? "draft-2020-12";
+  if (target2 === "draft-4")
+    target2 = "draft-04";
+  if (target2 === "draft-7")
+    target2 = "draft-07";
   return {
     processors: params2.processors ?? {},
     metadataRegistry: params2?.metadata ?? globalRegistry,
-    target,
+    target: target2,
     unrepresentable: params2?.unrepresentable ?? "throw",
     override: params2?.override ?? (() => {
     }),
@@ -34407,8 +34413,8 @@ var createToJSONSchemaMethod = (schema2, processors = {}) => (params2) => {
   return finalize(ctx, schema2);
 };
 var createStandardJSONSchemaMethod = (schema2, io, processors = {}) => (params2) => {
-  const { libraryOptions, target } = params2 ?? {};
-  const ctx = initializeContext({ ...libraryOptions ?? {}, target, io, processors });
+  const { libraryOptions, target: target2 } = params2 ?? {};
+  const ctx = initializeContext({ ...libraryOptions ?? {}, target: target2, io, processors });
   processSchema(schema2, ctx);
   extractDefs(ctx, schema2);
   return finalize(ctx, schema2);
@@ -35602,8 +35608,8 @@ var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
   catch(params2) {
     return _catch2(this, params2);
   },
-  pipe(target) {
-    return pipe(this, target);
+  pipe(target2) {
+    return pipe(this, target2);
   },
   readonly() {
     return readonly(this);
@@ -37990,6 +37996,54 @@ function date4(params2) {
   return _coercedDate(ZodDate, params2);
 }
 
+// src/agent.ts
+var commentAgentSchema = external_exports.object({
+  name: external_exports.string(),
+  /** bb's provider id, such as "claude-code". */
+  provider: external_exports.string(),
+  /** The provider's mark: a base64 SVG data URL, drawn as a mask. */
+  icon: external_exports.string().optional(),
+  /** The mark's color in each theme. */
+  tint: external_exports.object({ light: external_exports.string(), dark: external_exports.string() }).optional(),
+  /** A link to the bb thread the agent ran in. */
+  url: external_exports.string().optional(),
+  /** The bb thread the agent ran in. */
+  threadId: external_exports.string().optional()
+});
+var MAX_NAME = 60;
+var MAX_AGENT_ICON = 12e3;
+var ICON = /^data:image\/svg\+xml;base64,[A-Za-z0-9+/]+={0,2}$/;
+var THREAD_ID = /^[\w-]{1,64}$/;
+var COLOR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+function parseCommentAgent(value) {
+  if (!value || typeof value !== "object") return null;
+  const raw = value;
+  const name = typeof raw.name === "string" ? raw.name.trim() : "";
+  const provider2 = typeof raw.provider === "string" ? raw.provider : "";
+  if (!name || !provider2) return null;
+  const agent2 = {
+    name: name.slice(0, MAX_NAME),
+    provider: provider2.slice(0, MAX_NAME)
+  };
+  if (typeof raw.icon === "string" && raw.icon.length <= MAX_AGENT_ICON && ICON.test(raw.icon)) {
+    agent2.icon = raw.icon;
+  }
+  const tint = raw.tint;
+  if (tint && typeof tint.light === "string" && typeof tint.dark === "string" && COLOR.test(tint.light) && COLOR.test(tint.dark)) {
+    agent2.tint = { light: tint.light, dark: tint.dark };
+  }
+  if (typeof raw.url === "string" && /^https?:\/\//i.test(raw.url)) {
+    try {
+      agent2.url = new URL(raw.url).href;
+    } catch {
+    }
+  }
+  if (typeof raw.threadId === "string" && THREAD_ID.test(raw.threadId)) {
+    agent2.threadId = raw.threadId;
+  }
+  return agent2;
+}
+
 // src/client.ts
 var REQUEST_TIMEOUT_MS = 2e4;
 var FluxHttpError = class extends Error {
@@ -38099,7 +38153,16 @@ var FluxClient = class {
     const text2 = await response.text();
     const parsed = parseJson(text2);
     if (!response.ok) throw this.refused(response.status, parsed);
-    return schema2.parse(parsed ?? null);
+    if (response.status === 204 && path === "/user") {
+      throw this.refused(401, null);
+    }
+    const result = schema2.safeParse(parsed ?? null);
+    if (result.success) return result.data;
+    throw new FluxHttpError(
+      response.status,
+      unexpected(this.baseUrl, `${init2.method ?? "GET"} ${path}`, response, text2, result.error),
+      parsed
+    );
   }
   /** The error for a refused request, telling the owner about a 401. */
   refused(status, body) {
@@ -38160,8 +38223,8 @@ var FluxClient = class {
   members(signal) {
     return this.request(membersSchema, "/workspace/members", { signal });
   }
-  pull(since, signal) {
-    return this.request(pullSchema, `/sync/pull/${since}?limit=1000`, {
+  pull(since2, signal) {
+    return this.request(pullSchema, `/sync/pull/${since2}?limit=100`, {
       signal
     });
   }
@@ -38225,6 +38288,16 @@ function parseJson(text2) {
     return text2;
   }
 }
+function unexpected(baseUrl, request, response, text2, error62) {
+  const type = response.headers.get("content-type") ?? "";
+  if (type.includes("text/html") || /^\s*<(!doctype|html)/i.test(text2)) {
+    return `${baseUrl} answered ${request} with a web page, not Flux's API. Check the Flux URL: the address you open Flux at.`;
+  }
+  const issue2 = error62.issues[0];
+  const where = issue2?.path.length ? `${issue2.path.join(".")}: ` : "";
+  const start = text2.replace(/\s+/g, " ").trim().slice(0, 80);
+  return `Flux answered ${request} with what Swarm's Flux can't read (${where}${issue2?.message ?? "not what it expected"})${start ? `: ${start}${text2.length > 80 ? "…" : ""}` : ", an empty body"}.`;
+}
 function errorMessage(status, body) {
   if (status === 401) {
     return "Flux rejected the API token. Create a new one in Flux under Settings → API tokens.";
@@ -38244,6 +38317,10 @@ function errorMessage(status, body) {
   return `Flux request failed with HTTP ${status}`;
 }
 function describe3(cause) {
+  if (cause instanceof external_exports.ZodError) {
+    const issue2 = cause.issues[0];
+    return `Flux sent what Swarm's Flux can't read (${issue2?.path.length ? `${issue2.path.join(".")}: ` : ""}${issue2?.message ?? "not what it expected"}).`;
+  }
   if (cause instanceof Error) {
     const inner = cause.cause;
     if (inner instanceof Error && inner.message) {
@@ -38252,277 +38329,6 @@ function describe3(cause) {
     return cause.message;
   }
   return String(cause);
-}
-
-// src/flux.ts
-var STATUSES = [
-  "backlog",
-  "todo",
-  "progress",
-  "review",
-  "complete",
-  "canceled"
-];
-var STATUS_LABELS = {
-  backlog: "Backlog",
-  todo: "Todo",
-  progress: "In Progress",
-  review: "In Review",
-  complete: "Complete",
-  canceled: "Canceled"
-};
-var CLOSED_STATUSES = /* @__PURE__ */ new Set([
-  "complete",
-  "canceled"
-]);
-var STATUS_DISPLAY_ORDER = [
-  "review",
-  "progress",
-  "todo",
-  "backlog",
-  "complete",
-  "canceled"
-];
-var PRIORITIES = ["urgent", "high", "medium", "low", "none"];
-var PRIORITY_LABELS = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  none: "No priority"
-};
-var PRIORITY_LEVEL = {
-  urgent: 4,
-  high: 3,
-  medium: 2,
-  low: 1,
-  none: 0
-};
-var COLORS = [
-  "gray",
-  "red",
-  "orange",
-  "yellow",
-  "green",
-  "cyan",
-  "blue",
-  "indigo",
-  "purple",
-  "pink"
-];
-var STATUS_ALIASES = {
-  backlog: "backlog",
-  todo: "todo",
-  "to-do": "todo",
-  open: "todo",
-  progress: "progress",
-  "in-progress": "progress",
-  in_progress: "progress",
-  inprogress: "progress",
-  started: "progress",
-  doing: "progress",
-  review: "review",
-  "in-review": "review",
-  in_review: "review",
-  inreview: "review",
-  complete: "complete",
-  completed: "complete",
-  done: "complete",
-  closed: "complete",
-  canceled: "canceled",
-  cancelled: "canceled",
-  "won't-do": "canceled",
-  wontfix: "canceled"
-};
-function parseStatus(value) {
-  return STATUS_ALIASES[value.trim().toLowerCase().replace(/\s+/g, "-")] ?? null;
-}
-function parsePriority(value) {
-  const normalized = value.trim().toLowerCase();
-  if (PRIORITIES.includes(normalized)) {
-    return normalized;
-  }
-  if (normalized === "no-priority" || normalized === "0") return "none";
-  const byLevel = PRIORITIES.find(
-    (priority) => String(PRIORITY_LEVEL[priority]) === normalized
-  );
-  return byLevel ?? null;
-}
-function parseIssueKey(value) {
-  const match2 = /^\s*([A-Za-z]{2,5})-(\d{1,7})\s*$/.exec(value);
-  if (!match2) return null;
-  return { projectKey: match2[1].toUpperCase(), number: Number(match2[2]) };
-}
-
-// src/markdown.ts
-var MARKDOWN_IMAGE = /!\[((?:\\.|[^\\\]])*)\]\(([^()\s]+)((?:\s+"[^"]*")?)\)/g;
-function mapOutsideCode(markdown, change) {
-  return markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`)/g).map((part, index) => index % 2 === 1 ? part : change(part)).join("");
-}
-
-// src/prompt.ts
-var RECENT_COMMENTS = 5;
-var MAX_DESCRIPTION_CHARS = 2e4;
-var MAX_COMMENT_CHARS = 4e3;
-var IMAGE_TOOL = "flux_issue_images";
-function memberName(lookup, id2) {
-  if (!id2) return "Unknown";
-  const member2 = lookup.members.find((candidate) => candidate.id === id2);
-  return member2 ? `${member2.name} (@${member2.username})` : "Former member";
-}
-function clip(text2, max3) {
-  return text2.length > max3 ? `${text2.slice(0, max3)}
-
-…(truncated; ${text2.length - max3} more characters)` : text2;
-}
-function issueFacts(detail, lookup) {
-  const { issue: issue2 } = detail;
-  const project = lookup.projects.find((item) => item.id === issue2.projectId);
-  const assignees = issue2.assigneeIds.map((id2) => memberName(lookup, id2));
-  const labels = issue2.labelIds.map((id2) => lookup.labels.find((label) => label.id === id2)?.name).filter((name) => Boolean(name));
-  return [
-    `- Status: ${STATUS_LABELS[issue2.status]}`,
-    `- Priority: ${PRIORITY_LABELS[issue2.priority]}`,
-    `- Project: ${project ? `${project.name} (${project.key})` : "Unknown"}`,
-    `- Assignees: ${assignees.length ? assignees.join(", ") : "Unassigned"}`,
-    ...labels.length ? [`- Labels: ${labels.join(", ")}`] : [],
-    ...issue2.dueDate ? [`- Due: ${issue2.dueDate}`] : [],
-    ...detail.parent ? [`- Parent: ${detail.parent.key} · ${detail.parent.title}`] : [],
-    `- Link: ${detail.url}`
-  ];
-}
-function issueContext(detail, lookup) {
-  const { issue: issue2 } = detail;
-  const images = issueImageIds(detail, lookup.baseUrl);
-  const numbered = (markdown) => numberImages(markdown, images, lookup.baseUrl);
-  const sections = [
-    `# ${issue2.key} · ${issue2.title}`,
-    issueFacts(detail, lookup).join("\n"),
-    `## Description
-
-${detail.descriptionMarkdown ? clip(numbered(detail.descriptionMarkdown), MAX_DESCRIPTION_CHARS) : "_No description._"}`
-  ];
-  if (detail.subIssues.length > 0) {
-    sections.push(
-      `## Sub-issues
-
-${detail.subIssues.map(
-        (sub) => `- [${sub.status === "complete" ? "x" : " "}] ${sub.key} · ${sub.title} (${STATUS_LABELS[sub.status]})`
-      ).join("\n")}`
-    );
-  }
-  if (detail.comments.length > 0) {
-    const recent = detail.comments.slice(-RECENT_COMMENTS);
-    const skipped = detail.comments.length - recent.length;
-    sections.push(
-      `## ${skipped > 0 ? `Latest ${recent.length} of ${detail.comments.length} comments` : "Comments"}
-
-${recent.map(
-        (comment) => `**${memberName(lookup, comment.authorId)}** · ${comment.createdAt.slice(0, 16).replace("T", " ")}
-
-${clip(numbered(comment.markdown), MAX_COMMENT_CHARS)}`
-      ).join("\n\n---\n\n")}`
-    );
-  }
-  if (images.length > 0) {
-    sections.push(
-      `## Images
-
-${images.length === 1 ? "This issue has 1 image, written [Image 1]" : `This issue has ${images.length} images, written [Image 1] to [Image ${images.length}]`}. Flux shows them only to its members, so look at them with the \`${IMAGE_TOOL}\` tool (issue "${issue2.key}").`
-    );
-  }
-  return sections.join("\n\n");
-}
-function imageIds(markdown, baseUrl) {
-  const ids = [];
-  if (!markdown.includes("![")) return ids;
-  mapOutsideCode(markdown, (part) => {
-    for (const match2 of part.matchAll(MARKDOWN_IMAGE)) {
-      const id2 = fluxAssetId(match2[2], baseUrl);
-      if (id2 && !ids.includes(id2)) ids.push(id2);
-    }
-    return part;
-  });
-  return ids;
-}
-function numberImages(markdown, ids, baseUrl) {
-  if (ids.length === 0 || !markdown.includes("![")) return markdown;
-  return mapOutsideCode(
-    markdown,
-    (part) => part.replace(MARKDOWN_IMAGE, (whole, _alt, url2) => {
-      const index = ids.indexOf(fluxAssetId(url2, baseUrl) ?? "");
-      return index >= 0 ? `[Image ${index + 1}]` : whole;
-    })
-  );
-}
-function issueImageIds(detail, baseUrl) {
-  const ids = imageIds(detail.descriptionMarkdown, baseUrl);
-  for (const comment of detail.comments) {
-    for (const id2 of imageIds(comment.markdown, baseUrl)) {
-      if (!ids.includes(id2)) ids.push(id2);
-    }
-  }
-  return ids;
-}
-function threadInstructions(issueKey) {
-  return [
-    `This thread is attached to Flux issue ${issueKey}. Keep that issue current as you work:`,
-    `- Read it first: \`swarm flux show ${issueKey}\`.`,
-    `- Post a short comment at real milestones (plan settled, change ready, blocked): \`swarm flux comment ${issueKey} --body "..."\`. Mention people with @username, and projects by key (@ABC).`,
-    `- When the work is ready for someone to look at, move it to review: \`swarm flux update ${issueKey} --status review\`. Use \`--status complete\` only when nothing is left to check.`,
-    "- Don't paste the whole diff into comments; summarize what changed and how you verified it."
-  ].join("\n");
-}
-
-// src/service.ts
-import swarm, { storage } from "swarm";
-
-// src/agent.ts
-var commentAgentSchema = external_exports.object({
-  name: external_exports.string(),
-  /** bb's provider id, such as "claude-code". */
-  provider: external_exports.string(),
-  /** The provider's mark: a base64 SVG data URL, drawn as a mask. */
-  icon: external_exports.string().optional(),
-  /** The mark's color in each theme. */
-  tint: external_exports.object({ light: external_exports.string(), dark: external_exports.string() }).optional(),
-  /** A link to the bb thread the agent ran in. */
-  url: external_exports.string().optional(),
-  /** The bb thread the agent ran in. */
-  threadId: external_exports.string().optional()
-});
-var MAX_NAME = 60;
-var MAX_AGENT_ICON = 12e3;
-var ICON = /^data:image\/svg\+xml;base64,[A-Za-z0-9+/]+={0,2}$/;
-var THREAD_ID = /^[\w-]{1,64}$/;
-var COLOR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
-function parseCommentAgent(value) {
-  if (!value || typeof value !== "object") return null;
-  const raw = value;
-  const name = typeof raw.name === "string" ? raw.name.trim() : "";
-  const provider2 = typeof raw.provider === "string" ? raw.provider : "";
-  if (!name || !provider2) return null;
-  const agent2 = {
-    name: name.slice(0, MAX_NAME),
-    provider: provider2.slice(0, MAX_NAME)
-  };
-  if (typeof raw.icon === "string" && raw.icon.length <= MAX_AGENT_ICON && ICON.test(raw.icon)) {
-    agent2.icon = raw.icon;
-  }
-  const tint = raw.tint;
-  if (tint && typeof tint.light === "string" && typeof tint.dark === "string" && COLOR.test(tint.light) && COLOR.test(tint.dark)) {
-    agent2.tint = { light: tint.light, dark: tint.dark };
-  }
-  if (typeof raw.url === "string" && /^https?:\/\//i.test(raw.url)) {
-    try {
-      agent2.url = new URL(raw.url).href;
-    } catch {
-    }
-  }
-  if (typeof raw.threadId === "string" && THREAD_ID.test(raw.threadId)) {
-    agent2.threadId = raw.threadId;
-  }
-  return agent2;
 }
 
 // node_modules/marked/lib/marked.esm.js
@@ -40520,7 +40326,7 @@ function withoutCheckbox(tokens) {
   return tokens.filter((token) => token.type !== "checkbox").map(
     (token, index) => index === 0 && token.type === "paragraph" && token.tokens ? {
       ...token,
-      tokens: token.tokens.filter((inline3) => inline3.type !== "checkbox")
+      tokens: token.tokens.filter((inline2) => inline2.type !== "checkbox")
     } : token
   );
 }
@@ -40607,7 +40413,8 @@ function htmlToMarkdown(html, options) {
     headingStyle: "atx",
     codeBlockStyle: "fenced",
     bulletListMarker: "-",
-    emDelimiter: "_"
+    emDelimiter: "_",
+    hr: "---"
   });
   turndown.addRule("mention", {
     filter: (node2) => node2.nodeName === "SPAN" && node2.getAttribute("data-type") === "mention",
@@ -40625,6 +40432,24 @@ function htmlToMarkdown(html, options) {
       const checked = node2.getAttribute("data-checked") === "true";
       const text2 = content.replace(/^\n+|\n+$/g, "").replace(/\n/g, "\n  ");
       return `- [${checked ? "x" : " "}] ${text2}
+`;
+    }
+  });
+  turndown.addRule("table", {
+    filter: "table",
+    replacement: (_content, node2) => {
+      const rows2 = Array.from(node2.querySelectorAll("tr")).map(
+        (tr2) => Array.from(tr2.children).map(
+          (cell) => turndown.turndown(cell.innerHTML).replace(/\n+/g, " ").replace(/\|/g, "\\|").trim()
+        )
+      );
+      if (rows2.length === 0) return "";
+      const width = Math.max(...rows2.map((row) => row.length));
+      const line = (row) => `| ${Array.from({ length: width }, (_2, i2) => row[i2] ?? "").join(" | ")} |`;
+      return `
+
+${[line(rows2[0]), line(Array.from({ length: width }, () => "---")), ...rows2.slice(1).map(line)].join("\n")}
+
 `;
     }
   });
@@ -40659,13 +40484,13 @@ var import_domino = __toESM(require_lib(), 1);
 // node_modules/@tiptap/core/dist/rolldown-runtime-D7D4PA-g.js
 var __defProp2 = Object.defineProperty;
 var __exportAll = (all2, no_symbols) => {
-  let target = {};
-  for (var name in all2) __defProp2(target, name, {
+  let target2 = {};
+  for (var name in all2) __defProp2(target2, name, {
     get: all2[name],
     enumerable: true
   });
-  if (!no_symbols) __defProp2(target, Symbol.toStringTag, { value: "Module" });
-  return target;
+  if (!no_symbols) __defProp2(target2, Symbol.toStringTag, { value: "Module" });
+  return target2;
 };
 
 // node_modules/orderedmap/dist/index.js
@@ -40872,12 +40697,12 @@ var Fragment = class _Fragment {
   positions (relative to start of this fragment). Doesn't descend
   into a node when the callback returns `false`.
   */
-  nodesBetween(from3, to, f2, nodeStart = 0, parent) {
+  nodesBetween(from4, to, f2, nodeStart = 0, parent) {
     for (let i2 = 0, pos = 0; pos < to; i2++) {
       let child = this.content[i2], end = pos + child.nodeSize;
-      if (end > from3 && f2(child, nodeStart + pos, parent || null, i2) !== false && child.content.size) {
+      if (end > from4 && f2(child, nodeStart + pos, parent || null, i2) !== false && child.content.size) {
         let start = pos + 1;
-        child.nodesBetween(Math.max(0, from3 - start), Math.min(child.content.size, to - start), f2, nodeStart + start);
+        child.nodesBetween(Math.max(0, from4 - start), Math.min(child.content.size, to - start), f2, nodeStart + start);
       }
       pos = end;
     }
@@ -40894,10 +40719,10 @@ var Fragment = class _Fragment {
   Extract the text between `from` and `to`. See the same method on
   [`Node`](https://prosemirror.net/docs/ref/#model.Node.textBetween).
   */
-  textBetween(from3, to, blockSeparator, leafText) {
+  textBetween(from4, to, blockSeparator, leafText) {
     let text2 = "", first2 = true;
-    this.nodesBetween(from3, to, (node2, pos) => {
-      let nodeText = node2.isText ? node2.text.slice(Math.max(from3, pos) - pos, to - pos) : !node2.isLeaf ? "" : leafText ? typeof leafText === "function" ? leafText(node2) : leafText : node2.type.spec.leafText ? node2.type.spec.leafText(node2) : "";
+    this.nodesBetween(from4, to, (node2, pos) => {
+      let nodeText = node2.isText ? node2.text.slice(Math.max(from4, pos) - pos, to - pos) : !node2.isLeaf ? "" : leafText ? typeof leafText === "function" ? leafText(node2) : leafText : node2.type.spec.leafText ? node2.type.spec.leafText(node2) : "";
       if (node2.isBlock && (node2.isLeaf && nodeText || node2.isTextblock) && blockSeparator) {
         if (first2)
           first2 = false;
@@ -40929,19 +40754,19 @@ var Fragment = class _Fragment {
   /**
   Cut out the sub-fragment between the two given positions.
   */
-  cut(from3, to = this.size) {
-    if (from3 == 0 && to == this.size)
+  cut(from4, to = this.size) {
+    if (from4 == 0 && to == this.size)
       return this;
     let result = [], size3 = 0;
-    if (to > from3)
+    if (to > from4)
       for (let i2 = 0, pos = 0; pos < to; i2++) {
         let child = this.content[i2], end = pos + child.nodeSize;
-        if (end > from3) {
-          if (pos < from3 || end > to) {
+        if (end > from4) {
+          if (pos < from4 || end > to) {
             if (child.isText)
-              child = child.cut(Math.max(0, from3 - pos), Math.min(child.text.length, to - pos));
+              child = child.cut(Math.max(0, from4 - pos), Math.min(child.text.length, to - pos));
             else
-              child = child.cut(Math.max(0, from3 - pos - 1), Math.min(child.content.size, to - pos - 1));
+              child = child.cut(Math.max(0, from4 - pos - 1), Math.min(child.content.size, to - pos - 1));
           }
           result.push(child);
           size3 += child.nodeSize;
@@ -40953,12 +40778,12 @@ var Fragment = class _Fragment {
   /**
   @internal
   */
-  cutByIndex(from3, to) {
-    if (from3 == to)
+  cutByIndex(from4, to) {
+    if (from4 == to)
       return _Fragment.empty;
-    if (from3 == 0 && to == this.content.length)
+    if (from4 == 0 && to == this.content.length)
       return this;
-    return new _Fragment(this.content.slice(from3, to));
+    return new _Fragment(this.content.slice(from4, to));
   }
   /**
   Create a new fragment in which the node at the given index is
@@ -41268,8 +41093,8 @@ var Mark = class _Mark {
     let type = schema2.marks[json2.type];
     if (!type)
       throw new RangeError(`There is no mark type ${json2.type} in this schema`);
-    let mark = type.create(json2.attrs);
-    return mark;
+    let mark2 = type.create(json2.attrs);
+    return mark2;
   }
   /**
   Test whether two sets of marks are identical.
@@ -41335,8 +41160,8 @@ var Slice = class _Slice {
   /**
   @internal
   */
-  removeBetween(from3, to) {
-    return new _Slice(removeRange(this.content, from3 + this.openStart, to + this.openStart), this.openStart, this.openEnd);
+  removeBetween(from4, to) {
+    return new _Slice(removeRange(this.content, from4 + this.openStart, to + this.openStart), this.openStart, this.openEnd);
   }
   /**
   Tests whether this slice is equal to another slice.
@@ -41388,17 +41213,17 @@ var Slice = class _Slice {
   }
 };
 Slice.empty = new Slice(Fragment.empty, 0, 0);
-function removeRange(content, from3, to) {
-  let { index, offset: offset3 } = content.findIndex(from3), child = content.maybeChild(index);
+function removeRange(content, from4, to) {
+  let { index, offset: offset3 } = content.findIndex(from4), child = content.maybeChild(index);
   let { index: indexTo, offset: offsetTo } = content.findIndex(to);
-  if (offset3 == from3 || child.isText) {
+  if (offset3 == from4 || child.isText) {
     if (offsetTo != to && !content.child(indexTo).isText)
       throw new RangeError("Removing non-flat range");
-    return content.cut(0, from3).append(content.cut(to));
+    return content.cut(0, from4).append(content.cut(to));
   }
   if (index != indexTo)
     throw new RangeError("Removing non-flat range");
-  return content.replaceChild(index, child.copy(removeRange(child.content, from3 - offset3 - 1, to - offset3 - 1)));
+  return content.replaceChild(index, child.copy(removeRange(child.content, from4 - offset3 - 1, to - offset3 - 1)));
 }
 function insertInto(content, dist, insert, openStart, openEnd, parent) {
   let { index, offset: offset3 } = content.findIndex(dist), child = content.maybeChild(index);
@@ -41441,14 +41266,14 @@ function joinable($before, $after, depth) {
   checkJoin(node2, $after.node(depth));
   return node2;
 }
-function addNode(child, target) {
-  let last2 = target.length - 1;
-  if (last2 >= 0 && child.isText && child.sameMarkup(target[last2]))
-    target[last2] = child.withText(target[last2].text + child.text);
+function addNode(child, target2) {
+  let last2 = target2.length - 1;
+  if (last2 >= 0 && child.isText && child.sameMarkup(target2[last2]))
+    target2[last2] = child.withText(target2[last2].text + child.text);
   else
-    target.push(child);
+    target2.push(child);
 }
-function addRange($start, $end, depth, target) {
+function addRange($start, $end, depth, target2) {
   let node2 = ($end || $start).node(depth);
   let startIndex = 0, endIndex = $end ? $end.index(depth) : node2.childCount;
   if ($start) {
@@ -41456,14 +41281,14 @@ function addRange($start, $end, depth, target) {
     if ($start.depth > depth) {
       startIndex++;
     } else if ($start.textOffset) {
-      addNode($start.nodeAfter, target);
+      addNode($start.nodeAfter, target2);
       startIndex++;
     }
   }
   for (let i2 = startIndex; i2 < endIndex; i2++)
-    addNode(node2.child(i2), target);
+    addNode(node2.child(i2), target2);
   if ($end && $end.depth == depth && $end.textOffset)
-    addNode($end.nodeBefore, target);
+    addNode($end.nodeBefore, target2);
 }
 function close(node2, content) {
   if (!node2.type.validContent(content))
@@ -41896,8 +41721,8 @@ var Node3 = class _Node {
   recursed over. The last parameter can be used to specify a
   starting position to count from.
   */
-  nodesBetween(from3, to, f2, startPos = 0) {
-    this.content.nodesBetween(from3, to, f2, startPos, this);
+  nodesBetween(from4, to, f2, startPos = 0) {
+    this.content.nodesBetween(from4, to, f2, startPos, this);
   }
   /**
   Call the given callback for every descendant node. Doesn't
@@ -41920,8 +41745,8 @@ var Node3 = class _Node {
   inserted for every non-text leaf node encountered, otherwise
   [`leafText`](https://prosemirror.net/docs/ref/#model.NodeSpec.leafText) will be used.
   */
-  textBetween(from3, to, blockSeparator, leafText) {
-    return this.content.textBetween(from3, to, blockSeparator, leafText);
+  textBetween(from4, to, blockSeparator, leafText) {
+    return this.content.textBetween(from4, to, blockSeparator, leafText);
   }
   /**
   Returns this node's first child, or `null` if there are no
@@ -41978,19 +41803,19 @@ var Node3 = class _Node {
   given positions. If `to` is not given, it defaults to the end of
   the node.
   */
-  cut(from3, to = this.content.size) {
-    if (from3 == 0 && to == this.content.size)
+  cut(from4, to = this.content.size) {
+    if (from4 == 0 && to == this.content.size)
       return this;
-    return this.copy(this.content.cut(from3, to));
+    return this.copy(this.content.cut(from4, to));
   }
   /**
   Cut out the part of the document between the given positions, and
   return it as a `Slice` object.
   */
-  slice(from3, to = this.content.size, includeParents = false) {
-    if (from3 == to)
+  slice(from4, to = this.content.size, includeParents = false) {
+    if (from4 == to)
       return Slice.empty;
-    let $from = this.resolve(from3), $to = this.resolve(to);
+    let $from = this.resolve(from4), $to = this.resolve(to);
     let depth = includeParents ? 0 : $from.sharedDepth(to);
     let start = $from.start(depth), node2 = $from.node(depth);
     let content = node2.content.cut($from.pos - start, $to.pos - start);
@@ -42004,8 +41829,8 @@ var Node3 = class _Node {
   into. If any of this is violated, an error of type
   [`ReplaceError`](https://prosemirror.net/docs/ref/#model.ReplaceError) is thrown.
   */
-  replace(from3, to, slice2) {
-    return replace(this.resolve(from3), this.resolve(to), slice2);
+  replace(from4, to, slice2) {
+    return replace(this.resolve(from4), this.resolve(to), slice2);
   }
   /**
   Find the node directly after the given position.
@@ -42061,10 +41886,10 @@ var Node3 = class _Node {
   Test whether a given mark or mark type occurs in this document
   between the two given positions.
   */
-  rangeHasMark(from3, to, type) {
+  rangeHasMark(from4, to, type) {
     let found2 = false;
-    if (to > from3)
-      this.nodesBetween(from3, to, (node2) => {
+    if (to > from4)
+      this.nodesBetween(from4, to, (node2) => {
         if (type.isInSet(node2.marks))
           found2 = true;
         return !found2;
@@ -42147,8 +41972,8 @@ var Node3 = class _Node {
   can optionally pass `start` and `end` indices into the
   replacement fragment.
   */
-  canReplace(from3, to, replacement = Fragment.empty, start = 0, end = replacement.childCount) {
-    let one = this.contentMatchAt(from3).matchFragment(replacement, start, end);
+  canReplace(from4, to, replacement = Fragment.empty, start = 0, end = replacement.childCount) {
+    let one = this.contentMatchAt(from4).matchFragment(replacement, start, end);
     let two = one && one.matchFragment(this.content, to);
     if (!two || !two.validEnd)
       return false;
@@ -42161,10 +41986,10 @@ var Node3 = class _Node {
   Test whether replacing the range `from` to `to` (by index) with
   a node of the given type would leave the node's content valid.
   */
-  canReplaceWith(from3, to, type, marks) {
+  canReplaceWith(from4, to, type, marks) {
     if (marks && !this.type.allowsMarks(marks))
       return false;
-    let start = this.contentMatchAt(from3).matchType(type);
+    let start = this.contentMatchAt(from4).matchType(type);
     let end = start && start.matchFragment(this.content, to);
     return end ? end.validEnd : false;
   }
@@ -42189,9 +42014,9 @@ var Node3 = class _Node {
     checkAttrs(this.type.attrs, this.attrs, "node", this.type.name);
     let copy3 = Mark.none;
     for (let i2 = 0; i2 < this.marks.length; i2++) {
-      let mark = this.marks[i2];
-      checkAttrs(mark.type.attrs, mark.attrs, "mark", mark.type.name);
-      copy3 = mark.addToSet(copy3);
+      let mark2 = this.marks[i2];
+      checkAttrs(mark2.type.attrs, mark2.attrs, "mark", mark2.type.name);
+      copy3 = mark2.addToSet(copy3);
     }
     if (!Mark.sameSet(copy3, this.marks))
       throw new RangeError(`Invalid collection of marks for node ${this.type.name}: ${this.marks.map((m) => m.type.name)}`);
@@ -42253,8 +42078,8 @@ var TextNode = class _TextNode extends Node3 {
   get textContent() {
     return this.text;
   }
-  textBetween(from3, to) {
-    return this.text.slice(from3, to);
+  textBetween(from4, to) {
+    return this.text.slice(from4, to);
   }
   get nodeSize() {
     return this.text.length;
@@ -42267,10 +42092,10 @@ var TextNode = class _TextNode extends Node3 {
       return this;
     return new _TextNode(this.type, this.attrs, text2, this.marks);
   }
-  cut(from3 = 0, to = this.text.length) {
-    if (from3 == 0 && to == this.text.length)
+  cut(from4 = 0, to = this.text.length) {
+    if (from4 == 0 && to == this.text.length)
       return this;
-    return this.withText(this.text.slice(from3, to));
+    return this.withText(this.text.slice(from4, to));
   }
   eq(other) {
     return this.sameMarkup(other) && this.text == other.text;
@@ -42376,7 +42201,7 @@ var ContentMatch = class _ContentMatch {
   */
   fillBefore(after, toEnd = false, startIndex = 0) {
     let seen = [this];
-    function search(match2, types) {
+    function search2(match2, types) {
       let finished = match2.matchFragment(after, startIndex);
       if (finished && (!toEnd || finished.validEnd))
         return Fragment.from(types.map((tp) => tp.createAndFill()));
@@ -42384,14 +42209,14 @@ var ContentMatch = class _ContentMatch {
         let { type, next: next2 } = match2.next[i2];
         if (!(type.isText || type.hasRequiredAttrs()) && seen.indexOf(next2) == -1) {
           seen.push(next2);
-          let found2 = search(next2, types.concat(type));
+          let found2 = search2(next2, types.concat(type));
           if (found2)
             return found2;
         }
       }
       return null;
     }
-    return search(this, []);
+    return search2(this, []);
   }
   /**
   Find a set of wrapping node types that would allow a node of the
@@ -42399,22 +42224,22 @@ var ContentMatch = class _ContentMatch {
   (when it fits directly) and will be null when no such wrapping
   exists.
   */
-  findWrapping(target) {
+  findWrapping(target2) {
     for (let i2 = 0; i2 < this.wrapCache.length; i2 += 2)
-      if (this.wrapCache[i2] == target)
+      if (this.wrapCache[i2] == target2)
         return this.wrapCache[i2 + 1];
-    let computed = this.computeWrapping(target);
-    this.wrapCache.push(target, computed);
+    let computed = this.computeWrapping(target2);
+    this.wrapCache.push(target2, computed);
     return computed;
   }
   /**
   @internal
   */
-  computeWrapping(target) {
+  computeWrapping(target2) {
     let seen = /* @__PURE__ */ Object.create(null), active = [{ match: this, type: null, via: null }];
     while (active.length) {
       let current = active.shift(), match2 = current.match;
-      if (match2.matchType(target)) {
+      if (match2.matchType(target2)) {
         let result = [];
         for (let obj = current; obj.type; obj = obj.via)
           result.push(obj.type);
@@ -42574,61 +42399,61 @@ function parseExprAtom(stream) {
 }
 function nfa(expr) {
   let nfa2 = [[]];
-  connect2(compile2(expr, 0), node2());
+  connect3(compile2(expr, 0), node2());
   return nfa2;
   function node2() {
     return nfa2.push([]) - 1;
   }
-  function edge(from3, to, term) {
+  function edge(from4, to, term) {
     let edge2 = { term, to };
-    nfa2[from3].push(edge2);
+    nfa2[from4].push(edge2);
     return edge2;
   }
-  function connect2(edges, to) {
+  function connect3(edges, to) {
     edges.forEach((edge2) => edge2.to = to);
   }
-  function compile2(expr2, from3) {
+  function compile2(expr2, from4) {
     if (expr2.type == "choice") {
-      return expr2.exprs.reduce((out, expr3) => out.concat(compile2(expr3, from3)), []);
+      return expr2.exprs.reduce((out, expr3) => out.concat(compile2(expr3, from4)), []);
     } else if (expr2.type == "seq") {
       for (let i2 = 0; ; i2++) {
-        let next2 = compile2(expr2.exprs[i2], from3);
+        let next2 = compile2(expr2.exprs[i2], from4);
         if (i2 == expr2.exprs.length - 1)
           return next2;
-        connect2(next2, from3 = node2());
+        connect3(next2, from4 = node2());
       }
     } else if (expr2.type == "star") {
       let loop = node2();
-      edge(from3, loop);
-      connect2(compile2(expr2.expr, loop), loop);
+      edge(from4, loop);
+      connect3(compile2(expr2.expr, loop), loop);
       return [edge(loop)];
     } else if (expr2.type == "plus") {
       let loop = node2();
-      connect2(compile2(expr2.expr, from3), loop);
-      connect2(compile2(expr2.expr, loop), loop);
+      connect3(compile2(expr2.expr, from4), loop);
+      connect3(compile2(expr2.expr, loop), loop);
       return [edge(loop)];
     } else if (expr2.type == "opt") {
-      return [edge(from3)].concat(compile2(expr2.expr, from3));
+      return [edge(from4)].concat(compile2(expr2.expr, from4));
     } else if (expr2.type == "range") {
-      let cur = from3;
+      let cur = from4;
       for (let i2 = 0; i2 < expr2.min; i2++) {
         let next2 = node2();
-        connect2(compile2(expr2.expr, cur), next2);
+        connect3(compile2(expr2.expr, cur), next2);
         cur = next2;
       }
       if (expr2.max == -1) {
-        connect2(compile2(expr2.expr, cur), cur);
+        connect3(compile2(expr2.expr, cur), cur);
       } else {
         for (let i2 = expr2.min; i2 < expr2.max; i2++) {
           let next2 = node2();
           edge(cur, next2);
-          connect2(compile2(expr2.expr, cur), next2);
+          connect3(compile2(expr2.expr, cur), next2);
           cur = next2;
         }
       }
       return [edge(cur)];
     } else if (expr2.type == "name") {
-      return [edge(from3, void 0, expr2.value)];
+      return [edge(from4, void 0, expr2.value)];
     } else {
       throw new Error("Unknown expr type");
     }
@@ -43094,14 +42919,14 @@ var Schema = class {
 function gatherMarks(schema2, marks) {
   let found2 = [];
   for (let i2 = 0; i2 < marks.length; i2++) {
-    let name = marks[i2], mark = schema2.marks[name], ok = mark;
-    if (mark) {
-      found2.push(mark);
+    let name = marks[i2], mark2 = schema2.marks[name], ok = mark2;
+    if (mark2) {
+      found2.push(mark2);
     } else {
       for (let prop in schema2.marks) {
-        let mark2 = schema2.marks[prop];
-        if (name == "_" || mark2.spec.group && mark2.spec.group.split(" ").indexOf(name) > -1)
-          found2.push(ok = mark2);
+        let mark3 = schema2.marks[prop];
+        if (name == "_" || mark3.spec.group && mark3.spec.group.split(" ").indexOf(name) > -1)
+          found2.push(ok = mark3);
       }
     }
     if (!ok)
@@ -43802,10 +43627,10 @@ var DOMSerializer = class _DOMSerializer {
   document, should be passed so that the serializer can create
   nodes.
   */
-  serializeFragment(fragment, options = {}, target) {
-    if (!target)
-      target = doc(options).createDocumentFragment();
-    let top = target, active = [];
+  serializeFragment(fragment, options = {}, target2) {
+    if (!target2)
+      target2 = doc(options).createDocumentFragment();
+    let top = target2, active = [];
     fragment.forEach((node2) => {
       if (active.length || node2.marks.length) {
         let keep = 0, rendered = 0;
@@ -43834,7 +43659,7 @@ var DOMSerializer = class _DOMSerializer {
       }
       top.appendChild(this.serializeNodeInner(node2, options));
     });
-    return target;
+    return target2;
   }
   /**
   @internal
@@ -43871,9 +43696,9 @@ var DOMSerializer = class _DOMSerializer {
   /**
   @internal
   */
-  serializeMark(mark, inline3, options = {}) {
-    let toDOM = this.marks[mark.type.name];
-    return toDOM && renderSpec(doc(options), toDOM(mark, inline3), null, mark.attrs);
+  serializeMark(mark2, inline2, options = {}) {
+    let toDOM = this.marks[mark2.type.name];
+    return toDOM && renderSpec(doc(options), toDOM(mark2, inline2), null, mark2.attrs);
   }
   static renderSpec(doc4, structure, xmlNS = null, blockArraysIn) {
     if (typeof structure == "string")
@@ -44164,9 +43989,9 @@ var Mapping = class _Mapping {
   /**
   Create a new mapping with the given position maps.
   */
-  constructor(maps, mirror, from3 = 0, to = maps ? maps.length : 0) {
+  constructor(maps, mirror, from4 = 0, to = maps ? maps.length : 0) {
     this.mirror = mirror;
-    this.from = from3;
+    this.from = from4;
     this.to = to;
     this._maps = maps || [];
     this.ownData = !(maps || mirror);
@@ -44180,8 +44005,8 @@ var Mapping = class _Mapping {
   /**
   Create a mapping that maps only through a part of this one.
   */
-  slice(from3 = 0, to = this.maps.length) {
-    return new _Mapping(this._maps, this.mirror, from3, to);
+  slice(from4 = 0, to = this.maps.length) {
+    return new _Mapping(this._maps, this.mirror, from4, to);
   }
   /**
   Add a step map to the end of this mapping. If `mirrors` is
@@ -44331,9 +44156,9 @@ var StepResult = class _StepResult {
   /**
   @internal
   */
-  constructor(doc4, failed) {
+  constructor(doc4, failed2) {
     this.doc = doc4;
-    this.failed = failed;
+    this.failed = failed2;
   }
   /**
   Create a successful step result.
@@ -44352,9 +44177,9 @@ var StepResult = class _StepResult {
   arguments. Create a successful result if it succeeds, and a
   failed one if it throws a `ReplaceError`.
   */
-  static fromReplace(doc4, from3, to, slice2) {
+  static fromReplace(doc4, from4, to, slice2) {
     try {
-      return _StepResult.ok(doc4.replace(from3, to, slice2));
+      return _StepResult.ok(doc4.replace(from4, to, slice2));
     } catch (e) {
       if (e instanceof ReplaceError)
         return _StepResult.fail(e.message);
@@ -44378,11 +44203,11 @@ var AddMarkStep = class _AddMarkStep extends Step {
   /**
   Create a mark step.
   */
-  constructor(from3, to, mark) {
+  constructor(from4, to, mark2) {
     super();
-    this.from = from3;
+    this.from = from4;
     this.to = to;
-    this.mark = mark;
+    this.mark = mark2;
   }
   apply(doc4) {
     let oldSlice = doc4.slice(this.from, this.to), $from = doc4.resolve(this.from);
@@ -44400,21 +44225,21 @@ var AddMarkStep = class _AddMarkStep extends Step {
       if (node2.isInline && node2.isAtom) {
         let added = this.mark.addToSet(node2.marks);
         if (!Mark.sameSet(added, node2.marks)) {
-          let from3 = Math.max(this.from, pos), to = Math.min(this.to, pos + node2.nodeSize);
-          pushMarkStep(RemoveMarkStep, from3, to, this.mark, steps);
-          for (let mark of node2.marks)
-            if (!mark.isInSet(added))
-              pushMarkStep(_AddMarkStep, from3, to, mark, steps);
+          let from4 = Math.max(this.from, pos), to = Math.min(this.to, pos + node2.nodeSize);
+          pushMarkStep(RemoveMarkStep, from4, to, this.mark, steps);
+          for (let mark2 of node2.marks)
+            if (!mark2.isInSet(added))
+              pushMarkStep(_AddMarkStep, from4, to, mark2, steps);
         }
       }
     });
     return steps.length == 1 ? steps[0] : new MarkSetStep(steps);
   }
   map(mapping) {
-    let from3 = mapping.map(this.from, 1), to = mapping.map(this.to, -1);
-    if (from3 >= to)
+    let from4 = mapping.map(this.from, 1), to = mapping.map(this.to, -1);
+    if (from4 >= to)
       return null;
-    return new _AddMarkStep(from3, to, this.mark);
+    return new _AddMarkStep(from4, to, this.mark);
   }
   merge(other) {
     if (other instanceof _AddMarkStep && other.mark.eq(this.mark) && this.from <= other.to && this.to >= other.from)
@@ -44443,11 +44268,11 @@ var RemoveMarkStep = class _RemoveMarkStep extends Step {
   /**
   Create a mark-removing step.
   */
-  constructor(from3, to, mark) {
+  constructor(from4, to, mark2) {
     super();
-    this.from = from3;
+    this.from = from4;
     this.to = to;
-    this.mark = mark;
+    this.mark = mark2;
   }
   apply(doc4) {
     let oldSlice = doc4.slice(this.from, this.to);
@@ -44465,10 +44290,10 @@ var RemoveMarkStep = class _RemoveMarkStep extends Step {
     return steps.length == 1 ? steps[0] : new MarkSetStep(steps);
   }
   map(mapping) {
-    let from3 = mapping.map(this.from, 1), to = mapping.map(this.to, -1);
-    if (from3 >= to)
+    let from4 = mapping.map(this.from, 1), to = mapping.map(this.to, -1);
+    if (from4 >= to)
       return null;
-    return new _RemoveMarkStep(from3, to, this.mark);
+    return new _RemoveMarkStep(from4, to, this.mark);
   }
   merge(other) {
     if (other instanceof _RemoveMarkStep && other.mark.eq(this.mark) && this.from <= other.to && this.to >= other.from)
@@ -44493,12 +44318,12 @@ var RemoveMarkStep = class _RemoveMarkStep extends Step {
   }
 };
 Step.jsonID("removeMark", RemoveMarkStep);
-function pushMarkStep(cls, from3, to, mark, target) {
-  let last2 = target.length ? target[target.length - 1] : null;
-  if (last2 && last2 instanceof cls && last2.to == from3 && last2.mark.eq(mark)) {
-    target[target.length - 1] = new cls(last2.from, to, mark);
+function pushMarkStep(cls, from4, to, mark2, target2) {
+  let last2 = target2.length ? target2[target2.length - 1] : null;
+  if (last2 && last2 instanceof cls && last2.to == from4 && last2.mark.eq(mark2)) {
+    target2[target2.length - 1] = new cls(last2.from, to, mark2);
   } else {
-    target.push(new cls(from3, to, mark));
+    target2.push(new cls(from4, to, mark2));
   }
 }
 var MarkSetStep = class _MarkSetStep extends Step {
@@ -44541,10 +44366,10 @@ var AddNodeMarkStep = class _AddNodeMarkStep extends Step {
   /**
   Create a node mark step.
   */
-  constructor(pos, mark) {
+  constructor(pos, mark2) {
     super();
     this.pos = pos;
-    this.mark = mark;
+    this.mark = mark2;
   }
   apply(doc4) {
     let node2 = doc4.nodeAt(this.pos);
@@ -44587,10 +44412,10 @@ var RemoveNodeMarkStep = class _RemoveNodeMarkStep extends Step {
   /**
   Create a mark-removing step.
   */
-  constructor(pos, mark) {
+  constructor(pos, mark2) {
     super();
     this.pos = pos;
-    this.mark = mark;
+    this.mark = mark2;
   }
   apply(doc4) {
     let node2 = doc4.nodeAt(this.pos);
@@ -44632,9 +44457,9 @@ var ReplaceStep = class _ReplaceStep extends Step {
   tokens (this is to guard against rebased replace steps
   overwriting something they weren't supposed to).
   */
-  constructor(from3, to, slice2, structure = false) {
+  constructor(from4, to, slice2, structure = false) {
     super();
-    this.from = from3;
+    this.from = from4;
     this.to = to;
     this.slice = slice2;
     this.structure = structure;
@@ -44652,10 +44477,10 @@ var ReplaceStep = class _ReplaceStep extends Step {
   }
   map(mapping) {
     let to = mapping.mapResult(this.to, -1);
-    let from3 = this.from == this.to && _ReplaceStep.MAP_BIAS < 0 ? to : mapping.mapResult(this.from, 1);
-    if (from3.deletedAcross && to.deletedAcross)
+    let from4 = this.from == this.to && _ReplaceStep.MAP_BIAS < 0 ? to : mapping.mapResult(this.from, 1);
+    if (from4.deletedAcross && to.deletedAcross)
       return null;
-    return new _ReplaceStep(from3.pos, Math.max(from3.pos, to.pos), this.slice, this.structure);
+    return new _ReplaceStep(from4.pos, Math.max(from4.pos, to.pos), this.slice, this.structure);
   }
   merge(other) {
     if (!(other instanceof _ReplaceStep) || other.structure || this.structure)
@@ -44696,9 +44521,9 @@ var ReplaceAroundStep = class _ReplaceAroundStep extends Step {
   of the gap should be moved. `structure` has the same meaning as
   it has in the [`ReplaceStep`](https://prosemirror.net/docs/ref/#transform.ReplaceStep) class.
   */
-  constructor(from3, to, gapFrom, gapTo, slice2, insert, structure = false) {
+  constructor(from4, to, gapFrom, gapTo, slice2, insert, structure = false) {
     super();
-    this.from = from3;
+    this.from = from4;
     this.to = to;
     this.gapFrom = gapFrom;
     this.gapTo = gapTo;
@@ -44732,12 +44557,12 @@ var ReplaceAroundStep = class _ReplaceAroundStep extends Step {
     return new _ReplaceAroundStep(this.from, this.from + this.slice.size + gap, this.from + this.insert, this.from + this.insert + gap, doc4.slice(this.from, this.to).removeBetween(this.gapFrom - this.from, this.gapTo - this.from), this.gapFrom - this.from, this.structure);
   }
   map(mapping) {
-    let from3 = mapping.mapResult(this.from, 1), to = mapping.mapResult(this.to, -1);
-    let gapFrom = this.from == this.gapFrom ? from3.pos : mapping.map(this.gapFrom, -1);
+    let from4 = mapping.mapResult(this.from, 1), to = mapping.mapResult(this.to, -1);
+    let gapFrom = this.from == this.gapFrom ? from4.pos : mapping.map(this.gapFrom, -1);
     let gapTo = this.to == this.gapTo ? to.pos : mapping.map(this.gapTo, 1);
-    if (from3.deletedAcross && to.deletedAcross || gapFrom < from3.pos || gapTo > to.pos)
+    if (from4.deletedAcross && to.deletedAcross || gapFrom < from4.pos || gapTo > to.pos)
       return null;
-    return new _ReplaceAroundStep(from3.pos, to.pos, gapFrom, gapTo, this.slice, this.insert, this.structure);
+    return new _ReplaceAroundStep(from4.pos, to.pos, gapFrom, gapTo, this.slice, this.insert, this.structure);
   }
   toJSON() {
     let json2 = {
@@ -44764,8 +44589,8 @@ var ReplaceAroundStep = class _ReplaceAroundStep extends Step {
   }
 };
 Step.jsonID("replaceAround", ReplaceAroundStep);
-function contentBetween(doc4, from3, to) {
-  let $from = doc4.resolve(from3), dist = to - from3, depth = $from.depth;
+function contentBetween(doc4, from4, to) {
+  let $from = doc4.resolve(from4), dist = to - from4, depth = $from.depth;
   while (dist > 0 && depth > 0 && $from.indexAfter(depth) == $from.node(depth).childCount) {
     depth--;
     dist--;
@@ -44781,35 +44606,35 @@ function contentBetween(doc4, from3, to) {
   }
   return false;
 }
-function addMark(tr2, from3, to, mark) {
+function addMark(tr2, from4, to, mark2) {
   let added = [];
-  tr2.doc.nodesBetween(from3, to, (node2, pos, parent) => {
+  tr2.doc.nodesBetween(from4, to, (node2, pos, parent) => {
     if (!node2.isInline)
       return;
     let marks = node2.marks;
-    if (!mark.isInSet(marks) && parent.type.allowsMarkType(mark.type)) {
-      let start = Math.max(pos, from3), end = Math.min(pos + node2.nodeSize, to);
-      pushMarkStep(AddMarkStep, start, end, mark, added);
+    if (!mark2.isInSet(marks) && parent.type.allowsMarkType(mark2.type)) {
+      let start = Math.max(pos, from4), end = Math.min(pos + node2.nodeSize, to);
+      pushMarkStep(AddMarkStep, start, end, mark2, added);
     }
   });
   added.forEach((s) => tr2.step(s));
 }
-function removeMark(tr2, from3, to, mark) {
+function removeMark(tr2, from4, to, mark2) {
   let matched = [], step = 0;
-  tr2.doc.nodesBetween(from3, to, (node2, pos) => {
+  tr2.doc.nodesBetween(from4, to, (node2, pos) => {
     if (!node2.isInline || !node2.isAtom)
       return;
     step++;
     let toRemove = null;
-    if (mark instanceof MarkType) {
+    if (mark2 instanceof MarkType) {
       let set2 = node2.marks, found2;
-      while (found2 = mark.isInSet(set2)) {
+      while (found2 = mark2.isInSet(set2)) {
         (toRemove || (toRemove = [])).push(found2);
         set2 = found2.removeFromSet(set2);
       }
-    } else if (mark) {
-      if (mark.isInSet(node2.marks))
-        toRemove = [mark];
+    } else if (mark2) {
+      if (mark2.isInSet(node2.marks))
+        toRemove = [mark2];
     } else {
       toRemove = node2.marks;
     }
@@ -44826,7 +44651,7 @@ function removeMark(tr2, from3, to, mark) {
           found2.to = end;
           found2.step = step;
         } else {
-          matched.push({ style, from: Math.max(pos, from3), to: end, step });
+          matched.push({ style, from: Math.max(pos, from4), to: end, step });
         }
       }
     }
@@ -44884,12 +44709,12 @@ function liftTarget(range) {
   }
   return null;
 }
-function lift(tr2, range, target) {
+function lift(tr2, range, target2) {
   let { $from, $to, depth } = range;
   let gapStart = $from.before(depth + 1), gapEnd = $to.after(depth + 1);
   let start = gapStart, end = gapEnd;
   let before = Fragment.empty, openStart = 0;
-  for (let d = depth, splitting = false; d > target; d--)
+  for (let d = depth, splitting = false; d > target2; d--)
     if (splitting || $from.index(d) > 0) {
       splitting = true;
       before = Fragment.from($from.node(d).copy(before));
@@ -44898,7 +44723,7 @@ function lift(tr2, range, target) {
       start--;
     }
   let after = Fragment.empty, openEnd = 0;
-  for (let d = depth, splitting = false; d > target; d--)
+  for (let d = depth, splitting = false; d > target2; d--)
     if (splitting || $to.after(d + 1) < $to.end(d)) {
       splitting = true;
       after = Fragment.from($to.node(d).copy(after));
@@ -44953,11 +44778,11 @@ function wrap(tr2, range, wrappers) {
   let start = range.start, end = range.end;
   tr2.step(new ReplaceAroundStep(start, end, start, end, new Slice(content, 0, 0), wrappers.length, true));
 }
-function setBlockType(tr2, from3, to, type, attrs) {
+function setBlockType(tr2, from4, to, type, attrs) {
   if (!type.isTextblock)
     throw new RangeError("Type given to setBlockType should be a textblock");
   let mapFrom = tr2.steps.length;
-  tr2.doc.nodesBetween(from3, to, (node2, pos) => {
+  tr2.doc.nodesBetween(from4, to, (node2, pos) => {
     let attrsHere = typeof attrs == "function" ? attrs(node2) : attrs;
     if (node2.isTextblock && !node2.hasMarkup(type, attrsHere) && canChangeType(tr2.doc, tr2.mapping.slice(mapFrom).map(pos), type)) {
       let convertNewlines = null;
@@ -45164,12 +44989,12 @@ function dropPoint(doc4, pos, slice2) {
   }
   return null;
 }
-function replaceStep(doc4, from3, to = from3, slice2 = Slice.empty) {
-  if (from3 == to && !slice2.size)
+function replaceStep(doc4, from4, to = from4, slice2 = Slice.empty) {
+  if (from4 == to && !slice2.size)
     return null;
-  let $from = doc4.resolve(from3), $to = doc4.resolve(to);
+  let $from = doc4.resolve(from4), $to = doc4.resolve(to);
   if (fitsTrivially($from, $to, slice2))
-    return new ReplaceStep(from3, to, slice2);
+    return new ReplaceStep(from4, to, slice2);
   return new Fitter($from, $to, slice2).fit();
 }
 function fitsTrivially($from, $to, slice2) {
@@ -45347,15 +45172,15 @@ var Fitter = class {
     }
   }
   close($to) {
-    let close2 = this.findCloseLevel($to);
-    if (!close2)
+    let close4 = this.findCloseLevel($to);
+    if (!close4)
       return null;
-    while (this.depth > close2.depth)
+    while (this.depth > close4.depth)
       this.closeFrontierNode();
-    if (close2.fit.childCount)
-      this.placed = addToFragment(this.placed, close2.depth, close2.fit);
-    $to = close2.move;
-    for (let d = close2.depth + 1; d <= $to.depth; d++) {
+    if (close4.fit.childCount)
+      this.placed = addToFragment(this.placed, close4.depth, close4.fit);
+    $to = close4.move;
+    for (let d = close4.depth + 1; d <= $to.depth; d++) {
       let node2 = $to.node(d), add = node2.type.contentMatch.fillBefore(node2.content, true, $to.index(d));
       this.openFrontierNode(node2.type, node2.attrs, add);
     }
@@ -45368,8 +45193,8 @@ var Fitter = class {
     this.frontier.push({ type, match: type.contentMatch });
   }
   closeFrontierNode() {
-    let open2 = this.frontier.pop();
-    let add = open2.match.fillBefore(Fragment.empty, true);
+    let open4 = this.frontier.pop();
+    let add = open4.match.fillBefore(Fragment.empty, true);
     if (add.childCount)
       this.placed = addToFragment(this.placed, this.frontier.length, add);
   }
@@ -45402,8 +45227,8 @@ function closeNodeStart(node2, openStart, openEnd) {
   }
   return node2.copy(frag);
 }
-function contentAfterFits($to, depth, type, match2, open2) {
-  let node2 = $to.node(depth), index = open2 ? $to.indexAfter(depth) : $to.index(depth);
+function contentAfterFits($to, depth, type, match2, open4) {
+  let node2 = $to.node(depth), index = open4 ? $to.indexAfter(depth) : $to.index(depth);
   if (index == node2.childCount && !type.compatibleContent(node2.type))
     return null;
   let fit = match2.fillBefore(node2.content, true, index);
@@ -45426,12 +45251,12 @@ function maxOpen(frag, side) {
     frag = ch.content;
   }
 }
-function replaceRange(tr2, from3, to, slice2) {
+function replaceRange(tr2, from4, to, slice2) {
   if (!slice2.size)
-    return tr2.deleteRange(from3, to);
-  let $from = tr2.doc.resolve(from3), $to = tr2.doc.resolve(to);
+    return tr2.deleteRange(from4, to);
+  let $from = tr2.doc.resolve(from4), $to = tr2.doc.resolve(to);
   if (fitsTrivially($from, $to, slice2))
-    return tr2.step(new ReplaceStep(from3, to, slice2));
+    return tr2.step(new ReplaceStep(from4, to, slice2));
   let targetDepths = coveredDepths($from, $to);
   if (targetDepths[targetDepths.length - 1] == 0)
     targetDepths.pop();
@@ -45480,13 +45305,13 @@ function replaceRange(tr2, from3, to, slice2) {
   }
   let startSteps = tr2.steps.length;
   for (let i2 = targetDepths.length - 1; i2 >= 0; i2--) {
-    tr2.replace(from3, to, slice2);
+    tr2.replace(from4, to, slice2);
     if (tr2.steps.length > startSteps)
       break;
     let depth = targetDepths[i2];
     if (depth < 0)
       continue;
-    from3 = $from.before(depth);
+    from4 = $from.before(depth);
     to = $to.after(depth);
   }
 }
@@ -45502,16 +45327,16 @@ function closeFragment(fragment, depth, oldOpen, newOpen, parent) {
   }
   return fragment;
 }
-function replaceRangeWith(tr2, from3, to, node2) {
-  if (!node2.isInline && from3 == to && tr2.doc.resolve(from3).parent.content.size) {
-    let point = insertPoint(tr2.doc, from3, node2.type);
+function replaceRangeWith(tr2, from4, to, node2) {
+  if (!node2.isInline && from4 == to && tr2.doc.resolve(from4).parent.content.size) {
+    let point = insertPoint(tr2.doc, from4, node2.type);
     if (point != null)
-      from3 = to = point;
+      from4 = to = point;
   }
-  tr2.replaceRange(from3, to, new Slice(Fragment.from(node2), 0, 0));
+  tr2.replaceRange(from4, to, new Slice(Fragment.from(node2), 0, 0));
 }
-function deleteRange(tr2, from3, to) {
-  let $from = tr2.doc.resolve(from3), $to = tr2.doc.resolve(to);
+function deleteRange(tr2, from4, to) {
+  let $from = tr2.doc.resolve(from4), $to = tr2.doc.resolve(to);
   if ($from.parent.isTextblock && $to.parent.isTextblock && $from.start() != $to.start() && $from.parentOffset == 0 && $to.parentOffset == 0) {
     let shared = $from.sharedDepth(to), isolated = false;
     for (let d = $from.depth; d > shared; d--)
@@ -45521,11 +45346,11 @@ function deleteRange(tr2, from3, to) {
       if ($to.node(d).type.spec.isolating)
         isolated = true;
     if (!isolated) {
-      for (let d = $from.depth; d > 0 && from3 == $from.start(d); d--)
-        from3 = $from.before(d);
+      for (let d = $from.depth; d > 0 && from4 == $from.start(d); d--)
+        from4 = $from.before(d);
       for (let d = $to.depth; d > 0 && to == $to.start(d); d--)
         to = $to.before(d);
-      $from = tr2.doc.resolve(from3);
+      $from = tr2.doc.resolve(from4);
       $to = tr2.doc.resolve(to);
     }
   }
@@ -45538,10 +45363,10 @@ function deleteRange(tr2, from3, to) {
       return tr2.delete($from.before(depth), $to.after(depth));
   }
   for (let d = 1; d <= $from.depth && d <= $to.depth; d++) {
-    if (from3 - $from.start(d) == $from.depth - d && to > $from.end(d) && $to.end(d) - to != $to.depth - d && $from.start(d - 1) == $to.start(d - 1) && $from.node(d - 1).canReplace($from.index(d - 1), $to.index(d - 1)))
+    if (from4 - $from.start(d) == $from.depth - d && to > $from.end(d) && $to.end(d) - to != $to.depth - d && $from.start(d - 1) == $to.start(d - 1) && $from.node(d - 1).canReplace($from.index(d - 1), $to.index(d - 1)))
       return tr2.delete($from.before(d), to);
   }
-  tr2.delete(from3, to);
+  tr2.delete(from4, to);
 }
 function coveredDepths($from, $to) {
   let result = [], minDepth = Math.min($from.depth, $to.depth);
@@ -45691,19 +45516,19 @@ var Transform = class {
   that add/remove marks without replacing the underlying content.
   */
   changedRange() {
-    let from3 = 1e9, to = -1e9;
+    let from4 = 1e9, to = -1e9;
     for (let i2 = 0; i2 < this.mapping.maps.length; i2++) {
       let map4 = this.mapping.maps[i2];
       if (i2) {
-        from3 = map4.map(from3, 1);
+        from4 = map4.map(from4, 1);
         to = map4.map(to, -1);
       }
       map4.forEach((_f, _t3, fromB, toB) => {
-        from3 = Math.min(from3, fromB);
+        from4 = Math.min(from4, fromB);
         to = Math.max(to, toB);
       });
     }
-    return from3 == 1e9 ? null : { from: from3, to };
+    return from4 == 1e9 ? null : { from: from4, to };
   }
   /**
   @internal
@@ -45718,8 +45543,8 @@ var Transform = class {
   Replace the part of the document between `from` and `to` with the
   given `slice`.
   */
-  replace(from3, to = from3, slice2 = Slice.empty) {
-    let step = replaceStep(this.doc, from3, to, slice2);
+  replace(from4, to = from4, slice2 = Slice.empty) {
+    let step = replaceStep(this.doc, from4, to, slice2);
     if (step)
       this.step(step);
     return this;
@@ -45728,14 +45553,14 @@ var Transform = class {
   Replace the given range with the given content, which may be a
   fragment, node, or array of nodes.
   */
-  replaceWith(from3, to, content) {
-    return this.replace(from3, to, new Slice(Fragment.from(content), 0, 0));
+  replaceWith(from4, to, content) {
+    return this.replace(from4, to, new Slice(Fragment.from(content), 0, 0));
   }
   /**
   Delete the content between the given positions.
   */
-  delete(from3, to) {
-    return this.replace(from3, to, Slice.empty);
+  delete(from4, to) {
+    return this.replace(from4, to, Slice.empty);
   }
   /**
   Insert the given content at the given position.
@@ -45762,8 +45587,8 @@ var Transform = class {
   range, and is useful in situations where you need more precise
   control over what happens.
   */
-  replaceRange(from3, to, slice2) {
-    replaceRange(this, from3, to, slice2);
+  replaceRange(from4, to, slice2) {
+    replaceRange(this, from4, to, slice2);
     return this;
   }
   /**
@@ -45775,16 +45600,16 @@ var Transform = class {
   completely covers a parent node, this method may completely replace
   that parent node.
   */
-  replaceRangeWith(from3, to, node2) {
-    replaceRangeWith(this, from3, to, node2);
+  replaceRangeWith(from4, to, node2) {
+    replaceRangeWith(this, from4, to, node2);
     return this;
   }
   /**
   Delete the given range, expanding it to cover fully covered
   parent nodes until a valid replace is found.
   */
-  deleteRange(from3, to) {
-    deleteRange(this, from3, to);
+  deleteRange(from4, to) {
+    deleteRange(this, from4, to);
     return this;
   }
   /**
@@ -45794,8 +45619,8 @@ var Transform = class {
   [`liftTarget`](https://prosemirror.net/docs/ref/#transform.liftTarget) to compute `target`, to make
   sure the lift is valid.
   */
-  lift(range, target) {
-    lift(this, range, target);
+  lift(range, target2) {
+    lift(this, range, target2);
     return this;
   }
   /**
@@ -45819,8 +45644,8 @@ var Transform = class {
   Set the type of all textblocks (partly) between `from` and `to` to
   the given node type with the given attributes.
   */
-  setBlockType(from3, to = from3, type, attrs = null) {
-    setBlockType(this, from3, to, type, attrs);
+  setBlockType(from4, to = from4, type, attrs = null) {
+    setBlockType(this, from4, to, type, attrs);
     return this;
   }
   /**
@@ -45850,24 +45675,24 @@ var Transform = class {
   /**
   Add a mark to the node at position `pos`.
   */
-  addNodeMark(pos, mark) {
-    this.step(new AddNodeMarkStep(pos, mark));
+  addNodeMark(pos, mark2) {
+    this.step(new AddNodeMarkStep(pos, mark2));
     return this;
   }
   /**
   Remove a mark (or all marks of the given type) from the node at
   position `pos`.
   */
-  removeNodeMark(pos, mark) {
+  removeNodeMark(pos, mark2) {
     let node2 = this.doc.nodeAt(pos);
     if (!node2)
       throw new RangeError("No node at position " + pos);
-    if (mark instanceof Mark) {
-      if (mark.isInSet(node2.marks))
-        this.step(new RemoveNodeMarkStep(pos, mark));
+    if (mark2 instanceof Mark) {
+      if (mark2.isInSet(node2.marks))
+        this.step(new RemoveNodeMarkStep(pos, mark2));
     } else {
       let set2 = node2.marks, found2, steps = [];
-      while (found2 = mark.isInSet(set2)) {
+      while (found2 = mark2.isInSet(set2)) {
         steps.push(new RemoveNodeMarkStep(pos, found2));
         set2 = found2.removeFromSet(set2);
       }
@@ -45890,8 +45715,8 @@ var Transform = class {
   /**
   Add the given mark to the inline content between `from` and `to`.
   */
-  addMark(from3, to, mark) {
-    addMark(this, from3, to, mark);
+  addMark(from4, to, mark2) {
+    addMark(this, from4, to, mark2);
     return this;
   }
   /**
@@ -45900,8 +45725,8 @@ var Transform = class {
   a mark type, remove all marks of that type. When it is null,
   remove all marks of any type.
   */
-  removeMark(from3, to, mark) {
-    removeMark(this, from3, to, mark);
+  removeMark(from4, to, mark2) {
+    removeMark(this, from4, to, mark2);
     return this;
   }
   /**
@@ -46007,11 +45832,11 @@ var Selection = class {
     let mapFrom = tr2.steps.length, ranges = this.ranges;
     for (let i2 = 0; i2 < ranges.length; i2++) {
       let { $from, $to } = ranges[i2], mapping = tr2.mapping.slice(mapFrom);
-      let from3 = mapping.map($from.pos), to = mapping.map($to.pos);
+      let from4 = mapping.map($from.pos), to = mapping.map($to.pos);
       if (i2) {
-        tr2.deleteRange(from3, to);
+        tr2.deleteRange(from4, to);
       } else {
-        tr2.replaceRangeWith(from3, to, node2);
+        tr2.replaceRangeWith(from4, to, node2);
         selectionToInsertionEnd(tr2, mapFrom, node2.isInline ? -1 : 1);
       }
     }
@@ -46164,9 +45989,9 @@ var TextSelection = class _TextSelection extends Selection {
   /**
   Create a text selection from non-resolved positions.
   */
-  static create(doc4, anchor2, head = anchor2) {
-    let $anchor = doc4.resolve(anchor2);
-    return new this($anchor, head == anchor2 ? $anchor : doc4.resolve(head));
+  static create(doc4, anchor3, head = anchor3) {
+    let $anchor = doc4.resolve(anchor3);
+    return new this($anchor, head == anchor3 ? $anchor : doc4.resolve(head));
   }
   /**
   Return a text selection that spans the given positions or, if
@@ -46201,8 +46026,8 @@ var TextSelection = class _TextSelection extends Selection {
 };
 Selection.jsonID("text", TextSelection);
 var TextBookmark = class _TextBookmark {
-  constructor(anchor2, head) {
-    this.anchor = anchor2;
+  constructor(anchor3, head) {
+    this.anchor = anchor3;
     this.head = head;
   }
   map(mapping) {
@@ -46253,8 +46078,8 @@ var NodeSelection = class _NodeSelection extends Selection {
   /**
   Create a node selection from non-resolved positions.
   */
-  static create(doc4, from3) {
-    return new _NodeSelection(doc4.resolve(from3));
+  static create(doc4, from4) {
+    return new _NodeSelection(doc4.resolve(from4));
   }
   /**
   Determines whether the given node may be selected as a node
@@ -46267,8 +46092,8 @@ var NodeSelection = class _NodeSelection extends Selection {
 NodeSelection.prototype.visible = false;
 Selection.jsonID("node", NodeSelection);
 var NodeBookmark = class _NodeBookmark {
-  constructor(anchor2) {
-    this.anchor = anchor2;
+  constructor(anchor3) {
+    this.anchor = anchor3;
   }
   map(mapping) {
     let { deleted, pos } = mapping.mapResult(this.anchor);
@@ -46291,9 +46116,9 @@ var AllSelection = class _AllSelection extends Selection {
   replace(tr2, content = Slice.empty) {
     if (content == Slice.empty) {
       tr2.delete(0, tr2.doc.content.size);
-      let sel = Selection.atStart(tr2.doc);
-      if (!sel.eq(tr2.selection))
-        tr2.setSelection(sel);
+      let sel2 = Selection.atStart(tr2.doc);
+      if (!sel2.eq(tr2.selection))
+        tr2.setSelection(sel2);
     } else {
       super.replace(tr2, content);
     }
@@ -46425,14 +46250,14 @@ var Transaction = class extends Transform {
   /**
   Add a mark to the set of stored marks.
   */
-  addStoredMark(mark) {
-    return this.ensureMarks(mark.addToSet(this.storedMarks || this.selection.$head.marks()));
+  addStoredMark(mark2) {
+    return this.ensureMarks(mark2.addToSet(this.storedMarks || this.selection.$head.marks()));
   }
   /**
   Remove a mark or mark type from the set of stored marks.
   */
-  removeStoredMark(mark) {
-    return this.ensureMarks(mark.removeFromSet(this.storedMarks || this.selection.$head.marks()));
+  removeStoredMark(mark2) {
+    return this.ensureMarks(mark2.removeFromSet(this.storedMarks || this.selection.$head.marks()));
   }
   /**
   Whether the stored marks were explicitly set for this transaction.
@@ -46485,24 +46310,24 @@ var Transaction = class extends Transform {
   Replace the given range, or the selection if no range is given,
   with a text node containing the given string.
   */
-  insertText(text2, from3, to) {
+  insertText(text2, from4, to) {
     let schema2 = this.doc.type.schema;
-    if (from3 == null) {
+    if (from4 == null) {
       if (!text2)
         return this.deleteSelection();
       return this.replaceSelectionWith(schema2.text(text2), true);
     } else {
       if (to == null)
-        to = from3;
+        to = from4;
       if (!text2)
-        return this.deleteRange(from3, to);
+        return this.deleteRange(from4, to);
       let marks = this.storedMarks;
       if (!marks) {
-        let $from = this.doc.resolve(from3);
-        marks = to == from3 ? $from.marks() : $from.marksAcross(this.doc.resolve(to));
+        let $from = this.doc.resolve(from4);
+        marks = to == from4 ? $from.marks() : $from.marksAcross(this.doc.resolve(to));
       }
-      this.replaceRangeWith(from3, to, schema2.text(text2, marks));
-      if (!this.selection.empty && this.selection.to == from3 + text2.length)
+      this.replaceRangeWith(from4, to, schema2.text(text2, marks));
+      if (!this.selection.empty && this.selection.to == from4 + text2.length)
         this.setSelection(Selection.near(this.selection.$to));
       return this;
     }
@@ -46784,16 +46609,16 @@ var EditorState = class _EditorState {
     return instance;
   }
 };
-function bindProps(obj, self, target) {
+function bindProps(obj, self, target2) {
   for (let prop in obj) {
     let val = obj[prop];
     if (val instanceof Function)
       val = val.bind(self);
     else if (prop == "handleDOMEvents")
       val = bindProps(val, self, {});
-    target[prop] = val;
+    target2[prop] = val;
   }
-  return target;
+  return target2;
 }
 var Plugin = class {
   /**
@@ -46862,11 +46687,11 @@ var joinBackward = (state, dispatch, view) => {
     return false;
   let $cut = findCutBefore($cursor);
   if (!$cut) {
-    let range = $cursor.blockRange(), target = range && liftTarget(range);
-    if (target == null)
+    let range = $cursor.blockRange(), target2 = range && liftTarget(range);
+    if (target2 == null)
       return false;
     if (dispatch)
-      dispatch(state.tr.lift(range, target).scrollIntoView());
+      dispatch(state.tr.lift(range, target2).scrollIntoView());
     return true;
   }
   let before = $cut.nodeBefore;
@@ -47034,13 +46859,13 @@ function findCutAfter($pos) {
   return null;
 }
 var joinUp = (state, dispatch) => {
-  let sel = state.selection, nodeSel = sel instanceof NodeSelection, point;
+  let sel2 = state.selection, nodeSel = sel2 instanceof NodeSelection, point;
   if (nodeSel) {
-    if (sel.node.isTextblock || !canJoin(state.doc, sel.from))
+    if (sel2.node.isTextblock || !canJoin(state.doc, sel2.from))
       return false;
-    point = sel.from;
+    point = sel2.from;
   } else {
-    point = joinPoint(state.doc, sel.from, -1);
+    point = joinPoint(state.doc, sel2.from, -1);
     if (point == null)
       return false;
   }
@@ -47053,13 +46878,13 @@ var joinUp = (state, dispatch) => {
   return true;
 };
 var joinDown = (state, dispatch) => {
-  let sel = state.selection, point;
-  if (sel instanceof NodeSelection) {
-    if (sel.node.isTextblock || !canJoin(state.doc, sel.to))
+  let sel2 = state.selection, point;
+  if (sel2 instanceof NodeSelection) {
+    if (sel2.node.isTextblock || !canJoin(state.doc, sel2.to))
       return false;
-    point = sel.to;
+    point = sel2.to;
   } else {
-    point = joinPoint(state.doc, sel.to, 1);
+    point = joinPoint(state.doc, sel2.to, 1);
     if (point == null)
       return false;
   }
@@ -47069,11 +46894,11 @@ var joinDown = (state, dispatch) => {
 };
 var lift2 = (state, dispatch) => {
   let { $from, $to } = state.selection;
-  let range = $from.blockRange($to), target = range && liftTarget(range);
-  if (target == null)
+  let range = $from.blockRange($to), target2 = range && liftTarget(range);
+  if (target2 == null)
     return false;
   if (dispatch)
-    dispatch(state.tr.lift(range, target).scrollIntoView());
+    dispatch(state.tr.lift(range, target2).scrollIntoView());
   return true;
 };
 var newlineInCode = (state, dispatch) => {
@@ -47107,8 +46932,8 @@ var exitCode = (state, dispatch) => {
   return true;
 };
 var createParagraphNear = (state, dispatch) => {
-  let sel = state.selection, { $from, $to } = sel;
-  if (sel instanceof AllSelection || $from.parent.inlineContent || $to.parent.inlineContent)
+  let sel2 = state.selection, { $from, $to } = sel2;
+  if (sel2 instanceof AllSelection || $from.parent.inlineContent || $to.parent.inlineContent)
     return false;
   let type = defaultBlockAt($to.parent.contentMatchAt($to.indexAfter()));
   if (!type || !type.isTextblock)
@@ -47133,11 +46958,11 @@ var liftEmptyBlock = (state, dispatch) => {
       return true;
     }
   }
-  let range = $cursor.blockRange(), target = range && liftTarget(range);
-  if (target == null)
+  let range = $cursor.blockRange(), target2 = range && liftTarget(range);
+  if (target2 == null)
     return false;
   if (dispatch)
-    dispatch(state.tr.lift(range, target).scrollIntoView());
+    dispatch(state.tr.lift(range, target2).scrollIntoView());
   return true;
 };
 function splitBlockAs(splitNode) {
@@ -47246,24 +47071,24 @@ function deleteBarrier(state, $cut, dispatch, dir) {
     return true;
   }
   let selAfter = after.type.spec.isolating || dir > 0 && isolated ? null : Selection.findFrom($cut, 1);
-  let range = selAfter && selAfter.$from.blockRange(selAfter.$to), target = range && liftTarget(range);
-  if (target != null && target >= $cut.depth) {
+  let range = selAfter && selAfter.$from.blockRange(selAfter.$to), target2 = range && liftTarget(range);
+  if (target2 != null && target2 >= $cut.depth) {
     if (dispatch)
-      dispatch(state.tr.lift(range, target).scrollIntoView());
+      dispatch(state.tr.lift(range, target2).scrollIntoView());
     return true;
   }
   if (canDelAfter && textblockAt(after, "start", true) && textblockAt(before, "end")) {
-    let at2 = before, wrap2 = [];
+    let at3 = before, wrap2 = [];
     for (; ; ) {
-      wrap2.push(at2);
-      if (at2.isTextblock)
+      wrap2.push(at3);
+      if (at3.isTextblock)
         break;
-      at2 = at2.lastChild;
+      at3 = at3.lastChild;
     }
     let afterText = after, afterDepth = 1;
     for (; !afterText.isTextblock; afterText = afterText.firstChild)
       afterDepth++;
-    if (at2.canReplace(at2.childCount, at2.childCount, afterText.content)) {
+    if (at3.canReplace(at3.childCount, at3.childCount, afterText.content)) {
       if (dispatch) {
         let end = Fragment.empty;
         for (let i2 = wrap2.length - 1; i2 >= 0; i2--)
@@ -47278,7 +47103,7 @@ function deleteBarrier(state, $cut, dispatch, dir) {
 }
 function selectTextblockSide(side) {
   return function(state, dispatch) {
-    let sel = state.selection, $pos = side < 0 ? sel.$from : sel.$to;
+    let sel2 = state.selection, $pos = side < 0 ? sel2.$from : sel2.$to;
     let depth = $pos.depth;
     while ($pos.node(depth).isInline) {
       if (!depth)
@@ -47309,8 +47134,8 @@ function setBlockType2(nodeType, attrs = null) {
   return function(state, dispatch) {
     let applicable = false;
     for (let i2 = 0; i2 < state.selection.ranges.length && !applicable; i2++) {
-      let { $from: { pos: from3 }, $to: { pos: to } } = state.selection.ranges[i2];
-      state.doc.nodesBetween(from3, to, (node2, pos) => {
+      let { $from: { pos: from4 }, $to: { pos: to } } = state.selection.ranges[i2];
+      state.doc.nodesBetween(from4, to, (node2, pos) => {
         if (applicable)
           return false;
         if (!node2.isTextblock || node2.hasMarkup(nodeType, attrs))
@@ -47328,8 +47153,8 @@ function setBlockType2(nodeType, attrs = null) {
     if (dispatch) {
       let tr2 = state.tr;
       for (let i2 = 0; i2 < state.selection.ranges.length; i2++) {
-        let { $from: { pos: from3 }, $to: { pos: to } } = state.selection.ranges[i2];
-        tr2.setBlockType(from3, to, nodeType, attrs);
+        let { $from: { pos: from4 }, $to: { pos: to } } = state.selection.ranges[i2];
+        tr2.setBlockType(from4, to, nodeType, attrs);
       }
       dispatch(tr2.scrollIntoView());
     }
@@ -47443,10 +47268,10 @@ function liftToOuterList(state, dispatch, itemType, range) {
     tr2.step(new ReplaceAroundStep(end - 1, endOfList, end, endOfList, new Slice(Fragment.from(itemType.create(null, range.parent.copy())), 1, 0), 1, true));
     range = new NodeRange(tr2.doc.resolve(range.$from.pos), tr2.doc.resolve(endOfList), range.depth);
   }
-  const target = liftTarget(range);
-  if (target == null)
+  const target2 = liftTarget(range);
+  if (target2 == null)
     return false;
-  tr2.lift(range, target);
+  tr2.lift(range, target2);
   let $after = tr2.doc.resolve(tr2.mapping.map(end, -1) - 1);
   if (canJoin(tr2.doc, $after.pos) && $after.nodeBefore.type == $after.nodeAfter.type)
     tr2.join($after.pos);
@@ -47507,10 +47332,10 @@ var parentNode = function(node2) {
   return parent && parent.nodeType == 11 ? parent.host : parent;
 };
 var reusedRange = null;
-var textRange = function(node2, from3, to) {
+var textRange = function(node2, from4, to) {
   let range = reusedRange || (reusedRange = document.createRange());
   range.setEnd(node2, to == null ? node2.nodeValue.length : to);
-  range.setStart(node2, from3 || 0);
+  range.setStart(node2, from4 || 0);
   return range;
 };
 var clearReusedRange = function() {
@@ -47965,14 +47790,14 @@ function posAtCoords(view, coords) {
 function nonZero(rect) {
   return rect.top < rect.bottom || rect.left < rect.right;
 }
-function singleRect(target, bias) {
-  let rects = target.getClientRects();
+function singleRect(target2, bias) {
+  let rects = target2.getClientRects();
   if (rects.length) {
     let first2 = rects[bias < 0 ? 0 : rects.length - 1];
     if (nonZero(first2))
       return first2;
   }
-  return Array.prototype.find.call(rects, nonZero) || target.getBoundingClientRect();
+  return Array.prototype.find.call(rects, nonZero) || target2.getBoundingClientRect();
 }
 var BIDI = /[\u0590-\u05f4\u0600-\u06ff\u0700-\u08ac]/;
 function coordsAtPos(view, pos, side) {
@@ -47991,19 +47816,19 @@ function coordsAtPos(view, pos, side) {
       }
       return rect;
     } else {
-      let from3 = offset3, to = offset3, takeSide = side < 0 ? 1 : -1;
+      let from4 = offset3, to = offset3, takeSide = side < 0 ? 1 : -1;
       if (side < 0 && !offset3) {
         to++;
         takeSide = -1;
       } else if (side >= 0 && offset3 == node2.nodeValue.length) {
-        from3--;
+        from4--;
         takeSide = 1;
       } else if (side < 0) {
-        from3--;
+        from4--;
       } else {
         to++;
       }
-      return flattenV(singleRect(textRange(node2, from3, to), takeSide), takeSide < 0);
+      return flattenV(singleRect(textRange(node2, from4, to), takeSide), takeSide < 0);
     }
   }
   let $dom = view.state.doc.resolve(pos - (atom || 0));
@@ -48022,17 +47847,17 @@ function coordsAtPos(view, pos, side) {
   }
   if (atom == null && offset3 && (side < 0 || offset3 == nodeSize(node2))) {
     let before = node2.childNodes[offset3 - 1];
-    let target = isText(before) ? textRange(before, nodeSize(before) - (supportEmptyRange ? 0 : 1)) : isElt(before) && (before.nodeName != "BR" || !before.nextSibling) ? before : null;
-    if (target)
-      return flattenV(singleRect(target, 1), false);
+    let target2 = isText(before) ? textRange(before, nodeSize(before) - (supportEmptyRange ? 0 : 1)) : isElt(before) && (before.nodeName != "BR" || !before.nextSibling) ? before : null;
+    if (target2)
+      return flattenV(singleRect(target2, 1), false);
   }
   if (atom == null && offset3 < nodeSize(node2)) {
     let after = node2.childNodes[offset3];
     while (after.pmViewDesc && after.pmViewDesc.ignoreForCoords)
       after = after.nextSibling;
-    let target = !after ? null : isText(after) ? textRange(after, 0, supportEmptyRange ? 0 : 1) : isElt(after) ? after : null;
-    if (target)
-      return flattenV(singleRect(target, -1), true);
+    let target2 = !after ? null : isText(after) ? textRange(after, 0, supportEmptyRange ? 0 : 1) : isElt(after) ? after : null;
+    if (target2)
+      return flattenV(singleRect(target2, -1), true);
   }
   return flattenV(singleRect(isText(node2) ? textRange(node2) : node2, -side), side >= 0);
 }
@@ -48064,8 +47889,8 @@ function withFlushedState(view, state, f2) {
   }
 }
 function endOfTextblockVertical(view, state, dir) {
-  let sel = state.selection;
-  let $pos = dir == "up" ? sel.$from : sel.$to;
+  let sel2 = state.selection;
+  let $pos = dir == "up" ? sel2.$from : sel2.$to;
   return withFlushedState(view, state, () => {
     let { node: dom } = view.docView.domFromPos($pos.pos, dir == "up" ? -1 : 1);
     for (; ; ) {
@@ -48102,26 +47927,26 @@ function endOfTextblockHorizontal(view, state, dir) {
   if (!$head.parent.isTextblock)
     return false;
   let offset3 = $head.parentOffset, atStart = !offset3, atEnd = offset3 == $head.parent.content.size;
-  let sel = view.domSelection();
-  if (!sel)
+  let sel2 = view.domSelection();
+  if (!sel2)
     return $head.pos == $head.start() || $head.pos == $head.end();
-  if (!maybeRTL.test($head.parent.textContent) || !sel.modify)
+  if (!maybeRTL.test($head.parent.textContent) || !sel2.modify)
     return dir == "left" || dir == "backward" ? atStart : atEnd;
   return withFlushedState(view, state, () => {
     let { focusNode: oldNode, focusOffset: oldOff, anchorNode, anchorOffset } = view.domSelectionRange();
-    let oldBidiLevel = sel.caretBidiLevel;
-    sel.modify("move", dir, "character");
+    let oldBidiLevel = sel2.caretBidiLevel;
+    sel2.modify("move", dir, "character");
     let parentDOM = $head.depth ? view.docView.domAfterPos($head.before()) : view.dom;
     let { focusNode: newNode, focusOffset: newOff } = view.domSelectionRange();
     let result = newNode && !contains(parentDOM, newNode) || oldNode == newNode && oldOff == newOff;
     try {
-      sel.collapse(anchorNode, anchorOffset);
-      if (oldNode && (oldNode != anchorNode || oldOff != anchorOffset) && sel.extend)
-        sel.extend(oldNode, oldOff);
+      sel2.collapse(anchorNode, anchorOffset);
+      if (oldNode && (oldNode != anchorNode || oldOff != anchorOffset) && sel2.extend)
+        sel2.extend(oldNode, oldOff);
     } catch (_2) {
     }
     if (oldBidiLevel != null)
-      sel.caretBidiLevel = oldBidiLevel;
+      sel2.caretBidiLevel = oldBidiLevel;
     return result;
   });
 }
@@ -48153,7 +47978,7 @@ var ViewDesc = class {
   matchesWidget(widget) {
     return false;
   }
-  matchesMark(mark) {
+  matchesMark(mark2) {
     return false;
   }
   matchesNode(node2, outerDeco, innerDeco) {
@@ -48252,21 +48077,21 @@ var ViewDesc = class {
       }
     } else if (this.dom.firstChild) {
       if (offset3 == 0)
-        for (let search = dom; ; search = search.parentNode) {
-          if (search == this.dom) {
+        for (let search2 = dom; ; search2 = search2.parentNode) {
+          if (search2 == this.dom) {
             atEnd = false;
             break;
           }
-          if (search.previousSibling)
+          if (search2.previousSibling)
             break;
         }
       if (atEnd == null && offset3 == dom.childNodes.length)
-        for (let search = dom; ; search = search.parentNode) {
-          if (search == this.dom) {
+        for (let search2 = dom; ; search2 = search2.parentNode) {
+          if (search2 == this.dom) {
             atEnd = true;
             break;
           }
-          if (search.nextSibling)
+          if (search2.nextSibling)
             break;
         }
     }
@@ -48362,24 +48187,24 @@ var ViewDesc = class {
   }
   // Used to find a DOM range in a single parent for a given changed
   // range.
-  parseRange(from3, to, base2 = 0) {
+  parseRange(from4, to, base2 = 0) {
     if (this.children.length == 0)
-      return { node: this.contentDOM, from: from3, to, fromOffset: 0, toOffset: this.contentDOM.childNodes.length };
+      return { node: this.contentDOM, from: from4, to, fromOffset: 0, toOffset: this.contentDOM.childNodes.length };
     let fromOffset = -1, toOffset = -1;
     for (let offset3 = base2, i2 = 0; ; i2++) {
       let child = this.children[i2], end = offset3 + child.size;
-      if (fromOffset == -1 && from3 <= end) {
+      if (fromOffset == -1 && from4 <= end) {
         let childBase = offset3 + child.border;
-        if (from3 >= childBase && to <= end - child.border && child.node && child.contentDOM && this.contentDOM.contains(child.contentDOM))
-          return child.parseRange(from3, to, childBase);
-        from3 = offset3;
+        if (from4 >= childBase && to <= end - child.border && child.node && child.contentDOM && this.contentDOM.contains(child.contentDOM))
+          return child.parseRange(from4, to, childBase);
+        from4 = offset3;
         for (let j2 = i2; j2 > 0; j2--) {
           let prev = this.children[j2 - 1];
           if (prev.size && prev.dom.parentNode == this.contentDOM && !prev.emptyChildAt(1)) {
             fromOffset = domIndex(prev.dom) + 1;
             break;
           }
-          from3 -= prev.size;
+          from4 -= prev.size;
         }
         if (fromOffset == -1)
           fromOffset = 0;
@@ -48400,7 +48225,7 @@ var ViewDesc = class {
       }
       offset3 = end;
     }
-    return { node: this.contentDOM, from: from3, to, fromOffset, toOffset };
+    return { node: this.contentDOM, from: from4, to, fromOffset, toOffset };
   }
   emptyChildAt(side) {
     if (this.border || !this.contentDOM || !this.children.length)
@@ -48419,20 +48244,20 @@ var ViewDesc = class {
   // custom things with the selection. Note that this falls apart when
   // a selection starts in such a node and ends in another, in which
   // case we just use whatever domFromPos produces as a best effort.
-  setSelection(anchor2, head, view, force = false) {
-    let from3 = Math.min(anchor2, head), to = Math.max(anchor2, head);
+  setSelection(anchor3, head, view, force = false) {
+    let from4 = Math.min(anchor3, head), to = Math.max(anchor3, head);
     for (let i2 = 0, offset3 = 0; i2 < this.children.length; i2++) {
       let child = this.children[i2], end = offset3 + child.size;
-      if (from3 > offset3 && to < end)
-        return child.setSelection(anchor2 - offset3 - child.border, head - offset3 - child.border, view, force);
+      if (from4 > offset3 && to < end)
+        return child.setSelection(anchor3 - offset3 - child.border, head - offset3 - child.border, view, force);
       offset3 = end;
     }
-    let anchorDOM = this.domFromPos(anchor2, anchor2 ? -1 : 1);
-    let headDOM = head == anchor2 ? anchorDOM : this.domFromPos(head, head ? -1 : 1);
+    let anchorDOM = this.domFromPos(anchor3, anchor3 ? -1 : 1);
+    let headDOM = head == anchor3 ? anchorDOM : this.domFromPos(head, head ? -1 : 1);
     let domSel = view.root.getSelection();
     let selRange = view.domSelectionRange();
     let brKludge = false;
-    if ((gecko || safari) && anchor2 == head) {
+    if ((gecko || safari) && anchor3 == head) {
       let { node: node2, offset: offset3 } = anchorDOM;
       if (isText(node2)) {
         brKludge = !!(offset3 && node2.nodeValue[offset3 - 1] == "\n");
@@ -48461,17 +48286,17 @@ var ViewDesc = class {
     if (!(force || brKludge && safari) && isEquivalentPosition(anchorDOM.node, anchorDOM.offset, selRange.anchorNode, selRange.anchorOffset) && isEquivalentPosition(headDOM.node, headDOM.offset, selRange.focusNode, selRange.focusOffset))
       return;
     let domSelExtended = false;
-    if ((domSel.extend || anchor2 == head) && !(brKludge && gecko)) {
+    if ((domSel.extend || anchor3 == head) && !(brKludge && gecko)) {
       domSel.collapse(anchorDOM.node, anchorDOM.offset);
       try {
-        if (anchor2 != head)
+        if (anchor3 != head)
           domSel.extend(headDOM.node, headDOM.offset);
         domSelExtended = true;
       } catch (_2) {
       }
     }
     if (!domSelExtended) {
-      if (anchor2 > head) {
+      if (anchor3 > head) {
         let tmp = anchorDOM;
         anchorDOM = headDOM;
         headDOM = tmp;
@@ -48491,17 +48316,17 @@ var ViewDesc = class {
   }
   // Remove a subtree of the element tree that has been touched
   // by a DOM change, so that the next update will redraw it.
-  markDirty(from3, to) {
+  markDirty(from4, to) {
     for (let offset3 = 0, i2 = 0; i2 < this.children.length; i2++) {
       let child = this.children[i2], end = offset3 + child.size;
-      if (offset3 == end ? from3 <= end && to >= offset3 : from3 < end && to > offset3) {
+      if (offset3 == end ? from4 <= end && to >= offset3 : from4 < end && to > offset3) {
         let startInside = offset3 + child.border, endInside = end - child.border;
-        if (from3 >= startInside && to <= endInside) {
-          this.dirty = from3 == offset3 || to == end ? CONTENT_DIRTY : CHILD_DIRTY;
-          if (from3 == startInside && to == endInside && (child.contentLost || child.dom.parentNode != this.contentDOM))
+        if (from4 >= startInside && to <= endInside) {
+          this.dirty = from4 == offset3 || to == end ? CONTENT_DIRTY : CHILD_DIRTY;
+          if (from4 == startInside && to == endInside && (child.contentLost || child.dom.parentNode != this.contentDOM))
             child.dirty = NODE_DIRTY;
           else
-            child.markDirty(from3 - startInside, to - startInside);
+            child.markDirty(from4 - startInside, to - startInside);
           return;
         } else {
           child.dirty = child.dom == child.contentDOM && child.dom.parentNode == this.contentDOM && !child.children.length ? CONTENT_DIRTY : NODE_DIRTY;
@@ -48606,28 +48431,28 @@ var CompositionViewDesc = class extends ViewDesc {
   }
 };
 var MarkViewDesc = class _MarkViewDesc extends ViewDesc {
-  constructor(parent, mark, dom, contentDOM, spec) {
+  constructor(parent, mark2, dom, contentDOM, spec) {
     super(parent, [], dom, contentDOM);
-    this.mark = mark;
+    this.mark = mark2;
     this.spec = spec;
   }
-  static create(parent, mark, inline3, view) {
-    let custom2 = view.nodeViews[mark.type.name];
-    let spec = custom2 && custom2(mark, view, inline3);
+  static create(parent, mark2, inline2, view) {
+    let custom2 = view.nodeViews[mark2.type.name];
+    let spec = custom2 && custom2(mark2, view, inline2);
     if (!spec || !spec.dom)
-      spec = DOMSerializer.renderSpec(document, mark.type.spec.toDOM(mark, inline3), null, mark.attrs);
-    return new _MarkViewDesc(parent, mark, spec.dom, spec.contentDOM || spec.dom, spec);
+      spec = DOMSerializer.renderSpec(document, mark2.type.spec.toDOM(mark2, inline2), null, mark2.attrs);
+    return new _MarkViewDesc(parent, mark2, spec.dom, spec.contentDOM || spec.dom, spec);
   }
   parseRule() {
     if (this.dirty & NODE_DIRTY || this.mark.type.spec.reparseInView)
       return null;
     return { mark: this.mark.type.name, attrs: this.mark.attrs, contentElement: this.contentDOM };
   }
-  matchesMark(mark) {
-    return this.dirty != NODE_DIRTY && this.mark.eq(mark);
+  matchesMark(mark2) {
+    return this.dirty != NODE_DIRTY && this.mark.eq(mark2);
   }
-  markDirty(from3, to) {
-    super.markDirty(from3, to);
+  markDirty(from4, to) {
+    super.markDirty(from4, to);
     if (this.dirty != NOT_DIRTY) {
       let parent = this.parent;
       while (!parent.node)
@@ -48637,13 +48462,13 @@ var MarkViewDesc = class _MarkViewDesc extends ViewDesc {
       this.dirty = NOT_DIRTY;
     }
   }
-  slice(from3, to, view) {
+  slice(from4, to, view) {
     let copy3 = _MarkViewDesc.create(this.parent, this.mark, true, view);
     let nodes = this.children, size3 = this.size;
     if (to < size3)
       nodes = replaceNodes(nodes, to, size3, view);
-    if (from3 > 0)
-      nodes = replaceNodes(nodes, 0, from3, view);
+    if (from4 > 0)
+      nodes = replaceNodes(nodes, 0, from4, view);
     for (let i2 = 0; i2 < nodes.length; i2++)
       nodes[i2].parent = copy3;
     copy3.children = nodes;
@@ -48750,7 +48575,7 @@ var NodeViewDesc = class _NodeViewDesc extends ViewDesc {
   // separate step, syncs the DOM inside `this.contentDOM` to
   // `this.children`.
   updateChildren(view, pos) {
-    let inline3 = this.node.inlineContent, off = pos;
+    let inline2 = this.node.inlineContent, off = pos;
     let composition = view.composing ? this.localCompositionInfo(view, pos) : null;
     let localComposition = composition && composition.pos > -1 ? composition : null;
     let compositionInChild = composition && composition.pos < 0;
@@ -48758,12 +48583,12 @@ var NodeViewDesc = class _NodeViewDesc extends ViewDesc {
     let addBuffers = this.node.inlineContent, atBufferPos = addBuffers && this.node.isBlock;
     iterDeco(this.node, this.innerDeco, (widget, i2, insideNode) => {
       if (widget.spec.marks)
-        updater.syncToMarks(widget.spec.marks, inline3, view, i2);
+        updater.syncToMarks(widget.spec.marks, inline2, view, i2);
       else if (widget.type.side >= 0 && !insideNode)
-        updater.syncToMarks(i2 == this.node.childCount ? Mark.none : this.node.child(i2).marks, inline3, view, i2);
+        updater.syncToMarks(i2 == this.node.childCount ? Mark.none : this.node.child(i2).marks, inline2, view, i2);
       updater.placeWidget(widget, view, off);
     }, (child, outerDeco, innerDeco, i2) => {
-      updater.syncToMarks(child.marks, inline3, view, i2);
+      updater.syncToMarks(child.marks, inline2, view, i2);
       if (atBufferPos && child.isAtom && !child.isText)
         updater.addHackNode("IMG", updater.top);
       let compIndex;
@@ -48777,7 +48602,7 @@ var NodeViewDesc = class _NodeViewDesc extends ViewDesc {
       if (addBuffers)
         atBufferPos = child.isAtom && !child.isText;
     });
-    updater.syncToMarks([], inline3, view, 0);
+    updater.syncToMarks([], inline2, view, 0);
     if (this.node.isTextblock)
       updater.addTextblockHacks();
     updater.destroyRest();
@@ -48790,15 +48615,15 @@ var NodeViewDesc = class _NodeViewDesc extends ViewDesc {
     }
   }
   localCompositionInfo(view, pos) {
-    let { from: from3, to } = view.state.selection;
-    if (!(view.state.selection instanceof TextSelection) || from3 < pos || to > pos + this.node.content.size)
+    let { from: from4, to } = view.state.selection;
+    if (!(view.state.selection instanceof TextSelection) || from4 < pos || to > pos + this.node.content.size)
       return null;
     let textNode = view.input.compositionNode;
     if (!textNode || !this.dom.contains(textNode.parentNode))
       return null;
     if (this.node.inlineContent) {
       let text2 = textNode.nodeValue;
-      let textPos = findTextInFragment(this.node.content, text2, from3 - pos, to - pos);
+      let textPos = findTextInFragment(this.node.content, text2, from4 - pos, to - pos);
       return textPos < 0 ? null : { node: textNode, pos: textPos, text: text2 };
     } else {
       return { node: textNode, pos: -1, text: "" };
@@ -48918,13 +48743,13 @@ var TextViewDesc = class _TextViewDesc extends NodeViewDesc {
   ignoreMutation(mutation) {
     return mutation.type != "characterData" && mutation.type != "selection";
   }
-  slice(from3, to, _view) {
-    let node2 = this.node.cut(from3, to), dom = document.createTextNode(node2.text);
+  slice(from4, to, _view) {
+    let node2 = this.node.cut(from4, to), dom = document.createTextNode(node2.text);
     return new _TextViewDesc(this.parent, node2, this.outerDeco, this.innerDeco, dom, dom);
   }
-  markDirty(from3, to) {
-    super.markDirty(from3, to);
-    if (this.dom != this.nodeDOM && (from3 == 0 || to == this.nodeDOM.nodeValue.length))
+  markDirty(from4, to) {
+    super.markDirty(from4, to);
+    if (this.dom != this.nodeDOM && (from4 == 0 || to == this.nodeDOM.nodeValue.length))
       this.dirty = NODE_DIRTY;
   }
   get domAtom() {
@@ -48976,8 +48801,8 @@ var CustomNodeViewDesc = class extends NodeViewDesc {
   deselectNode() {
     this.spec.deselectNode ? this.spec.deselectNode() : super.deselectNode();
   }
-  setSelection(anchor2, head, view, force) {
-    this.spec.setSelection ? this.spec.setSelection(anchor2, head, view.root) : super.setSelection(anchor2, head, view, force);
+  setSelection(anchor3, head, view, force) {
+    this.spec.setSelection ? this.spec.setSelection(anchor3, head, view.root) : super.setSelection(anchor3, head, view, force);
   }
   destroy() {
     if (this.spec.destroy)
@@ -49143,7 +48968,7 @@ var ViewTreeUpdater = class {
   }
   // Sync the current stack of mark descs with the given array of
   // marks, reusing existing mark descs when possible.
-  syncToMarks(marks, inline3, view, parentIndex) {
+  syncToMarks(marks, inline2, view, parentIndex) {
     let keep = 0, depth = this.stack.length >> 1;
     let maxKeep = Math.min(depth, marks.length);
     while (keep < maxKeep && (keep == depth - 1 ? this.top : this.stack[keep + 1 << 1]).matchesMark(marks[keep]) && marks[keep].type.spec.spanning !== false)
@@ -49182,7 +49007,7 @@ var ViewTreeUpdater = class {
         }
         this.top = this.top.children[this.index];
       } else {
-        let markDesc = MarkViewDesc.create(this.top, marks[depth], inline3, view);
+        let markDesc = MarkViewDesc.create(this.top, marks[depth], inline2, view);
         this.top.children.splice(this.index, 0, markDesc);
         this.top = markDesc;
         this.changed = true;
@@ -49459,7 +49284,7 @@ function iosHacks(dom) {
     dom.style.cssText = oldCSS;
   }
 }
-function findTextInFragment(frag, text2, from3, to) {
+function findTextInFragment(frag, text2, from4, to) {
   for (let i2 = 0, pos = 0; i2 < frag.childCount && pos <= to; ) {
     let child = frag.child(i2++), childStart = pos;
     pos += child.nodeSize;
@@ -49473,27 +49298,27 @@ function findTextInFragment(frag, text2, from3, to) {
         break;
       str2 += next2.text;
     }
-    if (pos >= from3) {
+    if (pos >= from4) {
       if (pos >= to && str2.slice(to - text2.length - childStart, to - childStart) == text2)
         return to - text2.length;
       let found2 = childStart < to ? str2.lastIndexOf(text2, to - childStart - 1) : -1;
-      if (found2 >= 0 && found2 + text2.length + childStart >= from3)
+      if (found2 >= 0 && found2 + text2.length + childStart >= from4)
         return childStart + found2;
-      if (from3 == to && str2.length >= to + text2.length - childStart && str2.slice(to - childStart, to - childStart + text2.length) == text2)
+      if (from4 == to && str2.length >= to + text2.length - childStart && str2.slice(to - childStart, to - childStart + text2.length) == text2)
         return to;
     }
   }
   return -1;
 }
-function replaceNodes(nodes, from3, to, view, replacement) {
+function replaceNodes(nodes, from4, to, view, replacement) {
   let result = [];
   for (let i2 = 0, off = 0; i2 < nodes.length; i2++) {
     let child = nodes[i2], start = off, end = off += child.size;
-    if (start >= to || end <= from3) {
+    if (start >= to || end <= from4) {
       result.push(child);
     } else {
-      if (start < from3)
-        result.push(child.slice(0, from3 - start, view));
+      if (start < from4)
+        result.push(child.slice(0, from4 - start, view));
       if (replacement) {
         result.push(replacement);
         replacement = void 0;
@@ -49512,9 +49337,9 @@ function selectionFromDOM(view, origin = null) {
   let head = view.docView.posFromDOM(domSel.focusNode, domSel.focusOffset, 1);
   if (head < 0)
     return null;
-  let $head = doc4.resolve(head), anchor2, selection;
+  let $head = doc4.resolve(head), anchor3, selection;
   if (selectionCollapsed(domSel)) {
-    anchor2 = head;
+    anchor3 = head;
     while (nearestDesc && !nearestDesc.node)
       nearestDesc = nearestDesc.parent;
     if (nearestDesc && nearestDesc.node.isAtom && NodeSelection.isSelectable(nearestDesc.node) && nearestDesc.parent && !(nearestDesc.node.isInline && isOnEdge(domSel.focusNode, domSel.focusOffset, nearestDesc.dom))) {
@@ -49540,15 +49365,15 @@ function selectionFromDOM(view, origin = null) {
       }
       if (min3 < 0)
         return null;
-      [anchor2, head] = max3 == view.state.selection.anchor ? [max3, min3] : [min3, max3];
+      [anchor3, head] = max3 == view.state.selection.anchor ? [max3, min3] : [min3, max3];
       $head = doc4.resolve(head);
     } else {
-      anchor2 = view.docView.posFromDOM(domSel.anchorNode, domSel.anchorOffset, 1);
+      anchor3 = view.docView.posFromDOM(domSel.anchorNode, domSel.anchorOffset, 1);
     }
-    if (anchor2 < 0)
+    if (anchor3 < 0)
       return null;
   }
-  let $anchor = doc4.resolve(anchor2);
+  let $anchor = doc4.resolve(anchor3);
   if (!selection) {
     let bias = origin == "pointer" || view.state.selection.head < $head.pos && !inWidget ? 1 : -1;
     selection = selectionBetween(view, $anchor, $head, bias);
@@ -49559,8 +49384,8 @@ function editorOwnsSelection(view) {
   return view.editable ? view.hasFocus() : hasSelection(view) && document.activeElement && document.activeElement.contains(view.dom);
 }
 function selectionToDOM(view, force = false) {
-  let sel = view.state.selection;
-  syncNodeSelection(view, sel);
+  let sel2 = view.state.selection;
+  syncNodeSelection(view, sel2);
   if (!editorOwnsSelection(view))
     return;
   let mouseDown = view.input.mouseDown;
@@ -49575,21 +49400,21 @@ function selectionToDOM(view, force = false) {
   if (view.cursorWrapper) {
     selectCursorWrapper(view);
   } else {
-    let { anchor: anchor2, head } = sel, resetEditableFrom, resetEditableTo;
-    if (brokenSelectBetweenUneditable && !(sel instanceof TextSelection)) {
-      if (!sel.$from.parent.inlineContent)
-        resetEditableFrom = temporarilyEditableNear(view, sel.from);
-      if (!sel.empty && !sel.$from.parent.inlineContent)
-        resetEditableTo = temporarilyEditableNear(view, sel.to);
+    let { anchor: anchor3, head } = sel2, resetEditableFrom, resetEditableTo;
+    if (brokenSelectBetweenUneditable && !(sel2 instanceof TextSelection)) {
+      if (!sel2.$from.parent.inlineContent)
+        resetEditableFrom = temporarilyEditableNear(view, sel2.from);
+      if (!sel2.empty && !sel2.$from.parent.inlineContent)
+        resetEditableTo = temporarilyEditableNear(view, sel2.to);
     }
-    view.docView.setSelection(anchor2, head, view, force);
+    view.docView.setSelection(anchor3, head, view, force);
     if (brokenSelectBetweenUneditable) {
       if (resetEditableFrom)
         resetEditable(resetEditableFrom);
       if (resetEditableTo)
         resetEditable(resetEditableTo);
     }
-    if (sel.visible) {
+    if (sel2.visible) {
       view.dom.classList.remove("ProseMirror-hideselection");
     } else {
       view.dom.classList.add("ProseMirror-hideselection");
@@ -49658,9 +49483,9 @@ function selectCursorWrapper(view) {
     node2.disabled = false;
   }
 }
-function syncNodeSelection(view, sel) {
-  if (sel instanceof NodeSelection) {
-    let desc = view.docView.descAt(sel.from);
+function syncNodeSelection(view, sel2) {
+  if (sel2 instanceof NodeSelection) {
+    let desc = view.docView.descAt(sel2.from);
     if (desc != view.lastSelectedViewDesc) {
       clearNodeSelection(view);
       if (desc)
@@ -49687,11 +49512,11 @@ function hasFocusAndSelection(view) {
   return hasSelection(view);
 }
 function hasSelection(view) {
-  let sel = view.domSelectionRange();
-  if (!sel.anchorNode)
+  let sel2 = view.domSelectionRange();
+  if (!sel2.anchorNode)
     return false;
   try {
-    return contains(view.dom, sel.anchorNode) && (view.editable || contains(view.dom, sel.focusNode));
+    return contains(view.dom, sel2.anchorNode) && (view.editable || contains(view.dom, sel2.focusNode));
   } catch (_2) {
     return false;
   }
@@ -49707,20 +49532,20 @@ function moveSelectionBlock(state, dir) {
   let $start = !$side.parent.inlineContent ? $side : $side.depth ? state.doc.resolve(dir > 0 ? $side.after() : $side.before()) : null;
   return $start && Selection.findFrom($start, dir);
 }
-function apply(view, sel) {
-  view.dispatch(view.state.tr.setSelection(sel).scrollIntoView());
+function apply(view, sel2) {
+  view.dispatch(view.state.tr.setSelection(sel2).scrollIntoView());
   return true;
 }
 function selectHorizontally(view, dir, mods) {
-  let sel = view.state.selection;
-  if (sel instanceof TextSelection) {
+  let sel2 = view.state.selection;
+  if (sel2 instanceof TextSelection) {
     if (mods.indexOf("s") > -1) {
-      let { $head } = sel, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter;
+      let { $head } = sel2, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter;
       if (!node2 || node2.isText || !node2.isLeaf)
         return false;
       let $newHead = view.state.doc.resolve($head.pos + node2.nodeSize * (dir < 0 ? -1 : 1));
-      return apply(view, new TextSelection(sel.$anchor, $newHead));
-    } else if (!sel.empty) {
+      return apply(view, new TextSelection(sel2.$anchor, $newHead));
+    } else if (!sel2.empty) {
       return false;
     } else if (view.endOfTextblock(dir > 0 ? "forward" : "backward")) {
       let next2 = moveSelectionBlock(view.state, dir);
@@ -49728,7 +49553,7 @@ function selectHorizontally(view, dir, mods) {
         return apply(view, next2);
       return false;
     } else if (!mac4 || mods.indexOf("m") < 0) {
-      let $head = sel.$head, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter, desc;
+      let $head = sel2.$head, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter, desc;
       if (!node2 || node2.isText)
         return false;
       let nodePos = dir < 0 ? $head.pos - node2.nodeSize : $head.pos;
@@ -49740,8 +49565,8 @@ function selectHorizontally(view, dir, mods) {
         return apply(view, new TextSelection(view.state.doc.resolve(dir < 0 ? nodePos : nodePos + node2.nodeSize)));
       }
     }
-  } else if (sel instanceof NodeSelection && sel.node.isInline) {
-    return apply(view, new TextSelection(dir > 0 ? sel.$to : sel.$from));
+  } else if (sel2 instanceof NodeSelection && sel2.node.isInline) {
+    return apply(view, new TextSelection(dir > 0 ? sel2.$to : sel2.$from));
   } else {
     let next2 = moveSelectionBlock(view.state, dir);
     if (next2)
@@ -49757,8 +49582,8 @@ function skipIgnoredNodes(view, dir) {
   return dir < 0 ? skipIgnoredNodesBefore(view) : skipIgnoredNodesAfter(view);
 }
 function skipIgnoredNodesBefore(view) {
-  let sel = view.domSelectionRange();
-  let node2 = sel.focusNode, offset3 = sel.focusOffset;
+  let sel2 = view.domSelectionRange();
+  let node2 = sel2.focusNode, offset3 = sel2.focusOffset;
   if (!node2)
     return;
   let moveNode, moveOffset, force = false;
@@ -49804,8 +49629,8 @@ function skipIgnoredNodesBefore(view) {
     setSelFocus(view, moveNode, moveOffset);
 }
 function skipIgnoredNodesAfter(view) {
-  let sel = view.domSelectionRange();
-  let node2 = sel.focusNode, offset3 = sel.focusOffset;
+  let sel2 = view.domSelectionRange();
+  let node2 = sel2.focusNode, offset3 = sel2.focusOffset;
   if (!node2)
     return;
   let len = nodeSize(node2);
@@ -49890,14 +49715,14 @@ function setSelFocus(view, node2, offset3) {
       offset3 = before.nodeValue.length;
     }
   }
-  let sel = view.domSelection(), range = view.domSelectionRange();
-  if (!sel)
+  let sel2 = view.domSelection(), range = view.domSelectionRange();
+  if (!sel2)
     return;
   if (selectionCollapsed(range)) {
-    sel.collapse(node2, offset3);
-  } else if (sel.extend) {
-    sel.collapse(range.anchorNode, range.anchorOffset);
-    sel.extend(node2, offset3);
+    sel2.collapse(node2, offset3);
+  } else if (sel2.extend) {
+    sel2.collapse(range.anchorNode, range.anchorOffset);
+    sel2.extend(node2, offset3);
   }
   view.domObserver.setCurSelection();
   let { state } = view;
@@ -49933,12 +49758,12 @@ function findDirection(view, pos) {
   return computed == "rtl" ? "rtl" : "ltr";
 }
 function selectVertically(view, dir, mods) {
-  let sel = view.state.selection;
-  if (sel instanceof TextSelection && !sel.empty || mods.indexOf("s") > -1)
+  let sel2 = view.state.selection;
+  if (sel2 instanceof TextSelection && !sel2.empty || mods.indexOf("s") > -1)
     return false;
   if (mac4 && mods.indexOf("m") > -1)
     return false;
-  let { $from, $to } = sel;
+  let { $from, $to } = sel2;
   if (!$from.parent.inlineContent || view.endOfTextblock(dir < 0 ? "up" : "down")) {
     let next2 = moveSelectionBlock(view.state, dir);
     if (next2 && next2 instanceof NodeSelection)
@@ -49946,7 +49771,7 @@ function selectVertically(view, dir, mods) {
   }
   if (!$from.parent.inlineContent) {
     let side = dir < 0 ? $from : $to;
-    let beyond = sel instanceof AllSelection ? Selection.near(side, dir) : Selection.findFrom(side, dir);
+    let beyond = sel2 instanceof AllSelection ? Selection.near(side, dir) : Selection.findFrom(side, dir);
     return beyond ? apply(view, beyond) : false;
   }
   return false;
@@ -50164,8 +49989,8 @@ function normalizeSiblings(fragment, $context) {
   }
   return fragment;
 }
-function withWrappers(node2, wrap2, from3 = 0) {
-  for (let i2 = wrap2.length - 1; i2 >= from3; i2--)
+function withWrappers(node2, wrap2, from4 = 0) {
+  for (let i2 = wrap2.length - 1; i2 >= from4; i2--)
     node2 = wrap2[i2].create(null, Fragment.from(node2));
   return node2;
 }
@@ -50186,13 +50011,13 @@ function closeRight(node2, depth) {
   let fill = node2.contentMatchAt(node2.childCount).fillBefore(Fragment.empty, true);
   return node2.copy(fragment.append(fill));
 }
-function closeRange(fragment, side, from3, to, depth, openEnd) {
+function closeRange(fragment, side, from4, to, depth, openEnd) {
   let node2 = side < 0 ? fragment.firstChild : fragment.lastChild, inner = node2.content;
   if (fragment.childCount > 1)
     openEnd = 0;
   if (depth < to - 1)
-    inner = closeRange(inner, side, from3, to, depth + 1, openEnd);
-  if (depth >= from3)
+    inner = closeRange(inner, side, from4, to, depth + 1, openEnd);
+  if (depth >= from4)
     inner = side < 0 ? node2.contentMatchAt(0).fillBefore(inner, openEnd <= depth).append(inner) : inner.append(node2.contentMatchAt(node2.childCount).fillBefore(Fragment.empty, true));
   return fragment.replaceChild(side < 0 ? 0 : fragment.childCount - 1, node2.copy(inner));
 }
@@ -50409,11 +50234,11 @@ editHandlers.keypress = (view, _event) => {
     event.preventDefault();
     return;
   }
-  let sel = view.state.selection;
-  if (!(sel instanceof TextSelection) || !sel.$from.sameParent(sel.$to)) {
+  let sel2 = view.state.selection;
+  if (!(sel2 instanceof TextSelection) || !sel2.$from.sameParent(sel2.$to)) {
     let text2 = String.fromCharCode(event.charCode);
     let deflt = () => view.state.tr.insertText(text2).scrollIntoView();
-    if (!/[\r\n]/.test(text2) && !view.someProp("handleTextInput", (f2) => f2(view, sel.$from.pos, sel.$to.pos, text2, deflt)))
+    if (!/[\r\n]/.test(text2) && !view.someProp("handleTextInput", (f2) => f2(view, sel2.$from.pos, sel2.$to.pos, text2, deflt)))
       view.dispatch(deflt());
     event.preventDefault();
   }
@@ -50457,15 +50282,15 @@ function selectClickedLeaf(view, inside) {
 function selectClickedNode(view, inside) {
   if (inside == -1)
     return false;
-  let sel = view.state.selection, selectedNode, selectAt;
-  if (sel instanceof NodeSelection)
-    selectedNode = sel.node;
+  let sel2 = view.state.selection, selectedNode, selectAt;
+  if (sel2 instanceof NodeSelection)
+    selectedNode = sel2.node;
   let $pos = view.state.doc.resolve(inside);
   for (let i2 = $pos.depth + 1; i2 > 0; i2--) {
     let node2 = i2 > $pos.depth ? $pos.nodeAfter : $pos.node(i2);
     if (NodeSelection.isSelectable(node2)) {
-      if (selectedNode && sel.$from.depth > 0 && i2 >= sel.$from.depth && $pos.before(sel.$from.depth + 1) == sel.$from.pos)
-        selectAt = $pos.before(sel.$from.depth);
+      if (selectedNode && sel2.$from.depth > 0 && i2 >= sel2.$from.depth && $pos.before(sel2.$from.depth + 1) == sel2.$from.pos)
+        selectAt = $pos.before(sel2.$from.depth);
       else
         selectAt = $pos.before(i2);
       break;
@@ -50585,8 +50410,8 @@ var LeftMouseDown = class extends MouseDown {
       targetNode = $pos.parent;
       targetPos = $pos.depth ? $pos.before() : 0;
     }
-    const target = flushed ? null : event.target;
-    const targetDesc = target ? view.docView.nearestDesc(target, true) : null;
+    const target2 = flushed ? null : event.target;
+    const targetDesc = target2 ? view.docView.nearestDesc(target2, true) : null;
     this.target = targetDesc && isElt(targetDesc.nodeDOM) ? targetDesc.nodeDOM : null;
     let { selection } = view.state;
     if (event.button == 0 && (targetNode.type.spec.draggable && targetNode.type.spec.selectable !== false || selection instanceof NodeSelection && selection.from <= targetPos && selection.to > targetPos))
@@ -50682,12 +50507,12 @@ var TripleClickDrag = class extends MouseDown {
     event.preventDefault();
     setSelectionOrigin(this.view, "pointer");
     let pos = this.view.posAtCoords(eventCoords(event));
-    let target = pos && selectionForTripleClick(this.view, pos.inside, false);
-    if (!target)
+    let target2 = pos && selectionForTripleClick(this.view, pos.inside, false);
+    if (!target2)
       return;
     let { doc: doc4 } = this.view.state, start = this.startSelection;
-    let [anchor2, head] = target.from < start.from ? [start.to, target.from] : [start.from, target.to];
-    updateSelection(this.view, TextSelection.create(doc4, anchor2, head));
+    let [anchor3, head] = target2.from < start.from ? [start.to, target2.from] : [start.from, target2.to];
+    updateSelection(this.view, TextSelection.create(doc4, anchor3, head));
   }
 };
 handlers.touchstart = (view) => {
@@ -50721,15 +50546,15 @@ editHandlers.compositionstart = editHandlers.compositionupdate = (view) => {
     } else {
       endComposition(view, !state.selection.empty);
       if (gecko && state.selection.empty && $pos.parentOffset && !$pos.textOffset && $pos.nodeBefore.marks.length) {
-        let sel = view.domSelectionRange();
-        for (let node2 = sel.focusNode, offset3 = sel.focusOffset; node2 && isElt(node2) && offset3 != 0; ) {
+        let sel2 = view.domSelectionRange();
+        for (let node2 = sel2.focusNode, offset3 = sel2.focusOffset; node2 && isElt(node2) && offset3 != 0; ) {
           let before = offset3 < 0 ? node2.lastChild : node2.childNodes[offset3 - 1];
           if (!before)
             break;
           if (isText(before)) {
-            let sel2 = view.domSelection();
-            if (sel2)
-              sel2.collapse(before, before.nodeValue.length);
+            let sel3 = view.domSelection();
+            if (sel3)
+              sel3.collapse(before, before.nodeValue.length);
             break;
           } else {
             node2 = before;
@@ -50777,11 +50602,11 @@ function clearComposition(view) {
     view.input.compositionNodes.pop().markParentsDirty();
 }
 function findCompositionNode(view) {
-  let sel = view.domSelectionRange();
-  if (!sel.focusNode)
+  let sel2 = view.domSelectionRange();
+  if (!sel2.focusNode)
     return null;
-  let textBefore = textNodeBefore$1(sel.focusNode, sel.focusOffset);
-  let textAfter = textNodeAfter$1(sel.focusNode, sel.focusOffset);
+  let textBefore = textNodeBefore$1(sel2.focusNode, sel2.focusOffset);
+  let textAfter = textNodeAfter$1(sel2.focusNode, sel2.focusOffset);
   if (textBefore && textAfter && textBefore != textAfter) {
     let descAfter = textAfter.pmViewDesc, lastChanged = view.domObserver.lastChangedTextNode;
     if (textBefore == lastChanged || textAfter == lastChanged)
@@ -50802,9 +50627,9 @@ function endComposition(view, restarting = false) {
   view.domObserver.forceFlush();
   clearComposition(view);
   if (restarting || view.docView && view.docView.dirty) {
-    let sel = selectionFromDOM(view), cur = view.state.selection;
-    if (sel && !sel.eq(cur))
-      view.dispatch(view.state.tr.setSelection(sel));
+    let sel2 = selectionFromDOM(view), cur = view.state.selection;
+    if (sel2 && !sel2.eq(cur))
+      view.dispatch(view.state.tr.setSelection(sel2));
     else if ((view.markCursor || restarting) && !cur.$from.node(cur.$from.sharedDepth(cur.to)).inlineContent)
       view.dispatch(view.state.tr.deleteSelection());
     else
@@ -50819,11 +50644,11 @@ function captureCopy(view, dom) {
   let wrap2 = view.dom.parentNode.appendChild(document.createElement("div"));
   wrap2.appendChild(dom);
   wrap2.style.cssText = "position: fixed; left: -10000px; top: 10px";
-  let sel = getSelection(), range = document.createRange();
+  let sel2 = getSelection(), range = document.createRange();
   range.selectNodeContents(dom);
   view.dom.blur();
-  sel.removeAllRanges();
-  sel.addRange(range);
+  sel2.removeAllRanges();
+  sel2.addRange(range);
   setTimeout(() => {
     if (wrap2.parentNode)
       wrap2.parentNode.removeChild(wrap2);
@@ -50833,11 +50658,11 @@ function captureCopy(view, dom) {
 var brokenClipboardAPI = ie2 && ie_version < 15 || ios && webkit_version < 604;
 handlers.copy = editHandlers.cut = (view, _event) => {
   let event = _event;
-  let sel = view.state.selection, cut2 = event.type == "cut";
-  if (sel.empty)
+  let sel2 = view.state.selection, cut2 = event.type == "cut";
+  if (sel2.empty)
     return;
   let data = brokenClipboardAPI ? null : event.clipboardData;
-  let slice2 = sel.content(), { dom, text: text2 } = serializeForClipboard(view, slice2);
+  let slice2 = sel2.content(), { dom, text: text2 } = serializeForClipboard(view, slice2);
   if (data) {
     event.preventDefault();
     data.clearData();
@@ -50856,20 +50681,20 @@ function capturePaste(view, event) {
   if (!view.dom.parentNode)
     return;
   let plainText = view.input.shiftKey || view.state.selection.$from.parent.type.spec.code;
-  let target = view.dom.parentNode.appendChild(document.createElement(plainText ? "textarea" : "div"));
+  let target2 = view.dom.parentNode.appendChild(document.createElement(plainText ? "textarea" : "div"));
   if (!plainText)
-    target.contentEditable = "true";
-  target.style.cssText = "position: fixed; left: -10000px; top: 10px";
-  target.focus();
+    target2.contentEditable = "true";
+  target2.style.cssText = "position: fixed; left: -10000px; top: 10px";
+  target2.focus();
   let plain = view.input.shiftKey && view.input.lastKeyCode != 45;
   setTimeout(() => {
     view.focus();
-    if (target.parentNode)
-      target.parentNode.removeChild(target);
+    if (target2.parentNode)
+      target2.parentNode.removeChild(target2);
     if (plainText)
-      doPaste(view, target.value, null, plain, event);
+      doPaste(view, target2.value, null, plain, event);
     else
-      doPaste(view, target.textContent, target.innerHTML, plain, event);
+      doPaste(view, target2.textContent, target2.innerHTML, plain, event);
   }, 50);
 }
 function doPaste(view, text2, html, preferPlain, event) {
@@ -50923,10 +50748,10 @@ handlers.dragstart = (view, _event) => {
     mouseDown.done();
   if (!event.dataTransfer)
     return;
-  let sel = view.state.selection;
-  let pos = sel.empty ? null : view.posAtCoords(eventCoords(event));
+  let sel2 = view.state.selection;
+  let pos = sel2.empty ? null : view.posAtCoords(eventCoords(event));
   let node2;
-  if (pos && pos.pos >= sel.from && pos.pos <= (sel instanceof NodeSelection ? sel.to - 1 : sel.to)) ;
+  if (pos && pos.pos >= sel2.from && pos.pos <= (sel2 instanceof NodeSelection ? sel2.to - 1 : sel2.to)) ;
   else if (mouseDown && mouseDown.mightDrag) {
     node2 = NodeSelection.create(view.state.doc, mouseDown.mightDrag.pos);
   } else if (event.target && isElt(event.target)) {
@@ -51112,9 +50937,9 @@ var InlineType = class _InlineType {
     this.spec = spec || noSpec;
   }
   map(mapping, span, offset3, oldOffset) {
-    let from3 = mapping.map(span.from + oldOffset, this.spec.inclusiveStart ? -1 : 1) - offset3;
+    let from4 = mapping.map(span.from + oldOffset, this.spec.inclusiveStart ? -1 : 1) - offset3;
     let to = mapping.map(span.to + oldOffset, this.spec.inclusiveEnd ? 1 : -1) - offset3;
-    return from3 >= to ? null : new Decoration(from3, to, this);
+    return from4 >= to ? null : new Decoration(from4, to, this);
   }
   valid(_2, span) {
     return span.from < span.to;
@@ -51134,13 +50959,13 @@ var NodeType2 = class _NodeType {
     this.spec = spec || noSpec;
   }
   map(mapping, span, offset3, oldOffset) {
-    let from3 = mapping.mapResult(span.from + oldOffset, 1);
-    if (from3.deleted)
+    let from4 = mapping.mapResult(span.from + oldOffset, 1);
+    if (from4.deleted)
       return null;
     let to = mapping.mapResult(span.to + oldOffset, -1);
-    if (to.deleted || to.pos <= from3.pos)
+    if (to.deleted || to.pos <= from4.pos)
       return null;
-    return new Decoration(from3.pos - offset3, to.pos - offset3, this);
+    return new Decoration(from4.pos - offset3, to.pos - offset3, this);
   }
   valid(node2, span, cursor2) {
     let found2 = cursor2.nodeAt(span.from);
@@ -51156,16 +50981,16 @@ var Decoration = class _Decoration {
   /**
   @internal
   */
-  constructor(from3, to, type) {
-    this.from = from3;
+  constructor(from4, to, type) {
+    this.from = from4;
     this.to = to;
     this.type = type;
   }
   /**
   @internal
   */
-  copy(from3, to) {
-    return new _Decoration(from3, to, this.type);
+  copy(from4, to) {
+    return new _Decoration(from4, to, this.type);
   }
   /**
   @internal
@@ -51194,16 +51019,16 @@ var Decoration = class _Decoration {
   Creates an inline decoration, which adds the given attributes to
   each inline node between `from` and `to`.
   */
-  static inline(from3, to, attrs, spec) {
-    return new _Decoration(from3, to, new InlineType(attrs, spec));
+  static inline(from4, to, attrs, spec) {
+    return new _Decoration(from4, to, new InlineType(attrs, spec));
   }
   /**
   Creates a node decoration. `from` and `to` should point precisely
   before and after a node in the document. That node, and only that
   node, will receive the given attributes.
   */
-  static node(from3, to, attrs, spec) {
-    return new _Decoration(from3, to, new NodeType2(attrs, spec));
+  static node(from4, to, attrs, spec) {
+    return new _Decoration(from4, to, new NodeType2(attrs, spec));
   }
   /**
   The spec provided when creating this decoration. Can be useful
@@ -51349,10 +51174,10 @@ var DecorationSet = class _DecorationSet {
     let children = this.children, local = this.local;
     for (let i2 = 0; i2 < children.length; i2 += 3) {
       let found2;
-      let from3 = children[i2] + offset3, to = children[i2 + 1] + offset3;
+      let from4 = children[i2] + offset3, to = children[i2 + 1] + offset3;
       for (let j2 = 0, span; j2 < decorations.length; j2++)
         if (span = decorations[j2]) {
-          if (span.from > from3 && span.to < to) {
+          if (span.from > from4 && span.to < to) {
             decorations[j2] = null;
             (found2 || (found2 = [])).push(span);
           }
@@ -51361,7 +51186,7 @@ var DecorationSet = class _DecorationSet {
         continue;
       if (children == this.children)
         children = this.children.slice();
-      let removed = children[i2 + 2].removeInner(found2, from3 + 1);
+      let removed = children[i2 + 2].removeInner(found2, from4 + 1);
       if (removed != empty) {
         children[i2 + 2] = removed;
       } else {
@@ -51400,9 +51225,9 @@ var DecorationSet = class _DecorationSet {
     for (let i2 = 0; i2 < this.local.length; i2++) {
       let dec = this.local[i2];
       if (dec.from < end && dec.to > start && dec.type instanceof InlineType) {
-        let from3 = Math.max(start, dec.from) - start, to = Math.min(end, dec.to) - start;
-        if (from3 < to)
-          (local || (local = [])).push(dec.copy(from3, to));
+        let from4 = Math.max(start, dec.from) - start, to = Math.min(end, dec.to) - start;
+        if (from4 < to)
+          (local || (local = [])).push(dec.copy(from4, to));
       }
     }
     if (local) {
@@ -51552,7 +51377,7 @@ function mapChildren(oldChildren, newLocal, mapping, node2, offset3, oldOffset, 
         children[i2 + 1] = -1;
         continue;
       }
-      let from3 = mapping.map(oldChildren[i2] + oldOffset), fromLocal = from3 - offset3;
+      let from4 = mapping.map(oldChildren[i2] + oldOffset), fromLocal = from4 - offset3;
       if (fromLocal < 0 || fromLocal >= node2.content.size) {
         mustRebuild = true;
         continue;
@@ -51561,7 +51386,7 @@ function mapChildren(oldChildren, newLocal, mapping, node2, offset3, oldOffset, 
       let { index, offset: childOffset } = node2.content.findIndex(fromLocal);
       let childNode = node2.maybeChild(index);
       if (childNode && childOffset == fromLocal && childOffset + childNode.nodeSize == toLocal) {
-        let mapped = children[i2 + 2].mapInner(mapping, childNode, from3 + 1, oldChildren[i2] + oldOffset + 1, options);
+        let mapped = children[i2 + 2].mapInner(mapping, childNode, from4 + 1, oldChildren[i2] + oldOffset + 1, options);
         if (mapped != empty) {
           children[i2] = fromLocal;
           children[i2 + 1] = toLocal;
@@ -51584,8 +51409,8 @@ function mapChildren(oldChildren, newLocal, mapping, node2, offset3, oldOffset, 
         i2 -= 3;
       }
     for (let i2 = 0, j2 = 0; i2 < built.children.length; i2 += 3) {
-      let from3 = built.children[i2];
-      while (j2 < children.length && children[j2] < from3)
+      let from4 = built.children[i2];
+      while (j2 < children.length && children[j2] < from4)
         j2 += 3;
       children.splice(j2, 0, built.children[i2], built.children[i2 + 1], built.children[i2 + 2]);
     }
@@ -51724,17 +51549,17 @@ var SelectionState = class {
     this.focusNode = null;
     this.focusOffset = 0;
   }
-  set(sel) {
-    this.anchorNode = sel.anchorNode;
-    this.anchorOffset = sel.anchorOffset;
-    this.focusNode = sel.focusNode;
-    this.focusOffset = sel.focusOffset;
+  set(sel2) {
+    this.anchorNode = sel2.anchorNode;
+    this.anchorOffset = sel2.anchorOffset;
+    this.focusNode = sel2.focusNode;
+    this.focusOffset = sel2.focusOffset;
   }
   clear() {
     this.anchorNode = this.focusNode = null;
   }
-  eq(sel) {
-    return sel.anchorNode == this.anchorNode && sel.anchorOffset == this.anchorOffset && sel.focusNode == this.focusNode && sel.focusOffset == this.focusOffset;
+  eq(sel2) {
+    return sel2.anchorNode == this.anchorNode && sel2.anchorOffset == this.anchorOffset && sel2.focusNode == this.focusNode && sel2.focusOffset == this.focusOffset;
   }
 };
 var DOMObserver = class {
@@ -51821,8 +51646,8 @@ var DOMObserver = class {
     if (this.suppressingSelectionUpdates)
       return selectionToDOM(this.view);
     if (ie2 && ie_version <= 11 && !this.view.state.selection.empty) {
-      let sel = this.view.domSelectionRange();
-      if (sel.focusNode && isEquivalentPosition(sel.focusNode, sel.focusOffset, sel.anchorNode, sel.anchorOffset))
+      let sel2 = this.view.domSelectionRange();
+      if (sel2.focusNode && isEquivalentPosition(sel2.focusNode, sel2.focusOffset, sel2.anchorNode, sel2.anchorOffset))
         return this.flushSoon();
     }
     this.flush();
@@ -51830,13 +51655,13 @@ var DOMObserver = class {
   setCurSelection() {
     this.currentSelection.set(this.view.domSelectionRange());
   }
-  ignoreSelectionChange(sel) {
-    if (!sel.focusNode)
+  ignoreSelectionChange(sel2) {
+    if (!sel2.focusNode)
       return true;
     let ancestors = /* @__PURE__ */ new Set(), container;
-    for (let scan = sel.focusNode; scan; scan = parentNode(scan))
+    for (let scan = sel2.focusNode; scan; scan = parentNode(scan))
       ancestors.add(scan);
-    for (let scan = sel.anchorNode; scan; scan = parentNode(scan))
+    for (let scan = sel2.anchorNode; scan; scan = parentNode(scan))
       if (ancestors.has(scan)) {
         container = scan;
         break;
@@ -51868,12 +51693,12 @@ var DOMObserver = class {
       selRange = view.domSelectionRange();
       newSel = !this.currentSelection.eq(selRange) && !this.ignoreSelectionChange(selRange);
     }
-    let from3 = -1, to = -1, typeOver = false, added = [];
+    let from4 = -1, to = -1, typeOver = false, added = [];
     if (view.editable) {
       for (let i2 = 0; i2 < mutations.length; i2++) {
         let result = this.registerMutation(mutations[i2], added);
         if (result) {
-          from3 = from3 < 0 ? result.from : Math.min(result.from, from3);
+          from4 = from4 < 0 ? result.from : Math.min(result.from, from4);
           to = to < 0 ? result.to : Math.max(result.to, to);
           if (result.typeOver)
             typeOver = true;
@@ -51910,21 +51735,21 @@ var DOMObserver = class {
       }
     }
     let readSel = null;
-    if (from3 < 0 && newSel && view.input.lastFocus > Date.now() - 200 && Math.max(view.input.lastTouch, view.input.lastClick.time) < Date.now() - 300 && selectionCollapsed(selRange) && (readSel = selectionFromDOM(view)) && readSel.eq(Selection.near(view.state.doc.resolve(0), 1))) {
+    if (from4 < 0 && newSel && view.input.lastFocus > Date.now() - 200 && Math.max(view.input.lastTouch, view.input.lastClick.time) < Date.now() - 300 && selectionCollapsed(selRange) && (readSel = selectionFromDOM(view)) && readSel.eq(Selection.near(view.state.doc.resolve(0), 1))) {
       view.input.lastFocus = 0;
       selectionToDOM(view);
       this.currentSelection.set(selRange);
       view.scrollToSelection();
-    } else if (from3 > -1 || newSel) {
-      if (from3 > -1) {
-        view.docView.markDirty(from3, to);
+    } else if (from4 > -1 || newSel) {
+      if (from4 > -1) {
+        view.docView.markDirty(from4, to);
         checkCSS(view);
       }
       if (view.input.badSafariComposition) {
         view.input.badSafariComposition = false;
         fixUpBadSafariComposition(view, added);
       }
-      this.handleDOMChange(from3, to, typeOver, added);
+      this.handleDOMChange(from4, to, typeOver, added);
       if (view.docView && view.docView.dirty)
         view.updateState(view.state);
       else if (selRange && !this.currentSelection.eq(selRange))
@@ -51962,10 +51787,10 @@ var DOMObserver = class {
         }
       }
       let fromOffset = prev && prev.parentNode == mut.target ? domIndex(prev) + 1 : 0;
-      let from3 = desc.localPosFromDOM(mut.target, fromOffset, -1);
+      let from4 = desc.localPosFromDOM(mut.target, fromOffset, -1);
       let toOffset = next2 && next2.parentNode == mut.target ? domIndex(next2) : mut.target.childNodes.length;
       let to = desc.localPosFromDOM(mut.target, toOffset, 1);
-      return { from: from3, to };
+      return { from: from4, to };
     } else if (mut.type == "attributes") {
       return { from: desc.posAtStart - desc.border, to: desc.posAtEnd + desc.border };
     } else {
@@ -52055,12 +51880,12 @@ function fixUpBadSafariComposition(view, addedNodes) {
   }
 }
 function parseBetween(view, from_, to_, addedNodes) {
-  let { node: parent, fromOffset, toOffset, from: from3, to } = view.docView.parseRange(from_, to_);
+  let { node: parent, fromOffset, toOffset, from: from4, to } = view.docView.parseRange(from_, to_);
   let domSel = view.domSelectionRange();
   let find3;
-  let anchor2 = domSel.anchorNode;
-  if (anchor2 && contains(view.dom, anchor2)) {
-    find3 = [{ node: anchor2, offset: domSel.anchorOffset }];
+  let anchor3 = domSel.anchorNode;
+  if (anchor3 && contains(view.dom, anchor3)) {
+    find3 = [{ node: anchor3, offset: domSel.anchorOffset }];
     if (!selectionCollapsed(domSel))
       find3.push({ node: domSel.focusNode, offset: domSel.focusOffset });
   }
@@ -52077,8 +51902,8 @@ function parseBetween(view, from_, to_, addedNodes) {
   }
   let startDoc = view.state.doc;
   let parser = view.someProp("domParser") || DOMParser2.fromSchema(view.state.schema);
-  let $from = startDoc.resolve(from3);
-  let sel = null, doc4 = parser.parse(parent, {
+  let $from = startDoc.resolve(from4);
+  let sel2 = null, doc4 = parser.parse(parent, {
     topNode: $from.parent,
     topMatch: $from.parent.contentMatchAt($from.index()),
     topOpen: true,
@@ -52090,12 +51915,12 @@ function parseBetween(view, from_, to_, addedNodes) {
     context: $from
   });
   if (find3 && find3[0].pos != null) {
-    let anchor3 = find3[0].pos, head = find3[1] && find3[1].pos;
+    let anchor4 = find3[0].pos, head = find3[1] && find3[1].pos;
     if (head == null)
-      head = anchor3;
-    sel = { anchor: anchor3 + from3, head: head + from3 };
+      head = anchor4;
+    sel2 = { anchor: anchor4 + from4, head: head + from4 };
   }
-  return { doc: doc4, sel, from: from3, to };
+  return { doc: doc4, sel: sel2, from: from4, to };
 }
 var ruleFromNode = (added) => (dom) => {
   let desc = dom.pmViewDesc;
@@ -52115,10 +51940,10 @@ var ruleFromNode = (added) => (dom) => {
   return null;
 };
 var isInline = /^(a|abbr|acronym|b|bd[io]|big|br|button|cite|code|data(list)?|del|dfn|em|i|img|ins|kbd|label|map|mark|meter|output|q|ruby|s|samp|small|span|strong|su[bp]|time|u|tt|var)$/i;
-function readDOMChange(view, from3, to, typeOver, addedNodes) {
+function readDOMChange(view, from4, to, typeOver, addedNodes) {
   let compositionID = view.input.compositionPendingChanges || (view.composing ? view.input.compositionID : 0);
   view.input.compositionPendingChanges = 0;
-  if (from3 < 0) {
+  if (from4 < 0) {
     let origin = view.input.lastSelectionTime > Date.now() - 50 ? view.input.lastSelectionOrigin : null;
     let newSel = selectionFromDOM(view, origin);
     if (newSel && !view.state.selection.eq(newSel)) {
@@ -52135,12 +51960,12 @@ function readDOMChange(view, from3, to, typeOver, addedNodes) {
     }
     return;
   }
-  let $before = view.state.doc.resolve(from3);
+  let $before = view.state.doc.resolve(from4);
   let shared = $before.sharedDepth(to);
-  from3 = $before.before(shared + 1);
+  from4 = $before.before(shared + 1);
   to = view.state.doc.resolve(to).after(shared + 1);
-  let sel = view.state.selection;
-  let parse4 = parseBetween(view, from3, to, addedNodes);
+  let sel2 = view.state.selection;
+  let parse4 = parseBetween(view, from4, to, addedNodes);
   let doc4 = view.state.doc, compare = doc4.slice(parse4.from, parse4.to);
   let preferredPos, preferredSide;
   if (view.input.lastKeyCode === 8 && Date.now() - 100 < view.input.lastKeyCodeTime) {
@@ -52159,13 +51984,13 @@ function readDOMChange(view, from3, to, typeOver, addedNodes) {
     return;
   }
   if (!change) {
-    if (typeOver && sel instanceof TextSelection && !sel.empty && sel.$head.sameParent(sel.$anchor) && !view.composing && !(parse4.sel && parse4.sel.anchor != parse4.sel.head)) {
-      change = { start: sel.from, endA: sel.to, endB: sel.to };
+    if (typeOver && sel2 instanceof TextSelection && !sel2.empty && sel2.$head.sameParent(sel2.$anchor) && !view.composing && !(parse4.sel && parse4.sel.anchor != parse4.sel.head)) {
+      change = { start: sel2.from, endA: sel2.to, endB: sel2.to };
     } else {
       if (parse4.sel) {
-        let sel2 = resolveSelection(view, view.state.doc, parse4.sel);
-        if (sel2 && !sel2.eq(view.state.selection)) {
-          let tr2 = view.state.tr.setSelection(sel2);
+        let sel3 = resolveSelection(view, view.state.doc, parse4.sel);
+        if (sel3 && !sel3.eq(view.state.selection)) {
+          let tr2 = view.state.tr.setSelection(sel3);
           if (compositionID)
             tr2.setMeta("composition", compositionID);
           view.dispatch(tr2);
@@ -52215,9 +52040,9 @@ function readDOMChange(view, from3, to, typeOver, addedNodes) {
   let mkTr = (base2) => {
     let tr2 = base2 || view.state.tr.replace(chFrom, chTo, parse4.doc.slice(change.start - parse4.from, change.endB - parse4.from));
     if (parse4.sel) {
-      let sel2 = resolveSelection(view, tr2.doc, parse4.sel);
-      if (sel2 && !(chrome && view.composing && sel2.empty && (change.start != change.endB || view.input.lastChromeDelete < Date.now() - 100) && (sel2.head == chFrom || sel2.head == tr2.mapping.map(chTo) - 1) || ie2 && sel2.empty && sel2.head == chFrom))
-        tr2.setSelection(sel2);
+      let sel3 = resolveSelection(view, tr2.doc, parse4.sel);
+      if (sel3 && !(chrome && view.composing && sel3.empty && (change.start != change.endB || view.input.lastChromeDelete < Date.now() - 100) && (sel3.head == chFrom || sel3.head == tr2.mapping.map(chTo) - 1) || ie2 && sel3.empty && sel3.head == chFrom))
+        tr2.setSelection(sel3);
     }
     if (compositionID)
       tr2.setMeta("composition", compositionID);
@@ -52264,19 +52089,19 @@ function resolveSelection(view, doc4, parsedSel) {
 }
 function isMarkChange(cur, prev) {
   let curMarks = cur.firstChild.marks, prevMarks = prev.firstChild.marks;
-  let added = curMarks, removed = prevMarks, type, mark, update;
+  let added = curMarks, removed = prevMarks, type, mark2, update;
   for (let i2 = 0; i2 < prevMarks.length; i2++)
     added = prevMarks[i2].removeFromSet(added);
   for (let i2 = 0; i2 < curMarks.length; i2++)
     removed = curMarks[i2].removeFromSet(removed);
   if (added.length == 1 && removed.length == 0) {
-    mark = added[0];
+    mark2 = added[0];
     type = "add";
-    update = (node2) => node2.mark(mark.addToSet(node2.marks));
+    update = (node2) => node2.mark(mark2.addToSet(node2.marks));
   } else if (added.length == 0 && removed.length == 1) {
-    mark = removed[0];
+    mark2 = removed[0];
     type = "remove";
-    update = (node2) => node2.mark(mark.removeFromSet(node2.marks));
+    update = (node2) => node2.mark(mark2.removeFromSet(node2.marks));
   } else {
     return null;
   }
@@ -52284,7 +52109,7 @@ function isMarkChange(cur, prev) {
   for (let i2 = 0; i2 < prev.childCount; i2++)
     updated.push(update(prev.child(i2)));
   if (Fragment.from(updated).eq(cur))
-    return { mark, type };
+    return { mark: mark2, type };
 }
 function looksLikeBlockJoin(old, start, end, $newStart, $newEnd) {
   if (
@@ -52305,12 +52130,12 @@ function looksLikeBlockJoin(old, start, end, $newStart, $newEnd) {
     return false;
   return $newStart.parent.content.cut($newStart.parentOffset).eq($next.parent.content);
 }
-function looksLikeEnter(content, from3, to) {
+function looksLikeEnter(content, from4, to) {
   let newTextlines = 0, newLeaves = 0;
-  content.nodesBetween(from3, to, (node2, pos) => {
-    if (node2.isTextblock && pos >= from3 && pos < to)
+  content.nodesBetween(from4, to, (node2, pos) => {
+    if (node2.isTextblock && pos >= from4 && pos < to)
       newTextlines++;
-    else if (node2.isText ? /\S/.test(node2.text.slice(Math.max(0, from3 - pos), Math.min(node2.nodeSize, to - pos))) : node2.isLeaf)
+    else if (node2.isText ? /\S/.test(node2.text.slice(Math.max(0, from4 - pos), Math.min(node2.nodeSize, to - pos))) : node2.isLeaf)
       newLeaves++;
   });
   return newLeaves == 0 && newTextlines == 1;
@@ -52392,7 +52217,7 @@ var EditorView = class {
     updateCursorWrapper(this);
     this.nodeViews = buildNodeViews(this);
     this.docView = docViewDesc(this.state.doc, computeDocDeco(this), viewDecorations(this), this.dom, this);
-    this.domObserver = new DOMObserver(this, (from3, to, typeOver, added) => readDOMChange(this, from3, to, typeOver, added));
+    this.domObserver = new DOMObserver(this, (from4, to, typeOver, added) => readDOMChange(this, from4, to, typeOver, added));
     this.domObserver.start();
     initInput(this);
     this.updatePluginViews();
@@ -52524,9 +52349,9 @@ var EditorView = class {
     if (!startDOM || !contains(this.dom, startDOM)) ;
     else if (this.someProp("handleScrollToSelection", (f2) => f2(this))) ;
     else if (this.state.selection instanceof NodeSelection) {
-      let target = this.docView.domAfterPos(this.state.selection.from);
-      if (isElt(target))
-        scrollRectIntoView(this, target.getBoundingClientRect(), startDOM);
+      let target2 = this.docView.domAfterPos(this.state.selection.from);
+      if (isElt(target2))
+        scrollRectIntoView(this, target2.getBoundingClientRect(), startDOM);
     } else {
       scrollRectIntoView(this, this.coordsAtPos(this.state.selection.head, 1), startDOM);
     }
@@ -52560,13 +52385,13 @@ var EditorView = class {
     }
   }
   updateDraggedNode(dragging, prev) {
-    let sel = dragging.node, found2 = -1;
-    if (sel.from < this.state.doc.content.size && this.state.doc.nodeAt(sel.from) == sel.node) {
-      found2 = sel.from;
+    let sel2 = dragging.node, found2 = -1;
+    if (sel2.from < this.state.doc.content.size && this.state.doc.nodeAt(sel2.from) == sel2.node) {
+      found2 = sel2.from;
     } else {
-      let movedPos = sel.from + (this.state.doc.content.size - prev.doc.content.size);
+      let movedPos = sel2.from + (this.state.doc.content.size - prev.doc.content.size);
       let moved = movedPos > 0 && movedPos < this.state.doc.content.size && this.state.doc.nodeAt(movedPos);
-      if (moved == sel.node)
+      if (moved == sel2.node)
         found2 = movedPos;
     }
     this.dragging = new Dragging(dragging.slice, dragging.move, found2 < 0 ? void 0 : NodeSelection.create(this.state.doc, found2));
@@ -52626,11 +52451,11 @@ var EditorView = class {
   get root() {
     let cached2 = this._root;
     if (cached2 == null)
-      for (let search = this.dom.parentNode; search; search = search.parentNode) {
-        if (search.nodeType == 9 || search.nodeType == 11 && search.host) {
-          if (!search.getSelection)
-            Object.getPrototypeOf(search).getSelection = () => search.ownerDocument.getSelection();
-          return this._root = search;
+      for (let search2 = this.dom.parentNode; search2; search2 = search2.parentNode) {
+        if (search2.nodeType == 9 || search2.nodeType == 11 && search2.host) {
+          if (!search2.getSelection)
+            Object.getPrototypeOf(search2).getSelection = () => search2.ownerDocument.getSelection();
+          return this._root = search2;
         }
       }
     return cached2 || document;
@@ -52781,10 +52606,10 @@ var EditorView = class {
   @internal
   */
   domSelectionRange() {
-    let sel = this.dom.isConnected !== false && this.domSelection();
-    if (!sel)
+    let sel2 = this.dom.isConnected !== false && this.domSelection();
+    if (!sel2)
       return { focusNode: null, focusOffset: 0, anchorNode: null, anchorOffset: 0 };
-    return safari && this.root.nodeType === 11 && deepActiveElement(this.dom.ownerDocument) == this.dom && safariShadowSelectionRange(this, sel) || sel;
+    return safari && this.root.nodeType === 11 && deepActiveElement(this.dom.ownerDocument) == this.dom && safariShadowSelectionRange(this, sel2) || sel2;
   }
   /**
   @internal
@@ -53071,13 +52896,13 @@ RopeSequence.prototype.prepend = function prepend(other) {
 RopeSequence.prototype.appendInner = function appendInner(other) {
   return new Append(this, other);
 };
-RopeSequence.prototype.slice = function slice(from3, to) {
-  if (from3 === void 0) from3 = 0;
+RopeSequence.prototype.slice = function slice(from4, to) {
+  if (from4 === void 0) from4 = 0;
   if (to === void 0) to = this.length;
-  if (from3 >= to) {
+  if (from4 >= to) {
     return RopeSequence.empty;
   }
-  return this.sliceInner(Math.max(0, from3), Math.min(this.length, to));
+  return this.sliceInner(Math.max(0, from4), Math.min(this.length, to));
 };
 RopeSequence.prototype.get = function get(i2) {
   if (i2 < 0 || i2 >= this.length) {
@@ -53085,22 +52910,22 @@ RopeSequence.prototype.get = function get(i2) {
   }
   return this.getInner(i2);
 };
-RopeSequence.prototype.forEach = function forEach(f2, from3, to) {
-  if (from3 === void 0) from3 = 0;
+RopeSequence.prototype.forEach = function forEach(f2, from4, to) {
+  if (from4 === void 0) from4 = 0;
   if (to === void 0) to = this.length;
-  if (from3 <= to) {
-    this.forEachInner(f2, from3, to, 0);
+  if (from4 <= to) {
+    this.forEachInner(f2, from4, to, 0);
   } else {
-    this.forEachInvertedInner(f2, from3, to, 0);
+    this.forEachInvertedInner(f2, from4, to, 0);
   }
 };
-RopeSequence.prototype.map = function map2(f2, from3, to) {
-  if (from3 === void 0) from3 = 0;
+RopeSequence.prototype.map = function map2(f2, from4, to) {
+  if (from4 === void 0) from4 = 0;
   if (to === void 0) to = this.length;
   var result = [];
   this.forEach(function(elt, i2) {
     return result.push(f2(elt, i2));
-  }, from3, to);
+  }, from4, to);
   return result;
 };
 RopeSequence.from = function from(values) {
@@ -53121,24 +52946,24 @@ var Leaf = /* @__PURE__ */ (function(RopeSequence3) {
   Leaf2.prototype.flatten = function flatten() {
     return this.values;
   };
-  Leaf2.prototype.sliceInner = function sliceInner(from3, to) {
-    if (from3 == 0 && to == this.length) {
+  Leaf2.prototype.sliceInner = function sliceInner(from4, to) {
+    if (from4 == 0 && to == this.length) {
       return this;
     }
-    return new Leaf2(this.values.slice(from3, to));
+    return new Leaf2(this.values.slice(from4, to));
   };
   Leaf2.prototype.getInner = function getInner(i2) {
     return this.values[i2];
   };
-  Leaf2.prototype.forEachInner = function forEachInner(f2, from3, to, start) {
-    for (var i2 = from3; i2 < to; i2++) {
+  Leaf2.prototype.forEachInner = function forEachInner(f2, from4, to, start) {
+    for (var i2 = from4; i2 < to; i2++) {
       if (f2(this.values[i2], start + i2) === false) {
         return false;
       }
     }
   };
-  Leaf2.prototype.forEachInvertedInner = function forEachInvertedInner(f2, from3, to, start) {
-    for (var i2 = from3 - 1; i2 >= to; i2--) {
+  Leaf2.prototype.forEachInvertedInner = function forEachInvertedInner(f2, from4, to, start) {
+    for (var i2 = from4 - 1; i2 >= to; i2--) {
       if (f2(this.values[i2], start + i2) === false) {
         return false;
       }
@@ -53181,36 +53006,36 @@ var Append = /* @__PURE__ */ (function(RopeSequence3) {
   Append2.prototype.getInner = function getInner(i2) {
     return i2 < this.left.length ? this.left.get(i2) : this.right.get(i2 - this.left.length);
   };
-  Append2.prototype.forEachInner = function forEachInner(f2, from3, to, start) {
+  Append2.prototype.forEachInner = function forEachInner(f2, from4, to, start) {
     var leftLen = this.left.length;
-    if (from3 < leftLen && this.left.forEachInner(f2, from3, Math.min(to, leftLen), start) === false) {
+    if (from4 < leftLen && this.left.forEachInner(f2, from4, Math.min(to, leftLen), start) === false) {
       return false;
     }
-    if (to > leftLen && this.right.forEachInner(f2, Math.max(from3 - leftLen, 0), Math.min(this.length, to) - leftLen, start + leftLen) === false) {
+    if (to > leftLen && this.right.forEachInner(f2, Math.max(from4 - leftLen, 0), Math.min(this.length, to) - leftLen, start + leftLen) === false) {
       return false;
     }
   };
-  Append2.prototype.forEachInvertedInner = function forEachInvertedInner(f2, from3, to, start) {
+  Append2.prototype.forEachInvertedInner = function forEachInvertedInner(f2, from4, to, start) {
     var leftLen = this.left.length;
-    if (from3 > leftLen && this.right.forEachInvertedInner(f2, from3 - leftLen, Math.max(to, leftLen) - leftLen, start + leftLen) === false) {
+    if (from4 > leftLen && this.right.forEachInvertedInner(f2, from4 - leftLen, Math.max(to, leftLen) - leftLen, start + leftLen) === false) {
       return false;
     }
-    if (to < leftLen && this.left.forEachInvertedInner(f2, Math.min(from3, leftLen), to, start) === false) {
+    if (to < leftLen && this.left.forEachInvertedInner(f2, Math.min(from4, leftLen), to, start) === false) {
       return false;
     }
   };
-  Append2.prototype.sliceInner = function sliceInner(from3, to) {
-    if (from3 == 0 && to == this.length) {
+  Append2.prototype.sliceInner = function sliceInner(from4, to) {
+    if (from4 == 0 && to == this.length) {
       return this;
     }
     var leftLen = this.left.length;
     if (to <= leftLen) {
-      return this.left.slice(from3, to);
+      return this.left.slice(from4, to);
     }
-    if (from3 >= leftLen) {
-      return this.right.slice(from3 - leftLen, to - leftLen);
+    if (from4 >= leftLen) {
+      return this.right.slice(from4 - leftLen, to - leftLen);
     }
-    return this.left.slice(from3, leftLen).append(this.right.slice(0, to - leftLen));
+    return this.left.slice(from4, leftLen).append(this.right.slice(0, to - leftLen));
   };
   Append2.prototype.leafAppend = function leafAppend(other) {
     var inner = this.right.leafAppend(other);
@@ -53322,12 +53147,12 @@ var Branch = class _Branch {
     }
     return new _Branch(oldItems.append(newItems), eventCount);
   }
-  remapping(from3, to) {
+  remapping(from4, to) {
     let maps = new Mapping();
     this.items.forEach((item, i2) => {
-      let mirrorPos = item.mirrorOffset != null && i2 - item.mirrorOffset >= from3 ? maps.maps.length - item.mirrorOffset : void 0;
+      let mirrorPos = item.mirrorOffset != null && i2 - item.mirrorOffset >= from4 ? maps.maps.length - item.mirrorOffset : void 0;
       maps.appendMap(item.map, mirrorPos);
-    }, from3, to);
+    }, from4, to);
     return maps;
   }
   addMaps(array2) {
@@ -53498,7 +53323,7 @@ function isAdjacentTo(transform2, prevRanges) {
 function rangesFor(maps) {
   let result = [];
   for (let i2 = maps.length - 1; i2 >= 0 && result.length == 0; i2--)
-    maps[i2].forEach((_from, _to, from3, to) => result.push(from3, to));
+    maps[i2].forEach((_from, _to, from4, to) => result.push(from4, to));
   return result;
 }
 function mapRanges(ranges, mapping) {
@@ -53506,9 +53331,9 @@ function mapRanges(ranges, mapping) {
     return null;
   let result = [];
   for (let i2 = 0; i2 < ranges.length; i2 += 2) {
-    let from3 = mapping.map(ranges[i2], 1), to = mapping.map(ranges[i2 + 1], -1);
-    if (from3 <= to)
-      result.push(from3, to);
+    let from4 = mapping.map(ranges[i2], 1), to = mapping.map(ranges[i2 + 1], -1);
+    if (from4 <= to)
+      result.push(from4, to);
   }
   return result;
 }
@@ -53720,9 +53545,9 @@ var CommandManager = class CommandManager2 {
   */
   static createFallbackCan() {
     const chain = CommandManager2.createFakeChain();
-    return new Proxy({ chain: () => chain }, { get: (target, property) => {
+    return new Proxy({ chain: () => chain }, { get: (target2, property) => {
       if (property === "then") return;
-      if (property === "chain") return target.chain;
+      if (property === "chain") return target2.chain;
       return () => false;
     } });
   }
@@ -53806,9 +53631,9 @@ var deleteCurrentNode = () => ({ tr: tr2, dispatch }) => {
   const $pos = tr2.selection.$anchor;
   for (let depth = $pos.depth; depth > 0; depth -= 1) if ($pos.node(depth).type === currentNode.type) {
     if (dispatch) {
-      const from3 = $pos.before(depth);
+      const from4 = $pos.before(depth);
       const to = $pos.after(depth);
-      tr2.delete(from3, to).scrollIntoView();
+      tr2.delete(from4, to).scrollIntoView();
     }
     return true;
   }
@@ -53826,17 +53651,17 @@ var deleteNode = (typeOrName) => ({ tr: tr2, state, dispatch }) => {
   const $pos = tr2.selection.$anchor;
   for (let depth = $pos.depth; depth > 0; depth -= 1) if ($pos.node(depth).type === type) {
     if (dispatch) {
-      const from3 = $pos.before(depth);
+      const from4 = $pos.before(depth);
       const to = $pos.after(depth);
-      tr2.delete(from3, to).scrollIntoView();
+      tr2.delete(from4, to).scrollIntoView();
     }
     return true;
   }
   return false;
 };
 var deleteRange2 = (range) => ({ tr: tr2, dispatch }) => {
-  const { from: from3, to } = range;
-  if (dispatch) tr2.delete(from3, to);
+  const { from: from4, to } = range;
+  if (dispatch) tr2.delete(from4, to);
   return true;
 };
 var hasTextContent = (nodeSpec) => {
@@ -53866,8 +53691,8 @@ var deleteSelection2 = () => ({ state, dispatch }) => {
       const mapping = tr2.mapping.slice(mapFrom);
       const $from = tr2.doc.resolve(mapping.map(range.$from.pos));
       const $to = tr2.doc.resolve(mapping.map(range.$to.pos));
-      const { from: from3, to } = expandSelectionForInlineText($from, $to, state.schema);
-      tr2.deleteRange(from3, to);
+      const { from: from4, to } = expandSelectionForInlineText($from, $to, state.schema);
+      tr2.deleteRange(from4, to);
     });
     if (!tr2.selection.empty) tr2.setSelection(TextSelection.near(tr2.doc.resolve(tr2.selection.from)));
     tr2.scrollIntoView();
@@ -53904,10 +53729,10 @@ function isMarkInSet(marks, type, attributes = {}) {
 function getMarkRange($pos, type, attributes) {
   if (!$pos || !type) return;
   let start = $pos.parent.childAfter($pos.parentOffset);
-  if (!start.node || !start.node.marks.some((mark) => mark.type === type)) start = $pos.parent.childBefore($pos.parentOffset);
-  if (!start.node || !start.node.marks.some((mark) => mark.type === type)) return;
+  if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) start = $pos.parent.childBefore($pos.parentOffset);
+  if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) return;
   if (!attributes) {
-    const firstMark = start.node.marks.find((mark) => mark.type === type);
+    const firstMark = start.node.marks.find((mark2) => mark2.type === type);
     if (firstMark) attributes = firstMark.attrs;
   }
   if (!findMarkInSet([...start.node.marks], type, attributes)) return;
@@ -53938,10 +53763,10 @@ function getMarkType(nameOrType, schema2) {
 var extendMarkRange = (typeOrName, attributes) => ({ tr: tr2, state, dispatch }) => {
   const type = getMarkType(typeOrName, state.schema);
   const { doc: doc4, selection } = tr2;
-  const { $from, from: from3, to } = selection;
+  const { $from, from: from4, to } = selection;
   if (dispatch) {
     const range = getMarkRange($from, type, attributes);
-    if (range && range.from <= from3 && range.to >= to) {
+    if (range && range.from <= from4 && range.to >= to) {
       const newSelection = TextSelection.create(doc4, range.from, range.to);
       tr2.setSelection(newSelection);
     }
@@ -54154,7 +53979,7 @@ var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor
       emitContentError(e);
       return false;
     }
-    let { from: from3, to } = typeof position === "number" ? {
+    let { from: from4, to } = typeof position === "number" ? {
       from: position,
       to: position
     } : {
@@ -54169,10 +53994,10 @@ var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor
       isOnlyTextContent = isOnlyTextContent ? node2.isText && node2.marks.length === 0 : false;
       isOnlyBlockContent = isOnlyBlockContent ? node2.isBlock : false;
     });
-    if (from3 === to && isOnlyBlockContent) {
-      const { parent } = tr2.doc.resolve(from3);
+    if (from4 === to && isOnlyBlockContent) {
+      const { parent } = tr2.doc.resolve(from4);
       if (parent.isTextblock && !parent.type.spec.code && !parent.childCount) {
-        from3 -= 1;
+        from4 -= 1;
         to += 1;
       }
     }
@@ -54185,24 +54010,24 @@ var insertContentAt = (position, value, options) => ({ tr: tr2, dispatch, editor
       }).join("");
       else if (typeof value === "object" && !!value && !!value.text) newContent = value.text;
       else newContent = value;
-      tr2.insertText(newContent, from3, to);
+      tr2.insertText(newContent, from4, to);
     } else {
       newContent = Fragment.from(nodes);
-      const $from = tr2.doc.resolve(from3);
+      const $from = tr2.doc.resolve(from4);
       const $fromNode = $from.node();
       const fromSelectionAtStart = $from.parentOffset === 0;
       const isTextSelection2 = $fromNode.isText || $fromNode.isTextblock;
       const hasContent2 = $fromNode.content.size > 0;
-      if (fromSelectionAtStart && isTextSelection2 && hasContent2 && isOnlyBlockContent) from3 = Math.max(0, from3 - 1);
-      tr2.replaceWith(from3, to, nodes);
+      if (fromSelectionAtStart && isTextSelection2 && hasContent2 && isOnlyBlockContent) from4 = Math.max(0, from4 - 1);
+      tr2.replaceWith(from4, to, nodes);
     }
     if (options.updateSelection) selectionToInsertionEnd2(tr2, tr2.steps.length - 1, -1);
     if (options.applyInputRules) tr2.setMeta("applyInputRules", {
-      from: from3,
+      from: from4,
       text: newContent
     });
     if (options.applyPasteRules) tr2.setMeta("applyPasteRules", {
-      from: from3,
+      from: from4,
       text: newContent
     });
   }
@@ -54341,12 +54166,12 @@ var keyboardShortcut = (name) => ({ editor, view, tr: tr2, dispatch }) => {
   return true;
 };
 function isNodeActive(state, typeOrName, attributes = {}) {
-  const { from: from3, to, empty: empty2 } = state.selection;
+  const { from: from4, to, empty: empty2 } = state.selection;
   const type = typeOrName ? getNodeType(typeOrName, state.schema) : null;
   const nodeRanges = [];
-  state.doc.nodesBetween(from3, to, (node2, pos) => {
+  state.doc.nodesBetween(from4, to, (node2, pos) => {
     if (node2.isText) return;
-    const relativeFrom = Math.max(from3, pos);
+    const relativeFrom = Math.max(from4, pos);
     const relativeTo = Math.min(to, pos + node2.nodeSize);
     nodeRanges.push({
       node: node2,
@@ -54354,7 +54179,7 @@ function isNodeActive(state, typeOrName, attributes = {}) {
       to: relativeTo
     });
   });
-  const selectionRange = to - from3;
+  const selectionRange = to - from4;
   const matchedNodeRanges = nodeRanges.filter((nodeRange) => {
     if (!type) return true;
     return type.name === nodeRange.node.type.name;
@@ -54402,10 +54227,10 @@ var resetAttributes = (typeOrName, attributes) => ({ tr: tr2, state, dispatch })
         canReset = true;
         if (dispatch) tr2.setNodeMarkup(pos, void 0, deleteProps(node2.attrs, attributes));
       }
-      if (markType && node2.marks.length) node2.marks.forEach((mark) => {
-        if (markType === mark.type) {
+      if (markType && node2.marks.length) node2.marks.forEach((mark2) => {
+        if (markType === mark2.type) {
           canReset = true;
-          if (dispatch) tr2.addMark(pos, pos + node2.nodeSize, markType.create(deleteProps(mark.attrs, attributes)));
+          if (dispatch) tr2.addMark(pos, pos + node2.nodeSize, markType.create(deleteProps(mark2.attrs, attributes)));
         }
       });
     });
@@ -54466,17 +54291,17 @@ var setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOpti
 };
 function getMarkAttributes(state, typeOrName) {
   const type = getMarkType(typeOrName, state.schema);
-  const { from: from3, to, empty: empty2 } = state.selection;
+  const { from: from4, to, empty: empty2 } = state.selection;
   const marks = [];
   if (empty2) {
     if (state.storedMarks) marks.push(...state.storedMarks);
     marks.push(...state.selection.$head.marks());
-  } else state.doc.nodesBetween(from3, to, (node2) => {
+  } else state.doc.nodesBetween(from4, to, (node2) => {
     marks.push(...node2.marks);
   });
-  const mark = marks.find((markItem) => markItem.type.name === type.name);
-  if (!mark) return {};
-  return { ...mark.attrs };
+  const mark2 = marks.find((markItem) => markItem.type.name === type.name);
+  if (!mark2) return {};
+  return { ...mark2.attrs };
 }
 function combineTransactionSteps(oldDoc, transactions) {
   const transform2 = new Transform(oldDoc);
@@ -54934,9 +54759,9 @@ function getSchemaSpecByResolvedExtensions(extensions, editor, allAttributes = g
       const parseHTML = callOrReturn(getExtensionField(extension, "parseHTML", context2));
       if (parseHTML) schema2.parseDOM = parseHTML.map((parseRule) => injectExtensionAttributesToParseRule(parseRule, extensionAttributes));
       const renderHTML = getExtensionField(extension, "renderHTML", context2);
-      if (renderHTML) schema2.toDOM = (mark) => renderHTML({
-        mark,
-        HTMLAttributes: getRenderedAttributes(mark, extensionAttributes)
+      if (renderHTML) schema2.toDOM = (mark2) => renderHTML({
+        mark: mark2,
+        HTMLAttributes: getRenderedAttributes(mark2, extensionAttributes)
       });
       return [extension.name, schema2];
     }))
@@ -54970,11 +54795,11 @@ function getSchema(extensions, editor) {
   return getSchemaByResolvedExtensions(resolveExtensions(extensions), editor);
 }
 function getTextBetween(startNode, range, options) {
-  const { from: from3, to } = range;
+  const { from: from4, to } = range;
   const { blockSeparator = "\n\n", textSerializers = {} } = options || {};
   let text2 = "";
-  startNode.nodesBetween(from3, to, (node2, pos, parent, index) => {
-    if (node2.isBlock && pos > from3) text2 += blockSeparator;
+  startNode.nodesBetween(from4, to, (node2, pos, parent, index) => {
+    if (node2.isBlock && pos > from4) text2 += blockSeparator;
     const textSerializer = textSerializers === null || textSerializers === void 0 ? void 0 : textSerializers[node2.type.name];
     if (textSerializer) {
       if (parent) text2 += textSerializer({
@@ -54988,7 +54813,7 @@ function getTextBetween(startNode, range, options) {
     }
     if (node2.isText) {
       var _node$text;
-      text2 += node2 === null || node2 === void 0 || (_node$text = node2.text) === null || _node$text === void 0 ? void 0 : _node$text.slice(Math.max(from3, pos) - pos, to - pos);
+      text2 += node2 === null || node2 === void 0 || (_node$text = node2.text) === null || _node$text === void 0 ? void 0 : _node$text.slice(Math.max(from4, pos) - pos, to - pos);
     }
   });
   return text2;
@@ -54998,9 +54823,9 @@ function getTextSerializersFromSchema(schema2) {
 }
 function getNodeAttributes(state, typeOrName) {
   const type = getNodeType(typeOrName, state.schema);
-  const { from: from3, to } = state.selection;
+  const { from: from4, to } = state.selection;
   const nodes = [];
-  state.doc.nodesBetween(from3, to, (node3) => {
+  state.doc.nodesBetween(from4, to, (node3) => {
     nodes.push(node3);
   });
   const node2 = nodes.reverse().find((nodeItem) => nodeItem.type.name === type.name);
@@ -55034,20 +54859,20 @@ function getChangedRanges(transform2) {
   mapping.maps.forEach((stepMap, index) => {
     const ranges = [];
     if (!stepMap.ranges.length) {
-      const { from: from3, to } = steps[index];
-      if (from3 === void 0 || to === void 0) return;
+      const { from: from4, to } = steps[index];
+      if (from4 === void 0 || to === void 0) return;
       ranges.push({
-        from: from3,
+        from: from4,
         to
       });
-    } else stepMap.forEach((from3, to) => {
+    } else stepMap.forEach((from4, to) => {
       ranges.push({
-        from: from3,
+        from: from4,
         to
       });
     });
-    ranges.forEach(({ from: from3, to }) => {
-      const newStart = mapping.slice(index).map(from3, -1);
+    ranges.forEach(({ from: from4, to }) => {
+      const newStart = mapping.slice(index).map(from4, -1);
       const newEnd = mapping.slice(index).map(to);
       const oldStart = mapping.invert().map(newStart, -1);
       const oldEnd = mapping.invert().map(newEnd);
@@ -55065,22 +54890,22 @@ function getChangedRanges(transform2) {
   });
   return simplifyChangedRanges(changes);
 }
-function getMarksBetween(from3, to, doc4) {
+function getMarksBetween(from4, to, doc4) {
   const marks = [];
-  if (from3 === to) doc4.resolve(from3).marks().forEach((mark) => {
-    const range = getMarkRange(doc4.resolve(from3), mark.type);
+  if (from4 === to) doc4.resolve(from4).marks().forEach((mark2) => {
+    const range = getMarkRange(doc4.resolve(from4), mark2.type);
     if (!range) return;
     marks.push({
-      mark,
+      mark: mark2,
       ...range
     });
   });
-  else doc4.nodesBetween(from3, to, (node2, pos) => {
+  else doc4.nodesBetween(from4, to, (node2, pos) => {
     if (!node2 || (node2 === null || node2 === void 0 ? void 0 : node2.nodeSize) === void 0) return;
-    marks.push(...node2.marks.map((mark) => ({
+    marks.push(...node2.marks.map((mark2) => ({
       from: pos,
       to: pos + node2.nodeSize,
-      mark
+      mark: mark2
     })));
   });
   return marks;
@@ -55133,24 +54958,24 @@ var getTextContentFromNodes = ($from, maxMatch = 500) => {
 function isMarkActive(state, typeOrName, attributes = {}) {
   const { empty: empty2, ranges } = state.selection;
   const type = typeOrName ? getMarkType(typeOrName, state.schema) : null;
-  if (empty2) return !!(state.storedMarks || state.selection.$from.marks()).filter((mark) => {
+  if (empty2) return !!(state.storedMarks || state.selection.$from.marks()).filter((mark2) => {
     if (!type) return true;
-    return type.name === mark.type.name;
-  }).find((mark) => objectIncludes(mark.attrs, attributes, { strict: false }));
+    return type.name === mark2.type.name;
+  }).find((mark2) => objectIncludes(mark2.attrs, attributes, { strict: false }));
   let selectionRange = 0;
   const markRanges = [];
   ranges.forEach(({ $from, $to }) => {
-    const from3 = $from.pos;
+    const from4 = $from.pos;
     const to = $to.pos;
-    state.doc.nodesBetween(from3, to, (node2, pos) => {
+    state.doc.nodesBetween(from4, to, (node2, pos) => {
       if (type && node2.inlineContent && !node2.type.allowsMarkType(type)) return false;
       if (!node2.isText && !node2.marks.length) return;
-      const relativeFrom = Math.max(from3, pos);
+      const relativeFrom = Math.max(from4, pos);
       const relativeTo = Math.min(to, pos + node2.nodeSize);
       const range = relativeTo - relativeFrom;
       selectionRange += range;
-      markRanges.push(...node2.marks.map((mark) => ({
-        mark,
+      markRanges.push(...node2.marks.map((mark2) => ({
+        mark: mark2,
         from: relativeFrom,
         to: relativeTo
       })));
@@ -55236,7 +55061,7 @@ function canSetMark(state, tr2, newMarkType) {
   if (cursor2) {
     var _state$storedMarks;
     const currentMarks = (_state$storedMarks = state.storedMarks) !== null && _state$storedMarks !== void 0 ? _state$storedMarks : cursor2.marks();
-    return cursor2.parent.type.allowsMarkType(newMarkType) && (!!newMarkType.isInSet(currentMarks) || !currentMarks.some((mark) => mark.type.excludes(newMarkType)));
+    return cursor2.parent.type.allowsMarkType(newMarkType) && (!!newMarkType.isInSet(currentMarks) || !currentMarks.some((mark2) => mark2.type.excludes(newMarkType)));
   }
   const { ranges } = selection;
   return ranges.some(({ $from, $to }) => {
@@ -55265,14 +55090,14 @@ var setMark = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispatch }) =>
         ...attributes
       }));
     } else ranges.forEach((range) => {
-      const from3 = range.$from.pos;
+      const from4 = range.$from.pos;
       const to = range.$to.pos;
-      state.doc.nodesBetween(from3, to, (node2, pos) => {
-        const trimmedFrom = Math.max(pos, from3);
+      state.doc.nodesBetween(from4, to, (node2, pos) => {
+        const trimmedFrom = Math.max(pos, from4);
         const trimmedTo = Math.min(pos + node2.nodeSize, to);
-        if (node2.marks.find((mark) => mark.type === type)) node2.marks.forEach((mark) => {
-          if (type === mark.type) tr2.addMark(trimmedFrom, trimmedTo, type.create({
-            ...mark.attrs,
+        if (node2.marks.find((mark2) => mark2.type === type)) node2.marks.forEach((mark2) => {
+          if (type === mark2.type) tr2.addMark(trimmedFrom, trimmedTo, type.create({
+            ...mark2.attrs,
             ...attributes
           }));
         });
@@ -55310,27 +55135,27 @@ var setNode = (typeOrName, attributes = {}) => ({ state, dispatch, chain }) => {
 var setNodeSelection = (position) => ({ tr: tr2, dispatch }) => {
   if (dispatch) {
     const { doc: doc4 } = tr2;
-    const from3 = minMax(position, 0, doc4.content.size);
-    const selection = NodeSelection.create(doc4, from3);
+    const from4 = minMax(position, 0, doc4.content.size);
+    const selection = NodeSelection.create(doc4, from4);
     tr2.setSelection(selection);
   }
   return true;
 };
 var setTextDirection = (direction, position) => ({ tr: tr2, state, dispatch }) => {
   const { selection } = state;
-  let from3;
+  let from4;
   let to;
   if (typeof position === "number") {
-    from3 = position;
+    from4 = position;
     to = position;
   } else if (position && "from" in position && "to" in position) {
-    from3 = position.from;
+    from4 = position.from;
     to = position.to;
   } else {
-    from3 = selection.from;
+    from4 = selection.from;
     to = selection.to;
   }
-  if (dispatch) tr2.doc.nodesBetween(from3, to, (node2, pos) => {
+  if (dispatch) tr2.doc.nodesBetween(from4, to, (node2, pos) => {
     if (node2.isText) return;
     tr2.setNodeMarkup(pos, void 0, {
       ...node2.attrs,
@@ -55342,13 +55167,13 @@ var setTextDirection = (direction, position) => ({ tr: tr2, state, dispatch }) =
 var setTextSelection = (position) => ({ tr: tr2, dispatch }) => {
   if (dispatch) {
     const { doc: doc4 } = tr2;
-    const { from: from3, to } = typeof position === "number" ? {
+    const { from: from4, to } = typeof position === "number" ? {
       from: position,
       to: position
     } : position;
     const minPos = TextSelection.atStart(doc4).from;
     const maxPos = TextSelection.atEnd(doc4).to;
-    const resolvedFrom = minMax(from3, minPos, maxPos);
+    const resolvedFrom = minMax(from4, minPos, maxPos);
     const resolvedEnd = minMax(to, minPos, maxPos);
     const selection = TextSelection.create(doc4, resolvedFrom, resolvedEnd);
     tr2.setSelection(selection);
@@ -55362,7 +55187,7 @@ var sinkListItem$1 = (typeOrName) => ({ state, dispatch }) => {
 function ensureMarks(state, splittableMarks) {
   const marks = state.storedMarks || state.selection.$to.parentOffset && state.selection.$from.marks();
   if (marks) {
-    const filteredMarks = marks.filter((mark) => splittableMarks === null || splittableMarks === void 0 ? void 0 : splittableMarks.includes(mark.type.name));
+    const filteredMarks = marks.filter((mark2) => splittableMarks === null || splittableMarks === void 0 ? void 0 : splittableMarks.includes(mark2.type.name));
     state.tr.ensureMarks(filteredMarks);
   }
 }
@@ -55440,12 +55265,12 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispa
       wrap2 = wrap2.append(Fragment.from(type.createAndFill(null, nextType2) || void 0));
       const start = $from.before($from.depth - (depthBefore - 1));
       tr2.replace(start, $from.after(-depthAfter), new Slice(wrap2, 4 - depthBefore, 0));
-      let sel = -1;
+      let sel2 = -1;
       tr2.doc.nodesBetween(start, tr2.doc.content.size, (n, pos) => {
-        if (sel > -1) return false;
-        if (n.isTextblock && n.content.size === 0) sel = pos + 1;
+        if (sel2 > -1) return false;
+        if (n.isTextblock && n.content.size === 0) sel2 = pos + 1;
       });
-      if (sel > -1) tr2.setSelection(TextSelection.near(tr2.doc.resolve(sel)));
+      if (sel2 > -1) tr2.setSelection(TextSelection.near(tr2.doc.resolve(sel2)));
       tr2.scrollIntoView();
     }
     return true;
@@ -55481,7 +55306,7 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispa
     tr2.split($from.pos, 2, types).scrollIntoView();
     if (splitsAtStartOfItem) tr2.setNodeMarkup(itemStart, void 0, newTypeAttributes);
     if (!marks || !dispatch) return true;
-    const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+    const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
     tr2.ensureMarks(filteredMarks);
   }
   return true;
@@ -55544,10 +55369,10 @@ function convertListItems(sourceList, context2) {
   }
   return convertedItems;
 }
-function findNodePosition(root2, target) {
+function findNodePosition(root2, target2) {
   let targetPos = null;
   root2.descendants((node2, pos) => {
-    if (node2 !== target) return true;
+    if (node2 !== target2) return true;
     targetPos = pos;
     return false;
   });
@@ -55653,9 +55478,9 @@ var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) =>
             const anchorParentPos = findNodePosition(newList, anchorParent);
             const headParentPos = findNodePosition(newList, headParent);
             if (anchorParentPos !== null && headParentPos !== null) {
-              const anchor2 = currentList.pos + anchorParentPos + 2 + anchorOffset;
+              const anchor3 = currentList.pos + anchorParentPos + 2 + anchorOffset;
               const head = currentList.pos + headParentPos + 2 + headOffset;
-              tr2.setSelection(TextSelection.create(tr2.doc, anchor2, head));
+              tr2.setSelection(TextSelection.create(tr2.doc, anchor3, head));
             }
           }
           return true;
@@ -55669,7 +55494,7 @@ var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) =>
   }).wrapInList(listType, attributes).command(() => joinListBackwards(tr2, listType)).command(() => joinListForwards(tr2, listType)).run();
   return chain().command(() => {
     const canWrapInList = can().wrapInList(listType, attributes);
-    const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+    const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
     tr2.ensureMarks(filteredMarks);
     if (canWrapInList) return true;
     return commands.clearNodes();
@@ -55740,13 +55565,13 @@ var unsetMark = (typeOrName, options = {}) => ({ tr: tr2, state, dispatch }) => 
   if (!dispatch) return true;
   if (empty2 && extendEmptyMarkRange) {
     var _$from$marks$find;
-    let { from: from3, to } = selection;
-    const range = getMarkRange($from, type, (_$from$marks$find = $from.marks().find((mark) => mark.type === type)) === null || _$from$marks$find === void 0 ? void 0 : _$from$marks$find.attrs);
+    let { from: from4, to } = selection;
+    const range = getMarkRange($from, type, (_$from$marks$find = $from.marks().find((mark2) => mark2.type === type)) === null || _$from$marks$find === void 0 ? void 0 : _$from$marks$find.attrs);
     if (range) {
-      from3 = range.from;
+      from4 = range.from;
       to = range.to;
     }
-    tr2.removeMark(from3, to, type);
+    tr2.removeMark(from4, to, type);
   } else ranges.forEach((range) => {
     tr2.removeMark(range.$from.pos, range.$to.pos, type);
   });
@@ -55755,19 +55580,19 @@ var unsetMark = (typeOrName, options = {}) => ({ tr: tr2, state, dispatch }) => 
 };
 var unsetTextDirection = (position) => ({ tr: tr2, state, dispatch }) => {
   const { selection } = state;
-  let from3;
+  let from4;
   let to;
   if (typeof position === "number") {
-    from3 = position;
+    from4 = position;
     to = position;
   } else if (position && "from" in position && "to" in position) {
-    from3 = position.from;
+    from4 = position.from;
     to = position.to;
   } else {
-    from3 = selection.from;
+    from4 = selection.from;
     to = selection.to;
   }
-  if (dispatch) tr2.doc.nodesBetween(from3, to, (node2, pos) => {
+  if (dispatch) tr2.doc.nodesBetween(from4, to, (node2, pos) => {
     if (node2.isText) return;
     const newAttrs = { ...node2.attrs };
     delete newAttrs.dir;
@@ -55784,30 +55609,30 @@ var updateAttributes = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispa
   if (schemaType === "mark") markType = getMarkType(typeOrName, state.schema);
   let canUpdate = false;
   tr2.selection.ranges.forEach((range) => {
-    const from3 = range.$from.pos;
+    const from4 = range.$from.pos;
     const to = range.$to.pos;
     let lastPos;
     let lastNode;
     let trimmedFrom;
     let trimmedTo;
-    if (tr2.selection.empty) state.doc.nodesBetween(from3, to, (node2, pos) => {
+    if (tr2.selection.empty) state.doc.nodesBetween(from4, to, (node2, pos) => {
       if (nodeType && nodeType === node2.type) {
         canUpdate = true;
-        trimmedFrom = Math.max(pos, from3);
+        trimmedFrom = Math.max(pos, from4);
         trimmedTo = Math.min(pos + node2.nodeSize, to);
         lastPos = pos;
         lastNode = node2;
       }
     });
-    else state.doc.nodesBetween(from3, to, (node2, pos) => {
-      if (pos < from3 && nodeType && nodeType === node2.type) {
+    else state.doc.nodesBetween(from4, to, (node2, pos) => {
+      if (pos < from4 && nodeType && nodeType === node2.type) {
         canUpdate = true;
-        trimmedFrom = Math.max(pos, from3);
+        trimmedFrom = Math.max(pos, from4);
         trimmedTo = Math.min(pos + node2.nodeSize, to);
         lastPos = pos;
         lastNode = node2;
       }
-      if (pos >= from3 && pos <= to) {
+      if (pos >= from4 && pos <= to) {
         if (nodeType && nodeType === node2.type) {
           canUpdate = true;
           if (dispatch) tr2.setNodeMarkup(pos, void 0, {
@@ -55815,14 +55640,14 @@ var updateAttributes = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispa
             ...attributes
           });
         }
-        if (markType && node2.marks.length) node2.marks.forEach((mark) => {
-          if (markType === mark.type) {
+        if (markType && node2.marks.length) node2.marks.forEach((mark2) => {
+          if (markType === mark2.type) {
             canUpdate = true;
             if (dispatch) {
-              const trimmedFrom2 = Math.max(pos, from3);
+              const trimmedFrom2 = Math.max(pos, from4);
               const trimmedTo2 = Math.min(pos + node2.nodeSize, to);
               tr2.addMark(trimmedFrom2, trimmedTo2, markType.create({
-                ...mark.attrs,
+                ...mark2.attrs,
                 ...attributes
               }));
             }
@@ -55835,9 +55660,9 @@ var updateAttributes = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispa
         ...lastNode.attrs,
         ...attributes
       });
-      if (markType && lastNode.marks.length) lastNode.marks.forEach((mark) => {
-        if (markType === mark.type && dispatch) tr2.addMark(trimmedFrom, trimmedTo, markType.create({
-          ...mark.attrs,
+      if (markType && lastNode.marks.length) lastNode.marks.forEach((mark2) => {
+        if (markType === mark2.type && dispatch) tr2.addMark(trimmedFrom, trimmedTo, markType.create({
+          ...mark2.attrs,
           ...attributes
         }));
       });
@@ -55963,23 +55788,23 @@ function buildDecorationSet(doc4, decorations, extensionName) {
     widgetKeys
   };
 }
-function rangeOwnsPosition({ position, from: from3, to, docSize }) {
-  if (position < from3) return false;
+function rangeOwnsPosition({ position, from: from4, to, docSize }) {
+  if (position < from4) return false;
   if (position < to) return true;
   return position === to && to === docSize;
 }
-function filterOutOfRangeDecorations({ decorations, from: from3, to, docSize, extensionName, warnedExtensions }) {
+function filterOutOfRangeDecorations({ decorations, from: from4, to, docSize, extensionName, warnedExtensions }) {
   return decorations.filter((decoration) => {
     if (rangeOwnsPosition({
       position: decoration.anchor,
-      from: from3,
+      from: from4,
       to,
       docSize
     })) return true;
     if (decoration.anchor === to) return false;
     if (!warnedExtensions.has(extensionName)) {
       warnedExtensions.add(extensionName);
-      console.warn(`[tiptap warn]: Extension "${extensionName}" returned a decoration outside the requested range [${from3}, ${to}). It was ignored.`);
+      console.warn(`[tiptap warn]: Extension "${extensionName}" returned a decoration outside the requested range [${from4}, ${to}). It was ignored.`);
     }
     return false;
   });
@@ -56023,20 +55848,20 @@ function hasResolvableChangedRange(step) {
   return typeof positionalStep.from === "number" && typeof positionalStep.to === "number";
 }
 function blockRangeFor(doc4, changed) {
-  let from3 = null;
+  let from4 = null;
   let to = 0;
   let nodeStart = 0;
   for (let index = 0; index < doc4.childCount; index += 1) {
     if (nodeStart > changed.to) break;
     const nodeEnd = nodeStart + doc4.child(index).nodeSize;
     if (nodeEnd >= changed.from) {
-      if (from3 === null) from3 = nodeStart;
+      if (from4 === null) from4 = nodeStart;
       to = nodeEnd;
     }
     nodeStart = nodeEnd;
   }
-  return from3 === null ? null : {
-    from: from3,
+  return from4 === null ? null : {
+    from: from4,
     to
   };
 }
@@ -56275,10 +56100,10 @@ var DecorationManager = class {
     const widgetKeys = new Set((_previous$widgetKeysB = previous.widgetKeysByExtension[name]) !== null && _previous$widgetKeysB !== void 0 ? _previous$widgetKeysB : []);
     let set2 = mapDecorationSet(previousSet, tr2.mapping, tr2.doc, widgetKeys);
     const docSize = newState.doc.content.size;
-    for (const { from: from3, to } of ranges) {
-      const stale = set2.find(from3, to).filter((decoration) => rangeOwnsPosition({
+    for (const { from: from4, to } of ranges) {
+      const stale = set2.find(from4, to).filter((decoration) => rangeOwnsPosition({
         position: decoration.from,
-        from: from3,
+        from: from4,
         to,
         docSize
       }));
@@ -56292,10 +56117,10 @@ var DecorationManager = class {
           editor: this.editor,
           state: newState,
           view: this.mountedView,
-          from: from3,
+          from: from4,
           to
         })),
-        from: from3,
+        from: from4,
         to,
         docSize,
         extensionName: name,
@@ -56675,10 +56500,10 @@ ${indentedChild}`;
   });
   return output2;
 }
-function mergeDeep(target, source) {
-  const output2 = { ...target };
-  if (isPlainObject2(target) && isPlainObject2(source)) Object.keys(source).forEach((key) => {
-    if (isPlainObject2(source[key]) && isPlainObject2(target[key])) output2[key] = mergeDeep(target[key], source[key]);
+function mergeDeep(target2, source) {
+  const output2 = { ...target2 };
+  if (isPlainObject2(target2) && isPlainObject2(source)) Object.keys(source).forEach((key) => {
+    if (isPlainObject2(source[key]) && isPlainObject2(target2[key])) output2[key] = mergeDeep(target2[key], source[key]);
     else output2[key] = source[key];
   });
   return output2;
@@ -56688,12 +56513,12 @@ function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
   const { doc: doc4, tr: tr2 } = state;
   const thisMark = checkMark;
   doc4.descendants((node2, pos) => {
-    const from3 = tr2.mapping.map(pos);
+    const from4 = tr2.mapping.map(pos);
     const to = tr2.mapping.map(pos) + node2.nodeSize;
     let foundMark = null;
-    node2.marks.forEach((mark) => {
-      if (mark !== thisMark) return false;
-      foundMark = mark;
+    node2.marks.forEach((mark2) => {
+      if (mark2 !== thisMark) return false;
+      foundMark = mark2;
     });
     if (!foundMark) return;
     let needsUpdate = false;
@@ -56705,8 +56530,8 @@ function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
         ...checkMark.attrs,
         ...attrs
       });
-      tr2.removeMark(from3, to, checkMark.type);
-      tr2.addMark(from3, to, updatedMark);
+      tr2.removeMark(from4, to, checkMark.type);
+      tr2.addMark(from4, to, updatedMark);
     }
   });
   if (tr2.docChanged) editor.view.dispatch(tr2);
@@ -56734,12 +56559,12 @@ var inputRuleMatcherHandler = (text2, find3) => {
   return result;
 };
 function createRuleTransaction(config2) {
-  const { editor, from: from3, to, text: text2, insertText: insertText2 } = config2;
+  const { editor, from: from4, to, text: text2, insertText: insertText2 } = config2;
   if (!insertText2) return {
     inputTransaction: null,
     tr: editor.view.state.tr
   };
-  const inputTransaction = editor.view.state.tr.insertText(text2, from3, to);
+  const inputTransaction = editor.view.state.tr.insertText(text2, from4, to);
   return {
     inputTransaction,
     tr: EditorState.create({
@@ -56750,22 +56575,22 @@ function createRuleTransaction(config2) {
   };
 }
 function applyRule(config2) {
-  const { editor, from: from3, to, text: text2, rule, match: match2, plugin, insertText: insertText2 } = config2;
+  const { editor, from: from4, to, text: text2, rule, match: match2, plugin, insertText: insertText2 } = config2;
   const { view } = editor;
   const { inputTransaction, tr: tr2 } = createRuleTransaction({
     editor,
-    from: from3,
+    from: from4,
     to,
     text: text2,
     insertText: insertText2
   });
-  const inputEnd = inputTransaction ? from3 + text2.length : to;
+  const inputEnd = inputTransaction ? from4 + text2.length : to;
   const state = createChainableState({
     state: view.state,
     transaction: tr2
   });
   const range = {
-    from: from3 - (match2[0].length - text2.length),
+    from: from4 - (match2[0].length - text2.length),
     to: inputEnd
   };
   const { commands, chain, can } = new CommandManager({
@@ -56788,7 +56613,7 @@ function applyRule(config2) {
   tr2.setMeta("inputRule", true);
   if (rule.undoable) tr2.setMeta(plugin, {
     transform: tr2,
-    from: from3,
+    from: from4,
     to: inputEnd,
     text: text2
   });
@@ -56803,18 +56628,18 @@ function matchesDocument($from, match2, text2) {
 }
 function run$1(config2) {
   var _ref;
-  const { editor, from: from3, to, text: text2, rules: rules2, plugin, insertText: insertText2 } = config2;
+  const { editor, from: from4, to, text: text2, rules: rules2, plugin, insertText: insertText2 } = config2;
   const { view } = editor;
   if (view.composing) return false;
-  const $from = view.state.doc.resolve(from3);
-  if ($from.parent.type.spec.code || !!((_ref = $from.nodeBefore || $from.nodeAfter) === null || _ref === void 0 ? void 0 : _ref.marks.find((mark) => mark.type.spec.code))) return false;
+  const $from = view.state.doc.resolve(from4);
+  if ($from.parent.type.spec.code || !!((_ref = $from.nodeBefore || $from.nodeAfter) === null || _ref === void 0 ? void 0 : _ref.marks.find((mark2) => mark2.type.spec.code))) return false;
   const textBefore = getTextContentFromNodes($from) + text2;
   for (const rule of rules2) {
     const match2 = inputRuleMatcherHandler(textBefore, rule.find);
     if (!match2 || !matchesDocument($from, match2, text2)) continue;
     if (applyRule({
       editor,
-      from: from3,
+      from: from4,
       to,
       text: text2,
       rule,
@@ -56840,11 +56665,11 @@ function inputRulesPlugin(props) {
           let { text: text2 } = simulatedInputMeta;
           if (typeof text2 === "string") text2 = text2;
           else text2 = getHTMLFromFragment(Fragment.from(text2), state.schema);
-          const { from: from3 } = simulatedInputMeta;
-          const to = from3 + text2.length;
+          const { from: from4 } = simulatedInputMeta;
+          const to = from4 + text2.length;
           run$1({
             editor,
-            from: from3,
+            from: from4,
             to,
             text: text2,
             rules: rules2,
@@ -56855,10 +56680,10 @@ function inputRulesPlugin(props) {
       }
     },
     props: {
-      handleTextInput(view, from3, to, text2) {
+      handleTextInput(view, from4, to, text2) {
         return run$1({
           editor,
-          from: from3,
+          from: from4,
           to,
           text: text2,
           rules: rules2,
@@ -56956,13 +56781,13 @@ var Mark2 = class Mark3 extends Extendable {
     const resolvedConfig = typeof config2 === "function" ? config2() : config2;
     return new Mark3(resolvedConfig);
   }
-  static handleExit({ editor, mark }) {
+  static handleExit({ editor, mark: mark2 }) {
     const { tr: tr2 } = editor.state;
     const currentPos = editor.state.selection.$from;
     if (currentPos.pos === currentPos.end()) {
       const currentMarks = currentPos.marks();
-      if (!!!currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark.name)) return false;
-      const removeMark2 = currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark.name);
+      if (!!!currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark2.name)) return false;
+      const removeMark2 = currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark2.name);
       if (removeMark2) tr2.removeStoredMark(removeMark2);
       tr2.insertText(" ", currentPos.pos);
       editor.view.dispatch(tr2);
@@ -57001,17 +56826,17 @@ var pasteRuleMatcherHandler = (text2, find3, event) => {
   });
 };
 function run(config2) {
-  const { editor, state, from: from3, to, rule, pasteEvent, dropEvent } = config2;
+  const { editor, state, from: from4, to, rule, pasteEvent, dropEvent } = config2;
   const { commands, chain, can } = new CommandManager({
     editor,
     state
   });
   const handlers2 = [];
-  state.doc.nodesBetween(from3, to, (node2, pos) => {
+  state.doc.nodesBetween(from4, to, (node2, pos) => {
     var _node$type, _ref, _node$content$size, _node$content;
     if (((_node$type = node2.type) === null || _node$type === void 0 || (_node$type = _node$type.spec) === null || _node$type === void 0 ? void 0 : _node$type.code) || !(node2.isText || node2.isTextblock || node2.isInline)) return;
     const contentSize = (_ref = (_node$content$size = (_node$content = node2.content) === null || _node$content === void 0 ? void 0 : _node$content.size) !== null && _node$content$size !== void 0 ? _node$content$size : node2.nodeSize) !== null && _ref !== void 0 ? _ref : 0;
-    const resolvedFrom = Math.max(from3, pos);
+    const resolvedFrom = Math.max(from4, pos);
     const resolvedTo = Math.min(to, pos + contentSize);
     if (resolvedFrom >= resolvedTo) return;
     const textToMatch = node2.isText ? node2.text || "" : node2.textBetween(resolvedFrom - pos, resolvedTo - pos, void 0, "￼");
@@ -57057,7 +56882,7 @@ function pasteRulesPlugin(props) {
   } catch {
     dropEvent = null;
   }
-  const processEvent = ({ state, from: from3, to, rule, pasteEvt }) => {
+  const processEvent = ({ state, from: from4, to, rule, pasteEvt }) => {
     const tr2 = state.tr;
     const chainableState = createChainableState({
       state,
@@ -57066,7 +56891,7 @@ function pasteRulesPlugin(props) {
     if (!run({
       editor,
       state: chainableState,
-      from: Math.max(from3 - 1, 0),
+      from: Math.max(from4 - 1, 0),
       to: to.b - 1,
       rule,
       pasteEvent: pasteEvt,
@@ -57137,24 +56962,24 @@ function pasteRulesPlugin(props) {
           let { text: text2 } = simulatedPasteMeta;
           if (typeof text2 === "string") text2 = text2;
           else text2 = getHTMLFromFragment(Fragment.from(text2), state.schema);
-          const { from: from4 } = simulatedPasteMeta;
-          const to2 = from4 + text2.length;
+          const { from: from5 } = simulatedPasteMeta;
+          const to2 = from5 + text2.length;
           const pasteEvt = createClipboardPasteEvent(text2);
           return processEvent({
             rule,
             state,
-            from: from4,
+            from: from5,
             to: { b: to2 },
             pasteEvt
           });
         }
-        const from3 = oldState.doc.content.findDiffStart(state.doc.content);
+        const from4 = oldState.doc.content.findDiffStart(state.doc.content);
         const to = oldState.doc.content.findDiffEnd(state.doc.content);
-        if (!isNumber(from3) || !to || from3 === to.b) return;
+        if (!isNumber(from4) || !to || from4 === to.b) return;
         return processEvent({
           rule,
           state,
-          from: from3,
+          from: from4,
           to,
           pasteEvt: pasteEvent
         });
@@ -57396,17 +57221,17 @@ var ExtensionManager = class {
         type: getMarkType(extension.name, this.schema)
       });
       if (!addMarkView) return [];
-      const markView = (mark, view, inline3) => {
-        const HTMLAttributes = getRenderedAttributes(mark, extensionAttributes);
+      const markView = (mark2, view, inline2) => {
+        const HTMLAttributes = getRenderedAttributes(mark2, extensionAttributes);
         return addMarkView()({
-          mark,
+          mark: mark2,
           view,
-          inline: inline3,
+          inline: inline2,
           editor,
           extension,
           HTMLAttributes,
           updateAttributes: (attrs) => {
-            updateMarkViewAttributes(mark, editor, attrs);
+            updateMarkViewAttributes(mark2, editor, attrs);
           }
         });
       };
@@ -57548,15 +57373,15 @@ var Delete = Extension.create({
       if ((_this$editor$options$ = (_this$editor$options$2 = this.editor.options.coreExtensionOptions) === null || _this$editor$options$2 === void 0 || (_this$editor$options$2 = _this$editor$options$2.delete) === null || _this$editor$options$2 === void 0 || (_this$editor$options$3 = _this$editor$options$2.filterTransaction) === null || _this$editor$options$3 === void 0 ? void 0 : _this$editor$options$3.call(_this$editor$options$2, transaction)) !== null && _this$editor$options$ !== void 0 ? _this$editor$options$ : transaction.getMeta("y-sync$")) return;
       const nextTransaction = combineTransactionSteps(transaction.before, [transaction, ...appendedTransactions]);
       getChangedRanges(nextTransaction).forEach((change) => {
-        if (nextTransaction.mapping.mapResult(change.oldRange.from).deletedAfter && nextTransaction.mapping.mapResult(change.oldRange.to).deletedBefore) nextTransaction.before.nodesBetween(change.oldRange.from, change.oldRange.to, (node2, from3) => {
-          const to = from3 + node2.nodeSize - 2;
-          const isFullyWithinRange = change.oldRange.from <= from3 && to <= change.oldRange.to;
+        if (nextTransaction.mapping.mapResult(change.oldRange.from).deletedAfter && nextTransaction.mapping.mapResult(change.oldRange.to).deletedBefore) nextTransaction.before.nodesBetween(change.oldRange.from, change.oldRange.to, (node2, from4) => {
+          const to = from4 + node2.nodeSize - 2;
+          const isFullyWithinRange = change.oldRange.from <= from4 && to <= change.oldRange.to;
           this.editor.emit("delete", {
             type: "node",
             node: node2,
-            from: from3,
+            from: from4,
             to,
-            newFrom: nextTransaction.mapping.map(from3),
+            newFrom: nextTransaction.mapping.map(from4),
             newTo: nextTransaction.mapping.map(to),
             deletedRange: change.oldRange,
             newRange: change.newRange,
@@ -57575,8 +57400,8 @@ var Delete = Extension.create({
           const newEnd = mapping.slice(index).map(step.to);
           const oldStart = mapping.invert().map(newStart, -1);
           const oldEnd = mapping.invert().map(newEnd);
-          const foundBeforeMark = newStart > 0 ? (_nextTransaction$doc$ = nextTransaction.doc.nodeAt(newStart - 1)) === null || _nextTransaction$doc$ === void 0 ? void 0 : _nextTransaction$doc$.marks.some((mark) => mark.eq(step.mark)) : false;
-          const foundAfterMark = (_nextTransaction$doc$2 = nextTransaction.doc.nodeAt(newEnd)) === null || _nextTransaction$doc$2 === void 0 ? void 0 : _nextTransaction$doc$2.marks.some((mark) => mark.eq(step.mark));
+          const foundBeforeMark = newStart > 0 ? (_nextTransaction$doc$ = nextTransaction.doc.nodeAt(newStart - 1)) === null || _nextTransaction$doc$ === void 0 ? void 0 : _nextTransaction$doc$.marks.some((mark2) => mark2.eq(step.mark)) : false;
+          const foundAfterMark = (_nextTransaction$doc$2 = nextTransaction.doc.nodeAt(newEnd)) === null || _nextTransaction$doc$2 === void 0 ? void 0 : _nextTransaction$doc$2.marks.some((mark2) => mark2.eq(step.mark));
           this.editor.emit("delete", {
             type: "mark",
             mark: step.mark,
@@ -57716,10 +57541,10 @@ var Keymap = Extension.create({
         const docChanges = transactions.some((transaction) => transaction.docChanged) && !oldState.doc.eq(newState.doc);
         const ignoreTr = transactions.some((transaction) => transaction.getMeta("preventClearDocument"));
         if (!docChanges || ignoreTr) return;
-        const { empty: empty2, from: from3, to } = oldState.selection;
+        const { empty: empty2, from: from4, to } = oldState.selection;
         const allFrom = Selection.atStart(oldState.doc).from;
         const allEnd = Selection.atEnd(oldState.doc).to;
-        if (empty2 || !(from3 === allFrom && to === allEnd)) return;
+        if (empty2 || !(from4 === allFrom && to === allEnd)) return;
         if (!isNodeEmpty(newState.doc)) return;
         const tr2 = newState.tr;
         const state = createChainableState({
@@ -57881,7 +57706,7 @@ function wrappingInputRule(config2) {
         const { splittableMarks } = config2.editor.extensionManager;
         const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
         if (marks) {
-          const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+          const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
           tr2.ensureMarks(filteredMarks);
         }
       }
@@ -62359,9 +62184,9 @@ var YEvent = class {
    * @param {T} target The changed type.
    * @param {Transaction} transaction
    */
-  constructor(target, transaction) {
-    this.target = target;
-    this.currentTarget = target;
+  constructor(target2, transaction) {
+    this.target = target2;
+    this.currentTarget = target2;
     this.transaction = transaction;
     this._changes = null;
     this._keys = null;
@@ -62404,16 +62229,16 @@ var YEvent = class {
         throw create3(errorComputeChanges);
       }
       const keys3 = /* @__PURE__ */ new Map();
-      const target = this.target;
+      const target2 = this.target;
       const changed = (
         /** @type Set<string|null> */
-        this.transaction.changed.get(target)
+        this.transaction.changed.get(target2)
       );
       changed.forEach((key) => {
         if (key !== null) {
           const item = (
             /** @type {Item} */
-            target._map.get(key)
+            target2._map.get(key)
           );
           let action;
           let oldValue;
@@ -62492,7 +62317,7 @@ var YEvent = class {
       if (this.transaction.doc._transactionCleanups.length === 0) {
         throw create3(errorComputeChanges);
       }
-      const target = this.target;
+      const target2 = this.target;
       const added = create2();
       const deleted = create2();
       const delta = [];
@@ -62504,7 +62329,7 @@ var YEvent = class {
       };
       const changed = (
         /** @type Set<string|null> */
-        this.transaction.changed.get(target)
+        this.transaction.changed.get(target2)
       );
       if (changed.has(null)) {
         let lastOp = null;
@@ -62513,7 +62338,7 @@ var YEvent = class {
             delta.push(lastOp);
           }
         };
-        for (let item = target._start; item !== null; item = item.right) {
+        for (let item = target2._start; item !== null; item = item.right) {
           if (item.deleted) {
             if (this.deletes(item) && !this.adds(item)) {
               if (lastOp === null || lastOp.delete === void 0) {
@@ -65251,8 +65076,8 @@ var YXmlEvent = class extends YEvent {
    * @param {Transaction} transaction The transaction instance with which the
    *                                  change was created.
    */
-  constructor(target, subs, transaction) {
-    super(target, transaction);
+  constructor(target2, subs, transaction) {
+    super(target2, transaction);
     this.childListChanged = false;
     this.attributesChanged = /* @__PURE__ */ new Set();
     subs.forEach((sub) => {
@@ -67029,10 +66854,10 @@ var foldDigest = (digest2) => {
 var hashOfJSON = (json2) => toBase64(foldDigest(digest(encodeAny(json2))));
 var marksToAttributes = (marks, meta3) => {
   const pattrs = {};
-  marks.forEach((mark) => {
-    if (mark.type.name !== "ychange") {
-      const isOverlapping = setIfUndefined(meta3.isOMark, mark.type, () => !mark.type.excludes(mark.type));
-      pattrs[isOverlapping ? `${mark.type.name}--${hashOfJSON(mark.toJSON())}` : mark.type.name] = mark.attrs;
+  marks.forEach((mark2) => {
+    if (mark2.type.name !== "ychange") {
+      const isOverlapping = setIfUndefined(meta3.isOMark, mark2.type, () => !mark2.type.excludes(mark2.type));
+      pattrs[isOverlapping ? `${mark2.type.name}--${hashOfJSON(mark2.toJSON())}` : mark2.type.name] = mark2.attrs;
     }
   });
   return pattrs;
@@ -67093,7 +66918,7 @@ var equalYTextPText = (ytext, ptexts) => {
     var _d$attributes;
     return d.insert === ptexts[i2].text && keys2(d.attributes || {}).length === ptexts[i2].marks.length && Object.entries((_d$attributes = d.attributes) !== null && _d$attributes !== void 0 ? _d$attributes : {}).every(([yattrname, attr]) => {
       const markname = yattr2markname(yattrname);
-      const pmark = ptexts[i2].marks.find((mark) => mark.type.name === markname);
+      const pmark = ptexts[i2].marks.find((mark2) => mark2.type.name === markname);
       if (!pmark) return false;
       return equalAttrs2(attr, pmark.attrs);
     });
@@ -67222,18 +67047,18 @@ var reconcileUnanchoredChildren = (y2, yDomFragment, pChildren, yChildren, yStar
 };
 var reconcileMappedChildren = (y2, yDomFragment, pChildren, yChildren, meta3, updateFragment) => {
   const anchors = findMappedChildAnchors(yChildren, pChildren, meta3);
-  if (anchors.length < 2 || !anchors.some((anchor2) => anchor2.yIndex !== anchor2.pIndex) || anchors.some((anchor2) => {
-    const pChild = pChildren[anchor2.pIndex];
-    return !(anchor2.yChild instanceof YXmlText && pChild instanceof Array || anchor2.yChild instanceof YXmlElement && !(pChild instanceof Array));
+  if (anchors.length < 2 || !anchors.some((anchor3) => anchor3.yIndex !== anchor3.pIndex) || anchors.some((anchor3) => {
+    const pChild = pChildren[anchor3.pIndex];
+    return !(anchor3.yChild instanceof YXmlText && pChild instanceof Array || anchor3.yChild instanceof YXmlElement && !(pChild instanceof Array));
   })) return false;
   let yIndex = 0;
   let pIndex = 0;
-  for (const anchor2 of anchors) {
-    reconcileUnanchoredChildren(y2, yDomFragment, pChildren, yChildren, yIndex, anchor2.yIndex, pIndex, anchor2.pIndex, meta3, updateFragment);
-    const pChild = pChildren[anchor2.pIndex];
-    updateMatchingYChild(y2, anchor2.yChild, pChild, meta3, updateFragment);
-    yIndex = anchor2.yIndex + 1;
-    pIndex = anchor2.pIndex + 1;
+  for (const anchor3 of anchors) {
+    reconcileUnanchoredChildren(y2, yDomFragment, pChildren, yChildren, yIndex, anchor3.yIndex, pIndex, anchor3.pIndex, meta3, updateFragment);
+    const pChild = pChildren[anchor3.pIndex];
+    updateMatchingYChild(y2, anchor3.yChild, pChild, meta3, updateFragment);
+    yIndex = anchor3.yIndex + 1;
+    pIndex = anchor3.pIndex + 1;
   }
   reconcileUnanchoredChildren(y2, yDomFragment, pChildren, yChildren, yIndex, yChildren.length, pIndex, pChildren.length, meta3, updateFragment);
   return true;
@@ -67519,9 +67344,9 @@ var CodeBlock = Node4.create({
         const indent = " ".repeat(tabSize);
         if (empty2) return editor.commands.insertContent(indent);
         return editor.commands.command(({ tr: tr2 }) => {
-          const { from: from3, to } = selection;
-          const indentedText = state.doc.textBetween(from3, to, "\n", "\n").split("\n").map((line) => indent + line).join("\n");
-          tr2.replaceWith(from3, to, state.schema.text(indentedText));
+          const { from: from4, to } = selection;
+          const indentedText = state.doc.textBetween(from4, to, "\n", "\n").split("\n").map((line) => indent + line).join("\n");
+          tr2.replaceWith(from4, to, state.schema.text(indentedText));
           return true;
         });
       },
@@ -67559,14 +67384,14 @@ var CodeBlock = Node4.create({
           return true;
         });
         return editor.commands.command(({ tr: tr2 }) => {
-          const { from: from3, to } = selection;
-          const reverseIndentText = state.doc.textBetween(from3, to, "\n", "\n").split("\n").map((line) => {
+          const { from: from4, to } = selection;
+          const reverseIndentText = state.doc.textBetween(from4, to, "\n", "\n").split("\n").map((line) => {
             var _line$match;
             const leadingSpaces = ((_line$match = line.match(/^ */)) === null || _line$match === void 0 ? void 0 : _line$match[0]) || "";
             const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
             return line.slice(spacesToRemove);
           }).join("\n");
-          tr2.replaceWith(from3, to, state.schema.text(reverseIndentText));
+          tr2.replaceWith(from4, to, state.schema.text(reverseIndentText));
           return true;
         });
       },
@@ -67671,16 +67496,16 @@ function getDecorations({ doc: doc4, name, lowlight, defaultLanguage }) {
   const decorations = [];
   findChildren(doc4, (node2) => node2.type.name === name).forEach((block) => {
     var _lowlight$registered;
-    let from3 = block.pos + 1;
+    let from4 = block.pos + 1;
     const language = block.node.attrs.language || defaultLanguage;
     const languages = lowlight.listLanguages();
     parseNodes(language && (languages.includes(language) || registered(language) || ((_lowlight$registered = lowlight.registered) === null || _lowlight$registered === void 0 ? void 0 : _lowlight$registered.call(lowlight, language))) ? getHighlightNodes(lowlight.highlight(language, block.node.textContent)) : getHighlightNodes(lowlight.highlightAuto(block.node.textContent))).forEach((node2) => {
-      const to = from3 + node2.text.length;
+      const to = from4 + node2.text.length;
       if (node2.classes.length) {
-        const decoration = Decoration.inline(from3, to, { class: node2.classes.join(" ") });
+        const decoration = Decoration.inline(from4, to, { class: node2.classes.join(" ") });
         decorations.push(decoration);
       }
-      from3 = to;
+      from4 = to;
     });
   });
   return DecorationSet.create(doc4, decorations);
@@ -69192,15 +69017,15 @@ function findSuggestionMatch(config2) {
   const matchPrefix = match2.input.slice(Math.max(0, match2.index - 1), match2.index);
   const matchPrefixIsAllowed = new RegExp(`^[${allowedPrefixes === null || allowedPrefixes === void 0 ? void 0 : allowedPrefixes.join("")}\0]?$`).test(matchPrefix);
   if (allowedPrefixes !== null && !matchPrefixIsAllowed) return null;
-  const from3 = textFrom + match2.index;
-  let to = from3 + match2[0].length;
+  const from4 = textFrom + match2.index;
+  let to = from4 + match2[0].length;
   if (allowSpaces && suffix.test(text2.slice(to - 1, to + 1))) {
     match2[0] += " ";
     to += 1;
   }
-  if (from3 < $position.pos && to >= $position.pos) return {
+  if (from4 < $position.pos && to >= $position.pos) return {
     range: {
-      from: from3,
+      from: from4,
       to
     },
     query: match2[0].slice(char.length),
@@ -69319,9 +69144,9 @@ function createSuggestionState({ editor, char, effectiveAllowSpaces, allowToIncl
     */
     apply(transaction, prev, _oldState, state) {
       const { isEditable } = editor;
-      const { composing } = editor.view;
+      const { composing: composing2 } = editor.view;
       const { selection } = transaction;
-      const { empty: empty2, from: from3 } = selection;
+      const { empty: empty2, from: from4 } = selection;
       const next2 = { ...prev };
       const meta3 = transaction.getMeta(pluginKey);
       if (meta3 && meta3.exit) {
@@ -69336,13 +69161,13 @@ function createSuggestionState({ editor, char, effectiveAllowSpaces, allowToIncl
         next2.dismissedRange = prev.active ? { ...prev.range } : prev.dismissedRange;
         return next2;
       }
-      next2.composing = composing;
+      next2.composing = composing2;
       if (transaction.docChanged && next2.dismissedRange !== null) next2.dismissedRange = {
         from: transaction.mapping.map(next2.dismissedRange.from),
         to: transaction.mapping.map(next2.dismissedRange.to)
       };
       if (isEditable && (empty2 || editor.view.composing)) {
-        if ((from3 < prev.range.from || from3 > prev.range.to) && !composing && !prev.composing) next2.active = false;
+        if ((from4 < prev.range.from || from4 > prev.range.to) && !composing2 && !prev.composing) next2.active = false;
         const match2 = findSuggestionMatch2({
           char,
           allowSpaces: effectiveAllowSpaces,
@@ -69520,8 +69345,8 @@ function createMount({ getReferenceRect, contextElement, config: config2, contai
     let onOutsidePointerDown;
     if (dismissOnOutsideClick) {
       onOutsidePointerDown = (event) => {
-        const target = event.target;
-        if (!(target instanceof Node) || element2.contains(target) || contextElement.contains(target)) return;
+        const target2 = event.target;
+        if (!(target2 instanceof Node) || element2.contains(target2) || contextElement.contains(target2)) return;
         dismiss();
       };
       document.addEventListener("pointerdown", onOutsidePointerDown, true);
@@ -69908,11 +69733,11 @@ var Mention = Node4.create({
     return { Backspace: () => this.editor.commands.command(({ tr: tr2, state }) => {
       let isMention = false;
       const { selection } = state;
-      const { empty: empty2, anchor: anchor2 } = selection;
+      const { empty: empty2, anchor: anchor3 } = selection;
       if (!empty2) return false;
       let mentionNode = new Node3();
       let mentionPos = 0;
-      state.doc.nodesBetween(anchor2 - 1, anchor2, (node2, pos) => {
+      state.doc.nodesBetween(anchor3 - 1, anchor3, (node2, pos) => {
         if (node2.type.name === this.name) {
           isMention = true;
           mentionNode = node2;
@@ -70176,12 +70001,12 @@ function isInTable(state) {
   return false;
 }
 function selectionCell(state) {
-  const sel = state.selection;
-  if ("$anchorCell" in sel && sel.$anchorCell) return sel.$anchorCell.pos > sel.$headCell.pos ? sel.$anchorCell : sel.$headCell;
-  else if ("node" in sel && sel.node && sel.node.type.spec.tableRole == "cell") return sel.$anchor;
-  const $cell = cellAround(sel.$head) || cellNear(sel.$head);
+  const sel2 = state.selection;
+  if ("$anchorCell" in sel2 && sel2.$anchorCell) return sel2.$anchorCell.pos > sel2.$headCell.pos ? sel2.$anchorCell : sel2.$headCell;
+  else if ("node" in sel2 && sel2.node && sel2.node.type.spec.tableRole == "cell") return sel2.$anchor;
+  const $cell = cellAround(sel2.$head) || cellNear(sel2.$head);
   if ($cell) return $cell;
-  throw new RangeError(`No cell found around position ${sel.head}`);
+  throw new RangeError(`No cell found around position ${sel2.head}`);
 }
 function cellNear($pos) {
   for (let after = $pos.nodeAfter, pos = $pos.pos; after; after = after.firstChild, pos++) {
@@ -70249,8 +70074,8 @@ var CellSelection = class CellSelection2 extends Selection {
     const ranges = cells.map((pos) => {
       const cell = table.nodeAt(pos);
       if (!cell) throw new RangeError(`No cell with offset ${pos} found`);
-      const from3 = tableStart + pos + 1;
-      return new SelectionRange(doc4.resolve(from3), doc4.resolve(from3 + cell.content.size));
+      const from4 = tableStart + pos + 1;
+      return new SelectionRange(doc4.resolve(from4), doc4.resolve(from4 + cell.content.size));
     });
     super(ranges[0].$from, ranges[0].$to, ranges);
     this.$anchorCell = $anchorCell;
@@ -70273,7 +70098,7 @@ var CellSelection = class CellSelection2 extends Selection {
     const tableStart = this.$anchorCell.start(-1);
     const rect = map4.rectBetween(this.$anchorCell.pos - tableStart, this.$headCell.pos - tableStart);
     const seen = {};
-    const rows = [];
+    const rows2 = [];
     for (let row = rect.top; row < rect.bottom; row++) {
       const rowContent = [];
       for (let index = row * map4.width + rect.left, col = rect.left; col < rect.right; col++, index++) {
@@ -70304,9 +70129,9 @@ var CellSelection = class CellSelection2 extends Selection {
         }
         rowContent.push(cell);
       }
-      rows.push(table.child(row).copy(Fragment.from(rowContent)));
+      rows2.push(table.child(row).copy(Fragment.from(rowContent)));
     }
-    const fragment = this.isColSelection() && this.isRowSelection() ? table : rows;
+    const fragment = this.isColSelection() && this.isRowSelection() ? table : rows2;
     return new Slice(Fragment.from(fragment), 1, 1);
   }
   replace(tr2, content = Slice.empty) {
@@ -70315,8 +70140,8 @@ var CellSelection = class CellSelection2 extends Selection {
       const { $from, $to } = ranges[i2], mapping = tr2.mapping.slice(mapFrom);
       tr2.replace(mapping.map($from.pos), mapping.map($to.pos), i2 ? Slice.empty : content);
     }
-    const sel = Selection.findFrom(tr2.doc.resolve(tr2.mapping.slice(mapFrom).map(this.to)), -1);
-    if (sel) tr2.setSelection(sel);
+    const sel2 = Selection.findFrom(tr2.doc.resolve(tr2.mapping.slice(mapFrom).map(this.to)), -1);
+    if (sel2) tr2.setSelection(sel2);
   }
   replaceWith(tr2, node2) {
     this.replace(tr2, new Slice(Fragment.from(node2), 0, 0));
@@ -70402,8 +70227,8 @@ var CellSelection = class CellSelection2 extends Selection {
 CellSelection.prototype.visible = false;
 Selection.jsonID("cell", CellSelection);
 var CellBookmark = class CellBookmark2 {
-  constructor(anchor2, head) {
-    this.anchor = anchor2;
+  constructor(anchor3, head) {
+    this.anchor = anchor3;
     this.head = head;
   }
   map(mapping) {
@@ -70452,23 +70277,23 @@ function isTextSelectionAcrossCells({ $from, $to }) {
   return fromCellBoundaryNode !== toCellBoundaryNode && $to.parentOffset === 0;
 }
 function normalizeSelection(state, tr2, allowTableNodeSelection) {
-  const sel = (tr2 || state).selection;
+  const sel2 = (tr2 || state).selection;
   const doc4 = (tr2 || state).doc;
   let normalize2;
   let role;
-  if (sel instanceof NodeSelection && (role = sel.node.type.spec.tableRole)) {
-    if (role == "cell" || role == "header_cell") normalize2 = CellSelection.create(doc4, sel.from);
+  if (sel2 instanceof NodeSelection && (role = sel2.node.type.spec.tableRole)) {
+    if (role == "cell" || role == "header_cell") normalize2 = CellSelection.create(doc4, sel2.from);
     else if (role == "row") {
-      const $cell = doc4.resolve(sel.from + 1);
+      const $cell = doc4.resolve(sel2.from + 1);
       normalize2 = CellSelection.rowSelection($cell, $cell);
     } else if (!allowTableNodeSelection) {
-      const map4 = TableMap.get(sel.node);
-      const start = sel.from + 1;
+      const map4 = TableMap.get(sel2.node);
+      const start = sel2.from + 1;
       const lastCell = start + map4.map[map4.width * map4.height - 1];
       normalize2 = CellSelection.create(doc4, start + 1, lastCell);
     }
-  } else if (sel instanceof TextSelection && isCellBoundarySelection(sel)) normalize2 = TextSelection.create(doc4, sel.from);
-  else if (sel instanceof TextSelection && isTextSelectionAcrossCells(sel)) normalize2 = TextSelection.create(doc4, sel.$from.start(), sel.$from.end());
+  } else if (sel2 instanceof TextSelection && isCellBoundarySelection(sel2)) normalize2 = TextSelection.create(doc4, sel2.from);
+  else if (sel2 instanceof TextSelection && isTextSelectionAcrossCells(sel2)) normalize2 = TextSelection.create(doc4, sel2.$from.start(), sel2.$from.end());
   if (normalize2) (tr2 || (tr2 = state.tr)).setSelection(normalize2);
   return tr2;
 }
@@ -70556,13 +70381,13 @@ function fixTable(state, table, tablePos, tr2) {
   return tr2.setMeta(fixTablesKey, { fixTables: true });
 }
 function selectedRect(state) {
-  const sel = state.selection;
+  const sel2 = state.selection;
   const $pos = selectionCell(state);
   const table = $pos.node(-1);
   const tableStart = $pos.start(-1);
   const map4 = TableMap.get(table);
   return {
-    ...sel instanceof CellSelection ? map4.rectBetween(sel.$anchorCell.pos - tableStart, sel.$headCell.pos - tableStart) : map4.findCell($pos.pos - tableStart),
+    ...sel2 instanceof CellSelection ? map4.rectBetween(sel2.$anchorCell.pos - tableStart, sel2.$headCell.pos - tableStart) : map4.findCell($pos.pos - tableStart),
     tableStart,
     map: map4,
     table
@@ -70748,8 +70573,8 @@ function cellsOverlapRectangle({ width, height, map: map4 }, rect) {
   return false;
 }
 function mergeCells(state, dispatch) {
-  const sel = state.selection;
-  if (!(sel instanceof CellSelection) || sel.$anchorCell.pos == sel.$headCell.pos) return false;
+  const sel2 = state.selection;
+  if (!(sel2 instanceof CellSelection) || sel2.$anchorCell.pos == sel2.$headCell.pos) return false;
   const rect = selectedRect(state), { map: map4 } = rect;
   if (cellsOverlapRectangle(map4, rect)) return false;
   if (dispatch) {
@@ -70795,18 +70620,18 @@ function splitCell(state, dispatch) {
 }
 function splitCellWithType(getCellType) {
   return (state, dispatch) => {
-    const sel = state.selection;
+    const sel2 = state.selection;
     let cellNode;
     let cellPos;
-    if (!(sel instanceof CellSelection)) {
+    if (!(sel2 instanceof CellSelection)) {
       var _cellAround;
-      cellNode = cellWrapping(sel.$from);
+      cellNode = cellWrapping(sel2.$from);
       if (!cellNode) return false;
-      cellPos = (_cellAround = cellAround(sel.$from)) === null || _cellAround === void 0 ? void 0 : _cellAround.pos;
+      cellPos = (_cellAround = cellAround(sel2.$from)) === null || _cellAround === void 0 ? void 0 : _cellAround.pos;
     } else {
-      if (sel.$anchorCell.pos != sel.$headCell.pos) return false;
-      cellNode = sel.$anchorCell.nodeAfter;
-      cellPos = sel.$anchorCell.pos;
+      if (sel2.$anchorCell.pos != sel2.$headCell.pos) return false;
+      cellNode = sel2.$anchorCell.nodeAfter;
+      cellPos = sel2.$anchorCell.pos;
     }
     if (cellNode == null || cellPos == null) return false;
     if (cellNode.attrs.colspan == 1 && cellNode.attrs.rowspan == 1) return false;
@@ -70845,7 +70670,7 @@ function splitCellWithType(getCellType) {
         row: rect.top,
         col: rect.left
       }), attrs[0]);
-      if (sel instanceof CellSelection) tr2.setSelection(new CellSelection(tr2.doc.resolve(sel.$anchorCell.pos), lastCell ? tr2.doc.resolve(lastCell) : void 0));
+      if (sel2 instanceof CellSelection) tr2.setSelection(new CellSelection(tr2.doc.resolve(sel2.$anchorCell.pos), lastCell ? tr2.doc.resolve(lastCell) : void 0));
       dispatch(tr2);
     }
     return true;
@@ -70989,12 +70814,12 @@ function deleteTable(state, dispatch) {
   return false;
 }
 function deleteCellSelection(state, dispatch) {
-  const sel = state.selection;
-  if (!(sel instanceof CellSelection)) return false;
+  const sel2 = state.selection;
+  if (!(sel2 instanceof CellSelection)) return false;
   if (dispatch) {
     const tr2 = state.tr;
     const baseContent = tableNodeTypes(state.schema).cell.createAndFill().content;
-    sel.forEachCell((cell, pos) => {
+    sel2.forEachCell((cell, pos) => {
       if (!cell.content.eq(baseContent)) tr2.replace(tr2.mapping.map(pos + 1), tr2.mapping.map(pos + cell.nodeSize - 1), new Slice(baseContent, 0, 0));
     });
     if (tr2.docChanged) dispatch(tr2);
@@ -71011,22 +70836,22 @@ function pastedCells(slice2) {
   }
   const first2 = content.child(0);
   const role = first2.type.spec.tableRole;
-  const schema2 = first2.type.schema, rows = [];
+  const schema2 = first2.type.schema, rows2 = [];
   if (role == "row") for (let i2 = 0; i2 < content.childCount; i2++) {
     let cells = content.child(i2).content;
     const left = i2 ? 0 : Math.max(0, openStart - 1);
     const right = i2 < content.childCount - 1 ? 0 : Math.max(0, openEnd - 1);
     if (left || right) cells = fitSlice(tableNodeTypes(schema2).row, new Slice(cells, left, right)).content;
-    rows.push(cells);
+    rows2.push(cells);
   }
-  else if (role == "cell" || role == "header_cell") rows.push(openStart || openEnd ? fitSlice(tableNodeTypes(schema2).row, new Slice(content, openStart, openEnd)).content : content);
+  else if (role == "cell" || role == "header_cell") rows2.push(openStart || openEnd ? fitSlice(tableNodeTypes(schema2).row, new Slice(content, openStart, openEnd)).content : content);
   else return null;
-  return ensureRectangular(schema2, rows);
+  return ensureRectangular(schema2, rows2);
 }
-function ensureRectangular(schema2, rows) {
+function ensureRectangular(schema2, rows2) {
   const widths = [];
-  for (let i2 = 0; i2 < rows.length; i2++) {
-    const row = rows[i2];
+  for (let i2 = 0; i2 < rows2.length; i2++) {
+    const row = rows2[i2];
     for (let j2 = row.childCount - 1; j2 >= 0; j2--) {
       const { rowspan, colspan } = row.child(j2).attrs;
       for (let r = i2; r < i2 + rowspan; r++) widths[r] = (widths[r] || 0) + colspan;
@@ -71035,30 +70860,30 @@ function ensureRectangular(schema2, rows) {
   let width = 0;
   for (let r = 0; r < widths.length; r++) width = Math.max(width, widths[r]);
   for (let r = 0; r < widths.length; r++) {
-    if (r >= rows.length) rows.push(Fragment.empty);
+    if (r >= rows2.length) rows2.push(Fragment.empty);
     if (widths[r] < width) {
       const empty2 = tableNodeTypes(schema2).cell.createAndFill();
       const cells = [];
       for (let i2 = widths[r]; i2 < width; i2++) cells.push(empty2);
-      rows[r] = rows[r].append(Fragment.from(cells));
+      rows2[r] = rows2[r].append(Fragment.from(cells));
     }
   }
   return {
-    height: rows.length,
+    height: rows2.length,
     width,
-    rows
+    rows: rows2
   };
 }
 function fitSlice(nodeType, slice2) {
   const node2 = nodeType.createAndFill();
   return new Transform(node2).replace(0, node2.content.size, slice2).doc;
 }
-function clipCells({ width, height, rows }, newWidth, newHeight) {
+function clipCells({ width, height, rows: rows2 }, newWidth, newHeight) {
   if (width != newWidth) {
     const added = [];
     const newRows = [];
-    for (let row = 0; row < rows.length; row++) {
-      const frag = rows[row], cells = [];
+    for (let row = 0; row < rows2.length; row++) {
+      const frag = rows2[row], cells = [];
       for (let col = added[row] || 0, i2 = 0; col < newWidth; i2++) {
         let cell = frag.child(i2 % frag.childCount);
         if (col + cell.attrs.colspan > newWidth) cell = cell.type.createChecked(removeColSpan(cell.attrs, cell.attrs.colspan, col + cell.attrs.colspan - newWidth), cell.content);
@@ -71068,13 +70893,13 @@ function clipCells({ width, height, rows }, newWidth, newHeight) {
       }
       newRows.push(Fragment.from(cells));
     }
-    rows = newRows;
+    rows2 = newRows;
     width = newWidth;
   }
   if (height != newHeight) {
     const newRows = [];
     for (let row = 0, i2 = 0; row < newHeight; row++, i2++) {
-      const cells = [], source = rows[i2 % height];
+      const cells = [], source = rows2[i2 % height];
       for (let j2 = 0; j2 < source.childCount; j2++) {
         let cell = source.child(j2);
         if (row + cell.attrs.rowspan > newHeight) cell = cell.type.create({
@@ -71085,13 +70910,13 @@ function clipCells({ width, height, rows }, newWidth, newHeight) {
       }
       newRows.push(Fragment.from(cells));
     }
-    rows = newRows;
+    rows2 = newRows;
     height = newHeight;
   }
   return {
     width,
     height,
-    rows
+    rows: rows2
   };
 }
 function growTable(tr2, map4, table, start, width, height, mapFrom) {
@@ -71115,9 +70940,9 @@ function growTable(tr2, map4, table, start, width, height, mapFrom) {
       const header = i2 >= map4.width ? false : table.nodeAt(map4.map[start$1 + i2]).type == types.header_cell;
       cells.push(header ? emptyHead || (emptyHead = types.header_cell.createAndFill()) : empty2 || (empty2 = types.cell.createAndFill()));
     }
-    const emptyRow = types.row.create(null, Fragment.from(cells)), rows = [];
-    for (let i2 = map4.height; i2 < height; i2++) rows.push(emptyRow);
-    tr2.insert(tr2.mapping.slice(mapFrom).map(start + table.nodeSize - 2), rows);
+    const emptyRow = types.row.create(null, Fragment.from(cells)), rows2 = [];
+    for (let i2 = map4.height; i2 < height; i2++) rows2.push(emptyRow);
+    tr2.insert(tr2.mapping.slice(mapFrom).map(start + table.nodeSize - 2), rows2);
   }
   return !!(empty2 || emptyHead);
 }
@@ -71180,8 +71005,8 @@ function insertCells(state, dispatch, tableStart, rect, cells) {
   if (isolateVertical(tr2, map4, table, tableStart, top, bottom, left, mapFrom)) recomp();
   if (isolateVertical(tr2, map4, table, tableStart, top, bottom, right, mapFrom)) recomp();
   for (let row = top; row < bottom; row++) {
-    const from3 = map4.positionAt(row, left, table), to = map4.positionAt(row, right, table);
-    tr2.replace(tr2.mapping.slice(mapFrom).map(from3 + tableStart), tr2.mapping.slice(mapFrom).map(to + tableStart), new Slice(cells.rows[row - top], 0, 0));
+    const from4 = map4.positionAt(row, left, table), to = map4.positionAt(row, right, table);
+    tr2.replace(tr2.mapping.slice(mapFrom).map(from4 + tableStart), tr2.mapping.slice(mapFrom).map(to + tableStart), new Slice(cells.rows[row - top], 0, 0));
   }
   recomp();
   tr2.setSelection(new CellSelection(tr2.doc.resolve(tableStart + map4.positionAt(top, left, table)), tr2.doc.resolve(tableStart + map4.positionAt(bottom - 1, right - 1, table))));
@@ -71209,12 +71034,12 @@ function maybeSetSelection(state, dispatch, selection) {
 function arrow2(axis, dir) {
   return (state, dispatch, view) => {
     if (!view) return false;
-    const sel = state.selection;
-    if (sel instanceof CellSelection) return maybeSetSelection(state, dispatch, Selection.near(sel.$headCell, dir));
-    if (axis != "horiz" && !sel.empty) return false;
+    const sel2 = state.selection;
+    if (sel2 instanceof CellSelection) return maybeSetSelection(state, dispatch, Selection.near(sel2.$headCell, dir));
+    if (axis != "horiz" && !sel2.empty) return false;
     const end = atEndOfCell(view, axis, dir);
     if (end == null) return false;
-    if (axis == "horiz") return maybeSetSelection(state, dispatch, Selection.near(state.doc.resolve(sel.head + dir), dir));
+    if (axis == "horiz") return maybeSetSelection(state, dispatch, Selection.near(state.doc.resolve(sel2.head + dir), dir));
     else {
       const $cell = state.doc.resolve(end);
       const $next = nextCell($cell, axis, dir);
@@ -71229,9 +71054,9 @@ function arrow2(axis, dir) {
 function shiftArrow(axis, dir) {
   return (state, dispatch, view) => {
     if (!view) return false;
-    const sel = state.selection;
+    const sel2 = state.selection;
     let cellSel;
-    if (sel instanceof CellSelection) cellSel = sel;
+    if (sel2 instanceof CellSelection) cellSel = sel2;
     else {
       const end = atEndOfCell(view, axis, dir);
       if (end == null) return false;
@@ -71251,16 +71076,16 @@ function handleTripleClick2(view, pos) {
 function handlePaste(view, _2, slice2) {
   if (!isInTable(view.state)) return false;
   let cells = pastedCells(slice2);
-  const sel = view.state.selection;
-  if (sel instanceof CellSelection) {
+  const sel2 = view.state.selection;
+  if (sel2 instanceof CellSelection) {
     if (!cells) cells = {
       width: 1,
       height: 1,
       rows: [Fragment.from(fitSlice(tableNodeTypes(view.state.schema).cell, slice2))]
     };
-    const table = sel.$anchorCell.node(-1);
-    const start = sel.$anchorCell.start(-1);
-    const rect = TableMap.get(table).rectBetween(sel.$anchorCell.pos - start, sel.$headCell.pos - start);
+    const table = sel2.$anchorCell.node(-1);
+    const start = sel2.$anchorCell.start(-1);
+    const rect = TableMap.get(table).rectBetween(sel2.$anchorCell.pos - start, sel2.$headCell.pos - start);
     cells = clipCells(cells, rect.right - rect.left, rect.bottom - rect.top);
     insertCells(view.state, view.dispatch, start, rect, cells);
     return true;
@@ -71304,9 +71129,9 @@ function handleMouseDown$1(view, startEvent) {
   }
   function move(_event) {
     const event = _event;
-    const anchor2 = tableEditingKey.getState(view.state);
+    const anchor3 = tableEditingKey.getState(view.state);
     let $anchor$1;
-    if (anchor2 != null) $anchor$1 = view.state.doc.resolve(anchor2);
+    if (anchor3 != null) $anchor$1 = view.state.doc.resolve(anchor3);
     else if (domInCell(view, event.target) != startDOMCell) {
       $anchor$1 = cellUnderMouse(view, startEvent);
       if (!$anchor$1) return stop();
@@ -71469,10 +71294,10 @@ function handleMouseMove(view, event, handleWidth, lastColumnResizable) {
   const pluginState = columnResizingPluginKey.getState(view.state);
   if (!pluginState) return;
   if (!pluginState.dragging) {
-    const target = domCellAround(event.target);
+    const target2 = domCellAround(event.target);
     let cell = -1;
-    if (target) {
-      const { left, right } = target.getBoundingClientRect();
+    if (target2) {
+      const { left, right } = target2.getBoundingClientRect();
       if (event.clientX - left <= handleWidth) cell = edgeCell(view, event, "left", handleWidth);
       else if (right - event.clientX <= handleWidth) cell = edgeCell(view, event, "right", handleWidth);
     }
@@ -71542,9 +71367,9 @@ function currentColWidth(view, cellPos, { colspan, colwidth }) {
   }
   return domWidth / parts;
 }
-function domCellAround(target) {
-  while (target && target.nodeName != "TD" && target.nodeName != "TH") target = target.classList && target.classList.contains("ProseMirror") ? null : target.parentNode;
-  return target;
+function domCellAround(target2) {
+  while (target2 && target2.nodeName != "TD" && target2.nodeName != "TH") target2 = target2.classList && target2.classList.contains("ProseMirror") ? null : target2.parentNode;
+  return target2;
 }
 function edgeCell(view, event, side, handleWidth) {
   const offset3 = side == "right" ? -handleWidth : handleWidth;
@@ -71868,9 +71693,9 @@ var TableView2 = class {
     return true;
   }
   ignoreMutation(mutation) {
-    const target = mutation.target;
-    const isInsideWrapper = this.dom.contains(target);
-    const isInsideContent = this.contentDOM.contains(target);
+    const target2 = mutation.target;
+    const isInsideWrapper = this.dom.contains(target2);
+    const isInsideContent = this.contentDOM.contains(target2);
     if (isInsideWrapper && !isInsideContent) {
       if (mutation.type === "attributes" || mutation.type === "childList" || mutation.type === "characterData") return true;
     }
@@ -71931,9 +71756,9 @@ function createTable(schema2, rowsCount, colsCount, withHeaderRow, cellContent) 
       if (headerCell) headerCells.push(headerCell);
     }
   }
-  const rows = [];
-  for (let index = 0; index < rowsCount; index += 1) rows.push(types.row.createChecked(null, withHeaderRow && index === 0 ? headerCells : cells));
-  return types.table.createChecked(null, rows);
+  const rows2 = [];
+  for (let index = 0; index < rowsCount; index += 1) rows2.push(types.row.createChecked(null, withHeaderRow && index === 0 ? headerCells : cells));
+  return types.table.createChecked(null, rows2);
 }
 function isCellSelection(value) {
   return value instanceof CellSelection;
@@ -72020,7 +71845,7 @@ function escapePipesInCellText(text2) {
 }
 function renderTableToMarkdown(node2, h3, options = {}) {
   if (!node2 || !node2.content || node2.content.length === 0) return "";
-  const rows = [];
+  const rows2 = [];
   node2.content.forEach((rowNode) => {
     const cells = [];
     if (rowNode.content) rowNode.content.forEach((cellNode) => {
@@ -72036,12 +71861,12 @@ function renderTableToMarkdown(node2, h3, options = {}) {
         align
       });
     });
-    rows.push(cells);
+    rows2.push(cells);
   });
-  const columnCount = rows.reduce((max3, r) => Math.max(max3, r.length), 0);
+  const columnCount = rows2.reduce((max3, r) => Math.max(max3, r.length), 0);
   if (columnCount === 0) return "";
   const colWidths = Array.from({ length: columnCount }).fill(0);
-  rows.forEach((r) => {
+  rows2.forEach((r) => {
     for (let i2 = 0; i2 < columnCount; i2 += 1) {
       var _r$i;
       const len = (((_r$i = r[i2]) === null || _r$i === void 0 ? void 0 : _r$i.text) || "").length;
@@ -72050,10 +71875,10 @@ function renderTableToMarkdown(node2, h3, options = {}) {
     }
   });
   const pad2 = (s, width) => s + " ".repeat(Math.max(0, width - s.length));
-  const headerRow = rows[0];
+  const headerRow = rows2[0];
   const hasHeader = headerRow.some((c) => c.isHeader);
   const colAlignments = Array.from({ length: columnCount }).fill(null);
-  rows.forEach((r) => {
+  rows2.forEach((r) => {
     for (let i2 = 0; i2 < columnCount; i2 += 1) {
       var _r$i2;
       if (!colAlignments[i2] && ((_r$i2 = r[i2]) === null || _r$i2 === void 0 ? void 0 : _r$i2.align)) colAlignments[i2] = r[i2].align;
@@ -72072,7 +71897,7 @@ function renderTableToMarkdown(node2, h3, options = {}) {
     return "-".repeat(dashCount);
   }).join(" | ")} |
 `;
-  (hasHeader ? rows.slice(1) : rows).forEach((r) => {
+  (hasHeader ? rows2.slice(1) : rows2).forEach((r) => {
     out += `| ${Array.from({ length: columnCount }).fill(0).map((_2, i2) => pad2(r[i2] && r[i2].text || "", colWidths[i2])).join(" | ")} |
 `;
   });
@@ -72154,7 +71979,7 @@ var Table = Node4.create({
     ] : table;
   },
   parseMarkdown: (token, h3) => {
-    const rows = [];
+    const rows2 = [];
     const alignments = Array.isArray(token.align) ? token.align : [];
     if (token.header) {
       const headerCells = [];
@@ -72167,7 +71992,7 @@ var Table = Node4.create({
           content: h3.parseInline(cell.tokens)
         }]));
       });
-      rows.push(h3.createNode("tableRow", {}, headerCells));
+      rows2.push(h3.createNode("tableRow", {}, headerCells));
     }
     if (token.rows) token.rows.forEach((row) => {
       const bodyCells = [];
@@ -72180,9 +72005,9 @@ var Table = Node4.create({
           content: h3.parseInline(cell.tokens)
         }]));
       });
-      rows.push(h3.createNode("tableRow", {}, bodyCells));
+      rows2.push(h3.createNode("tableRow", {}, bodyCells));
     });
-    return h3.createNode("table", void 0, rows);
+    return h3.createNode("table", void 0, rows2);
   },
   renderMarkdown: (node2, h3) => {
     return renderTableToMarkdown(node2, h3);
@@ -72218,8 +72043,8 @@ var Table = Node4.create({
   },
   addCommands() {
     return {
-      insertTable: ({ rows = 3, cols = 3, withHeaderRow = true } = {}) => ({ tr: tr2, dispatch, editor }) => {
-        const node2 = createTable(editor.schema, rows, cols, withHeaderRow);
+      insertTable: ({ rows: rows2 = 3, cols = 3, withHeaderRow = true } = {}) => ({ tr: tr2, dispatch, editor }) => {
+        const node2 = createTable(editor.schema, rows2, cols, withHeaderRow);
         if (dispatch) {
           const offset3 = tr2.selection.from + 1;
           tr2.replaceSelectionWith(node2).scrollIntoView().setSelection(TextSelection.near(tr2.doc.resolve(offset3)));
@@ -73765,7 +73590,7 @@ var Bold = Mark2.create({
       },
       {
         style: "font-weight=400",
-        clearMark: (mark) => mark.type.name === this.name
+        clearMark: (mark2) => mark2.type.name === this.name
       },
       {
         style: "font-weight",
@@ -73972,7 +73797,7 @@ var HardBreak = Node4.create({
         const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
         return chain().insertContent({ type: this.name }).command(({ tr: tr2, dispatch }) => {
           if (dispatch && marks && keepMarks) {
-            const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+            const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
             tr2.ensureMarks(filteredMarks);
           }
           return true;
@@ -74145,7 +73970,7 @@ var Italic = Mark2.create({
       },
       {
         style: "font-style=normal",
-        clearMark: (mark) => mark.type.name === this.name
+        clearMark: (mark2) => mark2.type.name === this.name
       },
       { style: "font-style=italic" }
     ];
@@ -75062,7 +74887,7 @@ MultiToken.prototype = {
     const content = this.toFormattedString(options);
     const attributes = {};
     const className = options.get("className", href, token);
-    const target = options.get("target", href, token);
+    const target2 = options.get("target", href, token);
     const rel = options.get("rel", href, token);
     const attrs = options.getObj("attributes", href, token);
     const eventListeners = options.getObj("events", href, token);
@@ -75070,8 +74895,8 @@ MultiToken.prototype = {
     if (className) {
       attributes.class = className;
     }
-    if (target) {
-      attributes.target = target;
+    if (target2) {
+      attributes.target = target2;
     }
     if (rel) {
       attributes.rel = rel;
@@ -75440,10 +75265,10 @@ function autolink(options) {
         transform2.steps.forEach((step, index) => {
           if (!(step instanceof ReplaceStep) || !step.slice.size) return;
           const mapping = transform2.mapping.slice(index + 1);
-          const from3 = mapping.map(step.from, 1);
+          const from4 = mapping.map(step.from, 1);
           const to = mapping.map(step.from + step.slice.size, -1);
-          if (from3 < to) insertedRanges.push({
-            from: from3,
+          if (from4 < to) insertedRanges.push({
+            from: from4,
             to
           });
         });
@@ -75498,10 +75323,10 @@ function clickHandler(options) {
       let link = null;
       if (event.target instanceof HTMLAnchorElement) link = event.target;
       else {
-        const target = event.target;
-        if (!target) return false;
+        const target2 = event.target;
+        if (!target2) return false;
         const root2 = options.editor.view.dom;
-        link = target.closest("a");
+        link = target2.closest("a");
         if (link && !root2.contains(link)) link = null;
       }
       if (!link) return false;
@@ -75511,9 +75336,9 @@ function clickHandler(options) {
         var _link$href, _link$target;
         const attrs = getAttributes(view.state, options.type.name);
         const href = (_link$href = link.href) !== null && _link$href !== void 0 ? _link$href : attrs.href;
-        const target = (_link$target = link.target) !== null && _link$target !== void 0 ? _link$target : attrs.target;
+        const target2 = (_link$target = link.target) !== null && _link$target !== void 0 ? _link$target : attrs.target;
         if (href) {
-          window.open(href, target);
+          window.open(href, target2);
           handled = true;
         }
       }
@@ -76101,11 +75926,11 @@ var DropCursorView = class {
   update(editorView, prevState) {
     if (this.cursorPos != null && prevState.doc != editorView.state.doc) {
       if (this.lastDragEvent) {
-        let target = this.computeTarget(this.lastDragEvent);
-        if (target == this.cursorPos)
+        let target2 = this.computeTarget(this.lastDragEvent);
+        if (target2 == this.cursorPos)
           this.updateOverlay();
         else
-          this.setCursor(target);
+          this.setCursor(target2);
       } else {
         this.updateOverlay();
       }
@@ -76184,21 +76009,21 @@ var DropCursorView = class {
     let disabled = typeof disableDropCursor == "function" ? disableDropCursor(this.editorView, pos, event) : disableDropCursor;
     if (!pos || disabled)
       return null;
-    let target = pos.pos;
+    let target2 = pos.pos;
     if (this.editorView.dragging && this.editorView.dragging.slice) {
-      let point = dropPoint(this.editorView.state.doc, target, this.editorView.dragging.slice);
+      let point = dropPoint(this.editorView.state.doc, target2, this.editorView.dragging.slice);
       if (point != null)
-        target = point;
+        target2 = point;
     }
-    return target;
+    return target2;
   }
   dragover(event) {
     if (!this.editorView.editable)
       return;
     this.lastDragEvent = event;
-    let target = this.computeTarget(event);
-    if (target != null) {
-      this.setCursor(target);
+    let target2 = this.computeTarget(event);
+    if (target2 != null) {
+      this.setCursor(target2);
       this.scheduleRemoval(5e3);
     }
   }
@@ -76377,9 +76202,9 @@ var handleKeyDown2 = keydownHandler({
 function arrow3(axis, dir) {
   const dirStr = axis == "vert" ? dir > 0 ? "down" : "up" : dir > 0 ? "right" : "left";
   return function(state, dispatch, view) {
-    let sel = state.selection;
-    let $start = dir > 0 ? sel.$to : sel.$from, mustMove = sel.empty;
-    if (sel instanceof TextSelection) {
+    let sel2 = state.selection;
+    let $start = dir > 0 ? sel2.$to : sel2.$from, mustMove = sel2.empty;
+    if (sel2 instanceof TextSelection) {
       if (!view.endOfTextblock(dirStr) || $start.depth == 0)
         return false;
       mustMove = false;
@@ -76476,10 +76301,10 @@ var CharacterCount = Extension.create({
         const initialContentSize = this.storage.characters({ node: newState.doc });
         if (initialContentSize > limit) {
           const over = initialContentSize - limit;
-          const from3 = 0;
+          const from4 = 0;
           const to = over;
           console.warn(`[CharacterCount] Initial content exceeded limit of ${limit} characters. Content was automatically trimmed.`);
-          const tr2 = newState.tr.deleteRange(from3, to);
+          const tr2 = newState.tr.deleteRange(from4, to);
           initialEvaluationDone = true;
           return tr2;
         }
@@ -76495,9 +76320,9 @@ var CharacterCount = Extension.create({
         if (oldSize > limit && newSize > limit && newSize > oldSize) return false;
         if (!transaction.getMeta("paste")) return false;
         const pos = transaction.selection.$head.pos;
-        const from3 = pos - (newSize - limit);
+        const from4 = pos - (newSize - limit);
         const to = pos;
-        transaction.deleteRange(from3, to);
+        transaction.deleteRange(from4, to);
         if (this.storage.characters({ node: transaction.doc }) > limit) return false;
         return true;
       }
@@ -76530,19 +76355,19 @@ var Focus = Extension.create({
       key: new PluginKey("focus"),
       props: { decorations: ({ doc: doc4, selection }) => {
         const { isEditable, isFocused } = this.editor;
-        const { anchor: anchor2 } = selection;
+        const { anchor: anchor3 } = selection;
         const decorations = [];
         if (!isEditable || !isFocused) return DecorationSet.create(doc4, []);
         let maxLevels = 0;
         if (this.options.mode === "deepest") doc4.descendants((node2, pos) => {
           if (node2.isText) return;
-          if (!(anchor2 >= pos && anchor2 <= pos + node2.nodeSize - 1)) return false;
+          if (!(anchor3 >= pos && anchor3 <= pos + node2.nodeSize - 1)) return false;
           maxLevels += 1;
         });
         let currentLevel = 0;
         doc4.descendants((node2, pos) => {
           if (node2.isText) return false;
-          if (!(anchor2 >= pos && anchor2 <= pos + node2.nodeSize - 1)) return false;
+          if (!(anchor3 >= pos && anchor3 <= pos + node2.nodeSize - 1)) return false;
           currentLevel += 1;
           if (this.options.mode === "deepest" && maxLevels - currentLevel > 0 || this.options.mode === "shallowest" && currentLevel > 1) return this.options.mode === "deepest";
           decorations.push(Decoration.node(pos, pos + node2.nodeSize, { class: this.options.className }));
@@ -76586,12 +76411,12 @@ function createPlaceholderDecoration(options) {
 function resolveEmptyNodeClass(emptyNodeClass, props) {
   return typeof emptyNodeClass === "function" ? emptyNodeClass(props) : emptyNodeClass;
 }
-function scanRangeForDecorations({ editor, options, dataAttribute, doc: doc4, selection, from: from3, to }) {
-  const { anchor: anchor2 } = selection;
+function scanRangeForDecorations({ editor, options, dataAttribute, doc: doc4, selection, from: from4, to }) {
+  const { anchor: anchor3 } = selection;
   const decorations = [];
   const isEmptyDoc = editor.isEmpty;
-  doc4.nodesBetween(from3, to, (node2, pos) => {
-    const hasAnchor = anchor2 >= pos && anchor2 <= pos + node2.nodeSize;
+  doc4.nodesBetween(from4, to, (node2, pos) => {
+    const hasAnchor = anchor3 >= pos && anchor3 <= pos + node2.nodeSize;
     const isEmpty3 = !node2.isLeaf && isNodeEmpty(node2);
     if (!node2.type.isTextblock) return options.includeChildren;
     if ((hasAnchor || !options.showOnlyCurrent) && isEmpty3) decorations.push(createPlaceholderDecoration({
@@ -76618,15 +76443,15 @@ function scanRangeForDecorations({ editor, options, dataAttribute, doc: doc4, se
 }
 function buildPlaceholderDecorations({ editor, options, dataAttribute, doc: doc4, selection }) {
   if (!(editor.isEditable || !options.showOnlyWhenEditable)) return null;
-  const { anchor: anchor2 } = selection;
+  const { anchor: anchor3 } = selection;
   const decorations = [];
   const isEmptyDoc = editor.isEmpty;
   if (options.showOnlyCurrent && !options.includeChildren) {
-    const resolved = doc4.resolve(anchor2);
+    const resolved = doc4.resolve(anchor3);
     const node2 = resolved.depth > 0 ? resolved.node(1) : resolved.nodeAfter;
-    const nodeStart = resolved.depth > 0 ? resolved.before(1) : anchor2;
+    const nodeStart = resolved.depth > 0 ? resolved.before(1) : anchor3;
     if (node2 && node2.type.isTextblock && isNodeEmpty(node2)) {
-      const hasAnchor = anchor2 >= nodeStart && anchor2 <= nodeStart + node2.nodeSize;
+      const hasAnchor = anchor3 >= nodeStart && anchor3 <= nodeStart + node2.nodeSize;
       decorations.push(createPlaceholderDecoration({
         editor,
         isEmptyDoc,
@@ -76684,14 +76509,14 @@ function toContentRelativeRange(doc4, range) {
     to: Math.min(doc4.content.size, range.to - 1)
   };
 }
-function getTopLevelBlocksInRange(doc4, from3, to) {
+function getTopLevelBlocksInRange(doc4, from4, to) {
   const ranges = [];
   doc4.forEach((node2, offset3) => {
     const nodeStart = offset3;
     const nodeEnd = nodeStart + node2.nodeSize;
     const absNodeStart = nodeStart + 1;
     const absNodeEnd = nodeEnd + 1;
-    if (absNodeStart < to && absNodeEnd > from3) ranges.push({
+    if (absNodeStart < to && absNodeEnd > from4) ranges.push({
       from: nodeStart,
       to: nodeEnd
     });
@@ -76729,8 +76554,8 @@ function collectRescanRanges(tr2, oldState, newState) {
   }
   return mergeRanges(ranges);
 }
-function clampRange(from3, to, doc4) {
-  const clampedFrom = Math.max(0, Math.min(from3, doc4.content.size));
+function clampRange(from4, to, doc4) {
+  const clampedFrom = Math.max(0, Math.min(from4, doc4.content.size));
   return {
     from: clampedFrom,
     to: Math.max(clampedFrom, Math.min(to, doc4.content.size))
@@ -76739,8 +76564,8 @@ function clampRange(from3, to, doc4) {
 function updateDecorationsInRanges({ decorations, ranges, editor, options, dataAttribute, doc: doc4, selection }) {
   let next2 = decorations;
   for (const range of ranges) {
-    const { from: from3, to } = clampRange(range.from, range.to, doc4);
-    const existing = next2.find(from3, to).filter((decoration) => decoration.from >= from3 && decoration.to <= to);
+    const { from: from4, to } = clampRange(range.from, range.to, doc4);
+    const existing = next2.find(from4, to).filter((decoration) => decoration.from >= from4 && decoration.to <= to);
     if (existing.length) next2 = next2.remove(existing);
     const newDecos = scanRangeForDecorations({
       editor,
@@ -76748,7 +76573,7 @@ function updateDecorationsInRanges({ decorations, ranges, editor, options, dataA
       dataAttribute,
       doc: doc4,
       selection,
-      from: from3,
+      from: from4,
       to
     });
     if (newDecos.length) next2 = next2.add(doc4, newDecos);
@@ -77167,11 +76992,11 @@ function updateDescription(ydoc, doc4) {
   const update = encodeStateAsUpdate(ydoc, before);
   return update.length > 2 ? update : null;
 }
-async function writeLiveDescription(target, state, doc4) {
+async function writeLiveDescription(target2, state, doc4) {
   const ydoc = new Doc2();
   applyUpdate(ydoc, state);
-  const socket = new WebSocket(target.url, {
-    headers: target.headers
+  const socket = new WebSocket(target2.url, {
+    headers: target2.headers
   });
   socket.binaryType = "arraybuffer";
   try {
@@ -77243,6 +77068,181 @@ async function writeLiveDescription(target, state, doc4) {
   }
 }
 
+// src/store.ts
+import { storage } from "swarm";
+var ROWS = 5;
+var BYTES = 256 << 10;
+var db = null;
+var made = null;
+async function open2() {
+  db ??= storage.database();
+  made ??= db.migrate([
+    "CREATE TABLE items (store TEXT NOT NULL, id TEXT NOT NULL, version INTEGER NOT NULL, created TEXT NOT NULL, updated TEXT NOT NULL, body TEXT NOT NULL, PRIMARY KEY (store, id))"
+  ]);
+  await made;
+  return db;
+}
+var ItemStore = class {
+  constructor(store) {
+    this.store = store;
+  }
+  store;
+  queue = Promise.resolve();
+  /** Every item kept. */
+  async load() {
+    const d = await open2();
+    const out = {};
+    let after = "";
+    for (; ; ) {
+      const rows2 = await d.all("SELECT id, version, created, updated, body FROM items WHERE store = ? AND id > ? ORDER BY id LIMIT 500", [this.store, after]);
+      for (const row of rows2) {
+        try {
+          const body = JSON.parse(String(row.body));
+          if (body && typeof body === "object" && !Array.isArray(body)) {
+            out[String(row.id)] = { id: String(row.id), version: Number(row.version), createdAt: String(row.created), updatedAt: String(row.updated), body };
+          }
+        } catch {
+        }
+      }
+      if (rows2.length < 500) return out;
+      after = String(rows2[rows2.length - 1].id);
+    }
+  }
+  /**
+   * Writes what changed, after what's already writing: items, ids gone,
+   * and, with clear, everything kept dropped first. Resolves once it's
+   * written.
+   */
+  write(items, gone, clear = false) {
+    const run4 = async () => {
+      const d = await open2();
+      if (clear) await d.exec("DELETE FROM items WHERE store = ?", [this.store]);
+      for (let i2 = 0; i2 < gone.length; i2 += 30) {
+        const ids = gone.slice(i2, i2 + 30);
+        await d.exec(`DELETE FROM items WHERE store = ? AND id IN (${ids.map(() => "?").join(",")})`, [this.store, ...ids]);
+      }
+      let rows2 = [];
+      let bytes = 0;
+      const flush = async () => {
+        if (rows2.length === 0) return;
+        await d.exec(`INSERT OR REPLACE INTO items (store, id, version, created, updated, body) VALUES ${rows2.map(() => "(?, ?, ?, ?, ?, ?)").join(", ")}`, rows2.flat());
+        rows2 = [];
+        bytes = 0;
+      };
+      for (const it2 of items) {
+        const body = JSON.stringify(it2.body);
+        if (rows2.length >= ROWS || rows2.length > 0 && bytes + body.length > BYTES) await flush();
+        rows2.push([this.store, it2.id, it2.version, it2.createdAt, it2.updatedAt, body]);
+        bytes += body.length;
+      }
+      await flush();
+    };
+    const next2 = this.queue.then(run4, run4);
+    this.queue = next2.catch((e) => console.warn(`Flux couldn't keep its copy: ${e instanceof Error ? e.message : String(e)}`));
+    return next2;
+  }
+};
+
+// src/flux.ts
+var STATUSES = [
+  "backlog",
+  "todo",
+  "progress",
+  "review",
+  "complete",
+  "canceled"
+];
+var STATUS_LABELS = {
+  backlog: "Backlog",
+  todo: "Todo",
+  progress: "In Progress",
+  review: "In Review",
+  complete: "Complete",
+  canceled: "Canceled"
+};
+var CLOSED_STATUSES = /* @__PURE__ */ new Set([
+  "complete",
+  "canceled"
+]);
+var STATUS_DISPLAY_ORDER = [
+  "review",
+  "progress",
+  "todo",
+  "backlog",
+  "complete",
+  "canceled"
+];
+var PRIORITIES = ["urgent", "high", "medium", "low", "none"];
+var PRIORITY_LABELS = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+  none: "No priority"
+};
+var PRIORITY_LEVEL = {
+  urgent: 4,
+  high: 3,
+  medium: 2,
+  low: 1,
+  none: 0
+};
+var COLORS = [
+  "gray",
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "cyan",
+  "blue",
+  "indigo",
+  "purple",
+  "pink"
+];
+var STATUS_ALIASES = {
+  backlog: "backlog",
+  todo: "todo",
+  "to-do": "todo",
+  open: "todo",
+  progress: "progress",
+  "in-progress": "progress",
+  in_progress: "progress",
+  inprogress: "progress",
+  started: "progress",
+  doing: "progress",
+  review: "review",
+  "in-review": "review",
+  in_review: "review",
+  inreview: "review",
+  complete: "complete",
+  completed: "complete",
+  done: "complete",
+  closed: "complete",
+  canceled: "canceled",
+  cancelled: "canceled",
+  "won't-do": "canceled",
+  wontfix: "canceled"
+};
+function parseStatus(value) {
+  return STATUS_ALIASES[value.trim().toLowerCase().replace(/\s+/g, "-")] ?? null;
+}
+function parsePriority(value) {
+  const normalized = value.trim().toLowerCase();
+  if (PRIORITIES.includes(normalized)) {
+    return normalized;
+  }
+  if (normalized === "no-priority" || normalized === "0") return "none";
+  const byLevel = PRIORITIES.find(
+    (priority) => String(PRIORITY_LEVEL[priority]) === normalized
+  );
+  return byLevel ?? null;
+}
+function parseIssueKey(value) {
+  const match2 = /^\s*([A-Za-z]{2,5})-(\d{1,7})\s*$/.exec(value);
+  if (!match2) return null;
+  return { projectKey: match2[1].toUpperCase(), number: Number(match2[2]) };
+}
+
 // src/service.ts
 var FluxNotReadyError = class extends Error {
   name = "FluxNotReadyError";
@@ -77250,6 +77250,7 @@ var FluxNotReadyError = class extends Error {
 var FluxNotFoundError = class extends Error {
   name = "FluxNotFoundError";
 };
+var MAX_DROPPED = 20;
 var FALLBACK_MS = 3e4;
 var SAFETY_MS = 5 * 6e4;
 var PULL_DEBOUNCE_MS = 150;
@@ -77267,9 +77268,24 @@ var Flux = class {
   constructor(id2 = "default", storePrefix = "") {
     this.id = id2;
     this.storePrefix = storePrefix;
-    this.replica = storage.get(this.storeKey("replica")) ?? { scope: "", version: -1, items: {} };
-    this.members = storage.get(this.storeKey("members")) ?? [];
-    this.me = storage.get(this.storeKey("me")) ?? null;
+    this.replica = { scope: "", version: -1, items: {} };
+    this.disk = new ItemStore(storePrefix || "default");
+    if (storage2.keys().includes(this.storeKey("replica"))) storage2.delete(this.storeKey("replica"));
+    const meta3 = storage2.get(this.storeKey("copy"));
+    this.loaded = meta3 ? this.disk.load().then(
+      (items) => {
+        this.replica = { scope: meta3.scope, version: meta3.version, items };
+        this.replayQueue();
+        this.onChange();
+      },
+      () => {
+      }
+    ) : Promise.resolve();
+    this.queue = storage2.get(this.storeKey("queue")) ?? [];
+    this.dropped = storage2.get(this.storeKey("dropped")) ?? [];
+    this.syncedAt = storage2.get(this.storeKey("syncedAt")) ?? null;
+    this.members = storage2.get(this.storeKey("members")) ?? [];
+    this.me = storage2.get(this.storeKey("me")) ?? null;
   }
   id;
   storePrefix;
@@ -77280,6 +77296,19 @@ var Flux = class {
   workspace = null;
   members = [];
   replica;
+  /** The copy on disk, and what of it changed since it was last written. */
+  disk;
+  dirty = /* @__PURE__ */ new Set();
+  cleared = false;
+  loaded;
+  /** The changes made while Flux couldn't be reached, oldest first, and those it didn't take. */
+  queue = [];
+  dropped = [];
+  /** The synced items the queue's changes show over, by id; undefined where the item is new. */
+  shadow = /* @__PURE__ */ new Map();
+  sending = false;
+  /** When the copy last caught up with Flux. */
+  syncedAt = null;
   stopFollow = null;
   pullSoon = null;
   ready = Promise.resolve();
@@ -77315,8 +77344,8 @@ ${token}`;
       this.onChange();
       return;
     }
-    let deviceId = storage.get("deviceId");
-    if (!deviceId) storage.set("deviceId", deviceId = crypto.randomUUID());
+    let deviceId = storage2.get("deviceId");
+    if (!deviceId) storage2.set("deviceId", deviceId = crypto.randomUUID());
     this.device = deviceId;
     try {
       this.client = new FluxClient({ baseUrl: url2, token, deviceId });
@@ -77333,6 +77362,34 @@ ${token}`;
     const gen = this.generation;
     this.ready = this.connect(gen);
   }
+  /** The URL as set, which may not be one Flux takes. */
+  get url() {
+    return this.configured.split("\n")[0] ?? "";
+  }
+  /** Connects again from nothing: the account, the workspace, every item. Its threads' links stay. */
+  resync() {
+    const [url2 = "", token = ""] = this.configured.split("\n");
+    this.reset(this.replica.scope);
+    this.configured = "";
+    this.configure(url2, token);
+    return this.ready;
+  }
+  /** Stops, and drops the copy of the workspace, the account and the members. */
+  forget() {
+    this.stop();
+    this.client = null;
+    this.state = "unconfigured";
+    this.message = "";
+    this.workspace = null;
+    this.me = null;
+    this.members = [];
+    this.reset("");
+    this.cleared = false;
+    void this.disk.write([], [], true).catch(() => {
+    });
+    for (const name of ["copy", "members", "me"]) storage2.delete(this.storeKey(name));
+    this.onChange();
+  }
   stop() {
     this.generation++;
     this.configured = "";
@@ -77344,6 +77401,7 @@ ${token}`;
   async connect(gen) {
     const client = this.client;
     try {
+      await this.loaded;
       client.workspaceId = null;
       this.me = await client.me();
       const ws = await client.workspace();
@@ -77352,16 +77410,17 @@ ${token}`;
       this.workspace = ws;
       const scope = `${client.baseUrl}#${ws.id}`;
       if (this.replica.scope !== scope) {
-        this.replica = { scope, version: -1, items: {} };
-        if (!this.storePrefix) storage.set("links", {});
+        this.reset(scope);
+        if (!this.storePrefix) storage2.set("links", {});
       }
       this.members = (await client.members()).members.map(member);
-      storage.set(this.storeKey("members"), this.members);
-      storage.set(this.storeKey("me"), this.me);
+      storage2.set(this.storeKey("members"), this.members);
+      storage2.set(this.storeKey("me"), this.me);
       await this.pull();
       if (gen !== this.generation) return;
       this.state = "ready";
       this.message = "";
+      void this.flush();
     } catch (e) {
       if (gen !== this.generation) return;
       this.fail(e);
@@ -77370,6 +77429,7 @@ ${token}`;
     if (gen === this.generation && this.client && this.state !== "unauthorized") void this.follow(gen);
   }
   fail(e) {
+    console.warn(`Flux at ${this.baseUrl || this.url || "(no URL)"}: ${describe3(e)}`);
     if (isUnauthorized(e)) {
       this.state = "unauthorized";
       this.message = e.message;
@@ -77434,6 +77494,7 @@ ${token}`;
           this.state = "ready";
           this.message = "";
           this.onChange();
+          void this.flush();
         }
       } catch (e) {
         if (isUnauthorized(e)) {
@@ -77487,8 +77548,8 @@ ${token}`;
       void this.refreshMembers().catch(() => {
       });
     } else if (frame.event === "reset") {
-      this.replica = { scope: this.replica.scope, version: -1, items: {} };
-      storage.set(this.storeKey("replica"), this.replica);
+      this.reset(this.replica.scope);
+      this.save();
       this.schedulePull(gen);
     }
   }
@@ -77508,7 +77569,7 @@ ${token}`;
   async refreshMembers() {
     const client = this.requireClient();
     this.members = (await client.members()).members.map(member);
-    storage.set(this.storeKey("members"), this.members);
+    storage2.set(this.storeKey("members"), this.members);
     this.onChange();
   }
   /** Waits for the first sync, ten seconds at most. */
@@ -77528,7 +77589,7 @@ ${token}`;
         page = await client.pull(this.replica.version);
       } catch (e) {
         if (e instanceof FluxHttpError && e.code === "history_compacted") {
-          this.replica = { scope: this.replica.scope, version: -1, items: {} };
+          this.reset(this.replica.scope);
           continue;
         }
         throw e;
@@ -77537,17 +77598,189 @@ ${token}`;
       this.replica.version = page.nextVersion;
       if (!page.hasMore) break;
     }
-    if (changed) {
-      storage.set(this.storeKey("replica"), this.replica);
-      this.onChange();
-    }
+    const shown = changed || this.cleared;
+    this.syncedAt = (/* @__PURE__ */ new Date()).toISOString();
+    storage2.set(this.storeKey("syncedAt"), this.syncedAt);
+    if (changed) this.replayQueue();
+    this.save();
+    if (shown) this.onChange();
+  }
+  /** Drops the copy, to be pulled again from the start. */
+  reset(scope) {
+    this.replica = { scope, version: -1, items: {} };
+    this.dirty.clear();
+    this.cleared = true;
+  }
+  /** Writes what changed in the copy to disk, then the version it's at. */
+  save() {
+    const ids = [...this.dirty];
+    const clear = this.cleared;
+    const meta3 = { scope: this.replica.scope, version: this.replica.version };
+    this.dirty.clear();
+    this.cleared = false;
+    const synced = (id2) => this.shadow.has(id2) ? this.shadow.get(id2) : this.replica.items[id2];
+    const items = ids.map(synced).filter((it2) => !!it2);
+    const gone = ids.filter((id2) => !synced(id2));
+    void this.disk.write(items, gone, clear).then(
+      () => storage2.set(this.storeKey("copy"), meta3),
+      () => {
+      }
+    );
   }
   apply(it2) {
-    const had = this.replica.items[it2.id];
+    const shadowed = this.shadow.has(it2.id);
+    const had = shadowed ? this.shadow.get(it2.id) : this.replica.items[it2.id];
     if (had && had.version >= it2.version) return false;
-    if (it2.deleted || !isObject4(it2.body)) delete this.replica.items[it2.id];
-    else this.replica.items[it2.id] = { id: it2.id, version: it2.version, createdAt: it2.createdAt, updatedAt: it2.updatedAt, body: it2.body };
+    const next2 = it2.deleted || !isObject4(it2.body) ? void 0 : { id: it2.id, version: it2.version, createdAt: it2.createdAt, updatedAt: it2.updatedAt, body: it2.body };
+    if (shadowed) this.shadow.set(it2.id, next2);
+    else if (next2) this.replica.items[it2.id] = next2;
+    else delete this.replica.items[it2.id];
+    this.dirty.add(it2.id);
     return true;
+  }
+  // ---- Changes made offline ----
+  /**
+   * Sends a change that can wait for Flux; while Flux can't be reached
+   * it's queued, shown at once, and sent when Flux is back, in order, as
+   * bb's. label says what it is if it can't be.
+   */
+  async change(label, change) {
+    if (this.state === "ready" && this.queue.length === 0) {
+      try {
+        await this.send(change);
+        return;
+      } catch (e) {
+        if (!isUnreachable(e)) throw e;
+        this.state = "offline";
+        this.message = describe3(e);
+      }
+    } else if (this.state === "unconfigured" || this.state === "unauthorized" || this.replica.version < 0) {
+      throw new FluxNotReadyError(this.message || "Flux isn't connected.");
+    }
+    this.overlay(this.build(change));
+    const seq = (this.queue[this.queue.length - 1]?.seq ?? 0) + 1;
+    this.queue.push({ seq, label, change });
+    storage2.set(this.storeKey("queue"), this.queue);
+    this.onChange();
+  }
+  /** A change's writes, from the copy as it is now: what others changed meanwhile in other fields stays. */
+  build(change) {
+    switch (change.type) {
+      case "issue":
+        return this.issueWrites(change.id, change.patch);
+      case "description": {
+        const it2 = this.item(change.id, "issue");
+        const html = markdownToHtml(change.markdown, { baseUrl: this.baseUrl, members: this.mentionTargets() });
+        return [{ itemId: it2.id, baseVersion: it2.version, body: { ...it2.body, description: html } }];
+      }
+      case "comment": {
+        if (this.replica.items[change.id] && !this.shadow.has(change.id)) return [];
+        this.item(asString(change.body.issueId), "issue");
+        return [{ itemId: change.id, baseVersion: -1, body: change.body }];
+      }
+      case "commentEdit": {
+        const it2 = this.item(change.id, "comment");
+        return [{ itemId: it2.id, baseVersion: it2.version, body: { ...it2.body, body: change.html } }];
+      }
+      case "commentDelete": {
+        const it2 = this.replica.items[change.id];
+        return it2 ? [{ itemId: it2.id, baseVersion: it2.version, body: null }] : [];
+      }
+      case "label":
+        if (this.replica.items[change.id] && !this.shadow.has(change.id)) return [];
+        return [{ itemId: change.id, baseVersion: -1, body: change.body }];
+    }
+  }
+  /** Sends a change now. */
+  async send(change) {
+    if (change.type === "description") await this.writeDescription(change.id, change.markdown);
+    else await this.transact(() => this.build(change));
+  }
+  /** Shows writes over the synced copy, keeping what they cover. */
+  overlay(writes) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    for (const w2 of writes) {
+      const had = this.replica.items[w2.itemId];
+      if (!this.shadow.has(w2.itemId)) this.shadow.set(w2.itemId, had);
+      if (w2.body === null) delete this.replica.items[w2.itemId];
+      else this.replica.items[w2.itemId] = { id: w2.itemId, version: had?.version ?? -1, createdAt: had?.createdAt ?? now, updatedAt: now, body: w2.body };
+    }
+  }
+  /** Puts the synced items back where changes showed over them. */
+  restoreSynced() {
+    for (const [id2, it2] of this.shadow) {
+      if (it2) this.replica.items[id2] = it2;
+      else delete this.replica.items[id2];
+    }
+    this.shadow.clear();
+  }
+  /** Shows the queued changes over the copy as it is now; one that no longer applies is dropped. */
+  replayQueue() {
+    this.restoreSynced();
+    for (const q2 of [...this.queue]) {
+      try {
+        this.overlay(this.build(q2.change));
+      } catch (e) {
+        if (this.replica.version < 0) continue;
+        this.drop(q2, e);
+      }
+    }
+  }
+  /** Sends the changes made while Flux couldn't be reached, oldest first. */
+  async flush() {
+    if (this.sending || this.queue.length === 0) return;
+    this.sending = true;
+    try {
+      while (this.queue.length > 0 && this.state === "ready") {
+        const q2 = this.queue[0];
+        this.restoreSynced();
+        try {
+          await this.send(q2.change);
+          this.queue = this.queue.filter((x2) => x2 !== q2);
+        } catch (e) {
+          if (isUnreachable(e) || isUnauthorized(e)) {
+            this.replayQueue();
+            this.onChange();
+            return;
+          }
+          this.drop(q2, e);
+        }
+        storage2.set(this.storeKey("queue"), this.queue);
+        this.replayQueue();
+        this.onChange();
+      }
+    } finally {
+      this.sending = false;
+    }
+  }
+  /** Gives up on a queued change, keeping why to show. */
+  drop(q2, e) {
+    if (!this.queue.includes(q2)) return;
+    this.queue = this.queue.filter((x2) => x2 !== q2);
+    storage2.set(this.storeKey("queue"), this.queue);
+    const reason = e instanceof FluxNotFoundError ? "it was deleted in Flux meanwhile" : describe3(e);
+    console.warn(`Flux: couldn't send a change made offline (${q2.label}): ${reason}`);
+    if (q2.change.type === "issue" && q2.change.patch.subscribe && Object.keys(q2.change.patch).length === 1) return;
+    this.dropped = [...this.dropped, { id: crypto.randomUUID(), label: q2.label, reason, at: (/* @__PURE__ */ new Date()).toISOString() }].slice(-MAX_DROPPED);
+    storage2.set(this.storeKey("dropped"), this.dropped);
+  }
+  /** Clears what couldn't be sent from the list, once seen. */
+  dismissDropped() {
+    this.dropped = [];
+    storage2.set(this.storeKey("dropped"), this.dropped);
+    this.onChange();
+  }
+  /** Tries Flux again now, rather than at the next retry. */
+  reconnect() {
+    const [url2 = "", token = ""] = this.configured.split("\n");
+    this.configured = "";
+    this.configure(url2, token);
+  }
+  /** Refuses a change that needs Flux now (it numbers issues, say), while it can't be reached. */
+  online() {
+    if (this.state === "offline" || this.state === "connecting") {
+      throw new FluxNotReadyError(`Flux can't be reached right now, so this has to wait until it's back${this.message ? ` (${this.message})` : ""}.`);
+    }
   }
   requireClient() {
     if (!this.client) throw new FluxNotReadyError(this.message || "Flux isn't set up.");
@@ -77558,16 +77791,16 @@ ${token}`;
   }
   // ---- Reading ----
   projects() {
-    const links = storage.get("projectLinks") ?? {};
+    const links = storage2.get("projectLinks") ?? {};
     return this.ofType("project").map((it2) => {
-      const mark = isObject4(it2.body.mark) ? it2.body.mark : {};
+      const mark2 = isObject4(it2.body.mark) ? it2.body.mark : {};
       return {
         id: it2.id,
         key: asString(it2.body.key) || "PRJ",
         name: asString(it2.body.name) || "Untitled",
-        emoji: mark.type === "emoji" ? asString(mark.value) || null : null,
-        icon: mark.type === "icon" ? asString(mark.value) || null : null,
-        color: asColor(mark.color),
+        emoji: mark2.type === "emoji" ? asString(mark2.value) || null : null,
+        icon: mark2.type === "icon" ? asString(mark2.value) || null : null,
+        color: asColor(mark2.color),
         position: asNumber(it2.body.position),
         swarmProjectId: links[it2.id] ?? null
       };
@@ -77712,8 +77945,9 @@ ${token}`;
           const had = before.get(a3.itemId);
           if (w2.body === null) delete this.replica.items[a3.itemId];
           else this.replica.items[a3.itemId] = { id: a3.itemId, version: a3.version, createdAt: had?.createdAt ?? now, updatedAt: now, body: w2.body };
+          this.dirty.add(a3.itemId);
         }
-        storage.set(this.storeKey("replica"), this.replica);
+        this.save();
         this.onChange();
         return;
       } catch (e) {
@@ -77738,14 +77972,13 @@ ${token}`;
   async createIssue(input2) {
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
-    const description = input2.descriptionMarkdown?.trim() ? markdownToHtml(await liftDataImages(input2.descriptionMarkdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() }) : "";
+    this.online();
+    const description = input2.descriptionHtml !== void 0 ? input2.descriptionHtml : input2.descriptionMarkdown?.trim() ? markdownToHtml(await liftDataImages(input2.descriptionMarkdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() }) : "";
     const assignees = unique(input2.assigneeIds ?? []);
     const issueId = crypto.randomUUID();
     await this.transact(() => {
       const project = this.item(input2.projectId, "project");
-      let highest = 0;
-      for (const i2 of this.ofType("issue")) if (i2.body.projectId === project.id) highest = Math.max(highest, asNumber(i2.body.number));
-      const number4 = Math.max(asNumber(project.body.nextNumber, 1), highest + 1);
+      const number4 = this.freeNumber(project);
       return [
         { itemId: project.id, baseVersion: project.version, body: { ...project.body, nextNumber: number4 + 1 } },
         {
@@ -77763,7 +77996,7 @@ ${token}`;
             labelIds: unique(input2.labelIds ?? []),
             subscriberIds: unique([me2.id, ...assignees]),
             creatorId: me2.id,
-            dueDate: null,
+            dueDate: input2.dueDate ?? null,
             parentId: input2.parentId ?? null,
             position: 0
           }
@@ -77773,7 +78006,18 @@ ${token}`;
     return this.issue(issueId);
   }
   async updateIssue(id2, patch) {
-    await this.transact(() => {
+    const issue2 = this.issue(id2);
+    if (patch.projectId !== void 0 && patch.projectId !== issue2?.projectId) {
+      this.online();
+      await this.transact(() => this.issueWrites(id2, patch));
+    } else {
+      await this.change(issue2 ? `Change to ${issue2.key}` : "A change to an issue", { type: "issue", id: id2, patch });
+    }
+    return this.issue(id2);
+  }
+  /** An issue's writes for patch, from the copy as it is now. */
+  issueWrites(id2, patch) {
+    {
       const it2 = this.item(id2, "issue");
       const next2 = { ...it2.body };
       if (patch.title !== void 0) next2.title = patch.title;
@@ -77786,16 +78030,21 @@ ${token}`;
         if (patch.position === void 0) next2.position = 0;
       }
       if (patch.position !== void 0) next2.position = patch.position;
+      const writes = [];
       if (patch.projectId !== void 0 && patch.projectId !== asString(it2.body.projectId)) {
-        next2.projectId = patch.projectId;
+        const project = this.item(patch.projectId, "project");
+        const number4 = this.freeNumber(project);
+        next2.projectId = project.id;
+        next2.number = number4;
+        writes.push({ itemId: project.id, baseVersion: project.version, body: { ...project.body, nextNumber: Math.max(asNumber(project.body.nextNumber, 1), number4 + 1) } });
       }
+      if (patch.subscribe) next2.subscriberIds = unique([...asStringList(next2.subscriberIds), patch.subscribe]);
       if (patch.assigneeIds !== void 0) {
         next2.assigneeIds = unique(patch.assigneeIds);
         next2.subscriberIds = unique([...asStringList(it2.body.subscriberIds), asString(it2.body.creatorId), ...patch.assigneeIds].filter(Boolean));
       }
-      return [{ itemId: id2, baseVersion: it2.version, body: next2 }];
-    });
-    return this.issue(id2);
+      return [{ itemId: id2, baseVersion: it2.version, body: next2 }, ...writes];
+    }
   }
   /**
    * Replaces an issue's description with Markdown: into its live
@@ -77803,6 +78052,13 @@ ${token}`;
    * saves it.
    */
   async replaceDescription(id2, markdown) {
+    this.item(id2, "issue");
+    if (this.state === "ready") markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
+    const issue2 = this.issue(id2);
+    await this.change(issue2 ? `Description of ${issue2.key}` : "A description", { type: "description", id: id2, markdown });
+  }
+  /** Writes a description into the issue's live document, then its HTML. */
+  async writeDescription(id2, markdown) {
     const client = this.requireClient();
     this.item(id2, "issue");
     markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
@@ -77844,57 +78100,68 @@ ${token}`;
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
     const commentId = crypto.randomUUID();
-    const html = markdownToHtml(await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() });
-    await this.transact(() => {
-      const it2 = this.item(issueId, "issue");
-      const writes = [
-        { itemId: commentId, baseVersion: -1, body: { type: "comment", issueId, authorId: me2.id, body: html, ...agent2 ? { agent: agent2 } : {} } }
-      ];
-      const subs = asStringList(it2.body.subscriberIds);
-      if (!subs.includes(me2.id)) writes.push({ itemId: issueId, baseVersion: it2.version, body: { ...it2.body, subscriberIds: [...subs, me2.id] } });
-      return writes;
-    });
+    const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
+    const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
+    const issue2 = this.item(issueId, "issue");
+    await this.change(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me2.id, body: html, ...agent2 ? { agent: agent2 } : {} } });
+    if (!asStringList(issue2.body.subscriberIds).includes(me2.id)) {
+      await this.change(`Following ${this.issue(issueId)?.key ?? "an issue"}`, { type: "issue", id: issueId, patch: { subscribe: me2.id } }).catch(() => {
+      });
+    }
     return this.comments(issueId).find((c) => c.id === commentId);
   }
+  /** Deletes an issue as Flux does: its comments with it; its sub-issues stay, without their parent; its threads' links go. */
   async deleteIssue(id2) {
+    this.online();
+    const threads = this.issue(id2)?.threadIds ?? [];
     await this.transact(() => {
       const it2 = this.item(id2, "issue");
-      return [{ itemId: id2, baseVersion: it2.version, body: null }];
+      return [
+        ...this.ofType("comment").filter((c) => c.body.issueId === id2).map((c) => ({ itemId: c.id, baseVersion: c.version, body: null })),
+        ...this.ofType("issue").filter((i2) => i2.body.parentId === id2).map((i2) => ({ itemId: i2.id, baseVersion: i2.version, body: { ...i2.body, parentId: null } })),
+        { itemId: id2, baseVersion: it2.version, body: null }
+      ];
     });
+    for (const thread of threads) this.detach(id2, thread);
+  }
+  /** The first number free in a project, from its next number on. */
+  freeNumber(project) {
+    const taken = /* @__PURE__ */ new Set();
+    for (const i2 of this.ofType("issue")) if (i2.body.projectId === project.id) taken.add(asNumber(i2.body.number));
+    let number4 = Math.max(1, asNumber(project.body.nextNumber, 1));
+    while (taken.has(number4)) number4++;
+    return number4;
   }
   async duplicateIssue(id2) {
     const issue2 = this.issue(id2);
     if (!issue2) throw new FluxNotFoundError(`No Flux issue with id ${id2}.`);
-    const detail = this.detail(id2);
     return this.createIssue({
       projectId: issue2.projectId,
-      title: `${issue2.title} copy`,
-      descriptionMarkdown: detail.descriptionMarkdown,
+      title: issue2.title.trim() ? `${issue2.title} copy` : "",
+      descriptionHtml: asString(this.replica.items[id2]?.body.description),
       status: issue2.status,
       priority: issue2.priority,
       assigneeIds: issue2.assigneeIds,
       labelIds: issue2.labelIds,
-      parentId: issue2.parentId
+      parentId: issue2.parentId,
+      dueDate: issue2.dueDate
     });
   }
   async updateComment(id2, markdown) {
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
-    const html = markdownToHtml(await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() });
-    await this.transact(() => {
-      const it2 = this.item(id2, "comment");
-      if (asString(it2.body.authorId) !== me2.id) throw new Error("You can edit your own comments.");
-      return [{ itemId: id2, baseVersion: it2.version, body: { ...it2.body, body: html } }];
-    });
+    const it2 = this.item(id2, "comment");
+    if (asString(it2.body.authorId) !== me2.id) throw new Error("You can edit your own comments.");
+    const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
+    const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
+    await this.change(`Edit to a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id: id2, html });
   }
   async deleteComment(id2) {
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
-    await this.transact(() => {
-      const it2 = this.item(id2, "comment");
-      if (asString(it2.body.authorId) !== me2.id) throw new Error("You can delete your own comments.");
-      return [{ itemId: id2, baseVersion: it2.version, body: null }];
-    });
+    const it2 = this.item(id2, "comment");
+    if (asString(it2.body.authorId) !== me2.id) throw new Error("You can delete your own comments.");
+    await this.change(`Deleting a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentDelete", id: id2 });
   }
   /** A label of name, in the color fewest labels use when none is given. */
   async createLabel(name, color) {
@@ -77905,13 +78172,13 @@ ${token}`;
     for (const l of this.labels()) used.set(l.color, (used.get(l.color) ?? 0) + 1);
     const pick2 = color ?? [...used.entries()].sort((a3, b) => a3[1] - b[1])[0][0];
     const id2 = crypto.randomUUID();
-    await this.transact(() => [{ itemId: id2, baseVersion: -1, body: { type: "label", name: name.trim(), color: pick2 } }]);
+    await this.change(`Label “${name.trim()}”`, { type: "label", id: id2, body: { type: "label", name: name.trim(), color: pick2 } });
     return this.labels().find((l) => l.id === id2);
   }
   // ---- Threads ----
   /** The issues attached to each thread, by issue. */
   threadsByIssue() {
-    const links = storage.get("links") ?? {};
+    const links = storage2.get("links") ?? {};
     const out = /* @__PURE__ */ new Map();
     for (const [thread, issues] of Object.entries(links)) {
       for (const i2 of issues) out.set(i2, [...out.get(i2) ?? [], thread]);
@@ -77919,14 +78186,14 @@ ${token}`;
     return out;
   }
   issuesOfThread(thread) {
-    const ids = (storage.get("links") ?? {})[thread] ?? [];
+    const ids = (storage2.get("links") ?? {})[thread] ?? [];
     return ids.map((id2) => this.issue(id2)).filter((i2) => i2 !== null);
   }
   /** Attaches a thread to an issue; start moves a backlog or todo one to In Progress. */
   async attach(issueId, thread, start) {
-    const links = storage.get("links") ?? {};
+    const links = storage2.get("links") ?? {};
     links[thread] = unique([...links[thread] ?? [], issueId]);
-    storage.set("links", links);
+    storage2.set("links", links);
     let issue2 = this.issue(issueId);
     if (start && (issue2.status === "backlog" || issue2.status === "todo")) issue2 = await this.updateIssue(issueId, { status: "progress" });
     void swarm.threads.setMetadata(thread, { set: { issueId, issueKey: issue2.key, connectionId: this.id } }).catch(() => {
@@ -77935,10 +78202,10 @@ ${token}`;
     return issue2;
   }
   detach(issueId, thread) {
-    const links = storage.get("links") ?? {};
+    const links = storage2.get("links") ?? {};
     links[thread] = (links[thread] ?? []).filter((i2) => i2 !== issueId);
     if (links[thread].length === 0) delete links[thread];
-    storage.set("links", links);
+    storage2.set("links", links);
     void swarm.threads.metadata(thread).then((meta3) => {
       if (meta3.issueId === issueId) return swarm.threads.setMetadata(thread, { remove: ["issueId", "issueKey", "connectionId"] });
     }).catch(() => {
@@ -77946,15 +78213,15 @@ ${token}`;
     this.onChange();
   }
   /** Links a Flux project to a Swarm project, whose threads it's the default of; null unlinks it. */
-  link(projectId, swarmProject) {
-    const links = storage.get("projectLinks") ?? {};
-    if (swarmProject) links[projectId] = swarmProject;
+  link(projectId, swarmProject2) {
+    const links = storage2.get("projectLinks") ?? {};
+    if (swarmProject2) links[projectId] = swarmProject2;
     else delete links[projectId];
-    storage.set("projectLinks", links);
+    storage2.set("projectLinks", links);
     this.onChange();
   }
-  projectOfSwarm(swarmProject) {
-    return this.projects().find((p) => p.swarmProjectId === swarmProject) ?? null;
+  projectOfSwarm(swarmProject2) {
+    return this.projects().find((p) => p.swarmProjectId === swarmProject2) ?? null;
   }
   connection() {
     return {
@@ -77964,7 +78231,10 @@ ${token}`;
       baseUrl: this.client?.baseUrl ?? null,
       workspace: this.workspace,
       me: this.me,
-      issueCount: this.ofType("issue").length
+      issueCount: this.ofType("issue").length,
+      queued: this.queue.length,
+      dropped: this.dropped,
+      syncedAt: this.syncedAt
     };
   }
   /** Uploads a picture and returns the URL Markdown should use. */
@@ -77997,6 +78267,13 @@ function parseSSE(frame) {
   return data.length ? { event, data: data.join("\n") } : null;
 }
 var DATA_IMAGE = /!\[([^\]]*)\]\((data:image\/([a-zA-Z0-9.+-]+);base64,([^)]+))\)/g;
+async function checkFlux(url2, token) {
+  const client = new FluxClient({ baseUrl: url2, token, deviceId: storage2.get("deviceId") ?? crypto.randomUUID() });
+  const me2 = await client.me();
+  const ws = await client.workspace();
+  if (!ws.id) throw new Error("Finish setting up your Flux workspace in Flux first.");
+  return { baseUrl: client.baseUrl, account: me2.name, workspace: { id: ws.id, name: ws.name } };
+}
 async function liftDataImages(markdown, upload2) {
   if (!markdown.includes("data:image/")) return markdown;
   let out = "";
@@ -78020,438 +78297,389 @@ function fromBase64(s) {
   return Uint8Array.fromBase64(s);
 }
 
-// src/cli.ts
-var CliError = class extends Error {
-  constructor(message, hint = "") {
-    super(message);
-    this.hint = hint;
-  }
-  hint;
-};
-var STATUS_GLYPH = { backlog: "◌", todo: "○", progress: "◐", review: "◑", complete: "●", canceled: "⊘" };
-var PRIORITY_GLYPH = { urgent: "!!", high: "▲", medium: "■", low: "▼", none: "·" };
-var STATUS_VALUES = "backlog, todo, progress, review, complete, canceled (aliases: in_progress, in_review, done, …)";
-var pad = (v2, w2) => {
-  const n = [...v2].length;
-  return n >= w2 ? v2 : v2 + " ".repeat(w2 - n);
-};
-function parse3(argv, spec) {
-  const values = {};
-  const positionals = [];
-  const byName = /* @__PURE__ */ new Map();
-  for (const [name, s] of Object.entries(spec)) {
-    byName.set(`--${name}`, name);
-    if (s.short) byName.set(`-${s.short}`, name);
-    for (const a3 of s.aliases ?? []) byName.set(`--${a3}`, name);
-    if (s.type === "list") values[name] = [];
-    if (s.type === "boolean") values[name] = false;
-  }
-  for (let i2 = 0; i2 < argv.length; i2++) {
-    const arg = argv[i2];
-    if (arg === "--") {
-      positionals.push(...argv.slice(i2 + 1));
-      break;
-    }
-    if (!arg.startsWith("-") || arg === "-") {
-      positionals.push(arg);
-      continue;
-    }
-    let [flag, inline3] = arg.includes("=") ? [arg.slice(0, arg.indexOf("=")), arg.slice(arg.indexOf("=") + 1)] : [arg, void 0];
-    const name = byName.get(flag);
-    if (!name) throw new CliError(`unknown option ${flag}`, "Run swarm flux help for the commands and their options.");
-    const s = spec[name];
-    if (s.type === "boolean") {
-      values[name] = inline3 === void 0 ? true : inline3 !== "false";
-      continue;
-    }
-    const value = inline3 ?? argv[++i2];
-    if (value === void 0) throw new CliError(`${flag} takes a value`);
-    if (s.type === "list") values[name].push(...value.split(",").map((v2) => v2.trim()).filter(Boolean));
-    else values[name] = value;
-  }
-  return { values, positionals };
-}
-var str = (v2) => typeof v2 === "string" ? v2 : void 0;
-var list = (v2) => Array.isArray(v2) ? v2 : [];
-async function context(io) {
-  if (!io.thread) return { thread: "", project: "", agent: null };
+// src/hub.ts
+function parseExtras(value) {
+  if (!value.trim()) return [];
   try {
-    const d = await call("Thread", { thread: io.thread });
-    const names = { claude: "Claude Code", cursor: "Cursor", grok: "Grok Build", fake: "Demo agent" };
-    return {
-      thread: io.thread,
-      project: d.info.project,
-      agent: { name: names[d.info.provider] ?? d.info.provider, provider: d.info.provider, threadId: io.thread }
-    };
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item) => {
+      if (!item || typeof item !== "object") return false;
+      const row = item;
+      return typeof row.id === "string" && row.id !== "" && row.id !== "default" && typeof row.url === "string" && typeof row.token === "string";
+    });
   } catch {
-    return { thread: io.thread, project: "", agent: null };
+    return [];
   }
 }
-function statusOrThrow(v2) {
-  const s = parseStatus(v2);
-  if (!s) throw new CliError(`unknown status "${v2}"`, `Use one of: ${STATUS_VALUES}.`);
-  return s;
-}
-function priorityOrThrow(v2) {
-  const p = parsePriority(v2);
-  if (!p) throw new CliError(`unknown priority "${v2}"`, `Use one of: ${PRIORITIES.join(", ")}.`);
-  return p;
-}
-function issueLine(issue2, names) {
-  const assignees = issue2.assigneeIds.map((id2) => names.members.find((m) => m.id === id2)?.username).filter(Boolean).map((u) => `@${u}`).join(" ");
-  const labels = issue2.labelIds.map((id2) => names.labels.find((l) => l.id === id2)?.name).filter(Boolean).map((n) => `[${n}]`).join(" ");
-  const subs = issue2.subIssueCount ? ` (${issue2.subIssueDoneCount}/${issue2.subIssueCount})` : "";
-  const agents = issue2.threadIds.length ? " ⚡" : "";
-  return [pad(issue2.key, 9), `${STATUS_GLYPH[issue2.status]} ${pad(STATUS_LABELS[issue2.status], 11)}`, pad(PRIORITY_GLYPH[issue2.priority], 2), `${issue2.title}${subs}${agents}`, assignees, labels].filter(Boolean).join("  ");
-}
-var USAGE = `swarm flux — Read and update Flux issues
-
-Issue keys look like ABC-12. Run from an agent's thread attached to an
-issue, commands that take a key default to that issue.
-
-Commands:
-  swarm flux status             The Flux connection, workspace, and signed-in account
-  swarm flux list               Issues, open ones first, grouped by status
-  swarm flux show [ISSUE]       An issue with its description, sub-issues, and comments
-  swarm flux create             Create an issue
-  swarm flux update [ISSUE]     Change an issue's status, priority, assignees, labels, title, description, due date, or parent
-  swarm flux comment [ISSUE]    Comment on an issue in Markdown; @username notifies people
-  swarm flux start ISSUE        Attach this thread to an issue and move it to In Progress
-  swarm flux detach [ISSUE]     Detach this thread from an issue
-  swarm flux projects           Flux projects and the Swarm projects they're linked to
-  swarm flux link KEY           Link a Flux project to this thread's Swarm project (--none to unlink)
-  swarm flux labels [create NAME [--color C]]  Workspace labels, or make one
-  swarm flux members            Workspace members and their @usernames
-  swarm flux open [ISSUE]       Print an issue's link in Flux
-
-Every command takes --json, and --flux NAME to use one connection.`;
-function registerCli(resolve) {
-  let picked;
-  const flux2 = new Proxy({}, {
-    get(_target, prop) {
-      const current = resolve(picked);
-      const value = Reflect.get(current, prop, current);
-      return typeof value === "function" ? value.bind(current) : value;
-    }
-  });
-  const json2 = (io, v2) => io.print(JSON.stringify(v2, null, 2));
-  const guarded = (name, fn) => {
-    command2(name, async (args2, io) => {
-      try {
-        const taken = takeFlux(args2);
-        picked = taken.name;
-        args2 = taken.args;
-        const ctx = await context(io);
-        if (name !== "status") await flux2.whenReady();
-        return await fn(args2, io, ctx);
-      } catch (e) {
-        if (e instanceof CliError) {
-          io.error(`Error: ${e.message}${e.hint ? `
-${e.hint}` : ""}`);
-          return 2;
-        }
-        if (e instanceof FluxNotReadyError) io.error(`Error: ${e.message}
-Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux status.`);
-        else if (e instanceof FluxNotFoundError) io.error(`Error: ${e.message}`);
-        else io.error(`Error: ${describe3(e)}`);
-        return 1;
-      } finally {
-        picked = void 0;
-      }
-    });
+var Hub = class {
+  main = new Flux("default");
+  extras = /* @__PURE__ */ new Map();
+  activeId = storage3.get("activeConnection") || "default";
+  onChange = () => {
   };
-  function takeFlux(args2) {
-    const rest = [];
-    let name;
-    for (let i2 = 0; i2 < args2.length; i2++) {
-      const arg = args2[i2];
-      if (arg === "--flux" || arg === "--connection") {
-        name = args2[++i2];
-        if (!name) throw new CliError("--flux takes the connection's name");
-        continue;
-      }
-      if (arg.startsWith("--flux=")) {
-        name = arg.slice("--flux=".length);
-        continue;
-      }
-      rest.push(arg);
-    }
-    return { name, args: rest };
+  constructor() {
+    this.main.onChange = () => this.onChange();
   }
-  const lookup = () => ({ baseUrl: flux2.baseUrl, members: flux2.memberList(), labels: flux2.labels(), projects: flux2.projects() });
-  const issueFromArg = (ref, ctx) => {
-    if (ref) return flux2.requireIssue(ref);
-    const attached = ctx.thread ? flux2.issuesOfThread(ctx.thread) : [];
-    if (attached.length === 1) return attached[0];
-    throw new CliError(attached.length > 1 ? `this thread is attached to ${attached.map((i2) => i2.key).join(", ")}; say which one` : "missing issue key", "Pass an issue key such as ABC-12.");
-  };
-  const projectFromOption = (v2, ctx) => {
-    if (v2) {
-      const p = flux2.findProject(v2);
-      if (!p) throw new CliError(`no Flux project "${v2}"`, "Run `swarm flux projects` to list project keys.");
-      return p;
+  /** The connection commands and the page use. */
+  get active() {
+    if (this.activeId !== "default") {
+      const extra = this.extras.get(this.activeId);
+      if (extra && extra.state !== "unconfigured") return extra;
     }
-    return ctx.project ? flux2.projectOfSwarm(ctx.project) : null;
-  };
-  const memberIds = (values) => values.map((v2) => {
-    if (v2.toLowerCase() === "none") return "";
-    const m = flux2.findMember(v2);
-    if (!m) throw new CliError(`no workspace member "${v2}"`, "Run `swarm flux members` for usernames; `me` means you.");
-    return m.id;
-  });
-  const labelIds = (values, hint = "Run `swarm flux labels` to list labels.") => values.map((v2) => {
-    const l = flux2.findLabel(v2);
-    if (!l) throw new CliError(`no label "${v2}"`, hint);
-    return l.id;
-  });
-  const addedLabelIds = async (values, create7) => {
-    if (!create7) return { ids: labelIds(values, "Run `swarm flux labels` to list labels, or add --create-labels to create it."), created: [] };
-    const ids = [];
-    const created = [];
-    for (const v2 of values) {
-      let l = flux2.findLabel(v2);
-      if (!l) {
-        l = await flux2.createLabel(v2);
-        created.push(l);
-      }
-      ids.push(l.id);
+    return this.main;
+  }
+  all() {
+    return [this.main, ...this.extras.values()];
+  }
+  /** A connection by id, workspace name, slug, or a bit of its URL. The active one when unnamed. */
+  get(name) {
+    if (!name?.trim()) return this.active;
+    const needle = name.trim().toLowerCase();
+    const found2 = this.all().find((flux2) => {
+      const workspace = flux2.workspace;
+      return flux2.id.toLowerCase() === needle || workspace?.name.toLowerCase() === needle || workspace?.slug.toLowerCase() === needle || flux2.baseUrl.toLowerCase().includes(needle);
+    });
+    if (!found2) throw new FluxNotFoundError(`No Flux connection ${name}.`);
+    return found2;
+  }
+  use(id2) {
+    this.activeId = id2;
+    storage3.set("activeConnection", id2);
+    this.onChange();
+  }
+  /** The Fluxes set up, the first one's first. */
+  connected() {
+    return this.all().filter((flux2) => flux2.state !== "unconfigured" || flux2.url !== "");
+  }
+  /**
+   * Sets a Flux's URL and token: target's, or a new one's when null,
+   * which is the first one's while that isn't set. It's then the active
+   * one. Returns its id.
+   */
+  save(target2, url2, token) {
+    if (target2 === "default" || target2 === null && this.main.url === "") {
+      settings.set({ url: url2, token });
+      this.fromSettings();
+      this.use("default");
+      return "default";
     }
-    return { ids, created };
-  };
-  const createdLine = (created) => created.length ? [`Created ${created.length === 1 ? "label" : "labels"} ${created.map((l) => l.name).join(", ")}.`] : [];
-  command2("help", (_a3, io) => io.print(USAGE));
-  guarded("status", async (args2, io) => {
-    const c = flux2.connection();
-    if (args2.includes("--json")) return json2(io, c);
-    const lines = [`Flux: ${c.state}${c.message ? ` — ${c.message}` : ""}`];
-    if (c.baseUrl) lines.push(`Server: ${c.baseUrl}`);
-    if (c.workspace) lines.push(`Workspace: ${c.workspace.name}`);
-    if (c.me) lines.push(`Signed in as: ${c.me.name} (@${c.me.username})`);
-    lines.push(`Issues synced: ${c.issueCount}`);
-    io.print(lines.join("\n"));
-  });
-  guarded("list", async (args2, io, ctx) => {
-    const { values: o } = parse3(args2, {
-      project: { type: "string" },
-      status: { type: "list" },
-      assignee: { type: "list", aliases: ["assigned"] },
-      label: { type: "list" },
-      priority: { type: "list" },
-      search: { type: "string", short: "q", aliases: ["query"] },
-      all: { type: "boolean" },
-      "all-projects": { type: "boolean" },
-      limit: { type: "string" },
-      json: { type: "boolean" }
-    });
-    const project = o["all-projects"] ? null : projectFromOption(str(o.project), ctx);
-    const statuses = new Set(list(o.status).map(statusOrThrow));
-    const priorities = new Set(list(o.priority).map(priorityOrThrow));
-    const assignees = new Set(memberIds(list(o.assignee)));
-    const labels = labelIds(list(o.label));
-    const needle = str(o.search)?.trim().toLowerCase();
-    const limit = Math.min(Math.max(Number(str(o.limit) ?? 50) || 50, 1), 500);
-    let issues = flux2.issues().filter((i2) => {
-      if (project && i2.projectId !== project.id) return false;
-      if (statuses.size > 0) {
-        if (!statuses.has(i2.status)) return false;
-      } else if (!o.all && CLOSED_STATUSES.has(i2.status)) return false;
-      if (priorities.size > 0 && !priorities.has(i2.priority)) return false;
-      if (assignees.size > 0) {
-        const unassigned = assignees.has("") && i2.assigneeIds.length === 0;
-        if (!unassigned && !i2.assigneeIds.some((id2) => assignees.has(id2))) return false;
+    const list2 = parseExtras(String(settings.get("connections") ?? ""));
+    let id2 = target2;
+    if (id2) {
+      const row = list2.find((item) => item.id === id2);
+      if (!row) throw new FluxNotFoundError(`No Flux connection ${id2}.`);
+      row.url = url2;
+      row.token = token;
+    } else {
+      id2 = crypto.randomUUID();
+      list2.push({ id: id2, url: url2, token });
+    }
+    settings.set({ connections: JSON.stringify(list2) });
+    this.fromSettings();
+    this.use(id2);
+    return id2;
+  }
+  /** Forgets a Flux: its token and its copy. The next one takes the first one's place. */
+  disconnect(id2) {
+    const list2 = parseExtras(String(settings.get("connections") ?? ""));
+    if (id2 === "default") {
+      this.main.forget();
+      const next2 = list2.shift();
+      if (next2) this.extras.get(next2.id)?.forget();
+      settings.set({ url: next2?.url ?? null, token: next2?.token ?? null, connections: list2.length ? JSON.stringify(list2) : null });
+      if (next2 && this.activeId === next2.id) this.activeId = "default";
+    } else {
+      this.extras.get(id2)?.forget();
+      const rest = list2.filter((item) => item.id !== id2);
+      settings.set({ connections: rest.length ? JSON.stringify(rest) : null });
+    }
+    this.fromSettings();
+    if (this.activeId === id2 || !this.extras.has(this.activeId)) this.use("default");
+  }
+  /** Connects as the settings say. */
+  fromSettings() {
+    this.configure(String(settings.get("url") ?? ""), String(settings.get("token") ?? ""), String(settings.get("connections") ?? ""));
+  }
+  /** Starts, restarts, or stops connections to match the settings. */
+  configure(url2, token, extraJSON) {
+    this.main.configure(url2, token);
+    const want = parseExtras(extraJSON);
+    const ids = new Set(want.map((item) => item.id));
+    for (const [id2, flux2] of this.extras) {
+      if (!ids.has(id2)) {
+        flux2.stop();
+        this.extras.delete(id2);
       }
-      if (labels.some((id2) => !i2.labelIds.includes(id2))) return false;
-      if (needle && !i2.key.toLowerCase().includes(needle) && !i2.title.toLowerCase().includes(needle)) return false;
-      return true;
-    });
-    issues.sort((a3, b) => STATUS_DISPLAY_ORDER.indexOf(a3.status) - STATUS_DISPLAY_ORDER.indexOf(b.status) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt));
-    const total = issues.length;
-    issues = issues.slice(0, limit);
-    if (o.json) return json2(io, { issues, total, project: project?.key ?? null });
-    if (total === 0) return io.print(project ? `No matching issues in ${project.key}.${o.all ? "" : " Add --all to include closed ones."}` : "No matching issues.");
-    const names = lookup();
-    const lines = [project ? `${project.name} (${project.key})` : "All projects", "", ...issues.map((i2) => issueLine(i2, names))];
-    if (total > issues.length) lines.push("", `…and ${total - issues.length} more. Raise --limit or narrow the filters.`);
-    io.print(lines.join("\n"));
-  });
-  guarded("show", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, { json: { type: "boolean" } });
-    const issue2 = issueFromArg(positionals[0], ctx);
-    const detail = flux2.detail(issue2.id);
-    if (o.json) return json2(io, detail);
-    io.print(issueContext(detail, lookup()) + (issue2.threadIds.length ? `
+    }
+    for (const item of want) {
+      let flux2 = this.extras.get(item.id);
+      if (!flux2) {
+        flux2 = new Flux(item.id, `conn:${item.id}`);
+        flux2.onChange = () => this.onChange();
+        this.extras.set(item.id, flux2);
+      }
+      flux2.configure(item.url, item.token);
+    }
+    if (this.activeId !== "default" && !this.extras.has(this.activeId)) this.use("default");
+  }
+  stop() {
+    this.main.stop();
+    for (const flux2 of this.extras.values()) flux2.stop();
+  }
+};
+var hub = new Hub();
 
-Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
+// src/pictures.ts
+var got = /* @__PURE__ */ new Map();
+function pictureBytes(src) {
+  if (!src) return null;
+  const flux2 = hub.active;
+  const id2 = fluxAssetId(src, flux2.baseUrl);
+  const key = id2 ? `asset:${flux2.baseUrl}#${id2}` : src;
+  const have = got.get(key);
+  if (have instanceof Uint8Array) return have;
+  if (have) return null;
+  if (!id2 && !/^https?:\/\//i.test(src)) return null;
+  got.set(key, "loading");
+  const read = id2 ? flux2.requireClient().asset(id2).then((a3) => new Uint8Array(a3.bytes)) : fetch(src).then(async (res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return new Uint8Array(await res.arrayBuffer());
   });
-  guarded("create", async (args2, io, ctx) => {
-    const { values: o } = parse3(args2, {
-      title: { type: "string", short: "t" },
-      project: { type: "string" },
-      description: { type: "string", short: "d", aliases: ["body"] },
-      status: { type: "string" },
-      priority: { type: "string" },
-      assignee: { type: "list", aliases: ["assign", "assignees"] },
-      label: { type: "list" },
-      "create-labels": { type: "boolean", aliases: ["create-label"] },
-      parent: { type: "string" },
-      json: { type: "boolean" }
-    });
-    const title = str(o.title)?.trim();
-    if (!title) throw new CliError("--title is required", 'swarm flux create --title "…" [--project KEY]');
-    if (o["create-labels"] && list(o.label).length === 0) throw new CliError("--create-labels needs --label");
-    const parent = str(o.parent) ? flux2.requireIssue(str(o.parent)) : null;
-    const project = projectFromOption(str(o.project), ctx) ?? (parent ? flux2.projects().find((p) => p.id === parent.projectId) ?? null : null);
-    if (!project) throw new CliError("which project?", "Add --project <KEY>. `swarm flux projects` lists them; `swarm flux link KEY` makes one this Swarm project's default.");
-    const status = str(o.status) ? statusOrThrow(str(o.status)) : void 0;
-    const priority = str(o.priority) ? priorityOrThrow(str(o.priority)) : void 0;
-    const assigneeIds = memberIds(list(o.assignee)).filter(Boolean);
-    const labels = await addedLabelIds(list(o.label), !!o["create-labels"]);
-    const issue2 = await flux2.createIssue({ projectId: project.id, title, descriptionMarkdown: str(o.description), status, priority, assigneeIds, labelIds: labels.ids, parentId: parent?.id ?? null });
-    if (o.json) return json2(io, issue2);
-    io.print([...createdLine(labels.created), `Created ${issue2.key} · ${issue2.title}`, flux2.issueUrl(issue2)].join("\n"));
-  });
-  guarded("update", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, {
-      status: { type: "string", short: "s" },
-      priority: { type: "string", short: "p" },
-      title: { type: "string" },
-      description: { type: "string", short: "d" },
-      assign: { type: "list", aliases: ["assignee", "add-assignee"] },
-      unassign: { type: "list", aliases: ["remove-assignee"] },
-      "add-label": { type: "list", aliases: ["label"] },
-      "create-labels": { type: "boolean", aliases: ["create-label"] },
-      "remove-label": { type: "list" },
-      due: { type: "string" },
-      parent: { type: "string" },
-      json: { type: "boolean" }
-    });
-    const issue2 = issueFromArg(positionals[0], ctx);
-    const patch = {};
-    const desc = str(o.description);
-    if (str(o.status)) patch.status = statusOrThrow(str(o.status));
-    if (str(o.priority)) patch.priority = priorityOrThrow(str(o.priority));
-    if (str(o.title)) patch.title = str(o.title).trim();
-    if (list(o.assign).length || list(o.unassign).length) {
-      const clearAll = list(o.unassign).some((v2) => v2.toLowerCase() === "all");
-      const removed = new Set(memberIds(list(o.unassign).filter((v2) => v2.toLowerCase() !== "all")));
-      patch.assigneeIds = [...clearAll ? [] : issue2.assigneeIds.filter((id2) => !removed.has(id2)), ...memberIds(list(o.assign)).filter(Boolean)];
-    }
-    const due = str(o.due);
-    if (due) {
-      if (due.toLowerCase() === "none") patch.dueDate = null;
-      else if (/^\d{4}-\d{2}-\d{2}$/.test(due)) patch.dueDate = due;
-      else throw new CliError(`invalid due date "${due}"`, "Use YYYY-MM-DD or `none`.");
-    }
-    if (str(o.parent)) patch.parentId = str(o.parent).toLowerCase() === "none" ? null : flux2.requireIssue(str(o.parent)).id;
-    let created = [];
-    if (list(o["add-label"]).length || list(o["remove-label"]).length) {
-      const removed = new Set(labelIds(list(o["remove-label"])));
-      const added = await addedLabelIds(list(o["add-label"]), !!o["create-labels"]);
-      created = added.created;
-      patch.labelIds = [...issue2.labelIds.filter((id2) => !removed.has(id2)), ...added.ids];
-    }
-    if (Object.keys(patch).length === 0 && desc === void 0) {
-      throw new CliError("nothing to change", "Give --status, --priority, --title, --description, --assign, --unassign, --add-label, --remove-label, --due or --parent.");
-    }
-    if (desc !== void 0) await flux2.replaceDescription(issue2.id, desc);
-    const updated = Object.keys(patch).length ? await flux2.updateIssue(issue2.id, patch) : flux2.issue(issue2.id);
-    if (o.json) return json2(io, updated);
-    const names = lookup();
-    const changes = [
-      desc !== void 0 && "description",
-      patch.status && `status → ${STATUS_LABELS[updated.status]}`,
-      patch.priority && `priority → ${PRIORITY_LABELS[updated.priority]}`,
-      patch.title && `title → ${updated.title}`,
-      patch.assigneeIds && `assignees → ${updated.assigneeIds.length ? updated.assigneeIds.map((id2) => memberName(names, id2)).join(", ") : "none"}`,
-      patch.labelIds && `labels → ${updated.labelIds.map((id2) => flux2.labels().find((l) => l.id === id2)?.name).filter(Boolean).join(", ") || "none"}`,
-      patch.dueDate !== void 0 && `due → ${updated.dueDate ?? "none"}`,
-      patch.parentId !== void 0 && `parent → ${updated.parentId ? flux2.issue(updated.parentId)?.key : "none"}`
-    ].filter(Boolean);
-    io.print([...createdLine(created), `Updated ${updated.key}: ${changes.join("; ")}`].join("\n"));
-  });
-  guarded("comment", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, { body: { type: "string", short: "b", aliases: ["message", "text"] }, m: { type: "string" }, json: { type: "boolean" } });
-    const issue2 = issueFromArg(positionals[0], ctx);
-    const body = str(o.body) ?? str(o.m) ?? "";
-    if (!body.trim()) throw new CliError("comment body is empty", 'swarm flux comment ABC-12 --body "…"');
-    const comment = await flux2.addComment(issue2.id, body, ctx.agent);
-    if (o.json) return json2(io, comment);
-    io.print(`Commented on ${issue2.key} (${comment.markdown.length} characters). ${flux2.issueUrl(issue2)}`);
-  });
-  guarded("start", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, { "keep-status": { type: "boolean" }, json: { type: "boolean" } });
-    if (!ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or attach from the thread's Flux panel.");
-    if (!positionals[0]) throw new CliError("missing issue key", "Pass an issue key such as ABC-12.");
-    const issue2 = flux2.requireIssue(positionals[0]);
-    const updated = await flux2.attach(issue2.id, ctx.thread, !o["keep-status"]);
-    if (o.json) return json2(io, updated);
-    io.print(`Attached this thread to ${updated.key} (${STATUS_LABELS[updated.status]}). Run \`swarm flux show\` to read it.`);
-  });
-  guarded("detach", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, { thread: { type: "string" } });
-    const thread = str(o.thread) ?? ctx.thread;
-    if (!thread) throw new CliError("which thread?", "Run this from the thread, or pass --thread ID.");
-    const issue2 = positionals[0] ? flux2.requireIssue(positionals[0]) : issueFromArg(void 0, { ...ctx, thread });
-    flux2.detach(issue2.id, thread);
-    io.print(`Detached ${thread} from ${issue2.key}.`);
-  });
-  guarded("projects", async (args2, io) => {
-    const projects = flux2.projects();
-    if (args2.includes("--json")) return json2(io, { projects });
-    const issues = flux2.issues();
-    io.print(
-      projects.map((p) => {
-        const open2 = issues.filter((i2) => i2.projectId === p.id && !CLOSED_STATUSES.has(i2.status)).length;
-        return `${pad(p.key, 6)} ${pad(p.name, 28)} ${pad(`${open2} open`, 9)} ${p.swarmProjectId ? `→ ${p.swarmProjectId}` : ""}`.trimEnd();
-      }).join("\n") || "No projects."
-    );
-  });
-  guarded("link", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, { project: { type: "string" }, none: { type: "boolean" } });
-    const p = positionals[0] ? flux2.findProject(positionals[0]) : null;
-    if (!p) throw new CliError(positionals[0] ? `no Flux project "${positionals[0]}"` : "which Flux project?", "Run `swarm flux projects` to list project keys.");
-    if (o.none) {
-      flux2.link(p.id, null);
-      return io.print(`Unlinked ${p.key}.`);
-    }
-    const swarmProject = str(o.project) ?? ctx.project;
-    if (!swarmProject) throw new CliError("which Swarm project?", "Run this from a thread of the project, or pass --project ID.");
-    flux2.link(p.id, swarmProject);
-    io.print(`Linked ${p.key} to ${swarmProject}.`);
-  });
-  guarded("labels", async (args2, io) => {
-    const { values: o, positionals } = parse3(args2, { color: { type: "string" }, json: { type: "boolean" } });
-    if (positionals[0] === "create" || positionals[0] === "new" || positionals[0] === "add") {
-      const name = positionals.slice(1).join(" ").trim();
-      if (!name) throw new CliError("label name is empty");
-      if (name.includes(",")) throw new CliError(`label name "${name}" has a comma`, "--label splits on commas, so it couldn't name this label.");
-      const color = str(o.color);
-      if (color && !COLORS.includes(color)) throw new CliError(`unknown color "${color}"`, `Use one of: ${COLORS.join(", ")}.`);
-      const existing = flux2.findLabel(name);
-      const label = existing ?? await flux2.createLabel(name, color);
-      if (o.json) return json2(io, { label, created: !existing });
-      return io.print(existing ? `Label ${label.name} already exists (${label.color}).` : `Created label ${label.name} (${label.color}).`);
-    }
-    const labels = flux2.labels();
-    if (o.json) return json2(io, { labels });
-    io.print(labels.length ? labels.map((l) => l.name).join("\n") : "No labels.");
-  });
-  guarded("members", async (args2, io) => {
-    const members2 = flux2.memberList();
-    if (args2.includes("--json")) return json2(io, { members: members2 });
-    io.print(members2.map((m) => `${pad(`@${m.username}`, 20)} ${m.name}${m.id === flux2.me?.id ? " (you)" : ""}`).join("\n"));
-  });
-  guarded("open", async (args2, io, ctx) => {
-    const issue2 = issueFromArg(args2.find((a3) => !a3.startsWith("-")), ctx);
-    io.print(flux2.issueUrl(issue2));
-  });
+  read.then(
+    (bytes) => void got.set(key, bytes),
+    () => void got.set(key, "failed")
+  ).finally(() => ui.update());
+  return null;
+}
+function imageOf(src) {
+  if (!fluxAssetId(src, hub.active.baseUrl)) return src;
+  const bytes = pictureBytes(src);
+  if (bytes) return bytes;
+  return got.get(`asset:${hub.active.baseUrl}#${fluxAssetId(src, hub.active.baseUrl)}`) === "failed" ? src : null;
 }
 
-// src/edit.tsx
-import swarm2, { call as call2, ui as ui3 } from "swarm";
+// src/due.tsx
+import { ui as ui2 } from "swarm";
 
-// src/view.tsx
-import { ui } from "swarm";
+// src/dates.ts
+function startOfDay(date5) {
+  return new Date(date5.getFullYear(), date5.getMonth(), date5.getDate());
+}
+function addDays(date5, days) {
+  return new Date(date5.getFullYear(), date5.getMonth(), date5.getDate() + days);
+}
+function isoDay(date5) {
+  return `${date5.getFullYear()}-${String(date5.getMonth() + 1).padStart(2, "0")}-${String(date5.getDate()).padStart(2, "0")}`;
+}
+function parseIsoDay(value) {
+  const match2 = value ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
+  if (!match2) return null;
+  const [year, month2, day] = [Number(match2[1]), Number(match2[2]) - 1, Number(match2[3])];
+  const date5 = new Date(year, month2, day);
+  return date5.getFullYear() === year && date5.getMonth() === month2 && date5.getDate() === day ? date5 : null;
+}
+function endOfWorkWeek(now) {
+  const today = startOfDay(now);
+  const day = today.getDay();
+  return addDays(today, day <= 5 ? 5 - day : 6);
+}
+function dayDelta(value, now = /* @__PURE__ */ new Date()) {
+  const date5 = parseIsoDay(value);
+  if (!date5) return 0;
+  return Math.round((date5.getTime() - startOfDay(now).getTime()) / 864e5);
+}
+var SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function dueLabel(value, now = /* @__PURE__ */ new Date()) {
+  const date5 = parseIsoDay(value);
+  if (!date5) return value;
+  const diff = dayDelta(value, now);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  if (diff === -1) return "Yesterday";
+  if (diff > 1 && diff < 7) return SHORT_DAYS[date5.getDay()];
+  return `${SHORT_MONTHS[date5.getMonth()]} ${date5.getDate()}${date5.getFullYear() === now.getFullYear() ? "" : `, ${date5.getFullYear()}`}`;
+}
+function dueHint(date5, now = /* @__PURE__ */ new Date()) {
+  return `${SHORT_DAYS[date5.getDay()]}, ${date5.getDate()} ${SHORT_MONTHS[date5.getMonth()]}${date5.getFullYear() === now.getFullYear() ? "" : ` ${date5.getFullYear()}`}`;
+}
+function dueChoices(now = /* @__PURE__ */ new Date()) {
+  const today = startOfDay(now);
+  const seen = /* @__PURE__ */ new Set();
+  return [
+    ["Today", today],
+    ["Tomorrow", addDays(today, 1)],
+    ["End of week", endOfWorkWeek(today)],
+    ["In one week", addDays(today, 7)],
+    ["In two weeks", addDays(today, 14)]
+  ].map(([label, date5]) => ({ label, value: isoDay(date5), hint: dueHint(date5, today) })).filter((choice) => !seen.has(choice.value) && seen.add(choice.value));
+}
+var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+var WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+function upcomingMonthDay(now, month2, day, year) {
+  const today = startOfDay(now);
+  let date5 = new Date(year ?? today.getFullYear(), month2, day);
+  if (date5.getMonth() !== month2 || date5.getDate() !== day) return null;
+  if (year === void 0 && date5.getTime() < today.getTime()) date5 = new Date(today.getFullYear() + 1, month2, day);
+  return date5;
+}
+function parseDue(query2, now = /* @__PURE__ */ new Date()) {
+  const raw = query2.trim().toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ");
+  if (!raw) return null;
+  const today = startOfDay(now);
+  if (raw === "today") return today;
+  if (raw === "tomorrow") return addDays(today, 1);
+  if (raw === "yesterday") return addDays(today, -1);
+  if (["next week", "in one week", "in 1 week", "1 week"].includes(raw)) return addDays(today, 7);
+  if (["in two weeks", "in 2 weeks", "2 weeks"].includes(raw)) return addDays(today, 14);
+  if (raw === "end of week" || raw === "end of this week") return endOfWorkWeek(now);
+  const duration3 = /^(?:in\s+)?(\d+)\s*(h|hrs?|hours?|d|days?|w|wks?|weeks?)$/.exec(raw);
+  if (duration3) {
+    const count = Number(duration3[1]);
+    const unit = duration3[2];
+    if (unit.startsWith("h")) return startOfDay(new Date(now.getTime() + count * 36e5));
+    return addDays(today, unit.startsWith("d") ? count : count * 7);
+  }
+  const weekday = /^(next\s+)?(sun(day)?|mon(day)?|tue(s|sday)?|wed(nesday)?|thu(r|rs|rsday)?|fri(day)?|sat(urday)?)$/.exec(raw);
+  if (weekday) {
+    const target2 = WEEKDAYS.indexOf(weekday[2].slice(0, 3));
+    let delta = target2 - today.getDay();
+    if (weekday[1] ? delta <= 0 : delta < 0) delta += 7;
+    return addDays(today, delta);
+  }
+  const iso = parseIsoDay(raw);
+  if (iso) return iso;
+  const numeric2 = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(raw);
+  if (numeric2) {
+    const year = numeric2[3] ? Number(numeric2[3].length === 2 ? `20${numeric2[3]}` : numeric2[3]) : void 0;
+    return upcomingMonthDay(now, Number(numeric2[1]) - 1, Number(numeric2[2]), year);
+  }
+  const named = /^(?:(\d{1,2})\s+)?(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*(\d{1,2})?(?:\s+(\d{4}))?$/.exec(raw);
+  if (named && (named[1] || named[3])) {
+    return upcomingMonthDay(now, MONTHS[named[2].slice(0, 3)], Number(named[1] || named[3]), named[4] ? Number(named[4]) : void 0);
+  }
+  return null;
+}
+function monthGrid(month2) {
+  const first2 = new Date(month2.getFullYear(), month2.getMonth(), 1);
+  const start = addDays(first2, -first2.getDay());
+  const weeks = [];
+  for (let w2 = 0; w2 < 6; w2++) {
+    const week = Array.from({ length: 7 }, (_2, d) => addDays(start, w2 * 7 + d));
+    if (w2 > 0 && week[0].getMonth() !== month2.getMonth()) break;
+    weeks.push(week);
+  }
+  return weeks;
+}
+var MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+// src/due.tsx
+import { jsx, jsxs } from "swarm/jsx-runtime";
+function dueItems(current, set2) {
+  return [
+    ...dueChoices().map((choice) => /* @__PURE__ */ jsx(ui2.item, { icon: "calendar", detail: choice.hint, checked: current === choice.value, onClick: () => set2(choice.value), children: choice.label }, "due-" + choice.label)),
+    /* @__PURE__ */ jsx(ui2.item, { icon: "calendar", onClick: () => openDuePicker(current ?? null, set2), children: "Custom…" }, "due-custom"),
+    current ? /* @__PURE__ */ jsx(ui2.separator, {}, "due-sep") : null,
+    current ? /* @__PURE__ */ jsx(ui2.item, { icon: "x", onClick: () => set2(null), children: "No due date" }, "due-clear") : null
+  ];
+}
+var target = null;
+var month = startOfDay(/* @__PURE__ */ new Date());
+var typed = "";
+function openDuePicker(current, set2) {
+  target = { current, set: set2 };
+  month = parseIsoDay(current) ?? startOfDay(/* @__PURE__ */ new Date());
+  typed = "";
+  ui2.showOverlay("flux-due");
+}
+function choose(value) {
+  const t = target;
+  target = null;
+  ui2.hideOverlay("flux-due");
+  void t?.set(value);
+}
+function DuePicker() {
+  if (!target) return null;
+  const current = target.current;
+  const parsed = parseDue(typed);
+  const today = isoDay(/* @__PURE__ */ new Date());
+  const cell = { width: 36, height: 32, alignItems: "center", justifyContent: "center", borderRadius: "control" };
+  return /* @__PURE__ */ jsxs(ui2.box, { style: { width: 300, gap: 12, padding: 16 }, children: [
+    /* @__PURE__ */ jsx(ui2.text, { style: { fontWeight: 600 }, children: "Due date" }),
+    /* @__PURE__ */ jsx(ui2.field, { autoFocus: true, value: typed, placeholder: "Try: 24h, 7 days, Feb 9", onChange: (value) => {
+      typed = value;
+    }, onSubmit: () => {
+      if (parsed) choose(isoDay(parsed));
+    } }, "due-typed"),
+    typed.trim() ? parsed ? /* @__PURE__ */ jsxs(ui2.pressable, { label: `Due ${dueLabel(isoDay(parsed))}`, onClick: () => choose(isoDay(parsed)), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "hover" }, children: [
+      /* @__PURE__ */ jsx(ui2.icon, { icon: "calendar", style: { width: 13, height: 13, color: "text2" } }),
+      /* @__PURE__ */ jsx(ui2.text, { style: { flex: 1 }, children: dueLabel(isoDay(parsed)) }),
+      /* @__PURE__ */ jsx(ui2.text, { style: { fontSize: "small", color: "text3" }, children: dueHint(parsed) })
+    ] }) : /* @__PURE__ */ jsxs(ui2.text, { style: { fontSize: "small", color: "text3" }, children: [
+      "No date matches “",
+      typed.trim(),
+      "”."
+    ] }) : null,
+    /* @__PURE__ */ jsxs(ui2.box, { style: { flexDirection: "row", alignItems: "center" }, children: [
+      /* @__PURE__ */ jsx(ui2.text, { style: { flex: 1, fontWeight: 500 }, children: `${MONTH_NAMES[month.getMonth()]} ${month.getFullYear()}` }),
+      /* @__PURE__ */ jsx(ui2.iconButton, { icon: "chevron-right", label: "Previous month", style: { transform: "rotate(180deg)" }, onClick: () => {
+        month = new Date(month.getFullYear(), month.getMonth() - 1, 1);
+      } }),
+      /* @__PURE__ */ jsx(ui2.iconButton, { icon: "chevron-right", label: "Next month", onClick: () => {
+        month = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+      } })
+    ] }),
+    /* @__PURE__ */ jsxs(ui2.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx(ui2.box, { style: { flexDirection: "row" }, children: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => /* @__PURE__ */ jsx(ui2.box, { style: cell, children: /* @__PURE__ */ jsx(ui2.text, { style: { fontSize: "small", color: "text3" }, children: d }) }, d)) }),
+      monthGrid(month).map((week, w2) => /* @__PURE__ */ jsx(ui2.box, { style: { flexDirection: "row" }, children: week.map((day) => {
+        const value = isoDay(day);
+        const on3 = value === current;
+        const inMonth = day.getMonth() === month.getMonth();
+        return /* @__PURE__ */ jsx(ui2.pressable, { label: dueHint(day), checked: on3, onClick: () => choose(value), style: { ...cell, backgroundColor: on3 ? "accent" : "transparent", border: value === today && !on3 ? "1px solid border" : "none", hover: { backgroundColor: on3 ? "accent" : "hover" } }, children: /* @__PURE__ */ jsx(ui2.text, { style: { fontSize: 13, color: on3 ? "white" : inMonth ? "text" : "text3", fontWeight: value === today ? 600 : 400 }, children: String(day.getDate()) }) }, value);
+      }) }, "w" + w2))
+    ] }),
+    /* @__PURE__ */ jsxs(ui2.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
+      current ? /* @__PURE__ */ jsx(ui2.button, { kind: "ghost", size: "sm", onClick: () => choose(null), children: "No due date" }) : null,
+      /* @__PURE__ */ jsx(ui2.button, { kind: "secondary", size: "sm", onClick: () => {
+        target = null;
+        ui2.hideOverlay("flux-due");
+      }, children: "Cancel" })
+    ] })
+  ] });
+}
+
+// src/confirm.tsx
+import { ui as ui3 } from "swarm";
+import { jsx as jsx2, jsxs as jsxs2 } from "swarm/jsx-runtime";
+var asking = null;
+function confirm(title, text2, action, run4) {
+  asking = { title, text: text2, action, run: run4 };
+  ui3.showOverlay("flux-confirm");
+}
+function close2() {
+  asking = null;
+  ui3.hideOverlay("flux-confirm");
+}
+function Confirm() {
+  const a3 = asking;
+  if (!a3) return null;
+  const go = () => {
+    close2();
+    void Promise.resolve(a3.run()).catch((e) => ui3.toast(e instanceof Error ? e.message : String(e)));
+  };
+  return /* @__PURE__ */ jsxs2(ui3.box, { style: { width: 400, gap: 8, padding: 20 }, children: [
+    /* @__PURE__ */ jsx2(ui3.text, { style: { fontSize: 16, fontWeight: 600 }, children: a3.title }),
+    /* @__PURE__ */ jsx2(ui3.text, { style: { color: "text2" }, children: a3.text }),
+    /* @__PURE__ */ jsxs2(ui3.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end", marginTop: 12 }, children: [
+      /* @__PURE__ */ jsx2(ui3.button, { kind: "secondary", onClick: close2, children: "Cancel" }),
+      /* @__PURE__ */ jsx2(ui3.button, { kind: "danger", onClick: go, children: a3.action })
+    ] })
+  ] });
+}
+
+// src/palette.tsx
+import { ui as ui4 } from "swarm";
 
 // src/marks.ts
 var NUCLEO = /* @__PURE__ */ new Set([
@@ -78674,34 +78902,832 @@ function emojiCode(value) {
   }
   return parts.join("-");
 }
-function svgURL(svg) {
-  return "data:image/svg+xml," + encodeURIComponent(svg);
+var bytesOf = /* @__PURE__ */ new Map();
+function svgBytes(key, svg2) {
+  let b = bytesOf.get(key);
+  if (!b) {
+    const text2 = svg2();
+    if (!text2) return null;
+    bytesOf.set(key, b = new TextEncoder().encode(text2));
+  }
+  return b;
 }
-function emojiImage(emoji4) {
+function emojiBytes(emoji4) {
   if (!emoji4) return null;
-  const svg = EMOJI2[emojiCode(emoji4)];
-  return svg ? svgURL(svg) : null;
+  const code2 = emojiCode(emoji4);
+  return svgBytes("emoji:" + code2, () => EMOJI2[code2] ?? null);
 }
-function glyphImage(id2, color) {
+function glyphBytes(id2, color) {
   if (!id2 || !EXTRA[id2]) return null;
-  const inner = EXTRA[id2].replaceAll("currentColor", color);
-  return svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">${inner}</svg>`);
-}
-function tileImage(color) {
-  return svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="${MARK_HEX[color]}"/></svg>`);
+  return svgBytes(`glyph:${id2}:${color}`, () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">${EXTRA[id2].replaceAll("currentColor", color)}</svg>`);
 }
 function navMark(project) {
   const icon = asIcon(project.icon);
   if (icon) return { icon };
-  const emoji4 = emojiImage(project.emoji);
+  const emoji4 = emojiBytes(project.emoji);
   if (emoji4) return { mark: emoji4 };
-  const glyph = glyphImage(project.icon, MARK_HEX[project.color]);
+  const glyph = glyphBytes(project.icon, MARK_HEX[project.color]);
   if (glyph) return { mark: glyph };
-  return { mark: tileImage(project.color) };
+  return { initial: (project.key || "?").slice(0, 1).toUpperCase(), tint: MARK_HEX[project.color] };
 }
 
+// src/menumarks.ts
+var made2 = /* @__PURE__ */ new Map();
+function svg(key, inner) {
+  let bytes = made2.get(key);
+  if (!bytes) made2.set(key, bytes = new TextEncoder().encode(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14">${inner()}</svg>`));
+  return bytes;
+}
+var GRAY = MARK_HEX.gray;
+var STATUS_HEX = {
+  backlog: GRAY,
+  todo: GRAY,
+  progress: MARK_HEX.yellow,
+  review: MARK_HEX.purple,
+  complete: MARK_HEX.green,
+  canceled: GRAY
+};
+function at2(r, deg) {
+  const a3 = (deg - 90) * Math.PI / 180;
+  return `${(7 + r * Math.cos(a3)).toFixed(2)} ${(7 + r * Math.sin(a3)).toFixed(2)}`;
+}
+function statusMark(status) {
+  const c = STATUS_HEX[status];
+  return {
+    mark: svg("status:" + status, () => {
+      const ring = `<circle cx="7" cy="7" r="6" fill="none" stroke="${c}" stroke-width="1.5"/>`;
+      switch (status) {
+        case "backlog":
+          return `<circle cx="7" cy="7" r="6" fill="none" stroke="${c}" stroke-width="1.5" stroke-dasharray="1.6 1.54"/>`;
+        case "todo":
+          return ring;
+        case "progress":
+          return ring + `<path d="M7 7 L${at2(4, 0)} A4 4 0 1 1 ${at2(4, 270)} Z" fill="${c}"/>`;
+        case "review":
+          return ring + `<path d="M7 7 L${at2(4, 0)} A4 4 0 0 1 ${at2(4, 180)} Z" fill="${c}"/>`;
+        case "complete":
+          return `<circle cx="7" cy="7" r="6" fill="${c}"/><path d="M4.2 7.15 L6.15 9.1 L9.8 5.25" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+        case "canceled":
+          return `<circle cx="7" cy="7" r="6" fill="${c}"/><path d="M5 5 L9 9 M9 5 L5 9" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>`;
+      }
+    })
+  };
+}
+function priorityMark(priority) {
+  return {
+    mark: svg("priority:" + priority, () => {
+      if (priority === "urgent") return `<rect x="0.5" y="0.5" width="13" height="13" rx="3" fill="${MARK_HEX.red}"/><rect x="6.2" y="3" width="1.6" height="5.5" rx="0.8" fill="#fff"/><rect x="6.2" y="9.6" width="1.6" height="1.6" rx="0.8" fill="#fff"/>`;
+      if (priority === "none") return `<rect x="3" y="6.25" width="8" height="1.5" rx="0.75" fill="${GRAY}"/>`;
+      const level = { high: 3, medium: 2, low: 1 }[priority];
+      let out = "";
+      for (let i2 = 0; i2 < 3; i2++) out += `<rect x="${1.5 + i2 * 4}" y="${(10 - i2 * 3.2).toFixed(1)}" width="3" height="${(3 + i2 * 3.2).toFixed(1)}" rx="1" fill="${GRAY}" fill-opacity="${i2 < level ? 1 : 0.35}"/>`;
+      return out;
+    })
+  };
+}
+function memberMark(member2) {
+  return { initial: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() || "?", tint: MARK_HEX[member2.avatarColor] };
+}
+function labelMark(color) {
+  return { mark: svg("label:" + color, () => `<circle cx="7" cy="7" r="3.5" fill="${MARK_HEX[color] ?? GRAY}"/>`) };
+}
+
+// src/palette.tsx
+import { jsx as jsx3, jsxs as jsxs3 } from "swarm/jsx-runtime";
+var TITLES = {
+  status: "Change status…",
+  priority: "Change priority…",
+  assignee: "Assign to…",
+  label: "Change or add labels…",
+  project: "Move to project…",
+  due: "Set due date…",
+  parent: "Set parent issue…"
+};
+var open3 = null;
+var search = "";
+var sel = 0;
+function openPalette(kind, ids, apply3) {
+  if (ids.length === 0) return;
+  open3 = { kind, ids, apply: apply3 };
+  search = "";
+  sel = 0;
+  ui4.showOverlay("flux-palette");
+}
+function close3() {
+  open3 = null;
+  ui4.hideOverlay("flux-palette");
+}
+function rows(issues) {
+  const o = open3;
+  const flux2 = hub.active;
+  const each = (patch) => {
+    for (const issue2 of issues) void o.apply(issue2.id, patch(issue2));
+  };
+  const all2 = (has2) => issues.every(has2);
+  const toggle = (list2, id2, field2) => {
+    const on3 = all2((issue2) => list2(issue2).includes(id2));
+    each((issue2) => ({ [field2]: on3 ? list2(issue2).filter((x2) => x2 !== id2) : [.../* @__PURE__ */ new Set([...list2(issue2), id2])] }));
+  };
+  const me2 = flux2.me?.id;
+  switch (o.kind) {
+    case "status":
+      return STATUSES.map((s) => ({ key: s, label: STATUS_LABELS[s], mark: statusMark(s), on: all2((i2) => i2.status === s), run: () => each(() => ({ status: s })) }));
+    case "priority":
+      return [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => ({ key: p, label: PRIORITY_LABELS[p], mark: priorityMark(p), on: all2((i2) => i2.priority === p), run: () => each(() => ({ priority: p })) }));
+    case "assignee": {
+      const members2 = [...flux2.memberList()].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2));
+      return members2.map((m) => ({ key: m.id, label: m.id === me2 ? `${m.name} (you)` : m.name, detail: "@" + m.username, mark: memberMark(m), on: all2((i2) => i2.assigneeIds.includes(m.id)), run: () => toggle((i2) => i2.assigneeIds, m.id, "assigneeIds") }));
+    }
+    case "label": {
+      const out = flux2.labels().map((l) => ({ key: l.id, label: l.name, mark: labelMark(l.color), on: all2((i2) => i2.labelIds.includes(l.id)), run: () => toggle((i2) => i2.labelIds, l.id, "labelIds") }));
+      const name = search.trim();
+      if (name && !flux2.labels().some((l) => l.name.toLowerCase() === name.toLowerCase())) {
+        out.push({
+          key: "create",
+          label: `Create “${name}”`,
+          mark: { icon: "plus" },
+          on: false,
+          run: () => void flux2.createLabel(name).then((label) => each((i2) => ({ labelIds: [.../* @__PURE__ */ new Set([...i2.labelIds, label.id])] })), (e) => ui4.toast(`Couldn't create the label: ${e instanceof Error ? e.message : String(e)}`))
+        });
+      }
+      return out;
+    }
+    case "project":
+      return flux2.projects().map((p) => ({ key: p.id, label: p.name, detail: p.key, mark: navMark(p), on: all2((i2) => i2.projectId === p.id), run: () => each(() => ({ projectId: p.id })) }));
+    case "due": {
+      const first2 = issues[0];
+      return [
+        ...dueChoices().map((c) => ({ key: c.label, label: c.label, detail: c.hint, mark: { icon: "calendar" }, on: all2((i2) => i2.dueDate === c.value), run: () => each(() => ({ dueDate: c.value })) })),
+        { key: "custom", label: "Custom…", mark: { icon: "calendar" }, on: false, run: () => openDuePicker(first2.dueDate, (dueDate) => each(() => ({ dueDate }))) },
+        ...issues.some((i2) => i2.dueDate) ? [{ key: "none", label: "No due date", mark: { icon: "x" }, on: false, run: () => each(() => ({ dueDate: null })) }] : []
+      ];
+    }
+    case "parent": {
+      const ids = new Set(issues.map((i2) => i2.id));
+      const project = issues[0].projectId;
+      const out = flux2.issues().filter((i2) => i2.projectId === project && !ids.has(i2.id) && !CLOSED_STATUSES.has(i2.status) && !issues.some((x2) => i2.parentId === x2.id)).map((i2) => ({ key: i2.id, label: i2.title, detail: i2.key, mark: statusMark(i2.status), on: all2((x2) => x2.parentId === i2.id), run: () => each(() => ({ parentId: i2.id })) }));
+      if (issues.some((i2) => i2.parentId)) out.unshift({ key: "none", label: "Remove parent", mark: { icon: "x" }, on: false, run: () => each(() => ({ parentId: null })) });
+      return out;
+    }
+  }
+}
+function Palette() {
+  const o = open3;
+  if (!o) return null;
+  const flux2 = hub.active;
+  const issues = o.ids.map((id2) => flux2.issue(id2)).filter((i2) => !!i2);
+  if (issues.length === 0) return null;
+  const filtered = () => {
+    const needle2 = search.trim().toLowerCase();
+    return rows(issues).filter((r) => r.key === "create" || !needle2 || r.label.toLowerCase().includes(needle2) || (r.detail ?? "").toLowerCase().includes(needle2)).slice(0, 50);
+  };
+  const needle = search.trim().toLowerCase();
+  const found2 = filtered();
+  sel = Math.min(Math.max(sel, 0), Math.max(found2.length - 1, 0));
+  const choose2 = (n) => {
+    if (open3 !== o) return;
+    const now = filtered();
+    const row = now[Math.min(n, now.length - 1)];
+    if (!row) return;
+    close3();
+    row.run();
+  };
+  const keys3 = ["ArrowUp", "ArrowDown", "Enter", "Escape", ...needle ? [] : ["1", "2", "3", "4", "5", "6", "7", "8", "9"]];
+  const subject = issues.length === 1 ? `${issues[0].key} ${issues[0].title}` : `${issues.length} issues`;
+  return /* @__PURE__ */ jsxs3(
+    ui4.box,
+    {
+      keys: keys3,
+      onKeyDown: (k) => {
+        if (k.key === "ArrowUp") sel = (sel - 1 + found2.length) % Math.max(found2.length, 1);
+        else if (k.key === "ArrowDown") sel = (sel + 1) % Math.max(found2.length, 1);
+        else if (k.key === "Enter") choose2(sel);
+        else if (k.key === "Escape") close3();
+        else if (/^[1-9]$/.test(k.key)) choose2(Number(k.key) - 1);
+      },
+      style: { width: 480, maxHeight: 460, padding: 8, gap: 4 },
+      children: [
+        /* @__PURE__ */ jsx3(ui4.box, { style: { gap: 2, padding: "s2 s3" }, children: /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: "small", color: "text3" }, maxLines: 1, children: subject }) }),
+        /* @__PURE__ */ jsx3(ui4.field, { autoFocus: true, value: search, placeholder: TITLES[o.kind], onChange: (value) => {
+          search = value;
+          sel = 0;
+        }, onSubmit: (value) => {
+          if (value !== search) {
+            search = value;
+            sel = 0;
+          }
+          choose2(sel);
+        }, style: { fontSize: 15, backgroundColor: "transparent", boxShadow: "none", padding: "s2 s3" } }, "palette-" + o.kind),
+        /* @__PURE__ */ jsx3(ui4.box, { style: { height: 1, backgroundColor: "divider", marginLeft: -8, marginRight: -8 } }),
+        /* @__PURE__ */ jsxs3(ui4.scroll, { style: { maxHeight: 380 }, children: [
+          found2.length === 0 ? /* @__PURE__ */ jsx3(ui4.text, { style: { padding: "s4", color: "text3" }, children: "Nothing matches." }) : null,
+          found2.map((r, n) => /* @__PURE__ */ jsxs3(ui4.pressable, { label: r.label, role: "option", checked: n === sel, onClick: () => choose2(n), style: { flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 10, paddingRight: 10, borderRadius: "control", backgroundColor: n === sel ? "hover" : "transparent", hover: { backgroundColor: "hover" } }, children: [
+            mark(r.mark),
+            /* @__PURE__ */ jsx3(ui4.text, { style: { flex: 1, minWidth: 0, fontSize: 14 }, maxLines: 1, children: r.label }),
+            r.detail ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: "small", color: "text3" }, children: r.detail }) : null,
+            r.on ? /* @__PURE__ */ jsx3(ui4.icon, { icon: "check", style: { width: 14, height: 14, color: "accent" } }) : null,
+            !needle && n < 9 ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", width: 12, textAlign: "right" }, children: String(n + 1) }) : null
+          ] }, r.key))
+        ] })
+      ]
+    }
+  );
+}
+function mark(m) {
+  const box = { width: 16, height: 16, flexShrink: 0 };
+  if (typeof m.mark === "string" || m.mark instanceof Uint8Array) return /* @__PURE__ */ jsx3(ui4.image, { src: m.mark, alt: "", style: box });
+  if (typeof m.initial === "string") {
+    return /* @__PURE__ */ jsx3(ui4.box, { style: { ...box, borderRadius: 4, backgroundColor: m.tint, alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ jsx3(ui4.text, { style: { color: "white", fontSize: 10, fontWeight: 700 }, children: m.initial }) });
+  }
+  if (typeof m.icon === "string") return /* @__PURE__ */ jsx3(ui4.icon, { icon: m.icon, style: { ...box, color: "text2" } });
+  return /* @__PURE__ */ jsx3(ui4.box, { style: box });
+}
+
+// src/cli.ts
+import { call, command as command2 } from "swarm";
+
+// src/markdown.ts
+var MARKDOWN_IMAGE = /!\[((?:\\.|[^\\\]])*)\]\(([^()\s]+)((?:\s+"[^"]*")?)\)/g;
+function mapOutsideCode(markdown, change) {
+  return markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`)/g).map((part, index) => index % 2 === 1 ? part : change(part)).join("");
+}
+
+// src/prompt.ts
+var RECENT_COMMENTS = 5;
+var MAX_DESCRIPTION_CHARS = 2e4;
+var MAX_COMMENT_CHARS = 4e3;
+var IMAGE_TOOL = "flux_issue_images";
+var MAX_START_IMAGES = 10;
+function memberName(lookup, id2) {
+  if (!id2) return "Unknown";
+  const member2 = lookup.members.find((candidate) => candidate.id === id2);
+  return member2 ? `${member2.name} (@${member2.username})` : "Former member";
+}
+function clip(text2, max3) {
+  return text2.length > max3 ? `${text2.slice(0, max3)}
+
+…(truncated; ${text2.length - max3} more characters)` : text2;
+}
+function issueFacts(detail2, lookup) {
+  const { issue: issue2 } = detail2;
+  const project = lookup.projects.find((item) => item.id === issue2.projectId);
+  const assignees = issue2.assigneeIds.map((id2) => memberName(lookup, id2));
+  const labels = issue2.labelIds.map((id2) => lookup.labels.find((label) => label.id === id2)?.name).filter((name) => Boolean(name));
+  return [
+    `- Status: ${STATUS_LABELS[issue2.status]}`,
+    `- Priority: ${PRIORITY_LABELS[issue2.priority]}`,
+    `- Project: ${project ? `${project.name} (${project.key})` : "Unknown"}`,
+    `- Assignees: ${assignees.length ? assignees.join(", ") : "Unassigned"}`,
+    ...labels.length ? [`- Labels: ${labels.join(", ")}`] : [],
+    ...issue2.dueDate ? [`- Due: ${issue2.dueDate}`] : [],
+    ...detail2.parent ? [`- Parent: ${detail2.parent.key} · ${detail2.parent.title}`] : [],
+    `- Link: ${detail2.url}`
+  ];
+}
+function issueContext(detail2, lookup) {
+  const { issue: issue2 } = detail2;
+  const images = issueImageIds(detail2, lookup.baseUrl);
+  const numbered = (markdown) => numberImages(markdown, images, lookup.baseUrl);
+  const sections = [
+    `# ${issue2.key} · ${issue2.title}`,
+    issueFacts(detail2, lookup).join("\n"),
+    `## Description
+
+${detail2.descriptionMarkdown ? clip(numbered(detail2.descriptionMarkdown), MAX_DESCRIPTION_CHARS) : "_No description._"}`
+  ];
+  if (detail2.subIssues.length > 0) {
+    sections.push(
+      `## Sub-issues
+
+${detail2.subIssues.map(
+        (sub) => `- [${sub.status === "complete" ? "x" : " "}] ${sub.key} · ${sub.title} (${STATUS_LABELS[sub.status]})`
+      ).join("\n")}`
+    );
+  }
+  if (detail2.comments.length > 0) {
+    const recent = detail2.comments.slice(-RECENT_COMMENTS);
+    const skipped = detail2.comments.length - recent.length;
+    sections.push(
+      `## ${skipped > 0 ? `Latest ${recent.length} of ${detail2.comments.length} comments` : "Comments"}
+
+${recent.map(
+        (comment) => `**${memberName(lookup, comment.authorId)}** · ${comment.createdAt.slice(0, 16).replace("T", " ")}
+
+${clip(numbered(comment.markdown), MAX_COMMENT_CHARS)}`
+      ).join("\n\n---\n\n")}`
+    );
+  }
+  if (images.length > 0) {
+    sections.push(
+      `## Images
+
+${images.length === 1 ? "This issue has 1 image, written [Image 1]" : `This issue has ${images.length} images, written [Image 1] to [Image ${images.length}]`}. Flux shows them only to its members, so look at them with the \`${IMAGE_TOOL}\` tool (issue "${issue2.key}").`
+    );
+  }
+  return sections.join("\n\n");
+}
+function imageIds(markdown, baseUrl) {
+  const ids = [];
+  if (!markdown.includes("![")) return ids;
+  mapOutsideCode(markdown, (part) => {
+    for (const match2 of part.matchAll(MARKDOWN_IMAGE)) {
+      const id2 = fluxAssetId(match2[2], baseUrl);
+      if (id2 && !ids.includes(id2)) ids.push(id2);
+    }
+    return part;
+  });
+  return ids;
+}
+function numberImages(markdown, ids, baseUrl) {
+  if (ids.length === 0 || !markdown.includes("![")) return markdown;
+  return mapOutsideCode(
+    markdown,
+    (part) => part.replace(MARKDOWN_IMAGE, (whole, _alt, url2) => {
+      const index = ids.indexOf(fluxAssetId(url2, baseUrl) ?? "");
+      return index >= 0 ? `[Image ${index + 1}]` : whole;
+    })
+  );
+}
+function issueImageIds(detail2, baseUrl) {
+  const ids = imageIds(detail2.descriptionMarkdown, baseUrl);
+  for (const comment of detail2.comments) {
+    for (const id2 of imageIds(comment.markdown, baseUrl)) {
+      if (!ids.includes(id2)) ids.push(id2);
+    }
+  }
+  return ids;
+}
+function attachedImages(markdown, baseUrl, max3 = MAX_START_IMAGES) {
+  const ids = imageIds(markdown, baseUrl).slice(0, max3);
+  return { markdown: numberImages(markdown, ids, baseUrl), ids };
+}
+function startPrompt(detail2, baseUrl) {
+  const { issue: issue2 } = detail2;
+  const lines = [`Work on Flux issue ${issue2.key}: ${issue2.title}`];
+  let imageIds3 = [];
+  if (detail2.descriptionMarkdown) {
+    const description = attachedImages(
+      clip(detail2.descriptionMarkdown, 6e3),
+      baseUrl
+    );
+    imageIds3 = description.ids;
+    lines.push("", description.markdown);
+  }
+  const more = [
+    detail2.subIssues.length > 0 && `${detail2.subIssues.length} sub-issue${detail2.subIssues.length === 1 ? "" : "s"}`,
+    detail2.comments.length > 0 && `${detail2.comments.length} comment${detail2.comments.length === 1 ? "" : "s"}`
+  ].filter(Boolean);
+  if (more.length > 0) {
+    lines.push(
+      "",
+      `The issue also has ${more.join(" and ")}; read them with \`swarm flux show ${issue2.key}\`.`
+    );
+  }
+  return { prompt: lines.join("\n"), imageIds: imageIds3 };
+}
+function threadInstructions(issueKey) {
+  return [
+    `This thread is attached to Flux issue ${issueKey}. Keep that issue current as you work:`,
+    `- Read it first: \`swarm flux show ${issueKey}\`.`,
+    `- Post a short comment at real milestones (plan settled, change ready, blocked): \`swarm flux comment ${issueKey} --body "..."\`. Mention people with @username, and projects by key (@ABC).`,
+    `- When the work is ready for someone to look at, move it to review: \`swarm flux update ${issueKey} --status review\`. Use \`--status complete\` only when nothing is left to check.`,
+    "- Don't paste the whole diff into comments; summarize what changed and how you verified it."
+  ].join("\n");
+}
+
+// src/cli.ts
+var CliError = class extends Error {
+  constructor(message, hint = "") {
+    super(message);
+    this.hint = hint;
+  }
+  hint;
+};
+var STATUS_GLYPH = { backlog: "◌", todo: "○", progress: "◐", review: "◑", complete: "●", canceled: "⊘" };
+var PRIORITY_GLYPH = { urgent: "!!", high: "▲", medium: "■", low: "▼", none: "·" };
+var STATUS_VALUES = "backlog, todo, progress, review, complete, canceled (aliases: in_progress, in_review, done, …)";
+var pad = (v2, w2) => {
+  const n = [...v2].length;
+  return n >= w2 ? v2 : v2 + " ".repeat(w2 - n);
+};
+function parse3(argv, spec) {
+  const values = {};
+  const positionals = [];
+  const byName = /* @__PURE__ */ new Map();
+  for (const [name, s] of Object.entries(spec)) {
+    byName.set(`--${name}`, name);
+    if (s.short) byName.set(`-${s.short}`, name);
+    for (const a3 of s.aliases ?? []) byName.set(`--${a3}`, name);
+    if (s.type === "list") values[name] = [];
+    if (s.type === "boolean") values[name] = false;
+  }
+  for (let i2 = 0; i2 < argv.length; i2++) {
+    const arg = argv[i2];
+    if (arg === "--") {
+      positionals.push(...argv.slice(i2 + 1));
+      break;
+    }
+    if (!arg.startsWith("-") || arg === "-") {
+      positionals.push(arg);
+      continue;
+    }
+    let [flag, inline2] = arg.includes("=") ? [arg.slice(0, arg.indexOf("=")), arg.slice(arg.indexOf("=") + 1)] : [arg, void 0];
+    const name = byName.get(flag);
+    if (!name) throw new CliError(`unknown option ${flag}`, "Run swarm flux help for the commands and their options.");
+    const s = spec[name];
+    if (s.type === "boolean") {
+      values[name] = inline2 === void 0 ? true : inline2 !== "false";
+      continue;
+    }
+    const value = inline2 ?? argv[++i2];
+    if (value === void 0) throw new CliError(`${flag} takes a value`);
+    if (s.type === "list") values[name].push(...value.split(",").map((v2) => v2.trim()).filter(Boolean));
+    else values[name] = value;
+  }
+  return { values, positionals };
+}
+var str = (v2) => typeof v2 === "string" ? v2 : void 0;
+var list = (v2) => Array.isArray(v2) ? v2 : [];
+async function context(io) {
+  if (!io.thread) return { thread: "", project: "", agent: null };
+  try {
+    const d = await call("Thread", { thread: io.thread });
+    const names = { claude: "Claude Code", cursor: "Cursor", grok: "Grok Build", fake: "Demo agent" };
+    return {
+      thread: io.thread,
+      project: d.info.project,
+      agent: { name: names[d.info.provider] ?? d.info.provider, provider: d.info.provider, threadId: io.thread }
+    };
+  } catch {
+    return { thread: io.thread, project: "", agent: null };
+  }
+}
+function statusOrThrow(v2) {
+  const s = parseStatus(v2);
+  if (!s) throw new CliError(`unknown status "${v2}"`, `Use one of: ${STATUS_VALUES}.`);
+  return s;
+}
+function priorityOrThrow(v2) {
+  const p = parsePriority(v2);
+  if (!p) throw new CliError(`unknown priority "${v2}"`, `Use one of: ${PRIORITIES.join(", ")}.`);
+  return p;
+}
+function issueLine(issue2, names) {
+  const assignees = issue2.assigneeIds.map((id2) => names.members.find((m) => m.id === id2)?.username).filter(Boolean).map((u) => `@${u}`).join(" ");
+  const labels = issue2.labelIds.map((id2) => names.labels.find((l) => l.id === id2)?.name).filter(Boolean).map((n) => `[${n}]`).join(" ");
+  const subs = issue2.subIssueCount ? ` (${issue2.subIssueDoneCount}/${issue2.subIssueCount})` : "";
+  const agents = issue2.threadIds.length ? " ⚡" : "";
+  return [pad(issue2.key, 9), `${STATUS_GLYPH[issue2.status]} ${pad(STATUS_LABELS[issue2.status], 11)}`, pad(PRIORITY_GLYPH[issue2.priority], 2), `${issue2.title}${subs}${agents}`, assignees, labels].filter(Boolean).join("  ");
+}
+var USAGE = `swarm flux — Read and update Flux issues
+
+Issue keys look like ABC-12. Run from an agent's thread attached to an
+issue, commands that take a key default to that issue.
+
+Commands:
+  swarm flux status             The Flux connection, workspace, and signed-in account
+  swarm flux list               Issues, open ones first, grouped by status
+  swarm flux show [ISSUE]       An issue with its description, sub-issues, and comments
+  swarm flux create             Create an issue
+  swarm flux update [ISSUE]     Change an issue's status, priority, assignees, labels, title, description, due date, or parent
+  swarm flux comment [ISSUE]    Comment on an issue in Markdown; @username notifies people
+  swarm flux start ISSUE        Attach this thread to an issue and move it to In Progress
+  swarm flux detach [ISSUE]     Detach this thread from an issue
+  swarm flux projects           Flux projects and the Swarm projects they're linked to
+  swarm flux link KEY           Link a Flux project to this thread's Swarm project (--none to unlink)
+  swarm flux labels [create NAME [--color C]]  Workspace labels, or make one
+  swarm flux members            Workspace members and their @usernames
+  swarm flux open [ISSUE]       Print an issue's link in Flux
+
+Every command takes --json, and --flux NAME to use one connection.`;
+function registerCli(resolve) {
+  let picked;
+  const flux2 = new Proxy({}, {
+    get(_target, prop) {
+      const current = resolve(picked);
+      const value = Reflect.get(current, prop, current);
+      return typeof value === "function" ? value.bind(current) : value;
+    }
+  });
+  const json2 = (io, v2) => io.print(JSON.stringify(v2, null, 2));
+  const guarded = (name, fn) => {
+    command2(name, async (args2, io) => {
+      try {
+        const taken = takeFlux(args2);
+        picked = taken.name;
+        args2 = taken.args;
+        const ctx = await context(io);
+        if (name !== "status") await flux2.whenReady();
+        return await fn(args2, io, ctx);
+      } catch (e) {
+        if (e instanceof CliError) {
+          io.error(`Error: ${e.message}${e.hint ? `
+${e.hint}` : ""}`);
+          return 2;
+        }
+        if (e instanceof FluxNotReadyError) io.error(`Error: ${e.message}
+Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux status.`);
+        else if (e instanceof FluxNotFoundError) io.error(`Error: ${e.message}`);
+        else io.error(`Error: ${describe3(e)}`);
+        return 1;
+      } finally {
+        picked = void 0;
+      }
+    });
+  };
+  function takeFlux(args2) {
+    const rest = [];
+    let name;
+    for (let i2 = 0; i2 < args2.length; i2++) {
+      const arg = args2[i2];
+      if (arg === "--flux" || arg === "--connection") {
+        name = args2[++i2];
+        if (!name) throw new CliError("--flux takes the connection's name");
+        continue;
+      }
+      if (arg.startsWith("--flux=")) {
+        name = arg.slice("--flux=".length);
+        continue;
+      }
+      rest.push(arg);
+    }
+    return { name, args: rest };
+  }
+  const lookup = () => ({ baseUrl: flux2.baseUrl, members: flux2.memberList(), labels: flux2.labels(), projects: flux2.projects() });
+  const issueFromArg = (ref, ctx) => {
+    if (ref) return flux2.requireIssue(ref);
+    const attached = ctx.thread ? flux2.issuesOfThread(ctx.thread) : [];
+    if (attached.length === 1) return attached[0];
+    throw new CliError(attached.length > 1 ? `this thread is attached to ${attached.map((i2) => i2.key).join(", ")}; say which one` : "missing issue key", "Pass an issue key such as ABC-12.");
+  };
+  const projectFromOption = (v2, ctx) => {
+    if (v2) {
+      const p = flux2.findProject(v2);
+      if (!p) throw new CliError(`no Flux project "${v2}"`, "Run `swarm flux projects` to list project keys.");
+      return p;
+    }
+    return ctx.project ? flux2.projectOfSwarm(ctx.project) : null;
+  };
+  const memberIds = (values) => values.map((v2) => {
+    if (v2.toLowerCase() === "none") return "";
+    const m = flux2.findMember(v2);
+    if (!m) throw new CliError(`no workspace member "${v2}"`, "Run `swarm flux members` for usernames; `me` means you.");
+    return m.id;
+  });
+  const labelIds = (values, hint = "Run `swarm flux labels` to list labels.") => values.map((v2) => {
+    const l = flux2.findLabel(v2);
+    if (!l) throw new CliError(`no label "${v2}"`, hint);
+    return l.id;
+  });
+  const addedLabelIds = async (values, create7) => {
+    if (!create7) return { ids: labelIds(values, "Run `swarm flux labels` to list labels, or add --create-labels to create it."), created: [] };
+    const ids = [];
+    const created = [];
+    for (const v2 of values) {
+      let l = flux2.findLabel(v2);
+      if (!l) {
+        l = await flux2.createLabel(v2);
+        created.push(l);
+      }
+      ids.push(l.id);
+    }
+    return { ids, created };
+  };
+  const createdLine = (created) => created.length ? [`Created ${created.length === 1 ? "label" : "labels"} ${created.map((l) => l.name).join(", ")}.`] : [];
+  command2("help", (_a3, io) => io.print(USAGE));
+  guarded("status", async (args2, io) => {
+    const c = flux2.connection();
+    if (args2.includes("--json")) return json2(io, c);
+    const lines = [`Flux: ${c.state}${c.message ? ` — ${c.message}` : ""}`];
+    if (c.baseUrl) lines.push(`Server: ${c.baseUrl}`);
+    if (c.workspace) lines.push(`Workspace: ${c.workspace.name}`);
+    if (c.me) lines.push(`Signed in as: ${c.me.name} (@${c.me.username})`);
+    lines.push(`Issues synced: ${c.issueCount}`);
+    io.print(lines.join("\n"));
+  });
+  guarded("list", async (args2, io, ctx) => {
+    const { values: o } = parse3(args2, {
+      project: { type: "string" },
+      status: { type: "list" },
+      assignee: { type: "list", aliases: ["assigned"] },
+      label: { type: "list" },
+      priority: { type: "list" },
+      search: { type: "string", short: "q", aliases: ["query"] },
+      all: { type: "boolean" },
+      "all-projects": { type: "boolean" },
+      limit: { type: "string" },
+      json: { type: "boolean" }
+    });
+    const project = o["all-projects"] ? null : projectFromOption(str(o.project), ctx);
+    const statuses = new Set(list(o.status).map(statusOrThrow));
+    const priorities = new Set(list(o.priority).map(priorityOrThrow));
+    const assignees = new Set(memberIds(list(o.assignee)));
+    const labels = labelIds(list(o.label));
+    const needle = str(o.search)?.trim().toLowerCase();
+    const limit = Math.min(Math.max(Number(str(o.limit) ?? 50) || 50, 1), 500);
+    let issues = flux2.issues().filter((i2) => {
+      if (project && i2.projectId !== project.id) return false;
+      if (statuses.size > 0) {
+        if (!statuses.has(i2.status)) return false;
+      } else if (!o.all && CLOSED_STATUSES.has(i2.status)) return false;
+      if (priorities.size > 0 && !priorities.has(i2.priority)) return false;
+      if (assignees.size > 0) {
+        const unassigned = assignees.has("") && i2.assigneeIds.length === 0;
+        if (!unassigned && !i2.assigneeIds.some((id2) => assignees.has(id2))) return false;
+      }
+      if (labels.some((id2) => !i2.labelIds.includes(id2))) return false;
+      if (needle && !i2.key.toLowerCase().includes(needle) && !i2.title.toLowerCase().includes(needle)) return false;
+      return true;
+    });
+    issues.sort((a3, b) => STATUS_DISPLAY_ORDER.indexOf(a3.status) - STATUS_DISPLAY_ORDER.indexOf(b.status) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt));
+    const total = issues.length;
+    issues = issues.slice(0, limit);
+    if (o.json) return json2(io, { issues, total, project: project?.key ?? null });
+    if (total === 0) return io.print(project ? `No matching issues in ${project.key}.${o.all ? "" : " Add --all to include closed ones."}` : "No matching issues.");
+    const names = lookup();
+    const lines = [project ? `${project.name} (${project.key})` : "All projects", "", ...issues.map((i2) => issueLine(i2, names))];
+    if (total > issues.length) lines.push("", `…and ${total - issues.length} more. Raise --limit or narrow the filters.`);
+    io.print(lines.join("\n"));
+  });
+  guarded("show", async (args2, io, ctx) => {
+    const { values: o, positionals } = parse3(args2, { json: { type: "boolean" } });
+    const issue2 = issueFromArg(positionals[0], ctx);
+    const detail2 = flux2.detail(issue2.id);
+    if (o.json) return json2(io, detail2);
+    io.print(issueContext(detail2, lookup()) + (issue2.threadIds.length ? `
+
+Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
+  });
+  guarded("create", async (args2, io, ctx) => {
+    const { values: o } = parse3(args2, {
+      title: { type: "string", short: "t" },
+      project: { type: "string" },
+      description: { type: "string", short: "d", aliases: ["body"] },
+      status: { type: "string" },
+      priority: { type: "string" },
+      assignee: { type: "list", aliases: ["assign", "assignees"] },
+      label: { type: "list" },
+      "create-labels": { type: "boolean", aliases: ["create-label"] },
+      parent: { type: "string" },
+      json: { type: "boolean" }
+    });
+    const title = str(o.title)?.trim();
+    if (!title) throw new CliError("--title is required", 'swarm flux create --title "…" [--project KEY]');
+    if (o["create-labels"] && list(o.label).length === 0) throw new CliError("--create-labels needs --label");
+    const parent = str(o.parent) ? flux2.requireIssue(str(o.parent)) : null;
+    const project = projectFromOption(str(o.project), ctx) ?? (parent ? flux2.projects().find((p) => p.id === parent.projectId) ?? null : null);
+    if (!project) throw new CliError("which project?", "Add --project <KEY>. `swarm flux projects` lists them; `swarm flux link KEY` makes one this Swarm project's default.");
+    const status = str(o.status) ? statusOrThrow(str(o.status)) : void 0;
+    const priority = str(o.priority) ? priorityOrThrow(str(o.priority)) : void 0;
+    const assigneeIds = memberIds(list(o.assignee)).filter(Boolean);
+    const labels = await addedLabelIds(list(o.label), !!o["create-labels"]);
+    const issue2 = await flux2.createIssue({ projectId: project.id, title, descriptionMarkdown: str(o.description), status, priority, assigneeIds, labelIds: labels.ids, parentId: parent?.id ?? null });
+    if (o.json) return json2(io, issue2);
+    io.print([...createdLine(labels.created), `Created ${issue2.key} · ${issue2.title}`, flux2.issueUrl(issue2)].join("\n"));
+  });
+  guarded("update", async (args2, io, ctx) => {
+    const { values: o, positionals } = parse3(args2, {
+      status: { type: "string", short: "s" },
+      priority: { type: "string", short: "p" },
+      title: { type: "string" },
+      description: { type: "string", short: "d" },
+      assign: { type: "list", aliases: ["assignee", "add-assignee"] },
+      unassign: { type: "list", aliases: ["remove-assignee"] },
+      "add-label": { type: "list", aliases: ["label"] },
+      "create-labels": { type: "boolean", aliases: ["create-label"] },
+      "remove-label": { type: "list" },
+      due: { type: "string" },
+      parent: { type: "string" },
+      json: { type: "boolean" }
+    });
+    const issue2 = issueFromArg(positionals[0], ctx);
+    const patch = {};
+    const desc = str(o.description);
+    if (str(o.status)) patch.status = statusOrThrow(str(o.status));
+    if (str(o.priority)) patch.priority = priorityOrThrow(str(o.priority));
+    if (str(o.title)) patch.title = str(o.title).trim();
+    if (list(o.assign).length || list(o.unassign).length) {
+      const clearAll = list(o.unassign).some((v2) => v2.toLowerCase() === "all");
+      const removed = new Set(memberIds(list(o.unassign).filter((v2) => v2.toLowerCase() !== "all")));
+      patch.assigneeIds = [...clearAll ? [] : issue2.assigneeIds.filter((id2) => !removed.has(id2)), ...memberIds(list(o.assign)).filter(Boolean)];
+    }
+    const due = str(o.due);
+    if (due) {
+      if (due.toLowerCase() === "none") patch.dueDate = null;
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(due)) patch.dueDate = due;
+      else throw new CliError(`invalid due date "${due}"`, "Use YYYY-MM-DD or `none`.");
+    }
+    if (str(o.parent)) patch.parentId = str(o.parent).toLowerCase() === "none" ? null : flux2.requireIssue(str(o.parent)).id;
+    let created = [];
+    if (list(o["add-label"]).length || list(o["remove-label"]).length) {
+      const removed = new Set(labelIds(list(o["remove-label"])));
+      const added = await addedLabelIds(list(o["add-label"]), !!o["create-labels"]);
+      created = added.created;
+      patch.labelIds = [...issue2.labelIds.filter((id2) => !removed.has(id2)), ...added.ids];
+    }
+    if (Object.keys(patch).length === 0 && desc === void 0) {
+      throw new CliError("nothing to change", "Give --status, --priority, --title, --description, --assign, --unassign, --add-label, --remove-label, --due or --parent.");
+    }
+    if (desc !== void 0) await flux2.replaceDescription(issue2.id, desc);
+    const updated = Object.keys(patch).length ? await flux2.updateIssue(issue2.id, patch) : flux2.issue(issue2.id);
+    if (o.json) return json2(io, updated);
+    const names = lookup();
+    const changes = [
+      desc !== void 0 && "description",
+      patch.status && `status → ${STATUS_LABELS[updated.status]}`,
+      patch.priority && `priority → ${PRIORITY_LABELS[updated.priority]}`,
+      patch.title && `title → ${updated.title}`,
+      patch.assigneeIds && `assignees → ${updated.assigneeIds.length ? updated.assigneeIds.map((id2) => memberName(names, id2)).join(", ") : "none"}`,
+      patch.labelIds && `labels → ${updated.labelIds.map((id2) => flux2.labels().find((l) => l.id === id2)?.name).filter(Boolean).join(", ") || "none"}`,
+      patch.dueDate !== void 0 && `due → ${updated.dueDate ?? "none"}`,
+      patch.parentId !== void 0 && `parent → ${updated.parentId ? flux2.issue(updated.parentId)?.key : "none"}`
+    ].filter(Boolean);
+    io.print([...createdLine(created), `Updated ${updated.key}: ${changes.join("; ")}`].join("\n"));
+  });
+  guarded("comment", async (args2, io, ctx) => {
+    const { values: o, positionals } = parse3(args2, { body: { type: "string", short: "b", aliases: ["message", "text"] }, m: { type: "string" }, json: { type: "boolean" } });
+    const issue2 = issueFromArg(positionals[0], ctx);
+    const body = str(o.body) ?? str(o.m) ?? "";
+    if (!body.trim()) throw new CliError("comment body is empty", 'swarm flux comment ABC-12 --body "…"');
+    const comment = await flux2.addComment(issue2.id, body, ctx.agent);
+    if (o.json) return json2(io, comment);
+    io.print(`Commented on ${issue2.key} (${comment.markdown.length} characters). ${flux2.issueUrl(issue2)}`);
+  });
+  guarded("start", async (args2, io, ctx) => {
+    const { values: o, positionals } = parse3(args2, { "keep-status": { type: "boolean" }, json: { type: "boolean" } });
+    if (!ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or attach from the thread's Flux panel.");
+    if (!positionals[0]) throw new CliError("missing issue key", "Pass an issue key such as ABC-12.");
+    const issue2 = flux2.requireIssue(positionals[0]);
+    const updated = await flux2.attach(issue2.id, ctx.thread, !o["keep-status"]);
+    if (o.json) return json2(io, updated);
+    io.print(`Attached this thread to ${updated.key} (${STATUS_LABELS[updated.status]}). Run \`swarm flux show\` to read it.`);
+  });
+  guarded("detach", async (args2, io, ctx) => {
+    const { values: o, positionals } = parse3(args2, { thread: { type: "string" } });
+    const thread = str(o.thread) ?? ctx.thread;
+    if (!thread) throw new CliError("which thread?", "Run this from the thread, or pass --thread ID.");
+    const issue2 = positionals[0] ? flux2.requireIssue(positionals[0]) : issueFromArg(void 0, { ...ctx, thread });
+    flux2.detach(issue2.id, thread);
+    io.print(`Detached ${thread} from ${issue2.key}.`);
+  });
+  guarded("projects", async (args2, io) => {
+    const projects = flux2.projects();
+    if (args2.includes("--json")) return json2(io, { projects });
+    const issues = flux2.issues();
+    io.print(
+      projects.map((p) => {
+        const open4 = issues.filter((i2) => i2.projectId === p.id && !CLOSED_STATUSES.has(i2.status)).length;
+        return `${pad(p.key, 6)} ${pad(p.name, 28)} ${pad(`${open4} open`, 9)} ${p.swarmProjectId ? `→ ${p.swarmProjectId}` : ""}`.trimEnd();
+      }).join("\n") || "No projects."
+    );
+  });
+  guarded("link", async (args2, io, ctx) => {
+    const { values: o, positionals } = parse3(args2, { project: { type: "string" }, none: { type: "boolean" } });
+    const p = positionals[0] ? flux2.findProject(positionals[0]) : null;
+    if (!p) throw new CliError(positionals[0] ? `no Flux project "${positionals[0]}"` : "which Flux project?", "Run `swarm flux projects` to list project keys.");
+    if (o.none) {
+      flux2.link(p.id, null);
+      return io.print(`Unlinked ${p.key}.`);
+    }
+    const swarmProject2 = str(o.project) ?? ctx.project;
+    if (!swarmProject2) throw new CliError("which Swarm project?", "Run this from a thread of the project, or pass --project ID.");
+    flux2.link(p.id, swarmProject2);
+    io.print(`Linked ${p.key} to ${swarmProject2}.`);
+  });
+  guarded("labels", async (args2, io) => {
+    const { values: o, positionals } = parse3(args2, { color: { type: "string" }, json: { type: "boolean" } });
+    if (positionals[0] === "create" || positionals[0] === "new" || positionals[0] === "add") {
+      const name = positionals.slice(1).join(" ").trim();
+      if (!name) throw new CliError("label name is empty");
+      if (name.includes(",")) throw new CliError(`label name "${name}" has a comma`, "--label splits on commas, so it couldn't name this label.");
+      const color = str(o.color);
+      if (color && !COLORS.includes(color)) throw new CliError(`unknown color "${color}"`, `Use one of: ${COLORS.join(", ")}.`);
+      const existing = flux2.findLabel(name);
+      const label = existing ?? await flux2.createLabel(name, color);
+      if (o.json) return json2(io, { label, created: !existing });
+      return io.print(existing ? `Label ${label.name} already exists (${label.color}).` : `Created label ${label.name} (${label.color}).`);
+    }
+    const labels = flux2.labels();
+    if (o.json) return json2(io, { labels });
+    io.print(labels.length ? labels.map((l) => l.name).join("\n") : "No labels.");
+  });
+  guarded("members", async (args2, io) => {
+    const members2 = flux2.memberList();
+    if (args2.includes("--json")) return json2(io, { members: members2 });
+    io.print(members2.map((m) => `${pad(`@${m.username}`, 20)} ${m.name}${m.id === flux2.me?.id ? " (you)" : ""}`).join("\n"));
+  });
+  guarded("open", async (args2, io, ctx) => {
+    const issue2 = issueFromArg(args2.find((a3) => !a3.startsWith("-")), ctx);
+    io.print(flux2.issueUrl(issue2));
+  });
+}
+
+// src/edit.tsx
+import swarm2, { call as call2, ui as ui7 } from "swarm";
+
 // src/view.tsx
-import { jsx, jsxs } from "swarm/jsx-runtime";
+import { ui as ui5 } from "swarm";
+import { jsx as jsx4, jsxs as jsxs4 } from "swarm/jsx-runtime";
 var colorOf = {
   gray: "text3",
   red: "red",
@@ -78724,8 +79750,8 @@ var STATUS_COLOR = {
 };
 function StatusIcon({ status, size: size3 = 14 }) {
   const c = STATUS_COLOR[status];
-  return /* @__PURE__ */ jsx(
-    ui.canvas,
+  return /* @__PURE__ */ jsx4(
+    ui5.canvas,
     {
       label: STATUS_LABELS[status],
       width: 14,
@@ -78758,10 +79784,10 @@ function StatusIcon({ status, size: size3 = 14 }) {
   );
 }
 function PriorityIcon({ priority, size: size3 = 14 }) {
-  if (priority === "none") return /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 14, color: "text2", width: size3, textAlign: "center" }, children: "–" });
+  if (priority === "none") return /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 14, color: "text2", width: size3, textAlign: "center" }, children: "–" });
   const level = { urgent: 4, high: 3, medium: 2, low: 1 }[priority];
-  return /* @__PURE__ */ jsx(
-    ui.canvas,
+  return /* @__PURE__ */ jsx4(
+    ui5.canvas,
     {
       label: PRIORITY_LABELS[priority],
       width: 14,
@@ -78780,25 +79806,39 @@ function PriorityIcon({ priority, size: size3 = 14 }) {
   );
 }
 function Avatar({ member: member2, size: size3 = 18 }) {
-  if (!member2) return /* @__PURE__ */ jsx(ui.icon, { icon: "user", style: { width: size3 - 4, height: size3 - 4, color: "text3" } });
-  if (member2.avatarUrl) {
-    return /* @__PURE__ */ jsx(ui.image, { src: member2.avatarUrl, alt: member2.name, style: { width: size3, height: size3, borderRadius: "full", objectFit: "cover", flexShrink: 0 } });
-  }
-  return /* @__PURE__ */ jsx(ui.box, { label: member2.name, style: { width: size3, height: size3, borderRadius: "full", backgroundColor: colorOf[member2.avatarColor], alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx(ui.text, { style: { color: "white", fontSize: Math.round(size3 * 0.5), fontWeight: 600 }, children: (member2.name || member2.username).slice(0, 1).toUpperCase() }) });
+  if (!member2) return /* @__PURE__ */ jsx4(Unassigned, { size: size3 });
+  const bytes = pictureBytes(member2.avatarUrl);
+  const box = { width: size3, height: size3, borderRadius: size3 >= 28 ? 6 : 4, flexShrink: 0, overflow: "hidden", alignItems: "center", justifyContent: "center" };
+  if (bytes) return /* @__PURE__ */ jsx4(ui5.image, { src: bytes, alt: "", tooltip: member2.name, style: { ...box, objectFit: "cover" } });
+  return /* @__PURE__ */ jsx4(ui5.box, { label: member2.name, style: { ...box, backgroundColor: colorOf[member2.avatarColor] }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { color: "white", fontSize: Math.max(9, Math.round(size3 * 0.55)), fontWeight: 600 }, children: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() }) });
+}
+function Unassigned({ size: size3 = 18 }) {
+  return /* @__PURE__ */ jsx4(ui5.canvas, { width: 20, height: 20, label: "Unassigned", style: { width: size3, height: size3, flexShrink: 0 }, draw: (g) => {
+    for (let i2 = 0; i2 < 24; i2++) {
+      const t = i2 / 24 * 4;
+      const side = Math.floor(t);
+      const f2 = t - side;
+      const at3 = 2.5 + f2 * 15;
+      const [x2, y2] = side === 0 ? [at3, 0.6] : side === 1 ? [19.4, at3] : side === 2 ? [20 - at3, 19.4] : [0.6, 20 - at3];
+      g.circle(x2, y2, 0.6, "text3");
+    }
+    g.circle(10, 7.65, 1.85, "text3");
+    g.path("M6.45 13.7c.4-1.75 1.75-2.75 3.55-2.75s3.15 1 3.55 2.75c.08.32-.16.65-.5.65H6.95c-.34 0-.58-.33-.5-.65Z", "text3");
+  } });
 }
 function FluxMark({ size: size3 = 14, color = "text2" }) {
-  return /* @__PURE__ */ jsx(ui.icon, { icon: "icon.svg", style: { width: size3, height: size3, color, flexShrink: 0 } });
+  return /* @__PURE__ */ jsx4(ui5.icon, { icon: "icon.svg", style: { width: size3, height: size3, color, flexShrink: 0 } });
 }
 function ProjectMark({ project, size: size3 = 14 }) {
-  if (!project) return /* @__PURE__ */ jsx(FluxMark, { size: size3 });
+  if (!project) return /* @__PURE__ */ jsx4(FluxMark, { size: size3 });
   const box = { width: size3, height: size3, flexShrink: 0 };
-  const emoji4 = emojiImage(project?.emoji);
-  if (emoji4) return /* @__PURE__ */ jsx(ui.image, { src: emoji4, alt: project?.key ?? "Project", style: box });
+  const emoji4 = emojiBytes(project?.emoji);
+  if (emoji4) return /* @__PURE__ */ jsx4(ui5.image, { src: emoji4, alt: "", tooltip: project.name, style: box });
   const icon = asIcon(project?.icon);
-  if (icon && project) return /* @__PURE__ */ jsx(ui.icon, { icon, style: { ...box, color: colorOf[project.color] } });
-  const glyph = project ? glyphImage(project.icon, MARK_HEX[project.color]) : null;
-  if (glyph) return /* @__PURE__ */ jsx(ui.image, { src: glyph, alt: project?.key ?? "Project", style: box });
-  return /* @__PURE__ */ jsx(ui.box, { style: { width: size3, height: size3, borderRadius: 3, backgroundColor: project ? colorOf[project.color] : "text3", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx(ui.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 700 }, children: (project?.key ?? "?").slice(0, 1) }) });
+  if (icon && project) return /* @__PURE__ */ jsx4(ui5.icon, { icon, style: { ...box, color: colorOf[project.color] } });
+  const glyph = glyphBytes(project.icon, MARK_HEX[project.color]);
+  if (glyph) return /* @__PURE__ */ jsx4(ui5.image, { src: glyph, alt: "", tooltip: project.name, style: box });
+  return /* @__PURE__ */ jsx4(ui5.box, { style: { width: size3, height: size3, borderRadius: 3, backgroundColor: project ? colorOf[project.color] : "text3", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 700 }, children: (project?.key ?? "?").slice(0, 1) }) });
 }
 var chip = {
   height: 28,
@@ -78811,7 +79851,6 @@ var chip = {
   border: "1px solid border",
   backgroundColor: "raised",
   color: "text",
-  cursor: "pointer",
   hover: { backgroundColor: "hover" },
   checked: { backgroundColor: "hover", borderColor: "borderStrong" },
   focus: { boxShadow: "0 0 0 2px color-mix(in srgb, accent 45%, transparent)" },
@@ -78822,74 +79861,77 @@ function Properties({ issue: issue2, project, members: members2, labels, me: me2
   const assignees = members2.filter((m) => issue2.assigneeIds.includes(m.id));
   const chosen = labels.filter((l) => issue2.labelIds.includes(l.id));
   const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
-  const today = /* @__PURE__ */ new Date();
-  const day = (d) => new Date(today.getFullYear(), today.getMonth(), today.getDate() + d).toISOString().slice(0, 10);
-  return /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6 }, children: [
-    project && /* @__PURE__ */ jsxs(ui.box, { style: chip, label: "Project: " + project.name, children: [
-      /* @__PURE__ */ jsx(ProjectMark, { project }),
-      /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: project.name })
+  return /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6 }, children: [
+    project && /* @__PURE__ */ jsxs4(ui5.box, { style: chip, label: "Project: " + project.name, children: [
+      /* @__PURE__ */ jsx4(ProjectMark, { project }),
+      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: project.name })
     ] }),
-    /* @__PURE__ */ jsxs(ui.menu, { label: "Status: " + STATUS_LABELS[issue2.status], style: chip, children: [
-      /* @__PURE__ */ jsx(StatusIcon, { status: issue2.status }),
-      /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: STATUS_LABELS[issue2.status] }),
-      STATUSES.map((s) => /* @__PURE__ */ jsx(ui.item, { checked: issue2.status === s, onClick: () => edits.update({ status: s }), children: STATUS_LABELS[s] }, s))
+    /* @__PURE__ */ jsxs4(ui5.menu, { label: "Status: " + STATUS_LABELS[issue2.status], style: chip, children: [
+      /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status }),
+      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: STATUS_LABELS[issue2.status] }),
+      STATUSES.map((s) => /* @__PURE__ */ jsx4(ui5.item, { ...statusMark(s), checked: issue2.status === s, onClick: () => edits.update({ status: s }), children: STATUS_LABELS[s] }, s))
     ] }),
-    /* @__PURE__ */ jsxs(ui.menu, { label: "Priority: " + PRIORITY_LABELS[issue2.priority], tooltip: PRIORITY_LABELS[issue2.priority], style: issue2.priority === "none" ? square : chip, children: [
-      /* @__PURE__ */ jsx(PriorityIcon, { priority: issue2.priority }),
-      issue2.priority !== "none" && /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: PRIORITY_LABELS[issue2.priority] }),
-      PRIORITIES.map((p) => /* @__PURE__ */ jsx(ui.item, { checked: issue2.priority === p, onClick: () => edits.update({ priority: p }), children: PRIORITY_LABELS[p] }, p))
+    /* @__PURE__ */ jsxs4(ui5.menu, { label: "Priority: " + PRIORITY_LABELS[issue2.priority], tooltip: PRIORITY_LABELS[issue2.priority], style: issue2.priority === "none" ? square : chip, children: [
+      /* @__PURE__ */ jsx4(PriorityIcon, { priority: issue2.priority }),
+      issue2.priority !== "none" && /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: PRIORITY_LABELS[issue2.priority] }),
+      PRIORITIES.map((p) => /* @__PURE__ */ jsx4(ui5.item, { ...priorityMark(p), checked: issue2.priority === p, onClick: () => edits.update({ priority: p }), children: PRIORITY_LABELS[p] }, p))
     ] }),
-    /* @__PURE__ */ jsxs(ui.menu, { label: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", tooltip: "Assignees", style: assignees.length === 1 ? square : chip, children: [
-      assignees.length === 0 ? /* @__PURE__ */ jsx(ui.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }) : assignees.slice(0, 3).map((m) => /* @__PURE__ */ jsx(Avatar, { member: m }, "av-" + m.id)),
-      assignees.length > 1 && /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: String(assignees.length) }),
-      me2 && /* @__PURE__ */ jsx(ui.item, { icon: "user", onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, me2) }), children: issue2.assigneeIds.includes(me2) ? "Unassign me" : "Assign to me" }, "me"),
-      me2 && /* @__PURE__ */ jsx(ui.separator, {}, "sep"),
-      members2.map((m) => /* @__PURE__ */ jsx(ui.item, { checked: issue2.assigneeIds.includes(m.id), detail: "@" + m.username, onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, m.id) }), children: m.name }, m.id))
+    /* @__PURE__ */ jsxs4(ui5.menu, { label: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", tooltip: "Assignees", style: assignees.length === 1 ? square : chip, children: [
+      assignees.length === 0 ? /* @__PURE__ */ jsx4(Unassigned, { size: 16 }) : assignees.slice(0, 3).map((m) => /* @__PURE__ */ jsx4(Avatar, { member: m }, "av-" + m.id)),
+      assignees.length > 1 && /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: String(assignees.length) }),
+      me2 && /* @__PURE__ */ jsx4(ui5.item, { icon: "user", onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, me2) }), children: issue2.assigneeIds.includes(me2) ? "Unassign me" : "Assign to me" }, "me"),
+      me2 && /* @__PURE__ */ jsx4(ui5.separator, {}, "sep"),
+      members2.map((m) => /* @__PURE__ */ jsx4(ui5.item, { ...memberMark(m), checked: issue2.assigneeIds.includes(m.id), detail: "@" + m.username, onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, m.id) }), children: m.name }, m.id))
     ] }),
-    /* @__PURE__ */ jsxs(ui.menu, { label: chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels", tooltip: "Labels", style: chosen.length ? chip : square, children: [
-      chosen.length === 0 && /* @__PURE__ */ jsx(ui.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-      chosen.map((l) => /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", gap: 5, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx(ui.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: colorOf[l.color] } }),
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: l.name })
+    /* @__PURE__ */ jsxs4(ui5.menu, { label: chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels", tooltip: "Labels", style: chosen.length ? chip : square, children: [
+      chosen.length === 0 && /* @__PURE__ */ jsx4(ui5.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+      chosen.map((l) => /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 5, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx4(ui5.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: colorOf[l.color] } }),
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: l.name })
       ] }, "lb-" + l.id)),
-      labels.length === 0 ? /* @__PURE__ */ jsx(ui.item, { disabled: true, children: "No labels yet" }, "none") : labels.map((l) => /* @__PURE__ */ jsx(ui.item, { checked: issue2.labelIds.includes(l.id), onClick: () => edits.update({ labelIds: toggle(issue2.labelIds, l.id) }), children: l.name }, l.id))
+      labels.length === 0 ? /* @__PURE__ */ jsx4(ui5.item, { disabled: true, children: "No labels yet" }, "none") : labels.map((l) => /* @__PURE__ */ jsx4(ui5.item, { ...labelMark(l.color), checked: issue2.labelIds.includes(l.id), onClick: () => edits.update({ labelIds: toggle(issue2.labelIds, l.id) }), children: l.name }, l.id))
     ] }),
-    /* @__PURE__ */ jsxs(ui.menu, { label: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", tooltip: "Due date", style: issue2.dueDate ? chip : square, children: [
-      /* @__PURE__ */ jsx(ui.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate && issue2.dueDate < day(0) ? "red" : "text2" } }),
-      issue2.dueDate && /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: issue2.dueDate }),
-      /* @__PURE__ */ jsx(ui.item, { onClick: () => edits.update({ dueDate: day(0) }), children: "Today" }, "today"),
-      /* @__PURE__ */ jsx(ui.item, { onClick: () => edits.update({ dueDate: day(1) }), children: "Tomorrow" }, "tomorrow"),
-      /* @__PURE__ */ jsx(ui.item, { onClick: () => edits.update({ dueDate: day(7) }), children: "In a week" }, "week"),
-      issue2.dueDate && /* @__PURE__ */ jsx(ui.item, { danger: true, onClick: () => edits.update({ dueDate: null }), children: "Clear the due date" }, "clear")
+    /* @__PURE__ */ jsxs4(ui5.menu, { label: issue2.dueDate ? "Due " + dueLabel(issue2.dueDate) : "Due date", tooltip: "Due date", style: issue2.dueDate ? chip : square, children: [
+      /* @__PURE__ */ jsx4(ui5.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate && dayDelta(issue2.dueDate) < 0 ? "red" : "text2" } }),
+      issue2.dueDate && /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: dueLabel(issue2.dueDate) }),
+      dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate }))
     ] }),
-    start && /* @__PURE__ */ jsxs(ui.pressable, { label: "Start agent", onClick: start, style: chip, children: [
-      /* @__PURE__ */ jsx(ui.icon, { icon: "robot", style: { width: 14, height: 14, color: "text2" } }),
-      /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: "Start agent" })
+    start && /* @__PURE__ */ jsxs4(ui5.pressable, { label: "Start agent", onClick: start, style: chip, children: [
+      /* @__PURE__ */ jsx4(ui5.icon, { icon: "robot", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: "Start agent" })
     ] })
   ] });
 }
-function inline2(text2) {
+var mentionChip = { backgroundColor: "hover", borderRadius: 4, fontWeight: 550 };
+function inlineText(text2, mention) {
   const out = [];
-  const re2 = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(?<![\w*])\*([^*\n]+)\*(?!\w)/g;
-  let at2 = 0;
+  const re2 = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(?<![\w*])\*([^*\n]+)\*(?!\w)|(?<![\w@])@([\w][\w.-]*[\w]|[\w])/g;
+  let at3 = 0;
   for (let m; m = re2.exec(text2); ) {
-    if (m.index > at2) out.push(text2.slice(at2, m.index));
-    if (m[1] !== void 0) out.push(/* @__PURE__ */ jsx(ui.text, { style: { fontFamily: "mono", fontSize: "small", backgroundColor: "hover", borderRadius: 4 }, children: m[1] }));
-    else if (m[2] !== void 0) out.push(/* @__PURE__ */ jsx(ui.link, { href: m[3], children: m[2] }));
-    else if (m[4] !== void 0) out.push(/* @__PURE__ */ jsx(ui.text, { style: { fontWeight: 600 }, children: m[4] }));
-    else out.push(/* @__PURE__ */ jsx(ui.text, { style: { fontStyle: "italic" }, children: m[5] }));
-    at2 = m.index + m[0].length;
+    if (m.index > at3) out.push(text2.slice(at3, m.index));
+    if (m[1] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontFamily: "mono", fontSize: "small", backgroundColor: "hover", borderRadius: 4 }, children: m[1] }));
+    else if (m[2] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.link, { href: m[3], children: m[2] }));
+    else if (m[4] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontWeight: 600 }, children: m[4] }));
+    else if (m[5] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontStyle: "italic" }, children: m[5] }));
+    else {
+      const what = mention?.(m[6]);
+      if (!what) out.push(m[0]);
+      else if (what.kind === "project") out.push(/* @__PURE__ */ jsx4(ui5.text, { style: mentionChip, onClick: what.open, children: m[0] }));
+      else out.push(/* @__PURE__ */ jsx4(ui5.text, { style: mentionChip, children: m[0] }));
+    }
+    at3 = m.index + m[0].length;
   }
-  if (at2 < text2.length) out.push(text2.slice(at2));
+  if (at3 < text2.length) out.push(text2.slice(at3));
   return out;
 }
 var prose = { fontSize: "prose", lineHeight: 1.7, color: "text" };
-function Markdown({ md, onTask, image }) {
+function Markdown({ md, onTask, image, mention }) {
+  const inline2 = (text2) => inlineText(text2, mention);
   const blocks = [];
   const picture = (key, src, alt) => {
-    const got = image ? image(src) : src;
-    if (got === null) return /* @__PURE__ */ jsx(ui.box, { label: alt || "A picture", style: { height: 120, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } } }, key);
-    return /* @__PURE__ */ jsx(ui.image, { src: got, alt: alt || "A picture", style: { maxWidth: "100%", borderRadius: "control", alignSelf: "flex-start" } }, key);
+    const got2 = image ? image(src) : src;
+    if (got2 === null) return /* @__PURE__ */ jsx4(ui5.box, { label: alt || "A picture", style: { height: 120, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } } }, key);
+    return /* @__PURE__ */ jsx4(ui5.image, { src: got2, alt: alt || "A picture", style: { maxWidth: "100%", borderRadius: "control", alignSelf: "flex-start" } }, key);
   };
   let task = 0;
   const lines = md.replace(/\r/g, "").split("\n");
@@ -78899,18 +79941,37 @@ function Markdown({ md, onTask, image }) {
       i2++;
       continue;
     }
+    if (/^\s*\|.*\|\s*$/.test(l) && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i2 + 1] ?? "")) {
+      const cells = (row2) => row2.trim().replace(/^\||\|$/g, "").split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
+      const head = cells(l);
+      const body = [];
+      for (i2 += 2; i2 < lines.length && /^\s*\|.*\|\s*$/.test(lines[i2]); i2++) body.push(cells(lines[i2]));
+      const row = (r, n, header) => /* @__PURE__ */ jsx4(ui5.box, { style: { flexDirection: "row", borderTop: n === 0 ? "none" : "1px solid border", backgroundColor: header ? "hover" : "transparent" }, children: head.map((_2, c) => /* @__PURE__ */ jsx4(ui5.box, { style: { flex: 1, minWidth: 0, padding: "s3 s4", borderLeft: c === 0 ? "none" : "1px solid border" }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, fontWeight: header ? 600 : 400 }, children: inline2(r[c] ?? "") }) }, "c" + c)) }, "r" + n);
+      blocks.push(
+        /* @__PURE__ */ jsxs4(ui5.box, { style: { borderRadius: "control", border: "1px solid border", overflow: "hidden" }, children: [
+          row(head, 0, true),
+          body.map((r, n) => row(r, n + 1, false))
+        ] }, "table" + i2)
+      );
+      continue;
+    }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)) {
+      blocks.push(/* @__PURE__ */ jsx4(ui5.box, { style: { height: 1, backgroundColor: "border", marginTop: 8, marginBottom: 8 } }, "hr" + i2));
+      i2++;
+      continue;
+    }
     if (l.startsWith("```")) {
       const code2 = [];
       for (i2++; i2 < lines.length && !lines[i2].startsWith("```"); i2++) code2.push(lines[i2]);
       i2++;
       blocks.push(
-        /* @__PURE__ */ jsx(ui.scroll, { style: { maxHeight: 320, overflowX: "auto", padding: "s4 s5", borderRadius: "control", backgroundColor: "field", border: "1px solid border" }, children: /* @__PURE__ */ jsx(ui.text, { style: { fontFamily: "mono", fontSize: "small", whiteSpace: "pre", userSelect: "text" }, children: code2.join("\n") }) }, "code" + i2)
+        /* @__PURE__ */ jsx4(ui5.scroll, { style: { maxHeight: 320, overflowX: "auto", padding: "s4 s5", borderRadius: "control", backgroundColor: "field", border: "1px solid border" }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { fontFamily: "mono", fontSize: "small", whiteSpace: "pre", userSelect: "text" }, children: code2.join("\n") }) }, "code" + i2)
       );
       continue;
     }
     const heading = /^(#{1,4})\s+(.*)$/.exec(l);
     if (heading) {
-      blocks.push(/* @__PURE__ */ jsx(ui.text, { style: { fontSize: heading[1].length === 1 ? "title" : "prose", fontWeight: 600, marginTop: 6 }, children: inline2(heading[2]) }, "h" + i2));
+      blocks.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: heading[1].length === 1 ? "title" : "prose", fontWeight: 600, marginTop: 6 }, children: inline2(heading[2]) }, "h" + i2));
       i2++;
       continue;
     }
@@ -78930,9 +79991,9 @@ function Markdown({ md, onTask, image }) {
           const n = task++;
           const done = t[1] !== " ";
           items.push(
-            /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", gap: 9, alignItems: "flex-start", paddingLeft: depth * 18 }, children: [
-              /* @__PURE__ */ jsx(
-                ui.pressable,
+            /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 9, alignItems: "flex-start", paddingLeft: depth * 18 }, children: [
+              /* @__PURE__ */ jsx4(
+                ui5.pressable,
                 {
                   role: "checkbox",
                   checked: done,
@@ -78951,30 +80012,30 @@ function Markdown({ md, onTask, image }) {
                     checked: { backgroundColor: "accent", borderColor: "accent" },
                     hover: { borderColor: "text3" }
                   },
-                  children: done && /* @__PURE__ */ jsx(ui.icon, { icon: "check", style: { width: 10, height: 10, color: "accentText" } })
+                  children: done && /* @__PURE__ */ jsx4(ui5.icon, { icon: "check", style: { width: 10, height: 10, color: "accentText" } })
                 }
               ),
-              /* @__PURE__ */ jsx(ui.text, { style: { ...prose, flex: 1, ...done ? { color: "text3", textDecoration: "line-through" } : {} }, children: inline2(t[2]) })
+              /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, flex: 1, ...done ? { color: "text3", textDecoration: "line-through" } : {} }, children: inline2(t[2]) })
             ] }, "t" + n)
           );
         } else {
           const num = /^\s*(\d+)\.\s+/.exec(item);
           items.push(
-            /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", gap: 8, paddingLeft: depth * 18 }, children: [
-              /* @__PURE__ */ jsx(ui.text, { style: { ...prose, color: "text3", minWidth: 12 }, children: num ? num[1] + "." : "•" }),
-              /* @__PURE__ */ jsx(ui.text, { style: { ...prose, flex: 1 }, children: inline2(item.replace(/^\s*([-*+]|\d+\.)\s+/, "")) })
+            /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 8, paddingLeft: depth * 18 }, children: [
+              /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, color: "text3", minWidth: 12 }, children: num ? num[1] + "." : "•" }),
+              /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, flex: 1 }, children: inline2(item.replace(/^\s*([-*+]|\d+\.)\s+/, "")) })
             ] }, "li" + i2)
           );
         }
       }
-      blocks.push(/* @__PURE__ */ jsx(ui.box, { style: { gap: 2 }, children: items }, "list" + i2));
+      blocks.push(/* @__PURE__ */ jsx4(ui5.box, { style: { gap: 2 }, children: items }, "list" + i2));
       continue;
     }
     if (l.startsWith(">")) {
       const quote = [];
       for (; i2 < lines.length && lines[i2].startsWith(">"); i2++) quote.push(lines[i2].replace(/^>\s?/, ""));
       blocks.push(
-        /* @__PURE__ */ jsx(ui.box, { style: { borderLeft: "3px solid border", paddingLeft: 12 }, children: /* @__PURE__ */ jsx(ui.text, { style: { ...prose, color: "text2" }, children: inline2(quote.join(" ")) }) }, "q" + i2)
+        /* @__PURE__ */ jsx4(ui5.box, { style: { borderLeft: "3px solid border", paddingLeft: 12 }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, color: "text2" }, children: inline2(quote.join(" ")) }) }, "q" + i2)
       );
       continue;
     }
@@ -78985,10 +80046,10 @@ function Markdown({ md, onTask, image }) {
       pics.push(picture("pic" + i2 + "-" + pics.length, src, alt));
       return "";
     }).trim();
-    if (words) blocks.push(/* @__PURE__ */ jsx(ui.text, { style: prose, children: inline2(words) }, "p" + i2));
+    if (words) blocks.push(/* @__PURE__ */ jsx4(ui5.text, { style: prose, children: inline2(words) }, "p" + i2));
     blocks.push(...pics);
   }
-  return /* @__PURE__ */ jsx(ui.box, { style: { gap: 10 }, children: blocks });
+  return /* @__PURE__ */ jsx4(ui5.box, { style: { gap: 10 }, children: blocks });
 }
 function tickTask(md, n, done) {
   let seen = -1;
@@ -79007,18 +80068,18 @@ function ago(iso, now = Date.now()) {
 }
 function IssueRow({ issue: issue2, members: members2, right, onOpen }) {
   const who = members2.find((m) => issue2.assigneeIds[0] === m.id);
-  return /* @__PURE__ */ jsxs(
-    ui.pressable,
+  return /* @__PURE__ */ jsxs4(
+    ui5.pressable,
     {
       label: `${issue2.key} ${issue2.title}`,
       onClick: onOpen ?? (() => {
       }),
       style: { width: "100%", height: 36, gap: 8, paddingLeft: 6, paddingRight: 6, borderRadius: "control", flexDirection: "row", alignItems: "center", hover: { backgroundColor: "hover" }, cursor: onOpen ? "pointer" : "default" },
       children: [
-        /* @__PURE__ */ jsx(StatusIcon, { status: issue2.status, size: 14 }),
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 12, color: "text3", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", ...issue2.status === "complete" || issue2.status === "canceled" ? { color: "text3", textDecoration: "line-through" } : {} }, children: issue2.title }),
-        who && /* @__PURE__ */ jsx(Avatar, { member: who, size: 20 }),
+        /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status, size: 14 }),
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text3", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", ...issue2.status === "complete" || issue2.status === "canceled" ? { color: "text3", textDecoration: "line-through" } : {} }, children: issue2.title }),
+        who && /* @__PURE__ */ jsx4(Avatar, { member: who, size: 20 }),
         right
       ]
     },
@@ -79029,33 +80090,33 @@ function IssueView(props) {
   const { detail: d, members: members2 } = props;
   const issue2 = d.issue;
   const name = (id2) => members2.find((m) => m.id === id2);
-  return /* @__PURE__ */ jsxs(ui.box, { style: { gap: 0 }, children: [
-    /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", alignItems: "center", gap: 6, height: 22 }, children: [
-      /* @__PURE__ */ jsx(ProjectMark, { project: props.project, size: 13 }),
-      /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "small", color: "text2", letterSpacing: 0.2, userSelect: "text" }, children: issue2.key }),
-      /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", marginLeft: "auto", gap: 2, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx(ui.iconButton, { icon: "external", label: "Open in Flux", href: props.url, disabled: !props.url }),
-        props.detach && /* @__PURE__ */ jsx(ui.menu, { label: "", icon: "more", tooltip: "More of " + issue2.key, children: /* @__PURE__ */ jsx(ui.item, { icon: "x", onClick: props.detach, children: "Detach this thread" }) })
+  return /* @__PURE__ */ jsxs4(ui5.box, { style: { gap: 0 }, children: [
+    /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", alignItems: "center", gap: 6, height: 22 }, children: [
+      /* @__PURE__ */ jsx4(ProjectMark, { project: props.project, size: 13 }),
+      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", color: "text2", letterSpacing: 0.2, userSelect: "text" }, children: issue2.key }),
+      /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", marginLeft: "auto", gap: 2, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx4(ui5.iconButton, { icon: "external", label: "Open in Flux", href: props.url, disabled: !props.url }),
+        props.detach && /* @__PURE__ */ jsx4(ui5.menu, { label: "", icon: "more", tooltip: "More of " + issue2.key, children: /* @__PURE__ */ jsx4(ui5.item, { icon: "x", onClick: props.detach, children: "Detach this thread" }) })
       ] })
     ] }),
-    /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "title", fontWeight: 600, lineHeight: 1.35, marginTop: 8, userSelect: "text" }, children: issue2.title }),
-    d.parent && /* @__PURE__ */ jsxs(ui.box, { style: { marginTop: 10, gap: 4 }, children: [
-      /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "small", color: "text2" }, children: "Sub-issue of" }),
-      /* @__PURE__ */ jsxs(
-        ui.pressable,
+    /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "title", fontWeight: 600, lineHeight: 1.35, marginTop: 8, userSelect: "text" }, children: issue2.title }),
+    d.parent && /* @__PURE__ */ jsxs4(ui5.box, { style: { marginTop: 10, gap: 4 }, children: [
+      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", color: "text2" }, children: "Sub-issue of" }),
+      /* @__PURE__ */ jsxs4(
+        ui5.pressable,
         {
           label: `${d.parent.key} ${d.parent.title}`,
           onClick: () => props.open?.(d.parent),
-          style: { flexDirection: "row", gap: 7, alignItems: "center", cursor: "pointer", color: "text", hover: { color: "accent" } },
+          style: { flexDirection: "row", gap: 7, alignItems: "center", color: "text", hover: { color: "accent" } },
           children: [
-            /* @__PURE__ */ jsx(StatusIcon, { status: d.parent.status, size: 13 }),
-            /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", color: "currentColor" }, children: `${d.parent.key} ${d.parent.title}` })
+            /* @__PURE__ */ jsx4(StatusIcon, { status: d.parent.status, size: 13 }),
+            /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", color: "currentColor" }, children: `${d.parent.key} ${d.parent.title}` })
           ]
         }
       ),
-      d.parent.subIssueCount > 0 && /* @__PURE__ */ jsx(ui.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs(ui.box, { label: `${d.parent.subIssueDoneCount} of ${d.parent.subIssueCount} sub-issues done`, style: { ...chip, height: 22, paddingLeft: 6, paddingRight: 7, gap: 5, cursor: "default", hover: {} }, children: [
-        /* @__PURE__ */ jsx(
-          ui.canvas,
+      d.parent.subIssueCount > 0 && /* @__PURE__ */ jsx4(ui5.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs4(ui5.box, { label: `${d.parent.subIssueDoneCount} of ${d.parent.subIssueCount} sub-issues done`, style: { ...chip, height: 22, paddingLeft: 6, paddingRight: 7, gap: 5, cursor: "default", hover: {} }, children: [
+        /* @__PURE__ */ jsx4(
+          ui5.canvas,
           {
             label: "Progress",
             width: 14,
@@ -79067,53 +80128,98 @@ function IssueView(props) {
             }
           }
         ),
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "small" }, children: `${d.parent.subIssueDoneCount}/${d.parent.subIssueCount}` })
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small" }, children: `${d.parent.subIssueDoneCount}/${d.parent.subIssueCount}` })
       ] }) })
     ] }),
-    /* @__PURE__ */ jsxs(ui.box, { style: { marginTop: 14, gap: 6 }, children: [
-      /* @__PURE__ */ jsx(Properties, { issue: issue2, project: props.project, members: members2, labels: props.labels, me: props.me, edits: props.edits, start: props.start }),
-      props.working && /* @__PURE__ */ jsx(ui.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs(ui.box, { label: "An agent works on it", style: { ...chip, cursor: "default", border: "1px solid color-mix(in srgb, green 45%, transparent)", backgroundColor: "greenSoft", hover: {} }, children: [
-        /* @__PURE__ */ jsx(ui.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: "green", animation: { name: "pulse" } } }),
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: 13 }, children: "Working" })
+    /* @__PURE__ */ jsxs4(ui5.box, { style: { marginTop: 14, gap: 6 }, children: [
+      /* @__PURE__ */ jsx4(Properties, { issue: issue2, project: props.project, members: members2, labels: props.labels, me: props.me, edits: props.edits, start: props.start }),
+      props.working && /* @__PURE__ */ jsx4(ui5.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs4(ui5.box, { label: "An agent works on it", style: { ...chip, cursor: "default", border: "1px solid color-mix(in srgb, green 45%, transparent)", backgroundColor: "greenSoft", hover: {} }, children: [
+        /* @__PURE__ */ jsx4(ui5.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: "green", animation: { name: "pulse" } } }),
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: "Working" })
       ] }) })
     ] }),
-    /* @__PURE__ */ jsx(ui.box, { style: { marginTop: 20 }, children: props.description ?? (d.descriptionMarkdown.trim() ? /* @__PURE__ */ jsx(Markdown, { md: d.descriptionMarkdown, onTask: props.onTask, image: props.image }) : /* @__PURE__ */ jsx(ui.text, { style: { ...prose, color: "text3" }, children: "No description." })) }),
-    d.subIssues.length > 0 && /* @__PURE__ */ jsxs(ui.box, { style: { marginTop: 22, gap: 2 }, children: [
-      /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }, children: [
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Sub-issues" }),
-        /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "small", color: "text3" }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` })
+    /* @__PURE__ */ jsx4(ui5.box, { style: { marginTop: 20 }, children: props.description ?? (d.descriptionMarkdown.trim() ? /* @__PURE__ */ jsx4(Markdown, { md: d.descriptionMarkdown, onTask: props.onTask, image: props.image }) : /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, color: "text3" }, children: "No description." })) }),
+    d.subIssues.length > 0 && /* @__PURE__ */ jsxs4(ui5.box, { style: { marginTop: 22, gap: 2 }, children: [
+      /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }, children: [
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Sub-issues" }),
+        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", color: "text3" }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` })
       ] }),
-      d.subIssues.map((s) => /* @__PURE__ */ jsx(IssueRow, { issue: s, members: members2, onOpen: props.open ? () => props.open(s) : void 0 }, s.id))
+      d.subIssues.map((s) => /* @__PURE__ */ jsx4(IssueRow, { issue: s, members: members2, onOpen: props.open ? () => props.open(s) : void 0 }, s.id))
     ] }),
-    /* @__PURE__ */ jsxs(ui.box, { style: { marginTop: 22, paddingTop: 16, borderTop: "1px solid divider", gap: 14 }, children: [
-      /* @__PURE__ */ jsx(ui.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Activity" }),
-      /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx(Avatar, { member: name(issue2.creatorId), size: 18 }),
-        /* @__PURE__ */ jsxs(ui.text, { style: { fontSize: "small", color: "text2" }, children: [
-          /* @__PURE__ */ jsx(ui.text, { style: { fontWeight: 600, color: "text" }, children: name(issue2.creatorId)?.name ?? "Someone" }),
+    /* @__PURE__ */ jsxs4(ui5.box, { style: { marginTop: 22, paddingTop: 16, borderTop: "1px solid divider", gap: 14 }, children: [
+      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Activity" }),
+      /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx4(Avatar, { member: name(issue2.creatorId), size: 18 }),
+        /* @__PURE__ */ jsxs4(ui5.text, { style: { fontSize: "small", color: "text2" }, children: [
+          /* @__PURE__ */ jsx4(ui5.text, { style: { fontWeight: 600, color: "text" }, children: name(issue2.creatorId)?.name ?? "Someone" }),
           " created the issue · " + ago(issue2.createdAt)
         ] })
       ] }),
       d.comments.map((c) => {
         const who = name(c.authorId);
-        return /* @__PURE__ */ jsxs(ui.box, { style: { gap: 6 }, children: [
-          /* @__PURE__ */ jsxs(ui.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-            c.agent ? /* @__PURE__ */ jsx(ui.box, { style: { width: 18, height: 18, borderRadius: 5, backgroundColor: "accentSoft", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ jsx(ui.icon, { icon: "robot", style: { width: 12, height: 12, color: "accent" } }) }) : /* @__PURE__ */ jsx(Avatar, { member: who }),
-            /* @__PURE__ */ jsxs(ui.text, { style: { fontSize: "small", color: "text2" }, children: [
-              /* @__PURE__ */ jsx(ui.text, { style: { fontWeight: 600, color: "text" }, children: c.agent ? c.agent.name : who?.name ?? "Someone" }),
+        return /* @__PURE__ */ jsxs4(ui5.box, { style: { gap: 6 }, children: [
+          /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+            c.agent ? /* @__PURE__ */ jsx4(ui5.box, { style: { width: 18, height: 18, borderRadius: 5, backgroundColor: "accentSoft", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ jsx4(ui5.icon, { icon: "robot", style: { width: 12, height: 12, color: "accent" } }) }) : /* @__PURE__ */ jsx4(Avatar, { member: who }),
+            /* @__PURE__ */ jsxs4(ui5.text, { style: { fontSize: "small", color: "text2" }, children: [
+              /* @__PURE__ */ jsx4(ui5.text, { style: { fontWeight: 600, color: "text" }, children: c.agent ? c.agent.name : who?.name ?? "Someone" }),
               (c.agent && who ? " for " + who.name : "") + " · " + ago(c.createdAt)
             ] })
           ] }),
-          /* @__PURE__ */ jsx(ui.box, { style: { paddingLeft: 26 }, children: /* @__PURE__ */ jsx(Markdown, { md: c.markdown, image: props.image }) })
+          /* @__PURE__ */ jsx4(ui5.box, { style: { paddingLeft: 26 }, children: /* @__PURE__ */ jsx4(Markdown, { md: c.markdown, image: props.image }) })
         ] }, c.id);
       }),
       props.comment
     ] })
   ] });
 }
+var COIN = {
+  light: { accent: "#4a4a4d", check: "text", done: "#d4d4d6", pie: "#7a7a7d", side: "#b0b0b3" },
+  dark: { accent: "#e6e6e8", check: "bg", done: "#e6e6e8", pie: "#9b9b9e", side: "#5c5c5f" }
+};
+function drawCoins(g, c) {
+  const side = { stroke: c.side, lineWidth: 1.5 };
+  const face = { fill: "bg", stroke: c.side, lineWidth: 1.5 };
+  const coin = (x2, y2) => {
+    g.path(`M${x2} ${y2 + 19.5}c-9.39 0-17-5.96-17-13.3V${y2 + 1}h34v5.2c0 7.34-7.61 13.3-17 13.3Z`, side);
+    g.ellipse(x2, y2 + 0.05, 17, 13.05, face);
+  };
+  coin(18, 14);
+  for (let i2 = 0; i2 < 18; i2++) {
+    const a3 = i2 / 18 * Math.PI * 2;
+    g.circle(18 + 13 * Math.cos(a3), 14 + 9 * Math.sin(a3), 0.75, c.accent);
+  }
+  coin(62, 53.5);
+  g.ellipse(62, 53.5, 13, 9, { fill: c.done, stroke: c.accent, lineWidth: 1.5 });
+  g.path("m55.5 53.64 3.05 2.39a1 1 0 0 0 1.22.01l8.73-6.54", { stroke: c.check, lineWidth: 2.5 });
+  coin(62, 14);
+  g.ellipse(62, 14, 13, 9, { stroke: c.accent, lineWidth: 1.5 });
+  g.path("M18 73C8.61 73 1 67.04 1 59.7v-5.2h34v5.2C35 67.03 27.39 73 18 73Z", face);
+  g.ellipse(18, 53.55, 17, 13.05, face);
+  g.ellipse(18, 53.5, 13, 9, { stroke: c.accent, lineWidth: 1.5 });
+  g.path("M28 53.5c0 3.31-4.48 6-10 6v-12c5.52 0 10 2.69 10 6Z", { fill: c.pie });
+}
+function drawTray(g, c) {
+  g.path("m2.36 55.6 3.2 14.06A12 12 0 0 0 17.26 79h43.48a12 12 0 0 0 11.7-9.34l3.2-14.06", { stroke: c.side, lineWidth: 1.5 });
+  g.path("M10.4 9.11A10 10 0 0 1 20.22 1h37.56a10 10 0 0 1 9.82 8.11l8.11 42.2a10 10 0 0 1-9.82 11.9H54.7a6.36 6.36 0 0 0-5.65 3.45 6.36 6.36 0 0 1-5.66 3.45H34.6a6.36 6.36 0 0 1-5.66-3.45 6.36 6.36 0 0 0-5.65-3.46H12.1a10 10 0 0 1-9.8-11.89l8.11-42.2Z", { fill: "bg", stroke: c.side, lineWidth: 1.5 });
+  g.path("M14.3 9.03a5 5 0 0 1 4.91-4.08H58.8a5 5 0 0 1 4.91 4.08l8.07 43.22a6 6 0 0 1-5.9 7.1H52.76a5.72 5.72 0 0 0-5.24 3.41 5.72 5.72 0 0 1-5.23 3.42h-6.58a5.72 5.72 0 0 1-5.23-3.42 5.72 5.72 0 0 0-5.24-3.4h-13.1a6 6 0 0 1-5.9-7.1L14.3 9.02Z", { stroke: c.accent, lineWidth: 1.5 });
+}
+function TrayArt() {
+  const box = { width: 78, height: 80, flexShrink: 0 };
+  return /* @__PURE__ */ jsxs4(ui5.box, { style: box, children: [
+    /* @__PURE__ */ jsx4(ui5.canvas, { width: 78, height: 80, label: "", style: { ...box, dark: { display: "none" } }, draw: (g) => drawTray(g, COIN.light) }),
+    /* @__PURE__ */ jsx4(ui5.canvas, { width: 78, height: 80, label: "", style: { ...box, display: "none", dark: { display: "flex" } }, draw: (g) => drawTray(g, COIN.dark) })
+  ] });
+}
+function IssuesArt() {
+  const box = { width: 80, height: 74, flexShrink: 0 };
+  return /* @__PURE__ */ jsxs4(ui5.box, { style: box, children: [
+    /* @__PURE__ */ jsx4(ui5.canvas, { width: 80, height: 74, label: "", style: { ...box, dark: { display: "none" } }, draw: (g) => drawCoins(g, COIN.light) }),
+    /* @__PURE__ */ jsx4(ui5.canvas, { width: 80, height: 74, label: "", style: { ...box, display: "none", dark: { display: "flex" } }, draw: (g) => drawCoins(g, COIN.dark) })
+  ] });
+}
 
 // src/drafts.ts
-import { ui as ui2 } from "swarm";
+import { ui as ui6 } from "swarm";
 var drafts = /* @__PURE__ */ new Map();
 var timers = /* @__PURE__ */ new Map();
 function drafted(key, server) {
@@ -79134,7 +80240,7 @@ function editDraft(key, markdown, save) {
     void save(current).then(() => {
       if (drafts.get(key) === current) drafts.delete(key);
     }, (error62) => {
-      ui2.toast(error62 instanceof Error ? error62.message : String(error62));
+      ui6.toast(error62 instanceof Error ? error62.message : String(error62));
     });
   }, 400));
 }
@@ -79143,11 +80249,11 @@ async function finishUpload(key, fileId, url2, save, keep = false) {
   if (current === void 0 || !current.includes("flux-local:" + fileId)) return;
   const next2 = current.replaceAll("flux-local:" + fileId, url2);
   drafts.set(key, next2);
-  ui2.update();
+  ui6.update();
   if (next2.includes("flux-local:")) return;
   await save(next2);
   if (!keep && drafts.get(key) === next2) drafts.delete(key);
-  ui2.update();
+  ui6.update();
 }
 function clearDraft(key) {
   drafts.delete(key);
@@ -79157,7 +80263,7 @@ function clearDraft(key) {
 }
 
 // src/edit.tsx
-import { jsx as jsx2, jsxs as jsxs2 } from "swarm/jsx-runtime";
+import { jsx as jsx5, jsxs as jsxs5 } from "swarm/jsx-runtime";
 function mentionOptions(flux2) {
   return [
     ...flux2.memberList().map((member2) => ({ value: member2.username, label: `${member2.name} (@${member2.username})` })),
@@ -79168,8 +80274,8 @@ function editorImages(markdown, image) {
   const images = [];
   for (const match2 of markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)) {
     const url2 = match2[1];
-    const got = image(url2);
-    if (got instanceof Uint8Array) images.push({ url: url2, src: got });
+    const got2 = image(url2);
+    if (got2 instanceof Uint8Array) images.push({ url: url2, src: got2 });
   }
   return images;
 }
@@ -79177,23 +80283,42 @@ function upload(flux2, key, file2, entity, save, keep = false) {
   const bytes = Uint8Array.fromBase64(file2.base64);
   void flux2.uploadImage(bytes, file2.type, file2.name, entity).then(
     (url2) => finishUpload(key, file2.id, url2, save, keep),
-    (error62) => ui3.toast(error62 instanceof Error ? error62.message : String(error62))
+    (error62) => ui7.toast(error62 instanceof Error ? error62.message : String(error62))
   );
 }
-function DescriptionEditor({ flux: flux2, issue: issue2, markdown, image }) {
+function unkept(html) {
+  const table = /<table[\s>]/i.test(html);
+  const callout = /data-type="callout"/i.test(html);
+  if (table && callout) return "a table and a callout";
+  if (table) return "a table";
+  if (callout) return "a callout";
+  return null;
+}
+function DescriptionEditor({ flux: flux2, issue: issue2, markdown, html = "", image }) {
+  const has2 = unkept(html);
+  if (has2) {
+    return /* @__PURE__ */ jsxs5(ui7.box, { style: { gap: 14, minHeight: "50vh" }, children: [
+      /* @__PURE__ */ jsxs5(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
+        /* @__PURE__ */ jsx5(ui7.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
+        /* @__PURE__ */ jsx5(ui7.text, { style: { flex: 1, minWidth: 0, fontSize: "small", color: "text2" }, children: `This description has ${has2}, which Swarm can't edit without changing. Edit it in Flux.` }),
+        /* @__PURE__ */ jsx5(ui7.link, { label: "Edit in Flux", href: flux2.issueUrl(issue2), style: { fontSize: "small" } })
+      ] }),
+      /* @__PURE__ */ jsx5(Markdown, { md: markdown, image })
+    ] });
+  }
   const key = `desc:${flux2.id}:${issue2.id}`;
   const save = (md) => flux2.replaceDescription(issue2.id, md);
-  return /* @__PURE__ */ jsx2(
-    ui3.editor,
+  return /* @__PURE__ */ jsx5(
+    ui7.editor,
     {
       value: drafted(key, markdown),
-      placeholder: "Add description...",
+      placeholder: "Add description…",
       label: "Description",
       options: mentionOptions(flux2),
       images: editorImages(drafted(key, markdown), image),
       onChange: (value) => editDraft(key, value, save),
       onUpload: (file2) => upload(flux2, key, file2, "issue_image", save),
-      style: { minHeight: 96, fontSize: 15 }
+      style: { minHeight: "50vh", fontSize: 15, boxShadow: "none" }
     },
     key
   );
@@ -79207,17 +80332,17 @@ function CommentEditor({ flux: flux2, issue: issue2, image }) {
     if (!text2) return;
     void flux2.addComment(issue2.id, text2).then(() => {
       clearDraft(key);
-      ui3.update();
-    }, (error62) => ui3.toast(error62 instanceof Error ? error62.message : String(error62)));
+      ui7.update();
+    }, (error62) => ui7.toast(error62 instanceof Error ? error62.message : String(error62)));
   };
   const keep = async (markdown) => {
     setDraft(key, markdown);
   };
-  return /* @__PURE__ */ jsxs2(ui3.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start" }, children: [
-    /* @__PURE__ */ jsx2(ui3.box, { style: { marginTop: 8, flexShrink: 0 }, children: /* @__PURE__ */ jsx2(Avatar, { member: me2, size: 20 }) }),
-    /* @__PURE__ */ jsxs2(ui3.box, { style: { flex: 1, minWidth: 0, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
-      /* @__PURE__ */ jsx2(ui3.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx2(
-        ui3.editor,
+  return /* @__PURE__ */ jsxs5(ui7.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start" }, children: [
+    /* @__PURE__ */ jsx5(ui7.box, { style: { marginTop: 8, flexShrink: 0 }, children: /* @__PURE__ */ jsx5(Avatar, { member: me2, size: 20 }) }),
+    /* @__PURE__ */ jsxs5(ui7.box, { style: { flex: 1, minWidth: 0, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
+      /* @__PURE__ */ jsx5(ui7.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx5(
+        ui7.editor,
         {
           value,
           placeholder: "Leave a comment…",
@@ -79231,7 +80356,7 @@ function CommentEditor({ flux: flux2, issue: issue2, image }) {
         },
         key
       ) }),
-      /* @__PURE__ */ jsx2(ui3.box, { style: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 8, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: /* @__PURE__ */ jsx2(ui3.button, { size: "sm", kind: "secondary", label: "Comment", disabled: !value.trim(), onClick: send, children: "Comment  ⌘↵" }) })
+      /* @__PURE__ */ jsx5(ui7.box, { style: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 8, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: /* @__PURE__ */ jsx5(ui7.button, { size: "sm", kind: "secondary", label: "Comment", disabled: !value.trim(), onClick: send, children: "Comment  ⌘↵" }) })
     ] })
   ] });
 }
@@ -79242,62 +80367,113 @@ var approval = "";
 var branch = "";
 var prompt = "";
 var seeded = "";
+var imageIds2 = [];
 var starting = null;
 var busy = false;
+var swarmProject = "";
+var swarmProjects = null;
 function startAgent(issueId) {
   starting = issueId;
   seeded = "";
+  ui7.showOverlay("flux-start");
 }
-function isStarting(issueId) {
-  return starting === issueId;
+function closeStart() {
+  starting = null;
+  ui7.hideOverlay("flux-start");
 }
-function StartAgent({ flux: flux2, issue: issue2, markdown }) {
+function StartAgentDialog({ flux: flux2 }) {
+  const issue2 = starting ? flux2.issue(starting) : void 0;
+  if (!issue2) return null;
+  return /* @__PURE__ */ jsx5(StartAgent, { flux: flux2, issue: issue2 });
+}
+function StartAgent({ flux: flux2, issue: issue2 }) {
   if (seeded !== issue2.id) {
     seeded = issue2.id;
-    prompt = `Work on ${issue2.key}: ${issue2.title}
-
-${markdown.trim()}
-
-Keep the Flux issue current as you work. Move it to review when the work is ready to look at.`;
+    const start = startPrompt(flux2.detail(issue2.id), flux2.baseUrl);
+    prompt = start.prompt;
+    imageIds2 = start.imageIds;
+    swarmProject = "";
+    void loadProjects(flux2, issue2);
   }
-  return /* @__PURE__ */ jsxs2(ui3.box, { style: { gap: 10, padding: "s4", borderRadius: "card", border: "1px solid border", backgroundColor: "raised" }, children: [
-    /* @__PURE__ */ jsx2(ui3.text, { style: { fontWeight: 600 }, children: "Start an agent" }),
-    /* @__PURE__ */ jsxs2(ui3.text, { style: { fontSize: "small", color: "text2" }, children: [
-      "The thread is linked to ",
-      issue2.key,
-      ". Its merge request moves the issue to review, and merging completes it."
+  const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
+  const shown = swarmProjects?.find((p) => p.id === swarmProject)?.name ?? (swarmProjects ? "Choose a project" : "…");
+  const moves = issue2.status === "backlog" || issue2.status === "todo";
+  const images = imageIds2.length;
+  return /* @__PURE__ */ jsxs5(ui7.box, { label: `Start an agent on ${issue2.key}`, keys: ["Escape"], onKeyDown: closeStart, style: { position: "relative", gap: 14, padding: 20 }, children: [
+    /* @__PURE__ */ jsx5(ui7.iconButton, { icon: "x", label: "Close", style: { position: "absolute", top: 14, right: 14, width: 28, height: 28 }, onClick: closeStart }),
+    /* @__PURE__ */ jsxs5(ui7.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsxs5(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }, children: [
+        /* @__PURE__ */ jsx5(StatusIcon, { status: issue2.status, size: 16 }),
+        /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }, maxLines: 1, children: issue2.title.trim() || "Untitled" })
+      ] }),
+      /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 14, color: "text2" }, children: `The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}` })
     ] }),
-    /* @__PURE__ */ jsxs2(ui3.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, children: [
-      ui3.agentPicker({ provider, value: model, effort, onChange: (value) => {
+    /* @__PURE__ */ jsxs5(ui7.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }, children: [
+      /* @__PURE__ */ jsxs5(ui7.menu, { label: `Swarm project: ${shown}`, tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+        /* @__PURE__ */ jsx5(ui7.icon, { icon: "folder", style: { width: 14, height: 14, color: "currentColor" } }),
+        /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
+        /* @__PURE__ */ jsx5(ui7.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+        (swarmProjects ?? []).map((p) => /* @__PURE__ */ jsx5(ui7.item, { checked: p.id === swarmProject, onClick: () => {
+          swarmProject = p.id;
+        }, children: p.name }, p.id))
+      ] }),
+      ui7.agentPicker({ provider, value: model, effort, onChange: (value) => {
         provider = value.provider;
         model = value.model;
         effort = value.effort ?? "";
       } }),
-      ui3.modePicker({ provider, value: approval, onChange: (value) => {
+      ui7.modePicker({ provider, value: approval, onChange: (value) => {
         approval = value;
       } }),
-      ui3.branchPicker({ value: branch, onChange: (value) => {
+      ui7.branchPicker({ value: branch, onChange: (value) => {
         branch = value;
       } })
     ] }),
-    /* @__PURE__ */ jsx2(ui3.field, { value: prompt, multiline: true, placeholder: "What should the agent do?", onChange: (value) => {
+    /* @__PURE__ */ jsx5(ui7.field, { value: prompt, multiline: true, autoFocus: true, placeholder: "What should the agent do?", keys: ["Mod+Enter"], onKeyDown: () => void run3(flux2, issue2), onChange: (value) => {
       prompt = value;
-    } }, "agent-prompt"),
-    /* @__PURE__ */ jsxs2(ui3.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
-      /* @__PURE__ */ jsx2(ui3.button, { kind: "ghost", onClick: () => {
-        starting = null;
-      }, children: "Cancel" }),
-      /* @__PURE__ */ jsx2(ui3.button, { kind: "primary", disabled: busy || !prompt.trim(), onClick: () => void run3(flux2, issue2), children: busy ? "Starting…" : "Start" })
+    }, style: { minHeight: 160, maxHeight: "46vh", fontSize: 14 } }, "agent-prompt-" + issue2.id),
+    /* @__PURE__ */ jsxs5(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }, children: [
+      /* @__PURE__ */ jsx5(ui7.button, { kind: "ghost", size: "sm", onClick: closeStart, children: "Cancel" }),
+      /* @__PURE__ */ jsx5(ui7.button, { kind: "primary", size: "sm", icon: "bot", disabled: busy || !prompt.trim(), tooltip: "⌘ Enter", onClick: () => void run3(flux2, issue2), children: busy ? "Starting…" : "Start" })
     ] })
   ] });
 }
-async function run3(flux2, issue2) {
-  if (busy) return;
-  busy = true;
-  ui3.update();
+async function loadProjects(flux2, issue2) {
+  let projects = [];
   try {
-    const project = await projectFor(flux2, issue2);
-    const text2 = prompt.trim();
+    projects = (await call2("Projects", {})).map((p) => ({ id: p.id, name: p.name }));
+  } catch {
+  }
+  const found2 = await projectFor(flux2, issue2) ?? "";
+  if (seeded !== issue2.id) return;
+  swarmProjects = projects;
+  if (!swarmProject) swarmProject = found2;
+  ui7.update();
+}
+async function run3(flux2, issue2) {
+  if (busy || !prompt.trim()) return;
+  busy = true;
+  ui7.update();
+  try {
+    const project = swarmProject || await projectFor(flux2, issue2);
+    const pictures = [];
+    const placed = /* @__PURE__ */ new Map();
+    for (const [i2, id2] of imageIds2.entries()) {
+      try {
+        const asset = await flux2.requireClient().asset(id2);
+        const type = asset.contentType.split(";")[0].trim().toLowerCase();
+        if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(type) || asset.bytes.byteLength > 5 << 20) continue;
+        pictures.push({ type, data: new Uint8Array(asset.bytes) });
+        placed.set(i2 + 1, pictures.length);
+      } catch {
+      }
+    }
+    const failed2 = imageIds2.length - pictures.length;
+    const text2 = prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num) => {
+      const at3 = placed.get(Number(num));
+      return at3 ? `[Image #${at3}]` : whole;
+    });
     const spawned = await swarm2.threads.spawn({
       project,
       provider: provider || void 0,
@@ -79306,22 +80482,27 @@ async function run3(flux2, issue2) {
       approval: approval || void 0,
       worktree: true,
       branch: branch || void 0,
-      title: `${issue2.key} ${issue2.title}`,
+      title: `${issue2.key} · ${issue2.title}`,
       prompt: text2,
+      images: pictures,
       metadata: { issueId: issue2.id, issueKey: issue2.key, connectionId: flux2.id }
     });
-    await flux2.attach(issue2.id, spawned.id, true);
-    await flux2.addComment(issue2.id, `Started an agent on this issue.`, { name: provider || "Agent", provider: provider || "swarm", threadId: spawned.id }).catch(() => {
-    });
-    starting = null;
-    prompt = "";
-    ui3.openThread(spawned.id);
-    ui3.toast(`Started on ${issue2.key}.`);
+    if (failed2) ui7.toast(failed2 === imageIds2.length ? `${issue2.key}'s images weren't attached.` : `${failed2} of ${issue2.key}'s images weren't attached.`);
+    try {
+      await flux2.attach(issue2.id, spawned.id, true);
+      const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
+      if (fluxProject && !fluxProject.swarmProjectId && project && swarmProjects?.some((p) => p.id === project)) flux2.link(fluxProject.id, project);
+    } catch (e) {
+      ui7.toast(`The agent started, but ${issue2.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    closeStart();
+    ui7.openThread(spawned.id);
+    ui7.toast(`Agent started on ${issue2.key}.`);
   } catch (error62) {
-    ui3.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui7.toast(error62 instanceof Error ? error62.message : String(error62));
   } finally {
     busy = false;
-    ui3.update();
+    ui7.update();
   }
 }
 async function projectFor(flux2, issue2) {
@@ -79342,14 +80523,14 @@ import { call as call3, on } from "swarm";
 function watchMergeRequests(hub2) {
   const pending = /* @__PURE__ */ new Map();
   const check2 = async (thread) => {
-    let detail;
+    let detail2;
     try {
       await call3("RefreshMergeRequest", { thread });
-      detail = await call3("Thread", { thread });
+      detail2 = await call3("Thread", { thread });
     } catch {
       return;
     }
-    const meta3 = detail.thread?.pluginMeta?.flux;
+    const meta3 = detail2.thread?.pluginMeta?.flux;
     const issueId = typeof meta3?.issueId === "string" ? meta3.issueId : "";
     const issueKey = typeof meta3?.issueKey === "string" ? meta3.issueKey : "";
     if (!issueId && !issueKey) return;
@@ -79361,8 +80542,8 @@ function watchMergeRequests(hub2) {
     }
     const issue2 = issueId && flux2.issue(issueId) || issueKey && flux2.findIssue(issueKey);
     if (!issue2) return;
-    const state = detail.live?.mr?.State ?? "";
-    const opened = Boolean(detail.thread?.pr);
+    const state = detail2.live?.mr?.State ?? "";
+    const opened = Boolean(detail2.thread?.pr);
     let status = issue2.status;
     if (state === "merged") status = "complete";
     else if (state === "closed" && issue2.status === "review") status = "progress";
@@ -79383,87 +80564,6 @@ function watchMergeRequests(hub2) {
   });
 }
 
-// src/hub.ts
-import { storage as storage2 } from "swarm";
-function parseExtras(value) {
-  if (!value.trim()) return [];
-  try {
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item) => {
-      if (!item || typeof item !== "object") return false;
-      const row = item;
-      return typeof row.id === "string" && row.id !== "" && row.id !== "default" && typeof row.url === "string" && typeof row.token === "string";
-    });
-  } catch {
-    return [];
-  }
-}
-var Hub = class {
-  main = new Flux("default");
-  extras = /* @__PURE__ */ new Map();
-  activeId = storage2.get("activeConnection") || "default";
-  onChange = () => {
-  };
-  constructor() {
-    this.main.onChange = () => this.onChange();
-  }
-  /** The connection commands and the page use. */
-  get active() {
-    if (this.activeId !== "default") {
-      const extra = this.extras.get(this.activeId);
-      if (extra && extra.state !== "unconfigured") return extra;
-    }
-    return this.main;
-  }
-  all() {
-    return [this.main, ...this.extras.values()];
-  }
-  /** A connection by id, workspace name, slug, or a bit of its URL. The active one when unnamed. */
-  get(name) {
-    if (!name?.trim()) return this.active;
-    const needle = name.trim().toLowerCase();
-    const found2 = this.all().find((flux2) => {
-      const workspace = flux2.workspace;
-      return flux2.id.toLowerCase() === needle || workspace?.name.toLowerCase() === needle || workspace?.slug.toLowerCase() === needle || flux2.baseUrl.toLowerCase().includes(needle);
-    });
-    if (!found2) throw new FluxNotFoundError(`No Flux connection ${name}.`);
-    return found2;
-  }
-  use(id2) {
-    this.activeId = id2;
-    storage2.set("activeConnection", id2);
-    this.onChange();
-  }
-  /** Starts, restarts, or stops connections to match the settings. */
-  configure(url2, token, extraJSON) {
-    this.main.configure(url2, token);
-    const want = parseExtras(extraJSON);
-    const ids = new Set(want.map((item) => item.id));
-    for (const [id2, flux2] of this.extras) {
-      if (!ids.has(id2)) {
-        flux2.stop();
-        this.extras.delete(id2);
-      }
-    }
-    for (const item of want) {
-      let flux2 = this.extras.get(item.id);
-      if (!flux2) {
-        flux2 = new Flux(item.id, `conn:${item.id}`);
-        flux2.onChange = () => this.onChange();
-        this.extras.set(item.id, flux2);
-      }
-      flux2.configure(item.url, item.token);
-    }
-    if (this.activeId !== "default" && !this.extras.has(this.activeId)) this.use("default");
-  }
-  stop() {
-    this.main.stop();
-    for (const flux2 of this.extras.values()) flux2.stop();
-  }
-};
-var hub = new Hub();
-
 // src/images.ts
 var IMAGES_PER_CALL = 5;
 var failure2 = (text2) => ({ content: [{ type: "text", text: text2 }], isError: true });
@@ -79471,9 +80571,9 @@ async function issueImages(flux2, params2) {
   await flux2.whenReady();
   const issue2 = flux2.findIssue(params2.issue);
   if (!issue2) return failure2(`No Flux issue matches "${params2.issue}". Use a key like ABC-12; \`swarm flux list\` shows them.`);
-  const detail = flux2.detail(issue2.id);
-  const key = detail.issue.key;
-  const ids = issueImageIds(detail, flux2.baseUrl);
+  const detail2 = flux2.detail(issue2.id);
+  const key = detail2.issue.key;
+  const ids = issueImageIds(detail2, flux2.baseUrl);
   if (ids.length === 0) return `${key} has no images.`;
   const wanted = params2.images ?? ids.slice(0, IMAGES_PER_CALL).map((_2, i2) => i2 + 1);
   const missing = wanted.filter((n) => n > ids.length);
@@ -79482,8 +80582,8 @@ async function issueImages(flux2, params2) {
   }
   const lookup = { members: flux2.memberList(), labels: [], projects: [], baseUrl: flux2.baseUrl };
   const place = (id2) => {
-    if (imageIds(detail.descriptionMarkdown, flux2.baseUrl).includes(id2)) return "in the description";
-    const c = detail.comments.find((each) => imageIds(each.markdown, flux2.baseUrl).includes(id2));
+    if (imageIds(detail2.descriptionMarkdown, flux2.baseUrl).includes(id2)) return "in the description";
+    const c = detail2.comments.find((each) => imageIds(each.markdown, flux2.baseUrl).includes(id2));
     return c ? `in a comment by ${memberName(lookup, c.authorId)}, ${c.createdAt.slice(0, 16).replace("T", " ")}` : "";
   };
   const content = [];
@@ -79504,8 +80604,165 @@ function base644(bytes) {
   return bytes.toBase64();
 }
 
+// src/skeleton.tsx
+import { ui as ui8 } from "swarm";
+import { jsx as jsx6, jsxs as jsxs6 } from "swarm/jsx-runtime";
+var BONE = { borderRadius: 4, backgroundColor: "hover", animation: { name: "shimmer" }, flexShrink: 0 };
+function Bone({ width, height = 10, round: round2 = false, style }) {
+  return /* @__PURE__ */ jsx6(ui8.box, { style: { ...BONE, width, height, ...round2 ? { borderRadius: "full" } : null, ...style } });
+}
+var TITLES2 = ["78%", "56%", "88%", "64%", "72%", "48%"];
+function CardBones({ n = 0 }) {
+  return /* @__PURE__ */ jsxs6(ui8.box, { style: { width: "100%", gap: 0, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }, children: [
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", alignItems: "center", height: 16 }, children: [
+      /* @__PURE__ */ jsx6(Bone, { width: 52, height: 8 }),
+      /* @__PURE__ */ jsx6(ui8.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true })
+    ] }),
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
+      /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 12 })
+    ] }),
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", marginTop: 10 }, children: [
+      /* @__PURE__ */ jsx6(Bone, { width: 22, height: 20 }),
+      n % 3 !== 1 ? /* @__PURE__ */ jsx6(Bone, { width: 56, height: 20 }) : null,
+      n % 2 === 0 ? /* @__PURE__ */ jsx6(Bone, { width: 44, height: 20 }) : null
+    ] })
+  ] });
+}
+function RowBones({ n = 0 }) {
+  return /* @__PURE__ */ jsxs6(ui8.box, { style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, paddingLeft: 8, paddingRight: 8 }, children: [
+    /* @__PURE__ */ jsx6(ui8.box, { style: { width: 16 } }),
+    /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14 }),
+    /* @__PURE__ */ jsx6(Bone, { width: 48, height: 8 }),
+    /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
+    /* @__PURE__ */ jsx6(ui8.box, { style: { flex: 1, minWidth: 0 }, children: /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 10 }) }),
+    /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true })
+  ] });
+}
+function BoardBones({ edge }) {
+  return /* @__PURE__ */ jsx6(ui8.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, flexDirection: "row", gap: 20, overflow: "hidden", paddingLeft: edge, paddingRight: edge, paddingTop: 16, media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20 } }] }, children: [5, 3, 4, 2].map((cards, column) => /* @__PURE__ */ jsxs6(ui8.box, { style: { width: 346, flexShrink: 0, alignSelf: "flex-start", gap: 6, padding: 8, borderRadius: 14, backgroundColor: "color-mix(in srgb, text 4%, bg)" }, children: [
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, marginTop: 2, marginBottom: 2 }, children: [
+      /* @__PURE__ */ jsx6(Bone, { width: 16, height: 16, round: true }),
+      /* @__PURE__ */ jsx6(Bone, { width: [72, 88, 64, 96][column], height: 12 }),
+      /* @__PURE__ */ jsx6(Bone, { width: 12, height: 12 })
+    ] }),
+    Array.from({ length: cards }, (_2, n) => /* @__PURE__ */ jsx6(CardBones, { n: column * 2 + n }, "card" + n))
+  ] }, "col" + column)) });
+}
+function ListBones({ edge }) {
+  return /* @__PURE__ */ jsxs6(ui8.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, overflow: "hidden", paddingLeft: edge, paddingRight: edge, paddingTop: 12 }, children: [
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, borderRadius: "control", backgroundColor: "hover", marginBottom: 4 }, children: [
+      /* @__PURE__ */ jsx6(Bone, { width: 12, height: 12 }),
+      /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
+      /* @__PURE__ */ jsx6(Bone, { width: 80, height: 10 })
+    ] }),
+    Array.from({ length: 9 }, (_2, n) => /* @__PURE__ */ jsx6(RowBones, { n }, "row" + n))
+  ] });
+}
+function IssueBones() {
+  return /* @__PURE__ */ jsxs6(ui8.box, { label: "Loading the issue…", style: { flex: 1, minHeight: 0, overflow: "hidden" }, children: [
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 48, flexShrink: 0, paddingLeft: 16, paddingRight: 16, borderBottom: "1px solid border" }, children: [
+      /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14 }),
+      /* @__PURE__ */ jsx6(Bone, { width: 72, height: 10 }),
+      /* @__PURE__ */ jsx6(Bone, { width: 48, height: 10 }),
+      /* @__PURE__ */ jsx6(Bone, { width: 160, height: 10 })
+    ] }),
+    /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 40, width: "100%", maxWidth: 928, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }] }, children: [
+      /* @__PURE__ */ jsxs6(ui8.box, { style: { flex: 1, minWidth: 0, gap: 14 }, children: [
+        /* @__PURE__ */ jsx6(Bone, { width: "66%", height: 28, style: { borderRadius: 6 } }),
+        /* @__PURE__ */ jsx6(Bone, { width: "34%", height: 12 }),
+        /* @__PURE__ */ jsxs6(ui8.box, { style: { gap: 10, marginTop: 24 }, children: [
+          /* @__PURE__ */ jsx6(Bone, { width: "100%", height: 10 }),
+          /* @__PURE__ */ jsx6(Bone, { width: "94%", height: 10 }),
+          /* @__PURE__ */ jsx6(Bone, { width: "82%", height: 10 }),
+          /* @__PURE__ */ jsx6(Bone, { width: "58%", height: 10 })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx6(ui8.box, { style: { display: "none", width: 240, gap: 14, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: [64, 80, 56, 72, 48].map((w2, n) => /* @__PURE__ */ jsxs6(ui8.box, { style: { flexDirection: "row", gap: 10, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx6(Bone, { width: 72, height: 8 }),
+        /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
+        /* @__PURE__ */ jsx6(Bone, { width: w2, height: 10 })
+      ] }, "p" + n)) })
+    ] })
+  ] });
+}
+
 // src/page.tsx
-import { settings, storage as storage3, ui as ui4 } from "swarm";
+import { storage as storage4, ui as ui10 } from "swarm";
+
+// src/connect.tsx
+import { ui as ui9 } from "swarm";
+import { jsx as jsx7, jsxs as jsxs7 } from "swarm/jsx-runtime";
+var forms = /* @__PURE__ */ new Map();
+function formOf(key, url2) {
+  let form = forms.get(key);
+  if (!form) forms.set(key, form = { url: url2, token: "", busy: false, error: "" });
+  return form;
+}
+function ConnectForm({ name, target: target2, url: url2 = "", done, cancel }) {
+  const form = formOf(name, url2);
+  const go = () => void connect(name, form, target2, done);
+  const tokens = /^https?:\/\/[^/\s]+/.exec(form.url.trim())?.[0];
+  return /* @__PURE__ */ jsxs7(ui9.box, { style: { gap: 14 }, children: [
+    /* @__PURE__ */ jsxs7(ui9.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsx7(ui9.text, { style: { fontWeight: 500 }, children: "Flux URL" }),
+      /* @__PURE__ */ jsx7(ui9.field, { value: form.url, placeholder: "https://flux.example.com", onChange: (value) => {
+        form.url = value;
+        form.error = "";
+      }, onSubmit: go }, name + "-url")
+    ] }),
+    /* @__PURE__ */ jsxs7(ui9.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsx7(ui9.text, { style: { fontWeight: 500 }, children: "API token" }),
+      /* @__PURE__ */ jsx7(ui9.field, { secret: true, value: form.token, placeholder: "flux_…", onChange: (value) => {
+        form.token = value;
+        form.error = "";
+      }, onSubmit: go, style: { fontFamily: "mono" } }, name + "-token"),
+      /* @__PURE__ */ jsxs7(ui9.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx7(ui9.text, { style: { fontSize: "small", color: "text3" }, children: "Make one in Flux, under" }),
+        tokens ? /* @__PURE__ */ jsx7(ui9.link, { label: "Settings, API tokens.", href: `${tokens}/settings/tokens`, style: { fontSize: "small" } }) : /* @__PURE__ */ jsx7(ui9.text, { style: { fontSize: "small", color: "text3" }, children: "Settings, API tokens." })
+      ] })
+    ] }),
+    form.error ? /* @__PURE__ */ jsxs7(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx7(ui9.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx7(ui9.text, { style: { flex: 1, minWidth: 0 }, children: form.error })
+    ] }) : null,
+    /* @__PURE__ */ jsxs7(ui9.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
+      cancel ? /* @__PURE__ */ jsx7(ui9.button, { kind: "ghost", onClick: () => {
+        forms.delete(name);
+        cancel();
+      }, children: "Cancel" }) : null,
+      /* @__PURE__ */ jsx7(ui9.button, { kind: "primary", disabled: form.busy, onClick: go, children: form.busy ? "Connecting…" : "Connect" })
+    ] })
+  ] });
+}
+async function connect(name, form, target2, done) {
+  const url2 = form.url.trim();
+  const token = form.token.trim();
+  if (form.busy) return;
+  if (!url2 || !token) {
+    form.error = !url2 ? "Give Flux's URL: the address you open Flux at." : "Give an API token: make one in Flux, under Settings, API tokens.";
+    ui9.update();
+    return;
+  }
+  form.busy = true;
+  form.error = "";
+  ui9.update();
+  try {
+    const found2 = await checkFlux(url2, token);
+    const twin = hub.connected().find((flux2) => flux2.id !== target2 && flux2.baseUrl === found2.baseUrl && flux2.workspace?.id === found2.workspace.id);
+    if (twin) throw new Error(`${found2.workspace.name} at ${found2.baseUrl} is connected already: change its token there.`);
+    hub.save(target2, url2, token);
+    forms.delete(name);
+    ui9.toast(`Connected to ${found2.workspace.name} as ${found2.account}.`);
+    done?.();
+  } catch (e) {
+    form.error = describe3(e);
+  } finally {
+    form.busy = false;
+    ui9.update();
+  }
+}
 
 // src/threads.ts
 var known = /* @__PURE__ */ new Map();
@@ -79684,28 +80941,28 @@ function buildGroups(args2) {
   }
   return groups;
 }
-function patchForMove(issue2, from3, target) {
-  switch (target.kind) {
+function patchForMove(issue2, from4, target2) {
+  switch (target2.kind) {
     case "status":
-      return issue2.status === target.status ? null : { status: target.status };
+      return issue2.status === target2.status ? null : { status: target2.status };
     case "priority":
-      return issue2.priority === target.priority ? null : { priority: target.priority };
+      return issue2.priority === target2.priority ? null : { priority: target2.priority };
     case "assignee": {
-      const source = from3.kind === "assignee" ? from3.memberId : null;
-      if (source === target.memberId) return null;
+      const source = from4.kind === "assignee" ? from4.memberId : null;
+      if (source === target2.memberId) return null;
       const kept = issue2.assigneeIds.filter((id2) => id2 !== source);
-      if (target.memberId === null) return { assigneeIds: [] };
-      return { assigneeIds: [target.memberId, ...kept.filter((id2) => id2 !== target.memberId)] };
+      if (target2.memberId === null) return { assigneeIds: [] };
+      return { assigneeIds: [target2.memberId, ...kept.filter((id2) => id2 !== target2.memberId)] };
     }
     case "label": {
-      const source = from3.kind === "label" ? from3.labelId : null;
-      if (source === target.labelId) return null;
+      const source = from4.kind === "label" ? from4.labelId : null;
+      if (source === target2.labelId) return null;
       const kept = issue2.labelIds.filter((id2) => id2 !== source);
-      if (target.labelId === null) return { labelIds: [] };
-      return { labelIds: [target.labelId, ...kept.filter((id2) => id2 !== target.labelId)] };
+      if (target2.labelId === null) return { labelIds: [] };
+      return { labelIds: [target2.labelId, ...kept.filter((id2) => id2 !== target2.labelId)] };
     }
     case "project":
-      return issue2.projectId === target.projectId ? null : { projectId: target.projectId };
+      return issue2.projectId === target2.projectId ? null : { projectId: target2.projectId };
     case "none":
       return null;
   }
@@ -79738,16 +80995,15 @@ function scopeOf(path) {
 }
 
 // src/page.tsx
-import { jsx as jsx3, jsxs as jsxs3 } from "swarm/jsx-runtime";
+import { jsx as jsx8, jsxs as jsxs8 } from "swarm/jsx-runtime";
 var query = "";
 var selected = /* @__PURE__ */ new Set();
 var cursor = "";
 var displayOpen = false;
-var palette = "";
+var keyed = false;
+var anchor2 = "";
+var filterFocus = 0;
 var lastPatch = null;
-var adding = false;
-var addURL = "";
-var addToken = "";
 var creating = false;
 var createMore = false;
 var draftTitle = "";
@@ -79811,29 +81067,29 @@ var PAGE_KEYS = [
   "Shift+X"
 ];
 function displayOf() {
-  return parseDisplay(storage3.get("display"));
+  return parseDisplay(storage4.get("display"));
 }
 function setDisplay(next2) {
-  storage3.set("display", next2);
+  storage4.set("display", next2);
 }
 function openIssue(key) {
-  ui4.navTo("flux", `issues/${encodeURIComponent(key)}`);
+  ui10.navTo("flux", `issues/${encodeURIComponent(key)}`);
 }
 function openList(path) {
-  ui4.navTo("flux", path);
+  ui10.navTo("flux", path);
 }
 function navItems(flux2) {
-  const open2 = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status));
+  const open4 = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status));
   const count = (n) => n ? String(n) : void 0;
   return [
-    { id: "all", title: "All projects", icon: "flux:mark", path: "", section: "Projects", badge: count(open2.length) },
+    { id: "all", title: "All projects", icon: "flux:mark", path: "", section: "Projects", badge: count(open4.length) },
     ...flux2.projects().map((project) => ({
       id: "p-" + project.id,
       title: project.name,
       ...navMark(project),
       path: `p/${project.key}`,
       section: "Projects",
-      badge: count(open2.filter((issue2) => issue2.projectId === project.id).length)
+      badge: count(open4.filter((issue2) => issue2.projectId === project.id).length)
     }))
   ];
 }
@@ -79841,13 +81097,13 @@ function syncNav(flux2) {
   const me2 = flux2.me?.id;
   const mine = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status) && me2 && issue2.assigneeIds.includes(me2)).length;
   try {
-    ui4.navItems("flux", navItems(flux2));
-    ui4.navBadge("flux", { text: mine ? String(mine) : "" });
+    ui10.navItems("flux", navItems(flux2));
+    ui10.navBadge("flux", { text: mine ? String(mine) : "" });
   } catch {
   }
 }
 function scopeNow() {
-  return scopeOf(storage3.get("scope") ?? "mine");
+  return scopeOf(storage4.get("scope") ?? "mine");
 }
 function parsePath(path) {
   const parts = path.split("/").filter(Boolean);
@@ -79860,14 +81116,25 @@ function FluxPage({ path, slot, image }) {
   const route = parsePath(path);
   const connection = flux2.connection();
   const unset = connection.state === "unconfigured" || connection.state === "unauthorized";
+  const cantLoad = (connection.state === "error" || connection.state === "offline") && connection.issueCount === 0;
   if (slot === "head") {
-    if (unset) return null;
+    if (unset || cantLoad) return null;
     const project = route.kind === "list" ? flux2.projects().find((item) => item.key === route.project) : void 0;
-    return /* @__PURE__ */ jsx3(PageHead, { flux: flux2, onCreate: () => openCreate(flux2, project?.id) });
+    return /* @__PURE__ */ jsx8(PageHead, { flux: flux2, onCreate: () => openCreate(flux2, project?.id) });
   }
-  if (unset) return /* @__PURE__ */ jsx3(Setup, { flux: flux2 });
-  if (route.kind === "issue") return /* @__PURE__ */ jsx3(IssuePage, { flux: flux2, issueKey: route.key, image });
-  return /* @__PURE__ */ jsx3(ListScreen, { flux: flux2, scope: scopeNow(), projectKey: route.project });
+  if (unset) return /* @__PURE__ */ jsx8(Setup, { flux: flux2 });
+  if (cantLoad) return /* @__PURE__ */ jsx8(CantLoad, { flux: flux2 });
+  if (connection.state === "connecting" && connection.issueCount === 0 && route.kind === "list") {
+    const options = displayOf();
+    const project = flux2.projects().find((item) => item.key === route.project) ?? null;
+    return /* @__PURE__ */ jsxs8(ui10.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: [
+      /* @__PURE__ */ jsx8(Toolbar, { flux: flux2, project, scope: scopeNow(), options }),
+      options.layout === "list" ? /* @__PURE__ */ jsx8(ListBones, { edge: EDGE }) : /* @__PURE__ */ jsx8(BoardBones, { edge: EDGE }),
+      displayOpen ? displayPanel(options, !!project) : null
+    ] });
+  }
+  if (route.kind === "issue") return /* @__PURE__ */ jsx8(IssuePage, { flux: flux2, issueKey: route.key, image });
+  return /* @__PURE__ */ jsx8(ListScreen, { flux: flux2, scope: scopeNow(), projectKey: route.project });
 }
 function ListScreen({ flux: flux2, scope, projectKey }) {
   const options = displayOf();
@@ -79886,24 +81153,20 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
   });
   const groups = buildGroups({ issues, grouping, ordering: options.ordering, showEmptyGroups: options.showEmptyGroups, showClosed: options.showClosed, members: members2, labels, projects, me: me2 });
   const flat = groups.flatMap((group) => group.issues);
+  shownFlat = flat;
   const connection = flux2.connection();
-  return /* @__PURE__ */ jsxs3(
-    ui4.box,
+  return /* @__PURE__ */ jsxs8(
+    ui10.box,
     {
       style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 },
       keys: PAGE_KEYS,
       onKeyDown: (key) => onListKey(flux2, key, flat, groups, options),
       children: [
-        /* @__PURE__ */ jsx3(Toolbar, { flux: flux2, project, scope, options }),
-        connection.state !== "ready" && connection.message ? /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 8, paddingBottom: 8, borderBottom: "1px solid border" }, children: [
-          /* @__PURE__ */ jsx3(ui4.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "amber", flexShrink: 0 } }),
-          /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text2", flex: 1, minWidth: 0 }, maxLines: 2, tooltip: connection.message, children: offline(connection.message) })
-        ] }) : null,
-        adding ? /* @__PURE__ */ jsx3(ui4.box, { style: { paddingLeft: EDGE, paddingRight: EDGE, paddingBottom: 8 }, children: /* @__PURE__ */ jsx3(AddConnection, {}) }) : null,
-        flat.length === 0 ? /* @__PURE__ */ jsx3(Empty, { flux: flux2, scope, inProject: !!project, onCreate: () => openCreate(flux2, project?.id) }) : options.layout === "list" ? /* @__PURE__ */ jsx3(IssueList, { flux: flux2, groups, options, showProject: !project }) : /* @__PURE__ */ jsx3(Board, { flux: flux2, groups, options }),
-        selected.size > 0 ? /* @__PURE__ */ jsx3(SelectionBar, { flux: flux2 }) : null,
-        displayOpen ? displayPanel(options, !!project) : null,
-        palette ? /* @__PURE__ */ jsx3(Palette, { flux: flux2 }) : null
+        /* @__PURE__ */ jsx8(Toolbar, { flux: flux2, project, scope, options }),
+        /* @__PURE__ */ jsx8(SyncBars, { flux: flux2 }),
+        flat.length === 0 ? /* @__PURE__ */ jsx8(Empty, { flux: flux2, scope, inProject: !!project, onCreate: () => openCreate(flux2, project?.id) }) : options.layout === "list" ? /* @__PURE__ */ jsx8(IssueList, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }) : /* @__PURE__ */ jsx8(Board, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }),
+        selected.size > 0 ? /* @__PURE__ */ jsx8(SelectionBar, { flux: flux2 }) : null,
+        displayOpen ? displayPanel(options, !!project) : null
       ]
     }
   );
@@ -79913,185 +81176,339 @@ function offline(message, copy3 = true) {
   const said = host ? `Can't reach Flux at ${host.replace(/^https?:\/\//, "")}.` : message.replace(/\.?\s*$/, ".");
   return copy3 ? `${said} Showing the last copy.` : `${said} Trying again.`;
 }
-function PageHead({ flux: flux2, onCreate }) {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-    /* @__PURE__ */ jsx3(Connections, {}),
-    /* @__PURE__ */ jsx3(ui4.button, { kind: "primary", size: "sm", icon: "plus", onClick: onCreate, children: "New issue" })
+function since(iso) {
+  if (!iso) return "a while ago";
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 6e4));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  return hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
+}
+var retryFailedAt = 0;
+function retryNow(flux2) {
+  flux2.reconnect();
+  setTimeout(() => {
+    if (flux2.connection().state === "offline") {
+      retryFailedAt = Date.now();
+      ui10.update();
+      setTimeout(() => ui10.update(), 4100);
+    }
+  }, 2e3);
+}
+function SyncBars({ flux: flux2 }) {
+  const c = flux2.connection();
+  const host = (c.baseUrl || flux2.url || "Flux").replace(/^https?:\/\//, "");
+  const away = (c.state === "offline" || c.state === "connecting" && c.issueCount > 0) && c.issueCount > 0;
+  const bar = { flexDirection: "row", gap: 8, alignItems: "center", minHeight: 32, paddingLeft: EDGE, paddingRight: EDGE - 6, paddingTop: 4, paddingBottom: 4, borderBottom: "1px solid border", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 14 } }] };
+  const barButton = { height: 24, paddingLeft: 6, paddingRight: 6, justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text", hover: { backgroundColor: "hover" } };
+  const failed2 = Date.now() - retryFailedAt < 4e3;
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 0, flexShrink: 0 }, children: [
+    away ? /* @__PURE__ */ jsxs8(ui10.box, { label: "Offline", style: bar, children: [
+      /* @__PURE__ */ jsx8(ui10.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "amber", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row" }, children: /* @__PURE__ */ jsxs8(ui10.text, { style: { fontSize: 12, minWidth: 0, color: "text2" }, maxLines: 1, tooltip: c.message || void 0, children: [
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontWeight: 500, color: "text" }, children: "Offline" }),
+        ` · Can't reach ${host}, so this is the copy synced ${since(c.syncedAt)}. Changes you make are sent when it's back.`
+      ] }) }),
+      c.queued ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: `${c.queued} waiting to send` }) : null,
+      /* @__PURE__ */ jsx8(ui10.pressable, { label: "Retry now", disabled: c.state === "connecting", onClick: () => retryNow(flux2), style: { ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: c.state === "connecting" ? "Retrying…" : failed2 ? "Still can't reach it" : "Retry now" }) })
+    ] }) : c.state === "error" && c.message ? /* @__PURE__ */ jsxs8(ui10.box, { label: "Flux couldn't sync", style: bar, children: [
+      /* @__PURE__ */ jsx8(ui10.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2", flex: 1, minWidth: 0 }, maxLines: 1, tooltip: c.message, children: c.message }),
+      /* @__PURE__ */ jsx8(ui10.pressable, { label: "Try again", onClick: () => flux2.reconnect(), style: barButton, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Try again" }) })
+    ] }) : null,
+    c.dropped.length ? /* @__PURE__ */ jsxs8(ui10.box, { style: { ...bar, alignItems: "flex-start", paddingTop: 8, paddingBottom: 8, backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 1 } }),
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500 }, children: c.dropped.length === 1 ? "A change made offline wasn't sent" : `${c.dropped.length} changes made offline weren't sent` }),
+        c.dropped.slice(-5).map((d) => /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: `${d.label}: ${d.reason}` }, d.id))
+      ] }),
+      /* @__PURE__ */ jsx8(ui10.pressable, { label: "Dismiss", onClick: () => flux2.dismissDropped(), style: barButton, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Dismiss" }) })
+    ] }) : null
   ] });
 }
+function PageHead({ flux: flux2, onCreate }) {
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+    /* @__PURE__ */ jsx8(Connections, {}),
+    /* @__PURE__ */ jsx8(ui10.button, { kind: "primary", size: "sm", icon: "plus", onClick: onCreate, children: "New issue" })
+  ] });
+}
+var searching = false;
 function Toolbar({ flux: flux2, project, scope, options }) {
   const projects = flux2.projects();
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 48, flexShrink: 0, paddingLeft: EDGE - ghostChip.paddingLeft, paddingRight: EDGE, borderBottom: "1px solid border", media: [{ maxWidth: 639, style: { height: "auto", flexWrap: "wrap", rowGap: 8, paddingTop: 10, paddingBottom: 10 } }] }, children: [
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: project ? project.name : "All projects", style: ghostChip, children: [
-      project ? /* @__PURE__ */ jsx3(ProjectMark, { project }) : /* @__PURE__ */ jsx3(FluxMark, {}),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: project ? project.name : "All projects" }),
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
-      /* @__PURE__ */ jsx3(ui4.item, { icon: "icon.svg", checked: !project, onClick: () => openList(""), children: "All projects" }),
-      projects.map((item) => /* @__PURE__ */ jsx3(ui4.item, { checked: item.key === project?.key, onClick: () => openList(`p/${item.key}`), children: item.name }, item.id))
-    ] }),
-    /* @__PURE__ */ jsx3(ui4.box, { style: { width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border" } }),
-    SCOPES.map((item) => /* @__PURE__ */ jsx3(ui4.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage3.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", backgroundColor: scope === item ? "hover" : "transparent", hover: { backgroundColor: "hover" } }, children: /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: scope === item ? "text" : "text2" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)),
-    /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1, media: [{ maxWidth: 639, style: { display: "none" } }] } }),
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", width: 208, minWidth: 96, flexShrink: 1, height: 28, media: [{ maxWidth: 639, style: { flex: 1, marginLeft: ghostChip.paddingLeft } }], paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field" }, children: [
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "search", style: { width: 13, height: 13, color: "text3", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx3(ui4.field, { value: query, placeholder: "Filter issues", onChange: (value) => {
-        query = value;
-      }, style: { flex: 1, height: 26, padding: 0, backgroundColor: "transparent", boxShadow: "none" } }, "flux-filter")
-    ] }),
-    /* @__PURE__ */ jsx3(ui4.pressable, { label: "Display", role: "button", tooltip: "Display options", checked: displayOpen, onClick: () => {
-      displayOpen = !displayOpen;
-    }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", border: "1px solid border", backgroundColor: displayOpen ? "hover" : "transparent", hover: { backgroundColor: "hover" } }, children: /* @__PURE__ */ jsx3(ui4.icon, { icon: "sliders", style: { width: 14, height: 14, color: "text2" } }) })
+  const narrowSearch = searching || query !== "";
+  const filter = (wide) => /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field", ...wide ? { flex: 1, minWidth: 0 } : { width: 208, flexShrink: 0 }, focus: { borderColor: "borderStrong" } }, children: [
+    /* @__PURE__ */ jsx8(ui10.icon, { icon: "search", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
+    /* @__PURE__ */ jsx8(ui10.field, { autoFocus: filterFocus > 0 || wide && searching, value: query, placeholder: "Filter issues", onChange: (value) => {
+      query = value;
+    }, style: { flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" } }, "flux-filter-" + (wide ? "n" : "w") + filterFocus)
+  ] });
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 48, flexShrink: 0, paddingLeft: EDGE - ghostChip.paddingLeft, paddingRight: EDGE, borderBottom: "1px solid border", media: [{ minWidth: 768, style: { paddingLeft: 20 - ghostChip.paddingLeft, paddingRight: 20 } }] }, children: [
+    narrowSearch ? /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: [
+      filter(true),
+      /* @__PURE__ */ jsx8(ui10.pressable, { label: "Cancel", onClick: () => {
+        query = "";
+        searching = false;
+      }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14 }, children: "Cancel" }) })
+    ] }) : null,
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, flexShrink: 1 }, children: [
+        project ? /* @__PURE__ */ jsx8(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx8(FluxMark, { size: 16 }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
+        /* @__PURE__ */ jsx8(ui10.item, { icon: "icon.svg", checked: !project, detail: String(flux2.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(""), children: "All projects" }),
+        projects.map((item) => /* @__PURE__ */ jsx8(ui10.item, { ...navMark(item), checked: item.key === project?.key, detail: String(flux2.issues().filter((i2) => i2.projectId === item.id && !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(`p/${item.key}`), children: item.name }, item.id))
+      ] }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: SM, style: { display: "flex" } }] } }),
+      /* @__PURE__ */ jsx8(ui10.box, { label: "Issues", style: { display: "none", flexDirection: "row", gap: 2, alignItems: "center", media: [{ minWidth: SM, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx8(ui10.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage4.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { media: [{ minWidth: SM, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui10.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+        SCOPES.map((item) => /* @__PURE__ */ jsx8(ui10.item, { checked: scope === item, onClick: () => storage4.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
+      ] }) }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
+      /* @__PURE__ */ jsx8(ui10.pressable, { label: "Filter issues", tooltip: "Filter issues (/)", onClick: () => {
+        searching = true;
+      }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx8(ui10.icon, { icon: "search", style: { width: 14, height: 14, color: "currentColor" } }) }),
+      /* @__PURE__ */ jsxs8(ui10.pressable, { label: "Display", role: "button", tooltip: "Display options (⇧V)", checked: displayOpen, onClick: () => {
+        displayOpen = !displayOpen;
+      }, style: { position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }, children: [
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "sliders", style: { width: 14, height: 14, color: "currentColor" } }),
+        customized(options) ? /* @__PURE__ */ jsx8(ui10.box, { style: { position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
+      ] })
+    ] })
   ] });
 }
+var WIDE = 704;
+function customized(options) {
+  const d = DEFAULT_DISPLAY;
+  return options.grouping !== d.grouping || options.ordering !== d.ordering || options.showClosed !== d.showClosed || options.showEmptyGroups !== d.showEmptyGroups || options.showSubIssues !== d.showSubIssues || options.properties.length !== d.properties.length || options.properties.some((p) => !d.properties.includes(p));
+}
 var EDGE = 16;
-var ghostChip = { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, gap: 6, flexDirection: "row", alignItems: "center", borderRadius: "control", backgroundColor: "transparent" };
+var ghostChip = { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, gap: 6, flexDirection: "row", alignItems: "center", borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } };
 function displayPanel(options, singleProject) {
   const set2 = (patch) => setDisplay({ ...options, ...patch });
   const toggle = (property) => {
     const has2 = options.properties.includes(property);
-    set2({ properties: has2 ? options.properties.filter((item) => item !== property) : [...options.properties, property] });
+    const properties = has2 ? options.properties.filter((item) => item !== property) : PROPERTIES.filter((item) => item === property || options.properties.includes(item));
+    if (properties.length > 0) set2({ properties });
   };
-  const close2 = () => {
+  const close4 = () => {
     displayOpen = false;
   };
+  const picked = (on3) => ({ borderRadius: "control", border: on3 ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on3 ? "press" : "transparent", color: on3 ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "press" : "hover", color: "text" } });
   return [
-    /* @__PURE__ */ jsx3(ui4.pressable, { label: "Close display options", onClick: close2, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
-    /* @__PURE__ */ jsxs3(ui4.box, { label: "Display options", style: { position: "absolute", top: 44, right: 20, width: 288, zIndex: 21, gap: 12, padding: 12, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }, children: [
-      /* @__PURE__ */ jsx3(ui4.box, { style: { flexDirection: "row", gap: 6 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs3(ui4.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout }), style: { flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center", borderRadius: "control", border: "1px solid border", backgroundColor: options.layout === layout ? "hover" : "transparent" }, children: [
-        /* @__PURE__ */ jsx3(ui4.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 13, height: 13, color: "text2" } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: layout === "board" ? "Board" : "List" })
+    /* @__PURE__ */ jsx8(ui10.pressable, { label: "Close display options", onClick: close4, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
+    /* @__PURE__ */ jsxs8(ui10.box, { label: "Display options", style: { position: "absolute", top: 44, right: 16, width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
+      /* @__PURE__ */ jsx8(ui10.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs8(ui10.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
       ] }, "layout-" + layout)) }),
-      /* @__PURE__ */ jsx3(DisplayRow, { label: "Grouping", value: GROUPING_LABELS[options.grouping], children: GROUPINGS.filter((grouping) => grouping !== "project" || !singleProject).map((grouping) => /* @__PURE__ */ jsx3(ui4.item, { checked: options.grouping === grouping, onClick: () => set2({ grouping }), children: GROUPING_LABELS[grouping] }, "group-" + grouping)) }),
-      /* @__PURE__ */ jsx3(DisplayRow, { label: "Ordering", value: ORDERING_LABELS[options.ordering], children: ORDERINGS.map((ordering) => /* @__PURE__ */ jsx3(ui4.item, { checked: options.ordering === ordering, onClick: () => set2({ ordering }), children: ORDERING_LABELS[ordering] }, "order-" + ordering)) }),
-      /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 6 }, children: [
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text2" }, children: "Display properties" }),
-        /* @__PURE__ */ jsx3(ui4.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4 }, children: PROPERTIES.map((property) => {
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 2, paddingLeft: 4, paddingRight: 4, paddingTop: 8 }, children: [
+        /* @__PURE__ */ jsx8(DisplayRow, { label: "Grouping", value: GROUPING_LABELS[options.grouping], children: GROUPINGS.filter((grouping) => (grouping !== "project" || !singleProject) && (grouping !== "none" || options.layout === "list")).map((grouping) => /* @__PURE__ */ jsx8(ui10.item, { checked: options.grouping === grouping, onClick: () => set2({ grouping }), children: GROUPING_LABELS[grouping] }, "group-" + grouping)) }),
+        /* @__PURE__ */ jsx8(DisplayRow, { label: "Ordering", value: ORDERING_LABELS[options.ordering], children: ORDERINGS.map((ordering) => /* @__PURE__ */ jsx8(ui10.item, { checked: options.ordering === ordering, onClick: () => set2({ ordering }), children: ORDERING_LABELS[ordering] }, "order-" + ordering)) })
+      ] }),
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 6, paddingLeft: 4, paddingRight: 4, paddingTop: 12 }, children: [
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: "text2" }, children: "Display properties" }),
+        /* @__PURE__ */ jsx8(ui10.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4 }, children: PROPERTIES.map((property) => {
           const on3 = options.properties.includes(property);
-          return /* @__PURE__ */ jsx3(ui4.pressable, { label: PROPERTY_LABELS[property], role: "checkbox", checked: on3, onClick: () => toggle(property), style: { height: 22, paddingLeft: 6, paddingRight: 6, justifyContent: "center", borderRadius: "control", border: "1px solid border", backgroundColor: on3 ? "hover" : "transparent" }, children: /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: on3 ? "text" : "text3" }, children: PROPERTY_LABELS[property] }) }, "prop-" + property);
+          return /* @__PURE__ */ jsx8(ui10.pressable, { label: PROPERTY_LABELS[property], role: "checkbox", checked: on3, onClick: () => toggle(property), style: { ...picked(on3), height: 22, paddingLeft: 6, paddingRight: 6, justifyContent: "center" }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: PROPERTY_LABELS[property] }) }, "prop-" + property);
         }) })
       ] }),
-      /* @__PURE__ */ jsx3(DisplaySwitch, { label: "Show completed issues", on: options.showClosed, set: (on3) => set2({ showClosed: on3 }) }),
-      /* @__PURE__ */ jsx3(DisplaySwitch, { label: "Show empty groups", on: options.showEmptyGroups, set: (on3) => set2({ showEmptyGroups: on3 }) }),
-      /* @__PURE__ */ jsx3(DisplaySwitch, { label: "Show sub-issues", on: options.showSubIssues, set: (on3) => set2({ showSubIssues: on3 }) })
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { paddingTop: 12 }, children: [
+        /* @__PURE__ */ jsx8(DisplaySwitch, { label: "Show completed issues", on: options.showClosed, set: (on3) => set2({ showClosed: on3 }) }),
+        /* @__PURE__ */ jsx8(DisplaySwitch, { label: "Show empty groups", on: options.showEmptyGroups, set: (on3) => set2({ showEmptyGroups: on3 }) }),
+        /* @__PURE__ */ jsx8(DisplaySwitch, { label: "Show sub-issues", on: options.showSubIssues, set: (on3) => set2({ showSubIssues: on3 }) })
+      ] }),
+      customized(options) ? /* @__PURE__ */ jsx8(ui10.pressable, { label: "Reset to default", onClick: () => setDisplay({ ...DEFAULT_DISPLAY, layout: options.layout }), style: { marginTop: 4, height: 30, paddingLeft: 4, justifyContent: "center", borderRadius: "control", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "currentColor" }, children: "Reset to default" }) }) : null
     ] }, "display-panel")
   ];
 }
 function DisplaySwitch({ label, on: on3, set: set2 }) {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", alignItems: "center", gap: 8 }, children: [
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text2", flex: 1 }, children: label }),
-    /* @__PURE__ */ jsx3(ui4.toggle, { tooltip: label, checked: on3, onChange: set2 })
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32, paddingLeft: 4, paddingRight: 4 }, children: [
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
+    /* @__PURE__ */ jsx8(ui10.toggle, { tooltip: label, checked: on3, onChange: set2 })
   ] });
 }
 function DisplayRow({ label, value, children }) {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", alignItems: "center", gap: 8 }, children: [
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text2", flex: 1 }, children: label }),
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: `${label}: ${value}`, style: { ...ghostChip, height: 24 }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: value }),
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "chevron-down", style: { width: 11, height: 11, color: "text3" } }),
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32 }, children: [
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
+    /* @__PURE__ */ jsxs8(ui10.menu, { label: `${label}: ${value}`, style: { ...ghostChip, height: 26, paddingLeft: 6, paddingRight: 6, gap: 4 }, children: [
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500 }, children: value }),
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
       children
     ] })
   ] });
 }
-function Board({ flux: flux2, groups, options }) {
-  return /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1, minHeight: 0, minWidth: 0, width: "100%", flexDirection: "row", gap: 20, overflowX: "auto", overflowY: "hidden", alignItems: "stretch", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 16, paddingBottom: 32 }, children: groups.map((group) => /* @__PURE__ */ jsxs3(ui4.box, { label: group.title, style: { width: 346, flexShrink: 0, minHeight: 0, height: "100%", gap: 6, padding: 8, borderRadius: 12, backgroundColor: "raised", overflowY: "auto" }, onDrop: (event) => dropOn(flux2, group, event, options), children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 8, paddingRight: 2, paddingTop: 2, paddingBottom: 2, flexShrink: 0 }, children: [
-      /* @__PURE__ */ jsx3(GroupMark, { group, flux: flux2 }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, color: "text3" }, children: String(group.issues.length) }),
-      /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx3(ui4.iconButton, { icon: "plus", label: `New issue in ${group.title}`, onClick: () => openCreate(flux2, void 0, group.key) })
+function Board({ flux: flux2, groups, options, showProject, scrollKey }) {
+  const manual = options.ordering === "manual";
+  const hint = (group) => manual ? void 0 : `${group.title}
+Board ordered by ${ORDERING_LABELS[options.ordering]}`;
+  return /* @__PURE__ */ jsx8(ui10.box, { style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, minWidth: 0, width: "100%", flexDirection: "row", gap: 20, overflowX: "auto", overflowY: "hidden", alignItems: "stretch", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 16, paddingBottom: 32, scrollSnapType: "x mandatory", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20, scrollSnapType: "none" } }] }, children: groups.map((group) => /* @__PURE__ */ jsxs8(ui10.box, { label: group.title, style: { width: 346, flexShrink: 0, minHeight: 0, height: "100%", gap: 6, padding: 8, borderRadius: 14, backgroundColor: COLUMN_BG, boxShadow: "inset 0 0 0 1px transparent", transition: { duration: 200, colors: true }, dragOver: { boxShadow: "inset 0 0 0 1px color-mix(in srgb, text 10%, transparent)" } }, onDrop: (event) => dropOn(flux2, group, event, options), dropHint: hint(group), children: [
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6, flexShrink: 0 }, children: [
+      /* @__PURE__ */ jsx8(GroupMark, { group, flux: flux2, size: 16 }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2" }, children: String(group.issues.length) }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx8(ui10.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, void 0, group.key) })
     ] }),
-    group.issues.map((issue2, index) => /* @__PURE__ */ jsx3(Card, { flux: flux2, issue: issue2, group, index, options }, issue2.id))
-  ] }, group.id)) });
+    /* @__PURE__ */ jsx8(
+      ui10.list,
+      {
+        count: group.issues.length,
+        rowHeight: 40,
+        rowKey: (n) => group.issues[n].id,
+        row: (n) => /* @__PURE__ */ jsx8(ui10.box, { style: { width: "100%", paddingBottom: n < group.issues.length - 1 ? 6 : 0 }, children: /* @__PURE__ */ jsx8(Card, { flux: flux2, issue: group.issues[n], group, index: n, options, showProject }) }),
+        style: { flex: 1, minHeight: 0 },
+        placeholder: /* @__PURE__ */ jsx8(ui10.box, { style: { width: "100%", paddingBottom: 6 }, children: /* @__PURE__ */ jsx8(CardBones, {}) }),
+        dropGap: manual,
+        reveal: keyed && group.issues.some((issue2) => issue2.id === cursor) ? cursor : void 0,
+        onDrop: manual ? (event) => dropAt(flux2, group, group.issues, event, options) : void 0
+      },
+      `cards-${scrollKey}-${group.id}`
+    )
+  ] }, group.id)) }, "board-" + scrollKey);
 }
-function Card({ flux: flux2, issue: issue2, group, index, options }) {
-  const project = flux2.projects().find((item) => item.id === issue2.projectId);
+var CARD = {
+  flexDirection: "row",
+  gap: 8,
+  flexShrink: 0,
+  paddingLeft: 12,
+  paddingRight: 12,
+  paddingTop: 10,
+  paddingBottom: 10,
+  borderRadius: 8,
+  backgroundColor: "overlay",
+  border: "1px solid border",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+  transition: { duration: 100, colors: true },
+  hover: { backgroundColor: "color-mix(in srgb, text 4%, overlay)", borderColor: "color-mix(in srgb, text 20%, overlay)" }
+};
+var CARD_ON = { backgroundColor: "color-mix(in srgb, text 3%, overlay)", border: "1px solid accent", hover: { backgroundColor: "color-mix(in srgb, text 3%, overlay)", borderColor: "accent" } };
+var COLUMN_BG = "color-mix(in srgb, text 4%, bg)";
+function Card({ flux: flux2, issue: issue2, group, index, options, showProject }) {
+  const project = showProject ? flux2.projects().find((item) => item.id === issue2.projectId) : void 0;
   const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
   const assignees = flux2.memberList().filter((member2) => issue2.assigneeIds.includes(member2.id));
   const marks = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
   const on3 = selected.has(issue2.id);
   const fields = shows(options, "priority") || shows(options, "dueDate") && !!issue2.dueDate || issue2.subIssueCount > 0 || shows(options, "labels") && marks.length > 0 || shows(options, "agents") && issue2.threadIds.length > 0;
-  return /* @__PURE__ */ jsxs3(
-    ui4.box,
+  return /* @__PURE__ */ jsxs8(
+    ui10.box,
     {
       label: issue2.title,
       drag: { id: issue2.id, index },
       onClick: (event) => clickIssue(issue2, event),
-      onDrop: (event) => dropBefore(flux2, group, index, event, options),
-      style: { flexDirection: "row", gap: 8, flexShrink: 0, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10, borderRadius: "control", backgroundColor: on3 ? "selected" : "bg", border: on3 ? "1px solid text2" : "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", cursor: "pointer" },
+      style: { ...CARD, ...on3 ? CARD_ON : null, ...keyed && cursor === issue2.id ? { border: "1px solid accent" } : null },
       children: [
-        /* @__PURE__ */ jsx3(IssueContextMenu, { flux: flux2, issue: issue2 }),
-        /* @__PURE__ */ jsxs3(ui4.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-          /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 16 }, children: [
-            /* @__PURE__ */ jsx3(ProjectMark, { project, size: 14 }),
-            /* @__PURE__ */ jsx3(KeyLine, { issue: issue2, parent, showKey: shows(options, "id") })
-          ] }),
-          /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: 4 }, children: [
-            shows(options, "status") ? /* @__PURE__ */ jsx3(ui4.box, { style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx3(StatusIcon, { status: issue2.status, size: 14 }) }) : null,
-            /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text3" : "text" }, maxLines: 2, children: issue2.title })
-          ] }),
-          fields ? /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
-            shows(options, "priority") ? /* @__PURE__ */ jsx3(ui4.box, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0 }, children: /* @__PURE__ */ jsx3(PriorityIcon, { priority: issue2.priority, size: 12 }) }) : null,
-            shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx3(DueChip, { date: issue2.dueDate }) : null,
-            issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx3(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null,
-            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsx3(Tag, { label: item }, item.id)) : null,
-            shows(options, "agents") && issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx3(AgentChip, { issue: issue2 }) : null
+        /* @__PURE__ */ jsx8(IssueContextMenu, { flux: flux2, issue: issue2 }),
+        /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+          shows(options, "id") || parent || project ? /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 16 }, children: [
+            project ? /* @__PURE__ */ jsx8(ProjectMark, { project, size: 14 }) : null,
+            /* @__PURE__ */ jsx8(KeyLine, { issue: issue2, parent: parent ?? void 0, showKey: shows(options, "id") })
           ] }) : null,
-          shows(options, "created") ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", marginTop: 8 }, children: createdOn(issue2.createdAt) }) : null
+          /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: shows(options, "id") || parent || project ? 4 : 0 }, children: [
+            shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 4, backgroundColor: "transparent" }, children: [
+              /* @__PURE__ */ jsx8(StatusIcon, { status: issue2.status, size: 14 }),
+              pickerItems(flux2, issue2, "status")
+            ] }) : null,
+            /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text2" : "text" }, maxLines: 2, children: issue2.title })
+          ] }),
+          fields ? /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
+            shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }, children: [
+              /* @__PURE__ */ jsx8(PriorityIcon, { priority: issue2.priority, size: 12 }),
+              pickerItems(flux2, issue2, "priority")
+            ] }) : null,
+            shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsxs8(Picker, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+              dueContent(issue2.dueDate),
+              pickerItems(flux2, issue2, "due")
+            ] }) : null,
+            issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx8(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null,
+            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs8(Picker, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+              tagContent(item),
+              pickerItems(flux2, issue2, "labels")
+            ] }, item.id)) : null,
+            shows(options, "agents") && issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx8(AgentChip, { issue: issue2 }) : null
+          ] }) : null,
+          shows(options, "created") ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
         ] }),
-        shows(options, "assignee") && assignees.length > 0 ? /* @__PURE__ */ jsx3(AvatarStack, { members: assignees, size: 20 }) : null
+        /* @__PURE__ */ jsxs8(ui10.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
+          shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
+            assignees.length ? /* @__PURE__ */ jsx8(AvatarStack, { members: assignees, size: 20, ring: "overlay" }) : /* @__PURE__ */ jsx8(Unassigned, { size: 20 }),
+            pickerItems(flux2, issue2, "assignees")
+          ] }) : /* @__PURE__ */ jsx8(ui10.box, {}),
+          issue2.threadIds.length === 0 && !CLOSED_STATUSES.has(issue2.status) ? /* @__PURE__ */ jsx8(StartAgentButton, { issue: issue2, bordered: true }) : null
+        ] })
       ]
     }
   );
 }
+function pickerItems(flux2, issue2, kind) {
+  const set2 = (patch) => apply2(flux2, issue2.id, patch);
+  const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
+  switch (kind) {
+    case "status":
+      return STATUSES.map((status) => /* @__PURE__ */ jsx8(ui10.item, { ...statusMark(status), checked: issue2.status === status, onClick: () => set2({ status }), children: STATUS_LABELS[status] }, status));
+    case "priority":
+      return [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((priority) => /* @__PURE__ */ jsx8(ui10.item, { ...priorityMark(priority), checked: issue2.priority === priority, onClick: () => set2({ priority }), children: PRIORITY_LABELS[priority] }, priority));
+    case "due":
+      return dueItems(issue2.dueDate, (dueDate) => set2({ dueDate }));
+    case "labels":
+      return [
+        ...flux2.labels().map((label) => /* @__PURE__ */ jsx8(ui10.item, { ...labelMark(label.color), checked: issue2.labelIds.includes(label.id), onClick: () => set2({ labelIds: toggle(issue2.labelIds, label.id) }), children: label.name }, label.id)),
+        flux2.labels().length ? /* @__PURE__ */ jsx8(ui10.separator, {}, "sep") : null,
+        /* @__PURE__ */ jsx8(ui10.item, { icon: "plus", onClick: () => openPalette("label", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "New label…" }, "new")
+      ];
+    case "assignees": {
+      const me2 = flux2.me?.id;
+      return [...flux2.memberList()].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx8(ui10.item, { ...memberMark(member2), detail: "@" + member2.username, checked: issue2.assigneeIds.includes(member2.id), onClick: () => set2({ assigneeIds: toggle(issue2.assigneeIds, member2.id) }), children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id));
+    }
+  }
+}
+function Picker({ label, style, children }) {
+  return /* @__PURE__ */ jsx8(ui10.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
+}
 var field = { flexDirection: "row", gap: 4, alignItems: "center", justifyContent: "center", height: 22, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: 4, border: "1px solid border" };
 function KeyLine({ issue: issue2, parent, showKey }) {
   if (!showKey && !parent) return null;
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minWidth: 0 }, children: [
-    parent ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 11, color: "text3" }, maxLines: 1, children: parent.key }) : null,
-    parent && showKey ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 11, color: "text3" }, children: "›" }) : null,
-    showKey ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 11, color: "text3", flexShrink: 0 }, children: issue2.key }) : null
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minWidth: 0 }, children: [
+    parent ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: parent.key }) : null,
+    parent && showKey ? /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }) : null,
+    showKey ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: issue2.key }) : null
   ] });
 }
-function AvatarStack({ members: members2, size: size3 }) {
-  return /* @__PURE__ */ jsx3(ui4.box, { style: { flexDirection: "row", gap: 2, flexShrink: 0 }, children: members2.slice(0, 3).map((member2) => /* @__PURE__ */ jsx3(Avatar, { member: member2, size: size3 }, member2.id)) });
+function AvatarStack({ members: members2, size: size3, ring = "bg" }) {
+  const overlap = Math.round(size3 * 0.3);
+  return /* @__PURE__ */ jsx8(ui10.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => /* @__PURE__ */ jsx8(ui10.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: "full", boxShadow: n === 0 ? "none" : `0 0 0 1.5px ${ring}`, flexShrink: 0 }, children: /* @__PURE__ */ jsx8(Avatar, { member: member2, size: size3 }) }, member2.id)) });
 }
 function dueTone(date5) {
-  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-  if (date5 < today) return "red";
-  const soon = new Date(Date.now() + 3 * 864e5).toISOString().slice(0, 10);
-  return date5 <= soon ? "amber" : "text2";
+  const delta = dayDelta(date5);
+  if (delta < 0) return "red";
+  return delta <= 3 ? "amber" : "text2";
 }
-function dueLabel(date5) {
-  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
-  if (date5 === today) return "Today";
-  if (date5 === tomorrow) return "Tomorrow";
-  return monthDay(`${date5}T12:00:00Z`);
-}
-function DueChip({ date: date5 }) {
+function dueContent(date5) {
   const tone = dueTone(date5);
-  return /* @__PURE__ */ jsxs3(ui4.box, { label: `Due ${date5}`, style: field, children: [
-    /* @__PURE__ */ jsx3(ui4.icon, { icon: "calendar", style: { width: 12, height: 12, color: tone } }),
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, fontWeight: 500, color: tone }, children: dueLabel(date5) })
-  ] });
+  return [
+    /* @__PURE__ */ jsx8(ui10.icon, { icon: "calendar", style: { width: 12, height: 12, color: tone } }, "icon"),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: tone }, children: dueLabel(date5) }, "text")
+  ];
 }
 function SubIssueChip({ done, total }) {
   const color = done >= total ? "green" : "text2";
-  return /* @__PURE__ */ jsxs3(ui4.box, { label: `${done} of ${total} sub-issues done`, style: field, children: [
-    /* @__PURE__ */ jsx3(ui4.canvas, { width: 14, height: 14, label: "", style: { width: 14, height: 14, flexShrink: 0 }, draw: (g) => {
+  return /* @__PURE__ */ jsxs8(ui10.box, { label: `${done} of ${total} sub-issues done`, style: field, children: [
+    /* @__PURE__ */ jsx8(ui10.canvas, { width: 14, height: 14, label: "", style: { width: 14, height: 14, flexShrink: 0 }, draw: (g) => {
       g.circle(7, 7, 5, { stroke: "borderStrong", lineWidth: 2 });
       if (done > 0) g.arc(7, 7, 5, -90, -90 + 360 * Math.min(done, total) / total, { stroke: color, lineWidth: 2 });
     } }),
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, fontWeight: 500, color }, children: `${done}/${total}` })
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color }, children: `${done}/${total}` })
   ] });
 }
 function AgentChip({ issue: issue2 }) {
   const busy2 = issue2.threadIds.some((id2) => threadInfo(id2)?.working);
   const count = issue2.threadIds.length;
-  return /* @__PURE__ */ jsxs3(ui4.box, { label: busy2 ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy2 ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
-    /* @__PURE__ */ jsx3(ui4.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy2 ? "green" : "text3", ...busy2 ? { animation: { name: "pulse" } } : {} } }),
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, fontWeight: 500, color: busy2 ? "text" : "text2" }, children: busy2 ? "Working" : count === 1 ? "Agent" : `${count} agents` })
+  return /* @__PURE__ */ jsxs8(ui10.box, { label: busy2 ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy2 ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
+    /* @__PURE__ */ jsx8(ui10.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy2 ? "green" : "text3", ...busy2 ? { animation: { name: "pulse" } } : {} } }),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: busy2 ? "text" : "text2" }, children: busy2 ? "Working" : count === 1 ? "Agent" : `${count} agents` })
   ] });
 }
 function createdOn(iso) {
@@ -80112,89 +81529,180 @@ function ago2(iso) {
   if (hours < 24) return `${Math.round(hours)}h`;
   return `${Math.round(hours / 24)}d`;
 }
-function IssueList({ flux: flux2, groups, options, showProject }) {
-  const projects = flux2.projects();
-  const members2 = flux2.memberList();
-  const labels = flux2.labels();
-  return /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1, minHeight: 0, overflowY: "auto", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 12, paddingBottom: 32, gap: 12 }, children: groups.map((group) => /* @__PURE__ */ jsxs3(ui4.box, { label: group.title, onDrop: (event) => dropOn(flux2, group, event, options), style: { gap: 4 }, children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 4, borderRadius: "control", backgroundColor: "hover" }, children: [
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
-      /* @__PURE__ */ jsx3(GroupMark, { group, flux: flux2 }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, color: "text3" }, children: String(group.issues.length) }),
-      /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx3(ui4.iconButton, { icon: "plus", label: `New issue in ${group.title}`, onClick: () => openCreate(flux2, void 0, group.key) })
+function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
+  const headed = effectiveGrouping(options, !showProject) !== "none";
+  const rows2 = [];
+  const headers = [];
+  const folded = new Set(storage4.get("folded") ?? []);
+  for (const group of groups) {
+    if (headed) {
+      headers.push(rows2.length);
+      rows2.push({ group });
+    }
+    if (headed && folded.has(group.id)) continue;
+    if (group.issues.length === 0) rows2.push({ group, empty: true });
+    group.issues.forEach((issue2, index) => rows2.push({ group, issue: issue2, index }));
+  }
+  const keyWidth = 8 * Math.max(5, ...groups.flatMap((group) => group.issues.map((issue2) => issue2.key.length))) + 4;
+  return /* @__PURE__ */ jsx8(
+    ui10.list,
+    {
+      count: rows2.length,
+      rowHeight: 40,
+      headers,
+      rowKey: (n) => {
+        const row = rows2[n];
+        return "issue" in row ? row.issue.id : ("empty" in row ? "empty-" : "group-") + row.group.id;
+      },
+      row: (n) => {
+        const row = rows2[n];
+        if ("issue" in row) return /* @__PURE__ */ jsx8(ListRow, { flux: flux2, issue: row.issue, group: row.group, index: row.index, options, showProject, keyWidth });
+        if ("empty" in row) return /* @__PURE__ */ jsx8(ui10.box, { style: { width: "100%", height: 32 }, onDrop: (event) => dropOn(flux2, row.group, event, options) });
+        return /* @__PURE__ */ jsx8(ListHeading, { flux: flux2, group: row.group, options, first: n === 0 });
+      },
+      style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, paddingLeft: EDGE - 4, paddingRight: EDGE - 4, paddingTop: 12, paddingBottom: 32 },
+      placeholder: /* @__PURE__ */ jsx8(RowBones, {}),
+      dropGap: options.ordering === "manual",
+      reveal: keyed ? cursor : void 0,
+      onDrop: options.ordering === "manual" ? (event) => listDrop(flux2, rows2, event, options) : void 0
+    },
+    "issue-list-" + scrollKey
+  );
+}
+function listDrop(flux2, rows2, event, options) {
+  const id2 = dragged(event);
+  const others = rows2.filter((row) => !("issue" in row) || row.issue.id !== id2);
+  const at3 = Math.min(Math.max(event.index ?? others.length, 0), others.length);
+  const before = others[at3 - 1];
+  const after = others[at3];
+  const group = after && "issue" in after ? after.group : before?.group ?? after?.group;
+  if (!group) return;
+  const inGroup = group.issues.filter((issue2) => issue2.id !== id2);
+  const next2 = after && "issue" in after && after.group === group ? inGroup.findIndex((issue2) => issue2.id === after.issue.id) : -1;
+  dropAt(flux2, group, group.issues, { data: event.data, index: next2 >= 0 ? next2 : inGroup.length }, options);
+}
+function foldedGroup(group) {
+  return (storage4.get("folded") ?? []).includes(group.id);
+}
+function foldGroup(group) {
+  const folded = new Set(storage4.get("folded") ?? []);
+  if (folded.has(group.id)) folded.delete(group.id);
+  else folded.add(group.id);
+  storage4.set("folded", [...folded]);
+}
+function ListHeading({ flux: flux2, group, options, first: first2 }) {
+  const open4 = !foldedGroup(group);
+  return /* @__PURE__ */ jsx8(ui10.box, { label: group.title, onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", paddingTop: first2 ? 0 : 12, paddingBottom: 4, backgroundColor: "bg" }, children: /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", alignItems: "center", height: 32, paddingRight: 4, borderRadius: 6, backgroundColor: HEADING_BG }, children: [
+    /* @__PURE__ */ jsxs8(ui10.pressable, { label: `${open4 ? "Fold" : "Unfold"} ${group.title}`, role: "button", checked: open4, onClick: () => foldGroup(group), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 8, borderRadius: 6, hover: { backgroundColor: "hover" } }, children: [
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: open4 ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
+      /* @__PURE__ */ jsx8(GroupMark, { group, flux: flux2 }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0 }, maxLines: 1, children: group.title }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: String(group.issues.length) })
     ] }),
-    group.issues.map((issue2, index) => {
-      const project = projects.find((item) => item.id === issue2.projectId);
-      const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
-      const assignees = members2.filter((member2) => issue2.assigneeIds.includes(member2.id));
-      const marks = labels.filter((item) => issue2.labelIds.includes(item.id));
-      const on3 = selected.has(issue2.id);
-      const closed = CLOSED_STATUSES.has(issue2.status);
-      return /* @__PURE__ */ jsxs3(ui4.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: (event) => dropBefore(flux2, group, index, event, options), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: on3 ? "selected" : "transparent", hover: { backgroundColor: on3 ? "selected" : "hover" }, cursor: "pointer" }, children: [
-        /* @__PURE__ */ jsx3(IssueContextMenu, { flux: flux2, issue: issue2 }),
-        /* @__PURE__ */ jsx3(ui4.box, { style: { width: 16, flexShrink: 0 }, children: selected.size > 0 ? /* @__PURE__ */ jsx3(ui4.checkbox, { tooltip: `Select ${issue2.key}`, checked: on3, onChange: (checked) => toggleSelected(issue2.id, checked) }) : null }),
-        shows(options, "priority") ? /* @__PURE__ */ jsx3(ui4.box, { style: { width: 24, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx3(PriorityIcon, { priority: issue2.priority, size: 14 }) }) : null,
-        shows(options, "id") ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", width: 72, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
-        shows(options, "status") ? /* @__PURE__ */ jsx3(ui4.box, { style: { width: 24, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx3(StatusIcon, { status: issue2.status, size: 14 }) }) : null,
-        /* @__PURE__ */ jsxs3(ui4.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-          showProject ? /* @__PURE__ */ jsx3(ProjectMark, { project, size: 14 }) : null,
-          parent ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", flexShrink: 0 }, children: `${parent.key} ›` }) : null,
-          /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0, flexShrink: 1, color: closed ? "text3" : "text" }, maxLines: 1, children: issue2.title }),
-          issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx3(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null
-        ] }),
-        shows(options, "agents") && issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx3(AgentChip, { issue: issue2 }) : null,
-        shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsx3(Tag, { label: item }, item.id)) : null,
-        shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx3(DueChip, { date: issue2.dueDate }) : null,
-        shows(options, "assignee") ? assignees.length ? /* @__PURE__ */ jsx3(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx3(ui4.box, { style: { width: 20 } }) : null,
-        shows(options, "created") ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", width: 48, textAlign: "right", flexShrink: 0 }, children: monthDay(issue2.createdAt) }) : null,
-        shows(options, "updated") ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", width: 40, textAlign: "right", flexShrink: 0 }, children: ago2(issue2.updatedAt) }) : null
-      ] }, issue2.id);
-    })
-  ] }, group.id)) });
+    /* @__PURE__ */ jsx8(ui10.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, void 0, group.key) })
+  ] }) });
 }
-function GroupMark({ group, flux: flux2 }) {
-  if (group.key.kind === "status") return /* @__PURE__ */ jsx3(StatusIcon, { status: group.key.status });
-  if (group.key.kind === "priority") return /* @__PURE__ */ jsx3(PriorityIcon, { priority: group.key.priority });
+var HEADING_BG = "color-mix(in srgb, text 5%, bg)";
+var SM = 544;
+var MD = 704;
+var from3 = (min3) => ({ display: "none", media: [{ minWidth: min3, style: { display: "flex" } }] });
+function ListRow({ flux: flux2, issue: issue2, group, index, options, showProject, keyWidth }) {
+  const project = flux2.projects().find((item) => item.id === issue2.projectId);
+  const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
+  const assignees = flux2.memberList().filter((member2) => issue2.assigneeIds.includes(member2.id));
+  const marks = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
+  const on3 = selected.has(issue2.id);
+  const closed = CLOSED_STATUSES.has(issue2.status);
+  const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
+  return /* @__PURE__ */ jsxs8(ui10.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on3 ? "selected" : keyed && cursor === issue2.id ? "hover" : "transparent", boxShadow: keyed && cursor === issue2.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "selected" : "hover" } }, children: [
+    /* @__PURE__ */ jsx8(IssueContextMenu, { flux: flux2, issue: issue2 }),
+    /* @__PURE__ */ jsx8(ui10.box, { label: `Select ${issue2.key}`, onClick: (event) => event?.shift ? clickIssue(issue2, event) : toggleSelected(issue2.id, !on3), style: { width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on3 ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on3 ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on3 || selected.size > 0 || keyed && cursor === issue2.id ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }, children: on3 ? /* @__PURE__ */ jsx8(ui10.icon, { icon: "check", style: { width: 10, height: 10, color: "white" } }) : null }),
+    shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: cell, children: [
+      /* @__PURE__ */ jsx8(PriorityIcon, { priority: issue2.priority, size: 14 }),
+      pickerItems(flux2, issue2, "priority")
+    ] }) : null,
+    shows(options, "id") ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2", width: keyWidth, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
+    shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: cell, children: [
+      /* @__PURE__ */ jsx8(StatusIcon, { status: issue2.status, size: 14 }),
+      pickerItems(flux2, issue2, "status")
+    ] }) : null,
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+      showProject ? /* @__PURE__ */ jsx8(ui10.box, { style: from3(SM), children: /* @__PURE__ */ jsx8(ProjectMark, { project, size: 14 }) }) : null,
+      parent ? /* @__PURE__ */ jsxs8(ui10.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, alignItems: "center", flexShrink: 0 }, children: [
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2" }, children: parent.key }),
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } })
+      ] }) : null,
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0, flexShrink: 1, color: closed ? "text2" : "text" }, maxLines: 1, children: issue2.title }),
+      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx8(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null
+    ] }),
+    shows(options, "agents") ? /* @__PURE__ */ jsx8(ui10.box, { style: { ...from3(SM), width: 24, justifyContent: "center", flexShrink: 0 }, children: issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx8(AgentChip, { issue: issue2 }) : closed ? null : /* @__PURE__ */ jsx8(StartAgentButton, { issue: issue2 }) }) : null,
+    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx8(ui10.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs8(Picker, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+      dueContent(issue2.dueDate),
+      pickerItems(flux2, issue2, "due")
+    ] }) }) : null,
+    shows(options, "labels") ? /* @__PURE__ */ jsx8(ui10.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs8(Picker, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+      tagContent(item),
+      pickerItems(flux2, issue2, "labels")
+    ] }, item.id)) }) : null,
+    shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
+      assignees.length ? /* @__PURE__ */ jsx8(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx8(Unassigned, { size: 20 }),
+      pickerItems(flux2, issue2, "assignees")
+    ] }) : null,
+    shows(options, "created") ? /* @__PURE__ */ jsx8(ui10.text, { style: { ...from3(MD), fontSize: 12, color: "text2", width: 48, textAlign: "right", flexShrink: 0 }, tooltip: `Created ${new Date(issue2.createdAt).toLocaleString()}`, children: monthDay(issue2.createdAt) }) : null,
+    shows(options, "updated") ? /* @__PURE__ */ jsx8(ui10.text, { style: { ...from3(SM), fontSize: 12, color: "text2", width: 40, textAlign: "right", flexShrink: 0 }, tooltip: `Updated ${new Date(issue2.updatedAt).toLocaleString()}`, children: ago2(issue2.updatedAt) }) : null
+  ] }, issue2.id);
+}
+function StartAgentButton({ issue: issue2, bordered = false }) {
+  return /* @__PURE__ */ jsx8(ui10.pressable, { label: `Start an agent on ${issue2.key}`, tooltip: "Start an agent on this issue", onClick: () => startAgent(issue2.id), style: { width: bordered ? 22 : 24, height: bordered ? 22 : 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: bordered ? 4 : 6, border: bordered ? "1px solid border" : "none", color: "text2", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "press", color: "text" } }, children: /* @__PURE__ */ jsx8(ui10.icon, { icon: "bot", style: { width: 14, height: 14, color: "currentColor" } }) });
+}
+function GroupMark({ group, flux: flux2, size: size3 = 14 }) {
+  if (group.key.kind === "status") return /* @__PURE__ */ jsx8(StatusIcon, { status: group.key.status, size: size3 });
+  if (group.key.kind === "priority") return /* @__PURE__ */ jsx8(PriorityIcon, { priority: group.key.priority, size: size3 });
   const key = group.key;
-  if (key.kind === "project") return /* @__PURE__ */ jsx3(ProjectMark, { project: flux2.projects().find((item) => item.id === key.projectId) });
-  if (key.kind === "assignee" && key.memberId) return /* @__PURE__ */ jsx3(Avatar, { member: flux2.memberList().find((item) => item.id === key.memberId), size: 16 });
-  return /* @__PURE__ */ jsx3(ui4.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: "text3" } });
+  if (key.kind === "project") return /* @__PURE__ */ jsx8(ProjectMark, { project: flux2.projects().find((item) => item.id === key.projectId), size: size3 });
+  if (key.kind === "assignee" && key.memberId) return /* @__PURE__ */ jsx8(Avatar, { member: flux2.memberList().find((item) => item.id === key.memberId), size: 16 });
+  return /* @__PURE__ */ jsx8(ui10.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: "text3" } });
 }
-function Tag({ label }) {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { ...field, justifyContent: "flex-start", maxWidth: 144 }, children: [
-    /* @__PURE__ */ jsx3(ui4.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3", flexShrink: 0 } }),
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: label.name })
-  ] });
+function tagContent(label) {
+  return [
+    /* @__PURE__ */ jsx8(ui10.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3", flexShrink: 0 } }, "dot"),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: label.name }, "name")
+  ];
 }
 function dropOn(flux2, group, event, options) {
   const id2 = dragged(event);
   if (!id2) return;
   const issue2 = flux2.issue(id2);
   if (!issue2) return;
-  const from3 = groupOf(issue2, effectiveGrouping(options, false));
-  const patch = patchForMove(issue2, from3, group.key);
+  const from4 = groupOf(issue2, effectiveGrouping(options, false));
+  const patch = patchForMove(issue2, from4, group.key);
   const ordering = options.ordering === "manual";
   const position = ordering ? positionBetween(group.issues[group.issues.length - 1], void 0) : void 0;
   const next2 = { ...patch ?? {}, ...position !== void 0 ? { position } : {} };
   if (!patch && position === void 0) return;
   void apply2(flux2, id2, next2);
 }
-function dropBefore(flux2, group, index, event, options) {
-  if (options.ordering !== "manual") {
-    dropOn(flux2, group, event, options);
-    return;
-  }
+function dropAt(flux2, group, issues, event, options) {
   const id2 = dragged(event);
-  if (!id2) return;
-  const issue2 = flux2.issue(id2);
+  const issue2 = id2 ? flux2.issue(id2) : null;
   if (!issue2) return;
-  const from3 = groupOf(issue2, effectiveGrouping(options, false));
-  const patch = patchForMove(issue2, from3, group.key) ?? {};
-  const before = group.issues[index - 1];
-  const after = group.issues[index];
-  void apply2(flux2, id2, { ...patch, position: positionBetween(before?.id === id2 ? group.issues[index - 2] : before, after?.id === id2 ? group.issues[index + 1] : after) });
+  const others = issues.filter((item) => item.id !== id2);
+  const at3 = Math.min(Math.max(event.index ?? others.length, 0), others.length);
+  const before = others[at3 - 1];
+  const after = others[at3];
+  const from4 = groupOf(issue2, effectiveGrouping(options, false));
+  const patch = patchForMove(issue2, from4, group.key) ?? {};
+  const was = issues.findIndex((item) => item.id === id2);
+  if (Object.keys(patch).length === 0 && was >= 0 && was === at3) return;
+  void apply2(flux2, id2, { ...patch, position: positionBetween(before, after) });
+}
+function askDelete(flux2, ids, done) {
+  const one = ids.length === 1;
+  confirm(one ? "Delete this issue?" : `Delete ${ids.length} issues?`, "This cannot be undone.", "Delete", async () => {
+    done();
+    const failed2 = (await Promise.allSettled(ids.map((id2) => flux2.deleteIssue(id2)))).filter((r) => r.status === "rejected");
+    if (failed2.length) ui10.toast(one ? "Couldn't delete the issue." : `Couldn't delete ${failed2.length} of the issues.`);
+  });
 }
 function dragged(event) {
   const data = event.data;
@@ -80218,7 +81726,14 @@ function groupOf(issue2, grouping) {
 }
 function apply2(flux2, id2, patch) {
   lastPatch = patch;
-  void flux2.updateIssue(id2, patch).catch((error62) => ui4.toast(error62 instanceof Error ? error62.message : String(error62)));
+  void flux2.updateIssue(id2, patch).catch((error62) => failed(`Couldn't update ${flux2.issue(id2)?.key ?? "the issue"}`, error62));
+}
+function failed(what, error62) {
+  const why = error62 instanceof Error ? error62.message : String(error62);
+  ui10.toast(why ? `${what}: ${why}` : `${what}.`);
+}
+function duplicate(flux2, id2, then) {
+  void flux2.duplicateIssue(id2).then((copy3) => then?.(copy3), (error62) => failed(`Couldn't duplicate ${flux2.issue(id2)?.key ?? "the issue"}`, error62));
 }
 function toggleSelected(id2, on3) {
   const next2 = new Set(selected);
@@ -80226,12 +81741,19 @@ function toggleSelected(id2, on3) {
   else next2.delete(id2);
   selected = next2;
   cursor = id2;
+  anchor2 = id2;
 }
 function openCard(issue2) {
   cursor = issue2.id;
   openIssue(issue2.key);
 }
+var shownFlat = [];
 function clickIssue(issue2, event) {
+  keyed = false;
+  if (event?.shift && anchor2) {
+    selectRange(shownFlat, anchor2, issue2.id);
+    return;
+  }
   if (event?.mod || event?.shift || selected.size > 0) {
     toggleSelected(issue2.id, !selected.has(issue2.id));
     return;
@@ -80244,32 +81766,29 @@ function SelectionBar({ flux: flux2 }) {
     selected = /* @__PURE__ */ new Set();
   };
   const status = issues.every((issue2) => issue2.status === issues[0]?.status) ? issues[0]?.status : void 0;
-  return /* @__PURE__ */ jsx3(ui4.box, { label: "Selected issues", style: { position: "absolute", bottom: 16, left: 0, right: 0, alignItems: "center", zIndex: 10 }, children: /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 14, paddingRight: 4, borderRadius: "full", backgroundColor: "bg", border: "1px solid border", boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }, children: [
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text2", paddingRight: 8 }, children: `${issues.length} selected` }),
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: "Move to…", style: { ...ghostChip, borderRadius: "full" }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }),
-      STATUSES.map((item) => /* @__PURE__ */ jsx3(ui4.item, { checked: item === status, onClick: () => {
+  return /* @__PURE__ */ jsx8(ui10.box, { label: "Selected issues", style: { position: "absolute", bottom: 16, left: 0, right: 0, alignItems: "center", zIndex: 10 }, children: /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 14, paddingRight: 4, borderRadius: "full", backgroundColor: "bg", border: "1px solid border", boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }, children: [
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13, color: "text2", paddingRight: 8 }, children: `${issues.length} selected` }),
+    /* @__PURE__ */ jsxs8(ui10.menu, { label: "Move to…", style: { ...ghostChip, borderRadius: "full" }, children: [
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }),
+      STATUSES.map((item) => /* @__PURE__ */ jsx8(ui10.item, { ...statusMark(item), checked: item === status, onClick: () => {
         for (const issue2 of issues) apply2(flux2, issue2.id, { status: item });
       }, children: STATUS_LABELS[item] }, item))
     ] }),
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: "Actions", style: { ...ghostChip, borderRadius: "full" }, children: [
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
+    /* @__PURE__ */ jsxs8(ui10.menu, { label: "Actions", style: { ...ghostChip, borderRadius: "full" }, children: [
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
       propertyMenus(flux2, issues, false),
-      /* @__PURE__ */ jsx3(ui4.separator, {}),
-      /* @__PURE__ */ jsx3(ui4.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }),
-      /* @__PURE__ */ jsx3(ui4.item, { icon: "copy", onClick: () => {
-        for (const issue2 of issues) void flux2.duplicateIssue(issue2.id);
+      /* @__PURE__ */ jsx8(ui10.separator, {}),
+      /* @__PURE__ */ jsx8(ui10.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }),
+      /* @__PURE__ */ jsx8(ui10.item, { icon: "copy", onClick: () => {
+        for (const issue2 of issues) duplicate(flux2, issue2.id);
       }, children: "Duplicate" }),
-      /* @__PURE__ */ jsx3(ui4.item, { icon: "external", onClick: () => ui4.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }),
-      /* @__PURE__ */ jsx3(ui4.item, { icon: "copy", onClick: () => ui4.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }),
-      /* @__PURE__ */ jsx3(ui4.separator, {}),
-      /* @__PURE__ */ jsx3(ui4.item, { icon: "trash", danger: true, onClick: () => {
-        for (const issue2 of issues) void flux2.deleteIssue(issue2.id);
-        clear();
-      }, children: "Delete" })
+      /* @__PURE__ */ jsx8(ui10.item, { icon: "external", onClick: () => ui10.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }),
+      /* @__PURE__ */ jsx8(ui10.item, { icon: "copy", onClick: () => ui10.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }),
+      /* @__PURE__ */ jsx8(ui10.separator, {}),
+      /* @__PURE__ */ jsx8(ui10.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, issues.map((issue2) => issue2.id), clear), children: "Delete" })
     ] }),
-    /* @__PURE__ */ jsx3(ui4.iconButton, { icon: "x", label: "Clear selection", onClick: clear })
+    /* @__PURE__ */ jsx8(ui10.iconButton, { icon: "x", label: "Clear selection", onClick: clear })
   ] }) });
 }
 function assignToMe(flux2, issues) {
@@ -80283,167 +81802,210 @@ function propertyMenus(flux2, issues, shortcuts) {
     for (const issue2 of issues) apply2(flux2, issue2.id, patch(issue2));
   };
   const toggled = (list2, id2, on3) => on3 ? list2.filter((item) => item !== id2) : list2.includes(id2) ? list2 : [...list2, id2];
-  const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
   const projects = flux2.projects();
   return [
-    /* @__PURE__ */ jsx3(ui4.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: STATUSES.map((status) => /* @__PURE__ */ jsx3(ui4.item, { checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
-    /* @__PURE__ */ jsx3(ui4.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx3(ui4.item, { shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
-    /* @__PURE__ */ jsx3(ui4.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: flux2.memberList().map((member2) => {
+    /* @__PURE__ */ jsx8(ui10.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: STATUSES.map((status) => /* @__PURE__ */ jsx8(ui10.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
+    /* @__PURE__ */ jsx8(ui10.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx8(ui10.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
+    /* @__PURE__ */ jsx8(ui10.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: flux2.memberList().map((member2) => {
       const on3 = all2((issue2) => issue2.assigneeIds.includes(member2.id));
-      return /* @__PURE__ */ jsx3(ui4.item, { checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
+      return /* @__PURE__ */ jsx8(ui10.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
     }) }, "assignee"),
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: [
-      /* @__PURE__ */ jsx3(ui4.item, { onClick: () => each(() => ({ dueDate: day(0) })), children: "Today" }),
-      /* @__PURE__ */ jsx3(ui4.item, { onClick: () => each(() => ({ dueDate: day(1) })), children: "Tomorrow" }),
-      /* @__PURE__ */ jsx3(ui4.item, { onClick: () => each(() => ({ dueDate: day(7) })), children: "In a week" }),
-      issues.some((issue2) => issue2.dueDate) ? /* @__PURE__ */ jsx3(ui4.item, { onClick: () => each(() => ({ dueDate: null })), children: "No due date" }) : null
-    ] }, "due"),
-    /* @__PURE__ */ jsx3(ui4.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: flux2.labels().length === 0 ? /* @__PURE__ */ jsx3(ui4.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
+    /* @__PURE__ */ jsx8(ui10.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
+    /* @__PURE__ */ jsx8(ui10.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: flux2.labels().length === 0 ? /* @__PURE__ */ jsx8(ui10.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
       const on3 = all2((issue2) => issue2.labelIds.includes(label.id));
-      return /* @__PURE__ */ jsx3(ui4.item, { checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
+      return /* @__PURE__ */ jsx8(ui10.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
     }) }, "labels"),
-    projects.length >= 2 ? /* @__PURE__ */ jsx3(ui4.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: projects.map((project) => /* @__PURE__ */ jsx3(ui4.item, { checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
+    projects.length >= 2 ? /* @__PURE__ */ jsx8(ui10.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: projects.map((project) => /* @__PURE__ */ jsx8(ui10.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
   ];
 }
 function IssueContextMenu({ flux: flux2, issue: issue2 }) {
   const me2 = flux2.me?.id;
   const url2 = flux2.issueUrl(issue2);
-  return /* @__PURE__ */ jsxs3(ui4.menu, { context: true, label: `${issue2.key} actions`, children: [
-    /* @__PURE__ */ jsx3(ui4.item, { shortcut: "Enter", onClick: () => openCard(issue2), children: "Open" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "external", href: url2, disabled: !url2, children: "Open in Flux" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "bot", onClick: () => {
-      startAgent(issue2.id);
-      openIssue(issue2.key);
-    }, children: "Start agent" }),
-    /* @__PURE__ */ jsx3(ui4.separator, {}),
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: "Copy", icon: "copy", children: [
-      /* @__PURE__ */ jsx3(ui4.item, { onClick: () => ui4.copy(issue2.key), children: "Copy ID" }),
-      /* @__PURE__ */ jsx3(ui4.item, { shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui4.copy(url2), children: "Copy link" }),
-      /* @__PURE__ */ jsx3(ui4.item, { disabled: !issue2.title.trim(), onClick: () => ui4.copy(issue2.title), children: "Copy title" })
+  return /* @__PURE__ */ jsxs8(ui10.menu, { context: true, label: `${issue2.key} actions`, children: [
+    /* @__PURE__ */ jsx8(ui10.item, { shortcut: "Enter", onClick: () => openCard(issue2), children: "Open" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "external", href: url2, disabled: !url2, children: "Open in Flux" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "bot", onClick: () => startAgent(issue2.id), children: "Start agent" }),
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
+    /* @__PURE__ */ jsxs8(ui10.menu, { label: "Copy", icon: "copy", children: [
+      /* @__PURE__ */ jsx8(ui10.item, { onClick: () => ui10.copy(issue2.key), children: "Copy ID" }),
+      /* @__PURE__ */ jsx8(ui10.item, { shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui10.copy(url2), children: "Copy link" }),
+      /* @__PURE__ */ jsx8(ui10.item, { disabled: !issue2.title.trim(), onClick: () => ui10.copy(issue2.title), children: "Copy title" })
     ] }),
-    /* @__PURE__ */ jsx3(ui4.separator, {}),
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
     propertyMenus(flux2, [issue2], true),
-    /* @__PURE__ */ jsx3(ui4.separator, {}),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "user", shortcut: "I", disabled: !me2 || issue2.assigneeIds.includes(me2), onClick: () => assignToMe(flux2, [issue2]), children: "Assign to me" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "copy", shortcut: "D", onClick: () => void flux2.duplicateIssue(issue2.id), children: "Duplicate" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => {
-      cursor = issue2.id;
-      palette = "parent";
-    }, children: "Set parent" }),
-    issue2.parentId ? /* @__PURE__ */ jsx3(ui4.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
-    /* @__PURE__ */ jsx3(ui4.separator, {}),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => {
-      void flux2.deleteIssue(issue2.id);
-      selected.delete(issue2.id);
-    }, children: "Delete" })
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "user", shortcut: "I", disabled: !me2 || issue2.assigneeIds.includes(me2), onClick: () => assignToMe(flux2, [issue2]), children: "Assign to me" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id), children: "Duplicate" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
+    issue2.parentId ? /* @__PURE__ */ jsx8(ui10.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], () => selected.delete(issue2.id)), children: "Delete" })
   ] });
 }
-var menuRow = { padding: 6, borderRadius: "control", hover: { backgroundColor: "hover" } };
-function Palette({ flux: flux2 }) {
-  const issue2 = flux2.issue(cursor) ?? flux2.issues().find((item) => selected.has(item.id));
-  const close2 = () => {
-    palette = "";
-  };
-  if (!issue2) {
-    palette = "";
-    return null;
+var ISSUE_KEYS = [
+  "e",
+  "E",
+  "s",
+  "S",
+  "p",
+  "P",
+  "a",
+  "A",
+  "l",
+  "L",
+  "i",
+  "I",
+  "d",
+  "D",
+  ".",
+  "Shift+d",
+  "Shift+D",
+  "Shift+p",
+  "Shift+P",
+  "Shift+0",
+  "Shift+1",
+  "Shift+2",
+  "Shift+3",
+  "Shift+4",
+  "Mod+Backspace",
+  "Mod+Shift+,",
+  "Mod+Shift+o",
+  "Mod+Shift+O",
+  "Mod+Shift+p",
+  "Mod+Shift+P"
+];
+function onIssueKey(flux2, issue2, key) {
+  const k = key.key.toLowerCase();
+  const pick2 = (kind) => openPalette(kind, [issue2.id], (id2, patch) => apply2(flux2, id2, patch));
+  if (key.mod && key.shift && k === "p") pick2("parent");
+  else if (key.mod && key.shift && k === "o") composeSub(flux2, issue2);
+  else if (key.mod && key.shift && key.key === ",") {
+    ui10.copy(flux2.issueUrl(issue2));
+    ui10.toast(`Copied ${issue2.key}'s link.`);
+  } else if (key.mod && key.key === "Backspace") askDelete(flux2, [issue2.id], () => openList(""));
+  else if (key.mod) return;
+  else if (k === "e" && editingTitle !== issue2.id) editingTitle = issue2.id;
+  else if (k === "s") pick2("status");
+  else if (k === "p" && key.shift) pick2("project");
+  else if (k === "p") pick2("priority");
+  else if (k === "a") pick2("assignee");
+  else if (k === "l") pick2("label");
+  else if (k === "d" && key.shift) pick2("due");
+  else if (k === "d") duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key));
+  else if (k === "i") {
+    const me2 = flux2.me?.id;
+    if (me2) apply2(flux2, issue2.id, { assigneeIds: issue2.assigneeIds.includes(me2) ? issue2.assigneeIds.filter((id2) => id2 !== me2) : [...issue2.assigneeIds, me2] });
+  } else if (key.key === "." && lastPatch) apply2(flux2, issue2.id, lastPatch);
+  else if (key.shift && key.key >= "0" && key.key <= "4") {
+    const priority = { "1": "urgent", "2": "high", "3": "medium", "4": "low", "0": "none" }[key.key];
+    if (priority) apply2(flux2, issue2.id, { priority });
   }
-  const rows = [];
-  if (palette === "status") for (const status of STATUSES) rows.push({ label: STATUS_LABELS[status], run: () => void apply2(flux2, issue2.id, { status }) });
-  if (palette === "priority") for (const priority of PRIORITIES) rows.push({ label: PRIORITY_LABELS[priority], run: () => void apply2(flux2, issue2.id, { priority }) });
-  if (palette === "assignee") for (const member2 of flux2.memberList()) rows.push({ label: member2.name, run: () => void apply2(flux2, issue2.id, { assigneeIds: issue2.assigneeIds.includes(member2.id) ? issue2.assigneeIds.filter((id2) => id2 !== member2.id) : [...issue2.assigneeIds, member2.id] }) });
-  if (palette === "label") for (const label of flux2.labels()) rows.push({ label: label.name, run: () => void apply2(flux2, issue2.id, { labelIds: issue2.labelIds.includes(label.id) ? issue2.labelIds.filter((id2) => id2 !== label.id) : [...issue2.labelIds, label.id] }) });
-  if (palette === "project") for (const project of flux2.projects()) rows.push({ label: project.name, run: () => void apply2(flux2, issue2.id, { projectId: project.id }) });
-  if (palette === "parent") {
-    for (const other of flux2.issues().filter((item) => item.projectId === issue2.projectId && item.id !== issue2.id && !CLOSED_STATUSES.has(item.status)).slice(0, 12)) {
-      rows.push({ label: `${other.key} ${other.title}`, run: () => void apply2(flux2, issue2.id, { parentId: other.id }) });
-    }
-  }
-  if (palette === "due") {
-    const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-    for (const [label, date5] of [["Today", day(0)], ["Tomorrow", day(1)], ["In a week", day(7)], ["Clear", null]]) {
-      rows.push({ label, run: () => void apply2(flux2, issue2.id, { dueDate: date5 }) });
-    }
-  }
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { position: "absolute", top: 64, alignSelf: "center", width: 280, gap: 2, padding: 6, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border" }, children: [
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: "small", color: "text3", padding: 6 }, children: `${issue2.key} · ${palette}` }),
-    rows.map((row) => /* @__PURE__ */ jsx3(ui4.pressable, { label: row.label, onClick: () => {
-      row.run();
-      close2();
-    }, style: menuRow, children: /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: row.label }) }, row.label))
-  ] });
+}
+function targets(flux2, current) {
+  if (selected.size) return [...selected].map((id2) => flux2.issue(id2)).filter((issue2) => !!issue2);
+  return current ? [current] : [];
 }
 function onListKey(flux2, key, flat, groups, options) {
   const index = Math.max(0, flat.findIndex((issue2) => issue2.id === cursor));
-  const current = flat[index];
+  const current = flat.find((issue2) => issue2.id === cursor);
+  const on3 = targets(flux2, current);
+  const ids = on3.map((issue2) => issue2.id);
+  const change = (patch) => {
+    for (const issue2 of on3) apply2(flux2, issue2.id, patch(issue2));
+  };
+  const pick2 = (kind) => openPalette(kind, ids, (id2, patch) => apply2(flux2, id2, patch));
   const move = (next2) => {
     const issue2 = flat[Math.max(0, Math.min(flat.length - 1, next2))];
     if (!issue2) return;
     cursor = issue2.id;
-    if (key.shift) toggleSelected(issue2.id, !selected.has(issue2.id));
+    keyed = true;
+    if (key.shift) toggleSelected(issue2.id, true);
   };
-  if (key.key === "j" || key.key === "ArrowDown") move(index + 1);
-  else if (key.key === "k" || key.key === "ArrowUp") move(cursor ? index - 1 : 0);
+  const k = key.key.toLowerCase();
+  if (k === "j" || key.key === "ArrowDown") move(current ? index + 1 : 0);
+  else if (k === "k" || key.key === "ArrowUp") move(current ? index - 1 : 0);
   else if (key.key === "ArrowRight" || key.key === "ArrowLeft") {
-    const at2 = groups.findIndex((group) => group.issues.some((issue2) => issue2.id === cursor));
-    const next2 = groups[at2 + (key.key === "ArrowRight" ? 1 : -1)];
-    if (next2?.issues[0]) cursor = next2.issues[0].id;
+    const at3 = groups.findIndex((group) => group.issues.some((issue2) => issue2.id === cursor));
+    const next2 = groups[at3 + (key.key === "ArrowRight" ? 1 : -1)];
+    if (next2?.issues[0]) {
+      cursor = next2.issues[0].id;
+      keyed = true;
+    }
   } else if (key.key === "Enter" && current) openIssue(current.key);
-  else if (key.key === "c" || key.key === "C") openCreate(flux2);
-  else if (key.key === "/") query = query;
-  else if ((key.key === "s" || key.key === "S") && !key.shift) palette = "status";
-  else if ((key.key === "p" || key.key === "P") && !key.shift) palette = "priority";
-  else if (key.key === "a" || key.key === "A") palette = key.mod ? "" : "assignee";
-  else if (key.key === "l" || key.key === "L") palette = "label";
-  else if (key.shift && (key.key === "d" || key.key === "D")) palette = "due";
-  else if (key.shift && (key.key === "p" || key.key === "P")) palette = "project";
-  else if (key.shift && key.key === "v") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
-  else if (key.mod && (key.key === "b" || key.key === "B")) setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
-  else if (key.key === "i" || key.key === "I") {
+  else if (key.mod && k === "a") selected = new Set(flat.map((issue2) => issue2.id));
+  else if (key.mod && key.key === "Backspace") {
+    if (ids.length) askDelete(flux2, ids, () => {
+      selected = /* @__PURE__ */ new Set();
+    });
+  } else if (key.mod && k === "b") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
+  else if (key.mod) return;
+  else if (k === "c" && !key.shift) openCreate(flux2);
+  else if (key.key === "/") {
+    filterFocus++;
+    searching = true;
+  } else if (k === "s" && !key.shift) pick2("status");
+  else if (k === "p" && !key.shift) pick2("priority");
+  else if (k === "p" && key.shift) pick2("project");
+  else if (k === "a") pick2("assignee");
+  else if (k === "l") pick2("label");
+  else if (k === "d" && key.shift) pick2("due");
+  else if (k === "v" && key.shift) setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
+  else if (k === "i") {
     const me2 = flux2.me?.id;
-    if (current && me2) void apply2(flux2, current.id, { assigneeIds: current.assigneeIds.includes(me2) ? current.assigneeIds.filter((id2) => id2 !== me2) : [...current.assigneeIds, me2] });
-  } else if ((key.key === "d" || key.key === "D") && !key.shift && current) void flux2.duplicateIssue(current.id);
-  else if ((key.key === "x" || key.key === "X") && current) toggleSelected(current.id, key.shift ? true : !selected.has(current.id));
-  else if (key.mod && (key.key === "a" || key.key === "A")) selected = new Set(flat.map((issue2) => issue2.id));
-  else if (key.mod && key.key === "Backspace" || key.key === "Backspace" && key.mod) {
-    for (const id2 of selected.size ? selected : current ? [current.id] : []) void flux2.deleteIssue(id2);
-    selected = /* @__PURE__ */ new Set();
-  } else if (key.key === "." && lastPatch && current) void apply2(flux2, current.id, lastPatch);
-  else if (key.shift && key.key >= "0" && key.key <= "4") {
+    if (me2) change((issue2) => ({ assigneeIds: issue2.assigneeIds.includes(me2) ? issue2.assigneeIds.filter((id2) => id2 !== me2) : [...issue2.assigneeIds, me2] }));
+  } else if (k === "d") for (const id2 of ids) duplicate(flux2, id2);
+  else if (k === "x" && current) {
+    if (key.shift && anchor2) selectRange(flat, anchor2, current.id);
+    else toggleSelected(current.id, !selected.has(current.id));
+  } else if (key.key === "." && lastPatch) {
+    const patch = lastPatch;
+    change(() => patch);
+  } else if (key.shift && key.key >= "0" && key.key <= "4") {
     const priority = { "1": "urgent", "2": "high", "3": "medium", "4": "low", "0": "none" }[key.key];
-    if (current && priority) void apply2(flux2, current.id, { priority });
+    if (priority) change(() => ({ priority }));
   } else if (key.key === "Escape") {
-    palette = "";
     displayOpen = false;
+    keyed = false;
     if (selected.size) selected = /* @__PURE__ */ new Set();
+    else if (query) query = "";
   }
+}
+function selectRange(flat, from4, to) {
+  const a3 = flat.findIndex((issue2) => issue2.id === from4);
+  const b = flat.findIndex((issue2) => issue2.id === to);
+  if (a3 < 0 || b < 0) return;
+  const next2 = new Set(selected);
+  for (let i2 = Math.min(a3, b); i2 <= Math.max(a3, b); i2++) next2.add(flat[i2].id);
+  selected = next2;
+  cursor = to;
 }
 function Empty({ flux: flux2, scope, inProject, onCreate }) {
   const filtered = query.trim() !== "";
   const title = filtered ? "No matching issues" : scope === "active" ? "Nothing in progress" : scope === "mine" ? "No issues assigned to you" : inProject ? "Add issues to the project" : "No issues yet";
   const text2 = filtered ? `Nothing here matches “${query.trim()}”.` : scope === "active" ? "Issues show up here once someone starts them or hands them to an agent." : scope === "mine" ? "Issues assigned to you will show up here." : "Start building your project by creating an issue.";
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, padding: 32 }, children: [
-    /* @__PURE__ */ jsx3(ui4.canvas, { width: 80, height: 74, label: "No issues", style: { width: 80, height: 74, flexShrink: 0 }, draw: (g) => {
-      g.ellipse(28, 28, 22, 16, { fill: "hover", stroke: "text3", lineWidth: 1.5 });
-      g.ellipse(48, 40, 22, 16, { fill: "raised", stroke: "text2", lineWidth: 1.5 });
-      g.path("M40 40 L46 46 L58 32", { stroke: "text", lineWidth: 2 });
-    } }),
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 18, fontWeight: 600 }, children: title }),
-    /* @__PURE__ */ jsx3(ui4.text, { style: { color: "text2" }, children: text2 }),
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8 }, children: [
-      filtered ? /* @__PURE__ */ jsx3(ui4.button, { kind: "secondary", onClick: () => {
+  return /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui10.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
+    filtered || scope === "active" ? /* @__PURE__ */ jsx8(TrayArt, {}) : /* @__PURE__ */ jsx8(IssuesArt, {}),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: title }),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 384 }, children: text2 }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 8, marginTop: 24 }, children: [
+      filtered ? /* @__PURE__ */ jsx8(ui10.button, { kind: "secondary", onClick: () => {
         query = "";
       }, children: "Clear filter" }) : null,
-      !filtered && scope !== "all" ? /* @__PURE__ */ jsx3(ui4.button, { kind: "secondary", onClick: () => storage3.set("scope", "all"), children: "Show all issues" }) : null,
-      !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx3(ui4.button, { kind: "primary", icon: "plus", onClick: onCreate, children: "New issue" }) : null
+      !filtered && scope !== "all" ? /* @__PURE__ */ jsx8(ui10.button, { kind: "secondary", onClick: () => storage4.set("scope", "all"), children: "Show all issues" }) : null,
+      !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx8(ui10.button, { kind: "primary", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) : null
     ] })
-  ] });
+  ] }, filtered ? "tray-q" : scope) });
 }
 function openCreate(flux2, projectId, key, parentId) {
   const seeded2 = key ? draftForGroup(key) : {};
   const me2 = flux2.me?.id;
   creating = true;
+  const kept = (draftTitle.trim() || draftBody.trim()) && draftParent === (parentId ?? null);
+  if (kept) {
+    ui10.showOverlay("flux-new");
+    return;
+  }
   draftTitle = "";
   draftBody = "";
   draftStatus = seeded2.status ?? "todo";
@@ -80453,180 +82015,197 @@ function openCreate(flux2, projectId, key, parentId) {
   draftProject = seeded2.projectId ?? projectId ?? flux2.projects()[0]?.id ?? "";
   draftDue = null;
   draftParent = parentId ?? null;
-  ui4.showOverlay("flux-new");
+  ui10.showOverlay("flux-new");
 }
 function NewIssue({ flux: flux2 }) {
   const projects = flux2.projects();
   const project = projects.find((item) => item.id === draftProject);
   const members2 = flux2.memberList();
-  const who = members2.find((member2) => member2.id === draftAssignees[0]);
+  const me2 = flux2.me?.id;
+  const chosenPeople = members2.filter((member2) => draftAssignees.includes(member2.id));
   const labels = flux2.labels();
+  const chosenLabels = labels.filter((label) => draftLabels.includes(label.id));
   const parent = draftParent ? flux2.issue(draftParent) : void 0;
-  const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-  const chip2 = { ...ghostChip, height: 28, border: "1px solid border" };
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
-      /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsxs3(ui4.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4, hover: { backgroundColor: "hover" } }, children: [
-          /* @__PURE__ */ jsx3(ProjectMark, { project, size: 14 }),
-          /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
-          projects.map((item) => /* @__PURE__ */ jsx3(ui4.item, { checked: item.id === draftProject, onClick: () => {
+  const chip2 = { ...ghostChip, height: 28, border: "1px solid border", gap: 6 };
+  const chipText = { fontSize: 12, fontWeight: 500, minWidth: 0 };
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsxs8(ui10.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
+          /* @__PURE__ */ jsx8(ProjectMark, { project, size: 14 }),
+          /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
+          projects.map((item) => /* @__PURE__ */ jsx8(ui10.item, { ...navMark(item), checked: item.id === draftProject, onClick: () => {
             draftProject = item.id;
           }, children: item.name }, item.id))
         ] }),
-        parent ? /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text3" }, children: `› Sub-issue of ${parent.key}` }) : null
+        parent ? /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }),
+          /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
+        ] }) : null
       ] }),
-      /* @__PURE__ */ jsx3(ui4.field, { value: draftTitle, placeholder: "Issue title", onChange: (value) => {
+      /* @__PURE__ */ jsx8(ui10.field, { value: draftTitle, placeholder: "Issue title", onChange: (value) => {
         draftTitle = value;
       }, onSubmit: () => void submitNew(flux2), style: { fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 } }, "new-title"),
-      /* @__PURE__ */ jsx3(ui4.editor, { value: draftBody, placeholder: "Add description...", label: "Description", options: mentionOptions(flux2), onChange: (value) => {
+      /* @__PURE__ */ jsx8(ui10.editor, { value: draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), onChange: (value) => {
         draftBody = value;
       }, onSubmit: () => void submitNew(flux2), style: { minHeight: 144 } }, "new-body")
     ] }),
-    /* @__PURE__ */ jsx3(ui4.box, { style: { height: 1, backgroundColor: "divider" } }),
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
-      /* @__PURE__ */ jsxs3(ui4.menu, { label: `Status: ${STATUS_LABELS[draftStatus]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx3(StatusIcon, { status: draftStatus, size: 13 }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: STATUS_LABELS[draftStatus] }),
-        STATUSES.map((status) => /* @__PURE__ */ jsx3(ui4.item, { checked: draftStatus === status, onClick: () => {
+    /* @__PURE__ */ jsx8(ui10.box, { style: { height: 1, backgroundColor: "divider" } }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: `Status: ${STATUS_LABELS[draftStatus]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx8(StatusIcon, { status: draftStatus, size: 14 }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: chipText, children: STATUS_LABELS[draftStatus] }),
+        STATUSES.map((status) => /* @__PURE__ */ jsx8(ui10.item, { ...statusMark(status), checked: draftStatus === status, onClick: () => {
           draftStatus = status;
         }, children: STATUS_LABELS[status] }, status))
       ] }),
-      /* @__PURE__ */ jsxs3(ui4.menu, { label: `Priority: ${PRIORITY_LABELS[draftPriority]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx3(PriorityIcon, { priority: draftPriority, size: 13 }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: draftPriority === "none" ? "Priority" : PRIORITY_LABELS[draftPriority] }),
-        PRIORITIES.map((priority) => /* @__PURE__ */ jsx3(ui4.item, { checked: draftPriority === priority, onClick: () => {
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: `Priority: ${PRIORITY_LABELS[draftPriority]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx8(PriorityIcon, { priority: draftPriority, size: 14 }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { ...chipText, color: draftPriority === "none" ? "text2" : "text" }, children: draftPriority === "none" ? "Priority" : PRIORITY_LABELS[draftPriority] }),
+        PRIORITIES.map((priority) => /* @__PURE__ */ jsx8(ui10.item, { ...priorityMark(priority), checked: draftPriority === priority, onClick: () => {
           draftPriority = priority;
         }, children: PRIORITY_LABELS[priority] }, priority))
       ] }),
-      /* @__PURE__ */ jsxs3(ui4.menu, { label: who ? `Assignee: ${who.name}` : "Assignee", style: chip2, children: [
-        who ? /* @__PURE__ */ jsx3(Avatar, { member: who, size: 16 }) : /* @__PURE__ */ jsx3(ui4.icon, { icon: "user", style: { width: 13, height: 13, color: "text2" } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: who ? who.name : "Assignee" }),
-        members2.map((member2) => /* @__PURE__ */ jsx3(ui4.item, { checked: draftAssignees.includes(member2.id), onClick: () => {
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+        chosenPeople.length ? /* @__PURE__ */ jsx8(AvatarStack, { members: chosenPeople, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx8(ui10.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }, maxLines: 1, children: chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee" }),
+        [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx8(ui10.item, { ...memberMark(member2), detail: "@" + member2.username, checked: draftAssignees.includes(member2.id), onClick: () => {
           draftAssignees = draftAssignees.includes(member2.id) ? draftAssignees.filter((id2) => id2 !== member2.id) : [...draftAssignees, member2.id];
-        }, children: member2.name }, member2.id))
+        }, children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id))
       ] }),
-      /* @__PURE__ */ jsxs3(ui4.menu, { label: "Labels", style: chip2, children: [
-        /* @__PURE__ */ jsx3(ui4.icon, { icon: "tag", style: { width: 13, height: 13, color: "text2" } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: draftLabels.length ? labels.filter((item) => draftLabels.includes(item.id)).map((item) => item.name).join(", ") : "Labels" }),
-        labels.length === 0 ? /* @__PURE__ */ jsx3(ui4.item, { disabled: true, children: "No labels" }) : labels.map((item) => /* @__PURE__ */ jsx3(ui4.item, { checked: draftLabels.includes(item.id), onClick: () => {
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
+        chosenLabels.length ? /* @__PURE__ */ jsx8(ui10.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx8(ui10.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx8(ui10.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { ...chipText, color: chosenLabels.length ? "text" : "text2" }, children: chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels" }),
+        labels.map((item) => /* @__PURE__ */ jsx8(ui10.item, { ...labelMark(item.color), checked: draftLabels.includes(item.id), onClick: () => {
           draftLabels = draftLabels.includes(item.id) ? draftLabels.filter((id2) => id2 !== item.id) : [...draftLabels, item.id];
-        }, children: item.name }, item.id))
+        }, children: item.name }, item.id)),
+        labels.length === 0 ? /* @__PURE__ */ jsx8(ui10.item, { disabled: true, children: "No labels" }) : null
       ] }),
-      /* @__PURE__ */ jsxs3(ui4.menu, { label: draftDue ? `Due ${draftDue}` : "Due date", style: chip2, children: [
-        /* @__PURE__ */ jsx3(ui4.icon, { icon: "calendar", style: { width: 13, height: 13, color: "text2" } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: draftDue ?? "Due date" }),
-        /* @__PURE__ */ jsx3(ui4.item, { onClick: () => {
-          draftDue = day(0);
-        }, children: "Today" }),
-        /* @__PURE__ */ jsx3(ui4.item, { onClick: () => {
-          draftDue = day(1);
-        }, children: "Tomorrow" }),
-        /* @__PURE__ */ jsx3(ui4.item, { onClick: () => {
-          draftDue = day(7);
-        }, children: "In a week" }),
-        draftDue ? /* @__PURE__ */ jsx3(ui4.item, { onClick: () => {
-          draftDue = null;
-        }, children: "No due date" }) : null
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: draftDue ? `Due ${dueLabel(draftDue)}` : "Due date", style: chip2, children: [
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "calendar", style: { width: 14, height: 14, color: draftDue ? dueTone(draftDue) : "text2" } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { ...chipText, color: draftDue ? "text" : "text2" }, children: draftDue ? dueLabel(draftDue) : "Due date" }),
+        dueItems(draftDue, (value) => {
+          draftDue = value;
+          ui10.update();
+        })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
-      /* @__PURE__ */ jsx3(ui4.toggle, { label: "Create more", checked: createMore, onChange: (checked) => {
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
+      /* @__PURE__ */ jsx8(ui10.toggle, { label: "Create more", checked: createMore, onChange: (checked) => {
         createMore = checked;
       } }),
-      /* @__PURE__ */ jsx3(ui4.button, { kind: "primary", disabled: !draftTitle.trim(), onClick: () => void submitNew(flux2), children: "Create  ⌘↵" })
+      /* @__PURE__ */ jsx8(ui10.button, { kind: "primary", disabled: !draftTitle.trim(), onClick: () => void submitNew(flux2), children: "Create  ⌘↵" })
     ] })
   ] });
 }
 async function submitNew(flux2) {
   const title = draftTitle.trim();
   if (!title || !draftProject) {
-    ui4.toast(title ? "Pick a project." : "Give the issue a title.");
+    ui10.toast(title ? "Pick a project." : "Give the issue a title.");
     return;
   }
   try {
-    const issue2 = await flux2.createIssue({ projectId: draftProject, title, descriptionMarkdown: draftBody, status: draftStatus, priority: draftPriority, assigneeIds: draftAssignees, labelIds: draftLabels, parentId: draftParent });
-    if (draftDue) await flux2.updateIssue(issue2.id, { dueDate: draftDue });
-    ui4.toast(`Created ${issue2.key}.`);
-    if (createMore) {
-      draftTitle = "";
-      draftBody = "";
-    } else {
+    const issue2 = await flux2.createIssue({ projectId: draftProject, title, descriptionMarkdown: draftBody, status: draftStatus, priority: draftPriority, assigneeIds: draftAssignees, labelIds: draftLabels, parentId: draftParent, dueDate: draftDue });
+    ui10.toast(`Created ${issue2.key} · ${issue2.title}`, { action: "Open", href: `swarm://plugin/flux/issues/${encodeURIComponent(issue2.key)}` });
+    draftTitle = "";
+    draftBody = "";
+    draftDue = null;
+    if (!createMore) {
       creating = false;
-      ui4.hideOverlay("flux-new");
-      openIssue(issue2.key);
+      ui10.hideOverlay("flux-new");
     }
   } catch (error62) {
-    ui4.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui10.toast(error62 instanceof Error ? error62.message : String(error62));
   }
 }
+var shownIds = /* @__PURE__ */ new Map();
 function IssuePage({ flux: flux2, issueKey, image }) {
-  const issue2 = flux2.findIssue(issueKey);
+  let issue2 = flux2.findIssue(issueKey);
+  if (issue2) shownIds.set(issueKey, issue2.id);
+  else {
+    const moved = flux2.issue(shownIds.get(issueKey) ?? "");
+    if (moved && moved.key !== issueKey) {
+      shownIds.set(moved.key, moved.id);
+      setTimeout(() => openIssue(moved.key));
+      issue2 = moved;
+    }
+  }
   if (!issue2) {
     const connection = flux2.connection();
     const waiting = connection.state !== "ready";
-    return /* @__PURE__ */ jsxs3(ui4.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, padding: 32 }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 16, fontWeight: 600 }, children: waiting ? `Loading ${issueKey}…` : `No issue ${issueKey}` }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { color: "text2", textAlign: "center" }, children: waiting ? connection.message ? offline(connection.message, false) : "Syncing with Flux." : "It was deleted, or moved to another project." }),
-      /* @__PURE__ */ jsx3(ui4.button, { kind: "secondary", onClick: () => openList(""), children: "Back to the board" })
+    if (waiting && !connection.message) return /* @__PURE__ */ jsx8(IssueBones, {});
+    return /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minHeight: 0 }, children: [
+      /* @__PURE__ */ jsx8(SyncBars, { flux: flux2 }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui10.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
+        /* @__PURE__ */ jsx8(TrayArt, {}),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: waiting ? `Can't load ${issueKey} yet` : `No issue ${issueKey}` }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center" }, children: waiting ? connection.message ? offline(connection.message, false) : "Syncing with Flux." : "It was deleted, or moved to another project." }),
+        /* @__PURE__ */ jsx8(ui10.box, { style: { flexDirection: "row", marginTop: 24 }, children: /* @__PURE__ */ jsx8(ui10.button, { kind: "secondary", onClick: () => openList(""), children: "Back to the board" }) })
+      ] }) })
     ] });
   }
-  const detail = flux2.detail(issue2.id);
+  const detail2 = flux2.detail(issue2.id);
   const project = flux2.projects().find((item) => item.id === issue2.projectId);
   const members2 = flux2.memberList();
   const back = () => openList(project ? `p/${project.key}` : "");
   const titleKey = `title:${flux2.id}:${issue2.id}`;
-  const edits = { update: (patch) => void flux2.updateIssue(issue2.id, patch) };
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, keys: ["e", "E"], onKeyDown: () => {
-    if (editingTitle !== issue2.id) editingTitle = issue2.id;
-  }, children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 48, flexShrink: 0, paddingLeft: EDGE - 6, paddingRight: EDGE, borderBottom: "1px solid border" }, children: [
-      /* @__PURE__ */ jsxs3(ui4.pressable, { label: project?.name ?? "Issues", onClick: back, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 6, paddingRight: 6, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" } }, children: [
-        project ? /* @__PURE__ */ jsx3(ProjectMark, { project }) : null,
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: project?.name ?? "Issues" })
+  const edits = { update: (patch) => apply2(flux2, issue2.id, patch) };
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, keys: ISSUE_KEYS, onKeyDown: (key) => onIssueKey(flux2, issue2, key), children: [
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 48, flexShrink: 0, paddingLeft: EDGE - 6, paddingRight: EDGE, borderBottom: "1px solid border" }, children: [
+      /* @__PURE__ */ jsxs8(ui10.pressable, { label: project?.name ?? "Issues", onClick: back, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 6, paddingRight: 6, borderRadius: "control", color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
+        project ? /* @__PURE__ */ jsx8(ProjectMark, { project }) : null,
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: project?.name ?? "Issues" })
       ] }),
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text3", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text2", flexShrink: 0 }, children: issue2.key }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, fontWeight: 500, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title.trim() || "Untitled" }),
-      /* @__PURE__ */ jsx3(ui4.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2) }),
-      /* @__PURE__ */ jsx3(IssueMenu, { flux: flux2, issue: issue2, onDelete: back })
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: issue2.key }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title.trim() || "Untitled" }),
+      /* @__PURE__ */ jsx8(ui10.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: 28, height: 28 } }),
+      /* @__PURE__ */ jsx8(IssueMenu, { flux: flux2, issue: issue2, onDelete: back })
     ] }),
-    /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1, minHeight: 0, overflowY: "auto" }, children: /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", width: "100%", maxWidth: 928, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }] }, children: [
-      /* @__PURE__ */ jsxs3(ui4.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-        editingTitle === issue2.id ? /* @__PURE__ */ jsx3(
-          ui4.field,
+    /* @__PURE__ */ jsx8(SyncBars, { flux: flux2 }),
+    /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1, minHeight: 0, overflowY: "auto" }, children: /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", alignItems: "flex-start", width: "100%", maxWidth: 672, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }, { minWidth: 900, style: { maxWidth: 928 } }] }, children: [
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+        editingTitle === issue2.id && (titleBefore?.id === issue2.id || (titleBefore = { id: issue2.id, title: issue2.title })) ? /* @__PURE__ */ jsx8(
+          ui10.field,
           {
+            multiline: true,
             value: drafted(titleKey, issue2.title),
             placeholder: "Issue title",
             autoFocus: true,
-            onChange: (value) => editDraft(titleKey, value, (next2) => saveTitle(flux2, issue2, next2)),
-            onSubmit: (value) => {
+            keys: ["Enter", "Escape"],
+            onKeyDown: (key) => {
+              const before = titleBefore?.id === issue2.id ? titleBefore.title : issue2.title;
+              if (key.key === "Escape") {
+                clearDraft(titleKey);
+                void saveTitle(flux2, issue2, before);
+              } else void saveTitle(flux2, issue2, drafted(titleKey, issue2.title));
               editingTitle = "";
-              void saveTitle(flux2, issue2, value);
+              titleBefore = null;
             },
-            style: { ...titleStyle, height: 38, padding: 0, backgroundColor: "transparent", boxShadow: "none" }
+            onChange: (value) => editDraft(titleKey, value.replace(/\n/g, " "), (next2) => saveTitle(flux2, issue2, next2)),
+            style: { ...titleStyle, minHeight: 0, padding: 0, backgroundColor: "transparent", boxShadow: "none" }
           },
           titleKey
-        ) : /* @__PURE__ */ jsx3(ui4.pressable, { label: "Title", tooltip: "Edit the title (E)", onClick: () => {
+        ) : /* @__PURE__ */ jsx8(ui10.pressable, { label: "Title", tooltip: "Edit the title (E)", onClick: () => {
           editingTitle = issue2.id;
-        }, style: { cursor: "text" }, children: /* @__PURE__ */ jsx3(ui4.text, { style: titleStyle, children: drafted(titleKey, issue2.title).trim() || "Untitled" }) }),
-        detail.parent ? /* @__PURE__ */ jsx3(ParentLine, { parent: detail.parent }) : null,
-        /* @__PURE__ */ jsx3(ui4.box, { style: { marginTop: 16, media: [{ minWidth: 900, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx3(Properties, { issue: issue2, project, members: members2, labels: flux2.labels(), me: flux2.me?.id, edits, start: () => startAgent(issue2.id) }) }),
-        isStarting(issue2.id) ? /* @__PURE__ */ jsx3(ui4.box, { style: { marginTop: 16 }, children: /* @__PURE__ */ jsx3(StartAgent, { flux: flux2, issue: issue2, markdown: detail.descriptionMarkdown }) }) : null,
-        /* @__PURE__ */ jsx3(ui4.box, { style: { marginTop: 24 }, children: /* @__PURE__ */ jsx3(DescriptionEditor, { flux: flux2, issue: issue2, markdown: detail.descriptionMarkdown, image }) }),
-        /* @__PURE__ */ jsx3(SubIssues, { flux: flux2, issue: issue2, subs: detail.subIssues }),
-        /* @__PURE__ */ jsx3(ui4.box, { style: { height: 1, backgroundColor: "divider", marginTop: 32 } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, fontWeight: 500, marginTop: 24 }, children: "Activity" }),
-        /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 20, marginTop: 20 }, children: [
-          /* @__PURE__ */ jsx3(ActivityRow, { member: members2.find((member2) => member2.id === issue2.creatorId), when: issue2.createdAt, text: "created the issue" }),
-          detail.comments.map((comment) => /* @__PURE__ */ jsx3(Comment, { flux: flux2, comment, members: members2 }, comment.id)),
-          /* @__PURE__ */ jsx3(CommentEditor, { flux: flux2, issue: issue2, image })
+        }, style: { cursor: "text" }, children: /* @__PURE__ */ jsx8(ui10.text, { style: titleStyle, children: drafted(titleKey, issue2.title).trim() || "Untitled" }) }),
+        detail2.parent ? /* @__PURE__ */ jsx8(ParentLine, { parent: detail2.parent }) : null,
+        /* @__PURE__ */ jsx8(ui10.box, { style: { marginTop: 16, media: [{ minWidth: 900, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx8(Properties, { issue: issue2, project, members: members2, labels: flux2.labels(), me: flux2.me?.id, edits, start: () => startAgent(issue2.id) }) }),
+        /* @__PURE__ */ jsx8(ui10.box, { style: { marginTop: 24 }, children: /* @__PURE__ */ jsx8(DescriptionEditor, { flux: flux2, issue: issue2, markdown: detail2.descriptionMarkdown, html: detail2.descriptionHtml, image }) }),
+        /* @__PURE__ */ jsx8(SubIssues, { flux: flux2, issue: issue2, subs: detail2.subIssues }),
+        /* @__PURE__ */ jsx8(ui10.box, { style: { height: 1, backgroundColor: "divider", marginTop: 32 } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500, marginTop: 24 }, children: "Activity" }),
+        /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 20, marginTop: 20 }, children: [
+          /* @__PURE__ */ jsx8(ActivityRow, { member: members2.find((member2) => member2.id === issue2.creatorId), when: issue2.createdAt, text: "created the issue" }),
+          detail2.comments.map((comment) => /* @__PURE__ */ jsx8(Comment, { flux: flux2, comment, members: members2, image }, comment.id)),
+          /* @__PURE__ */ jsx8(CommentEditor, { flux: flux2, issue: issue2, image })
         ] })
       ] }),
-      /* @__PURE__ */ jsx3(ui4.box, { style: { display: "none", media: [{ minWidth: 900, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx3(PropertyRail, { flux: flux2, issue: issue2, project, members: members2 }) })
+      /* @__PURE__ */ jsx8(ui10.box, { style: { display: "none", position: "sticky", top: 0, width: 240, flexShrink: 0, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx8(PropertyRail, { flux: flux2, issue: issue2, project, members: members2 }) })
     ] }) })
   ] });
 }
+var titleBefore = null;
 var titleStyle = { fontSize: 30, lineHeight: "38px", fontWeight: 600, letterSpacing: -0.4, media: [{ maxWidth: 699, style: { fontSize: 24, lineHeight: "30px" } }] };
 var editingTitle = "";
 async function saveTitle(flux2, issue2, value) {
@@ -80634,118 +82213,268 @@ async function saveTitle(flux2, issue2, value) {
   if (next2 && next2 !== issue2.title) await flux2.updateIssue(issue2.id, { title: next2 });
 }
 function ParentLine({ parent }) {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }, children: [
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue of" }),
-    /* @__PURE__ */ jsxs3(ui4.pressable, { label: `${parent.key} ${parent.title}`, onClick: () => openIssue(parent.key), style: { flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexShrink: 1 }, children: [
-      /* @__PURE__ */ jsx3(StatusIcon, { status: parent.status, size: 14 }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, minWidth: 0 }, maxLines: 1, children: `${parent.key} ${parent.title.trim() || "Untitled"}` })
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }, children: [
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue of" }),
+    /* @__PURE__ */ jsxs8(ui10.pressable, { label: `${parent.key} ${parent.title}`, onClick: () => openIssue(parent.key), style: { flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexShrink: 1 }, children: [
+      /* @__PURE__ */ jsx8(StatusIcon, { status: parent.status, size: 14 }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13, minWidth: 0 }, maxLines: 1, children: `${parent.key} ${parent.title.trim() || "Untitled"}` })
     ] }),
-    parent.subIssueCount > 0 ? /* @__PURE__ */ jsx3(SubIssueChip, { done: parent.subIssueDoneCount, total: parent.subIssueCount }) : null
+    parent.subIssueCount > 0 ? /* @__PURE__ */ jsx8(SubIssueChip, { done: parent.subIssueDoneCount, total: parent.subIssueCount }) : null
   ] });
 }
 var subsOpen = true;
+var SUB_ORDERINGS = ["created", "priority", "status"];
+var SUB_PROPERTIES = ["id", "priority", "assignee", "labels"];
+var SUB_ORDERING_LABELS = { created: "Created", priority: "Priority", status: "Status" };
+var SUB_PROPERTY_LABELS = { id: "ID", priority: "Priority", assignee: "Assignee", labels: "Labels" };
+function subDisplay() {
+  const raw = storage4.get("subDisplay") ?? {};
+  const ordering = SUB_ORDERINGS.includes(raw.ordering) ? raw.ordering : "created";
+  const properties = Array.isArray(raw.properties) ? SUB_PROPERTIES.filter((p) => raw.properties.includes(p)) : ["assignee"];
+  return { ordering, properties };
+}
+function orderSubs(subs, ordering) {
+  const created = (a3, b) => a3.createdAt.localeCompare(b.createdAt) || a3.id.localeCompare(b.id);
+  const out = [...subs].sort(created);
+  if (ordering === "priority") out.sort((a3, b) => PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || created(a3, b));
+  if (ordering === "status") out.sort((a3, b) => STATUSES.indexOf(a3.status) - STATUSES.indexOf(b.status) || created(a3, b));
+  return out;
+}
+var composing = null;
+var filing = Promise.resolve();
+function composeSub(flux2, parent) {
+  subsOpen = true;
+  if (composing?.parent === parent.id) return;
+  const me2 = flux2.me?.id;
+  const siblings = flux2.issues().filter((i2) => i2.parentId === parent.id);
+  const same = (ids) => ids.length === parent.assigneeIds.length && ids.every((id2) => parent.assigneeIds.includes(id2));
+  const inherit = parent.assigneeIds.length > 0 && (!!me2 && parent.assigneeIds.includes(me2) || siblings.length > 0 && siblings.every((s) => same(s.assigneeIds)));
+  composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
+}
+function fileSub(flux2, parent, title) {
+  const c = composing;
+  const trimmed = title.trim();
+  if (!c || !trimmed) return false;
+  const input2 = { projectId: parent.projectId, parentId: parent.id, title: trimmed, status: c.status, priority: c.priority, assigneeIds: c.assigneeIds, labelIds: c.labelIds };
+  filing = filing.then(() => flux2.createIssue(input2).catch((e) => failed(`Couldn't create “${trimmed}”`)(e)));
+  return true;
+}
 function SubIssues({ flux: flux2, issue: issue2, subs }) {
   const members2 = flux2.memberList();
-  const add = () => openCreate(flux2, issue2.projectId, void 0, issue2.id);
-  if (subs.length === 0) {
-    return /* @__PURE__ */ jsxs3(ui4.pressable, { label: "Add sub-issues", onClick: add, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, marginTop: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" } }, children: [
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "plus", style: { width: 14, height: 14, color: "currentColor" } }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, color: "currentColor" }, children: "Add sub-issues" })
-    ] });
-  }
+  const display = subDisplay();
+  const ordered = orderSubs(subs, display.ordering);
   const done = subs.filter((sub) => CLOSED_STATUSES.has(sub.status)).length;
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { marginTop: 32, gap: 4 }, children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
-      /* @__PURE__ */ jsxs3(ui4.pressable, { label: "Sub-issues", checked: subsOpen, onClick: () => {
+  const open4 = composing?.parent === issue2.id;
+  const setDisplay2 = (patch) => storage4.set("subDisplay", { ...display, ...patch });
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { marginTop: 32, gap: 0 }, children: [
+    subs.length > 0 ? /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
+      /* @__PURE__ */ jsxs8(ui10.pressable, { label: "Sub-issues", checked: subsOpen, onClick: () => {
         subsOpen = !subsOpen;
-      }, style: { flex: 1, flexDirection: "row", gap: 6, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx3(ui4.icon, { icon: subsOpen ? "chevron-down" : "chevron-right", style: { width: 12, height: 12, color: "text3" } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, fontWeight: 500 }, children: "Sub-issues" }),
-        /* @__PURE__ */ jsx3(SubIssueChip, { done, total: subs.length })
+      }, style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500 }, children: "Sub-issues" }),
+        /* @__PURE__ */ jsx8(SubIssueChip, { done, total: subs.length })
       ] }),
-      /* @__PURE__ */ jsx3(ui4.iconButton, { icon: "plus", label: "Add sub-issue", onClick: add })
-    ] }),
-    subsOpen ? subs.map((sub) => {
-      const closed = CLOSED_STATUSES.has(sub.status);
-      const who = members2.filter((member2) => sub.assigneeIds.includes(member2.id));
-      return /* @__PURE__ */ jsxs3(ui4.pressable, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx3(IssueContextMenu, { flux: flux2, issue: sub }),
-        /* @__PURE__ */ jsx3(StatusIcon, { status: sub.status, size: 14 }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, color: "text3", flexShrink: 0 }, children: sub.key }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text3" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title }),
-        who.length ? /* @__PURE__ */ jsx3(AvatarStack, { members: who, size: 20 }) : null
-      ] }, sub.id);
-    }) : null
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: "Sub-issue display options", tooltip: "Display options", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "sliders", style: { width: 16, height: 16, color: "currentColor" } }),
+        /* @__PURE__ */ jsx8(ui10.heading, { children: "Ordering" }),
+        SUB_ORDERINGS.map((o) => /* @__PURE__ */ jsx8(ui10.item, { checked: display.ordering === o, onClick: () => setDisplay2({ ordering: o }), children: SUB_ORDERING_LABELS[o] }, "o-" + o)),
+        /* @__PURE__ */ jsx8(ui10.separator, {}),
+        /* @__PURE__ */ jsx8(ui10.heading, { children: "Display properties" }),
+        SUB_PROPERTIES.map((p) => {
+          const on3 = display.properties.includes(p);
+          return /* @__PURE__ */ jsx8(ui10.item, { checked: on3, onClick: () => setDisplay2({ properties: on3 ? display.properties.filter((x2) => x2 !== p) : SUB_PROPERTIES.filter((x2) => x2 === p || display.properties.includes(x2)) }), children: SUB_PROPERTY_LABELS[p] }, "p-" + p);
+        })
+      ] }),
+      /* @__PURE__ */ jsx8(ui10.iconButton, { icon: "plus", label: "Add sub-issue", tooltip: "Add sub-issue (⌘⇧O)", style: { width: 28, height: 28 }, onClick: () => composeSub(flux2, issue2) })
+    ] }) : !open4 ? /* @__PURE__ */ jsxs8(ui10.pressable, { label: "Add sub-issues", onClick: () => composeSub(flux2, issue2), style: { flexDirection: "row", gap: 8, alignItems: "center", alignSelf: "flex-start", height: 32, paddingLeft: 6, paddingRight: 8, borderRadius: "control", color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "plus", style: { width: 14, height: 14, color: "currentColor" } }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "currentColor" }, children: "Add sub-issues" })
+    ] }) : null,
+    subsOpen && subs.length > 0 ? /* @__PURE__ */ jsx8(ui10.box, { style: { marginTop: 4 }, children: ordered.map((sub) => /* @__PURE__ */ jsx8(SubRow, { flux: flux2, sub, members: members2, properties: display.properties }, sub.id)) }) : null,
+    open4 ? /* @__PURE__ */ jsx8(SubComposer, { flux: flux2, parent: issue2 }) : null
   ] });
+}
+function SubRow({ flux: flux2, sub, members: members2, properties }) {
+  const closed = CLOSED_STATUSES.has(sub.status);
+  const shown = (p) => properties.includes(p);
+  const who = members2.filter((member2) => sub.assigneeIds.includes(member2.id));
+  const labels = flux2.labels().filter((l) => sub.labelIds.includes(l.id)).slice(0, 2);
+  const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
+  return /* @__PURE__ */ jsxs8(ui10.box, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
+    /* @__PURE__ */ jsx8(IssueContextMenu, { flux: flux2, issue: sub }),
+    /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[sub.status]}`, style: cell, children: [
+      /* @__PURE__ */ jsx8(StatusIcon, { status: sub.status, size: 14 }),
+      pickerItems(flux2, sub, "status")
+    ] }),
+    shown("id") ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: sub.key }) : null,
+    shown("priority") && sub.priority !== "none" ? /* @__PURE__ */ jsx8(PriorityIcon, { priority: sub.priority, size: 14 }) : null,
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
+    shown("labels") && labels.length ? /* @__PURE__ */ jsx8(ui10.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx8(ui10.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
+    shown("assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
+      who.length ? /* @__PURE__ */ jsx8(AvatarStack, { members: who, size: 20 }) : /* @__PURE__ */ jsx8(Unassigned, { size: 20 }),
+      pickerItems(flux2, sub, "assignees")
+    ] }) : null
+  ] });
+}
+function SubComposer({ flux: flux2, parent }) {
+  const c = composing;
+  const members2 = flux2.memberList();
+  const me2 = flux2.me?.id;
+  const close4 = () => {
+    composing = null;
+  };
+  const submit = (andClose) => {
+    if (!fileSub(flux2, parent, c.title)) return;
+    c.title = "";
+    if (andClose) close4();
+  };
+  const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
+  const who = members2.filter((m) => c.assigneeIds.includes(m.id));
+  const chosen = flux2.labels().filter((l) => c.labelIds.includes(l.id));
+  const chip2 = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, maxWidth: 224, minWidth: 0, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, border: "1px solid border", backgroundColor: "overlay", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } };
+  const chipText = (text2, muted) => /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: text2 });
+  return /* @__PURE__ */ jsx8(ui10.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs8(ui10.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close4, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
+    /* @__PURE__ */ jsx8(
+      ui10.field,
+      {
+        multiline: true,
+        autoFocus: true,
+        value: c.title,
+        placeholder: "Sub-issue title",
+        keys: ["Enter", "Mod+Shift+Enter", "Escape"],
+        onKeyDown: (key) => {
+          if (key.key === "Escape") close4();
+          else submit(key.mod && key.shift);
+        },
+        onChange: (value) => {
+          const lines = value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+          if (value.includes("\n") && lines.length > 1) {
+            for (const line of lines) fileSub(flux2, parent, line);
+            c.title = "";
+          } else c.title = value.replace(/\r?\n/g, " ");
+        },
+        style: { minHeight: 0, height: 32, paddingLeft: 6, paddingRight: 6, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" }
+      },
+      "sub-title-" + parent.id
+    ),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: `Status: ${STATUS_LABELS[c.status]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx8(StatusIcon, { status: c.status, size: 14 }),
+        chipText(STATUS_LABELS[c.status], false),
+        STATUSES.map((st2) => /* @__PURE__ */ jsx8(ui10.item, { ...statusMark(st2), checked: c.status === st2, onClick: () => {
+          c.status = st2;
+        }, children: STATUS_LABELS[st2] }, st2))
+      ] }),
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: `Priority: ${PRIORITY_LABELS[c.priority]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx8(PriorityIcon, { priority: c.priority, size: 14 }),
+        chipText(c.priority === "none" ? "Priority" : PRIORITY_LABELS[c.priority], c.priority === "none"),
+        [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => /* @__PURE__ */ jsx8(ui10.item, { ...priorityMark(p), checked: c.priority === p, onClick: () => {
+          c.priority = p;
+        }, children: PRIORITY_LABELS[p] }, p))
+      ] }),
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+        who.length ? /* @__PURE__ */ jsx8(AvatarStack, { members: who, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx8(ui10.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
+        chipText(who.length ? who.map((m) => m.name).join(", ") : "Assignee", who.length === 0),
+        [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((m) => /* @__PURE__ */ jsx8(ui10.item, { ...memberMark(m), detail: "@" + m.username, checked: c.assigneeIds.includes(m.id), onClick: () => {
+          c.assigneeIds = toggle(c.assigneeIds, m.id);
+        }, children: m.id === me2 ? `${m.name} (you)` : m.name }, m.id))
+      ] }),
+      /* @__PURE__ */ jsxs8(ui10.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
+        chosen.length ? /* @__PURE__ */ jsx8(ui10.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx8(ui10.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx8(ui10.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        chipText(chosen.length ? `${chosen.length} ${chosen.length === 1 ? "label" : "labels"}` : "Labels", chosen.length === 0),
+        flux2.labels().map((l) => /* @__PURE__ */ jsx8(ui10.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
+          c.labelIds = toggle(c.labelIds, l.id);
+        }, children: l.name }, l.id))
+      ] }),
+      /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx8(ui10.button, { kind: "ghost", size: "sm", onClick: close4, children: "Cancel" }),
+      /* @__PURE__ */ jsx8(ui10.button, { kind: "primary", size: "sm", disabled: !c.title.trim(), tooltip: "⌘ Enter to submit and draft a similar issue\n⌘ ⇧ Enter to submit issue", onClick: () => submit(false), children: "Create" })
+    ] })
+  ] }) });
 }
 function IssueMenu({ flux: flux2, issue: issue2, onDelete }) {
   const projects = flux2.projects();
   const url2 = flux2.issueUrl(issue2);
-  return /* @__PURE__ */ jsxs3(ui4.menu, { label: "", icon: "more", tooltip: "Issue actions", children: [
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "copy", shortcut: "D", onClick: () => void flux2.duplicateIssue(issue2.id).then((copy3) => openIssue(copy3.key)), children: "Duplicate" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui4.copy(url2), children: "Copy link" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "copy", onClick: () => ui4.copy(issue2.key), children: "Copy ID" }),
-    projects.length >= 2 ? /* @__PURE__ */ jsx3(ui4.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx3(ui4.item, { checked: issue2.projectId === project.id, onClick: () => void flux2.updateIssue(issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
-    /* @__PURE__ */ jsx3(ui4.separator, {}),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => {
-      cursor = issue2.id;
-      palette = "parent";
-    }, children: "Set parent" }),
-    issue2.parentId ? /* @__PURE__ */ jsx3(ui4.item, { onClick: () => void flux2.updateIssue(issue2.id, { parentId: null }), children: "Remove parent" }) : null,
-    /* @__PURE__ */ jsx3(ui4.separator, {}),
-    /* @__PURE__ */ jsx3(ui4.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => {
-      void flux2.deleteIssue(issue2.id);
-      onDelete();
-    }, children: "Delete" })
+  return /* @__PURE__ */ jsxs8(ui10.menu, { label: "", icon: "more", tooltip: "Issue actions", children: [
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui10.copy(url2), children: "Copy link" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "copy", onClick: () => ui10.copy(issue2.key), children: "Copy ID" }),
+    projects.length >= 2 ? /* @__PURE__ */ jsx8(ui10.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx8(ui10.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
+    issue2.parentId ? /* @__PURE__ */ jsx8(ui10.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], onDelete), children: "Delete" })
   ] });
 }
-function Comment({ flux: flux2, comment, members: members2 }) {
+function mentionOf(flux2) {
+  return (name) => {
+    const lower = name.toLowerCase();
+    if (flux2.memberList().some((m) => m.username.toLowerCase() === lower)) return { kind: "member" };
+    const project = flux2.projects().find((p) => p.key.toLowerCase() === lower);
+    return project ? { kind: "project", open: () => openList(`p/${project.key}`) } : null;
+  };
+}
+function When({ iso, prefix = " · " }) {
+  return /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, tooltip: new Date(iso).toLocaleString(), children: prefix + ago2(iso) });
+}
+function Comment({ flux: flux2, comment, members: members2, image }) {
   const author = members2.find((member2) => member2.id === comment.authorId);
   const mine = comment.authorId === flux2.me?.id && !comment.agent;
-  const editing = editingComment === comment.id;
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 6 }, children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", height: 24 }, children: [
-      comment.agent ? /* @__PURE__ */ jsx3(ui4.box, { style: { width: 20, height: 20, borderRadius: 5, backgroundColor: "accentSoft", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ jsx3(ui4.icon, { icon: "robot", style: { width: 13, height: 13, color: "accent" } }) }) : /* @__PURE__ */ jsx3(Avatar, { member: author, size: 20 }),
-      /* @__PURE__ */ jsxs3(ui4.text, { style: { fontSize: 14, color: "text2" }, children: [
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontWeight: 600, color: "text" }, children: comment.agent?.name ?? author?.name ?? "Someone" }),
-        comment.agent && author ? ` for ${author.name}` : "",
-        ` · ${ago2(comment.createdAt)}`
+  const editing2 = editingComment === comment.id;
+  const edited = new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1e3;
+  const agent2 = comment.agent;
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start", hover: { backgroundColor: "transparent" } }, children: [
+    agent2 ? /* @__PURE__ */ jsx8(ui10.box, { style: { width: 20, height: 20, marginTop: 2, borderRadius: 5, backgroundColor: "accentSoft", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx8(ui10.icon, { icon: "robot", style: { width: 13, height: 13, color: "accent" } }) }) : /* @__PURE__ */ jsx8(ui10.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx8(Avatar, { member: author, size: 20 }) }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
+      /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minHeight: 24 }, children: [
+        /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", flexWrap: "wrap" }, children: [
+          agent2?.threadId ? /* @__PURE__ */ jsx8(ui10.pressable, { label: agent2.name, tooltip: "Open the agent's thread", onClick: () => ui10.openThread(agent2.threadId), style: { hover: { textDecoration: "underline" } }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2.name }) }) : /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2?.name ?? author?.name ?? "Someone" }),
+          agent2 ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2" }, children: ` for ${author?.name ?? "someone"}` }) : null,
+          /* @__PURE__ */ jsx8(When, { iso: comment.createdAt }),
+          edited ? /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2" }, tooltip: `Edited ${new Date(comment.updatedAt).toLocaleString()}`, children: " · Edited" }) : null
+        ] }),
+        mine && !editing2 ? /* @__PURE__ */ jsxs8(ui10.menu, { label: "Comment actions", tooltip: "Comment actions", style: { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "hover", color: "text" }, checked: { opacity: 1, backgroundColor: "press" } }, children: [
+          /* @__PURE__ */ jsx8(ui10.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
+          /* @__PURE__ */ jsx8(ui10.item, { icon: "pencil", onClick: () => {
+            editingComment = comment.id;
+            commentBody = comment.markdown;
+          }, children: "Edit" }),
+          /* @__PURE__ */ jsx8(ui10.separator, {}),
+          /* @__PURE__ */ jsx8(ui10.item, { icon: "trash", danger: true, onClick: () => confirm("Delete this comment?", "This cannot be undone.", "Delete", () => flux2.deleteComment(comment.id)), children: "Delete" })
+        ] }) : null
       ] }),
-      /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1 } }),
-      mine && !editing ? /* @__PURE__ */ jsxs3(ui4.menu, { label: "", icon: "more", tooltip: "Comment actions", children: [
-        /* @__PURE__ */ jsx3(ui4.item, { icon: "pencil", onClick: () => {
-          editingComment = comment.id;
-          commentBody = comment.markdown;
-        }, children: "Edit" }),
-        /* @__PURE__ */ jsx3(ui4.item, { icon: "trash", danger: true, onClick: () => void flux2.deleteComment(comment.id), children: "Delete" })
-      ] }) : null
-    ] }),
-    editing ? /* @__PURE__ */ jsxs3(ui4.box, { style: { marginLeft: 30, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
-      /* @__PURE__ */ jsx3(ui4.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx3(ui4.editor, { value: commentBody, label: "Edit comment", options: mentionOptions(flux2), onChange: (value) => {
-        commentBody = value;
-      }, onSubmit: () => saveComment(flux2, comment.id), style: { padding: 0 } }, "edit-" + comment.id) }),
-      /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end", paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: [
-        /* @__PURE__ */ jsx3(ui4.button, { size: "sm", kind: "ghost", onClick: () => {
-          editingComment = "";
-        }, children: "Cancel" }),
-        /* @__PURE__ */ jsx3(ui4.button, { size: "sm", kind: "primary", disabled: !commentBody.trim(), onClick: () => saveComment(flux2, comment.id), children: "Save" })
-      ] })
-    ] }) : /* @__PURE__ */ jsx3(ui4.box, { style: { paddingLeft: 30 }, children: /* @__PURE__ */ jsx3(ui4.markdown, { text: comment.markdown }) })
+      editing2 ? /* @__PURE__ */ jsxs8(ui10.box, { label: "Edit comment", keys: ["Escape"], onKeyDown: () => {
+        editingComment = "";
+      }, style: { marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }, children: [
+        /* @__PURE__ */ jsx8(ui10.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx8(ui10.editor, { value: commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), onChange: (value) => {
+          commentBody = value;
+        }, onSubmit: () => saveComment(flux2, comment.id), style: { padding: 0 } }, "edit-" + comment.id) }),
+        /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }, children: [
+          /* @__PURE__ */ jsx8(ui10.button, { size: "sm", kind: "ghost", onClick: () => {
+            editingComment = "";
+          }, children: "Cancel" }),
+          /* @__PURE__ */ jsx8(ui10.button, { size: "sm", kind: "primary", disabled: !commentBody.trim(), onClick: () => saveComment(flux2, comment.id), children: "Save" })
+        ] })
+      ] }) : /* @__PURE__ */ jsx8(Markdown, { md: comment.markdown, image, mention: mentionOf(flux2) })
+    ] })
   ] });
 }
 function saveComment(flux2, id2) {
   const body = commentBody.trim();
   if (!body) return;
   editingComment = "";
-  void flux2.updateComment(id2, body).catch((error62) => ui4.toast(error62 instanceof Error ? error62.message : String(error62)));
+  void flux2.updateComment(id2, body).catch((error62) => ui10.toast(error62 instanceof Error ? error62.message : String(error62)));
 }
 function ActivityRow({ member: member2, when, text: text2 }) {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", height: 24 }, children: [
-    /* @__PURE__ */ jsx3(Avatar, { member: member2, size: 20 }),
-    /* @__PURE__ */ jsxs3(ui4.text, { style: { fontSize: 14, color: "text2" }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontWeight: 600, color: "text" }, children: member2?.name ?? "Someone" }),
-      ` ${text2} · ${ago2(when)}`
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", minHeight: 24 }, children: [
+    /* @__PURE__ */ jsx8(Avatar, { member: member2, size: 20 }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", minWidth: 0 }, children: [
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, fontWeight: 500 }, children: member2?.name ?? "Someone" }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2" }, children: ` ${text2}` }),
+      /* @__PURE__ */ jsx8(When, { iso: when })
     ] })
   ] });
 }
@@ -80753,146 +82482,267 @@ var railHeading = { fontSize: 12, fontWeight: 500, color: "text2", paddingLeft: 
 function PropertyRail({ flux: flux2, issue: issue2, project, members: members2 }) {
   const labels = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
   const assignees = members2.filter((member2) => issue2.assigneeIds.includes(member2.id));
-  const edits = { update: (patch) => void flux2.updateIssue(issue2.id, patch) };
-  const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-  const labelItems = flux2.labels().map((item) => /* @__PURE__ */ jsx3(ui4.item, { checked: issue2.labelIds.includes(item.id), onClick: () => edits.update({ labelIds: issue2.labelIds.includes(item.id) ? issue2.labelIds.filter((id2) => id2 !== item.id) : [...issue2.labelIds, item.id] }), children: item.name }, item.id));
+  const edits = { update: (patch) => apply2(flux2, issue2.id, patch) };
+  const labelItems = pickerItems(flux2, issue2, "labels");
   const another = issue2.threadIds.length > 0;
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 2 }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: railHeading, children: "Properties" }),
-      /* @__PURE__ */ jsx3(RailRow, { icon: /* @__PURE__ */ jsx3(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: flux2.projects().map((item) => /* @__PURE__ */ jsx3(ui4.item, { checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
-      /* @__PURE__ */ jsx3(RailRow, { icon: /* @__PURE__ */ jsx3(StatusIcon, { status: issue2.status }), label: "Status", value: STATUS_LABELS[issue2.status], menu: "Status: " + STATUS_LABELS[issue2.status], children: STATUSES.map((status) => /* @__PURE__ */ jsx3(ui4.item, { checked: issue2.status === status, onClick: () => edits.update({ status }), children: STATUS_LABELS[status] }, status)) }),
-      /* @__PURE__ */ jsx3(RailRow, { icon: /* @__PURE__ */ jsx3(PriorityIcon, { priority: issue2.priority }), label: "Priority", value: issue2.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue2.priority], muted: issue2.priority === "none", menu: "Priority: " + PRIORITY_LABELS[issue2.priority], children: PRIORITIES.map((priority) => /* @__PURE__ */ jsx3(ui4.item, { checked: issue2.priority === priority, onClick: () => edits.update({ priority }), children: PRIORITY_LABELS[priority] }, priority)) }),
-      /* @__PURE__ */ jsx3(RailRow, { icon: assignees[0] ? /* @__PURE__ */ jsx3(Avatar, { member: assignees[0], size: 14 }) : /* @__PURE__ */ jsx3(ui4.icon, { icon: "user", style: { width: 14, height: 14, color: "text3" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: members2.map((member2) => /* @__PURE__ */ jsx3(ui4.item, { checked: issue2.assigneeIds.includes(member2.id), onClick: () => edits.update({ assigneeIds: issue2.assigneeIds.includes(member2.id) ? issue2.assigneeIds.filter((id2) => id2 !== member2.id) : [...issue2.assigneeIds, member2.id] }), children: member2.name }, member2.id)) }),
-      /* @__PURE__ */ jsxs3(RailRow, { icon: /* @__PURE__ */ jsx3(ui4.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: [
-        /* @__PURE__ */ jsx3(ui4.item, { onClick: () => edits.update({ dueDate: day(0) }), children: "Today" }),
-        /* @__PURE__ */ jsx3(ui4.item, { onClick: () => edits.update({ dueDate: day(1) }), children: "Tomorrow" }),
-        /* @__PURE__ */ jsx3(ui4.item, { onClick: () => edits.update({ dueDate: day(7) }), children: "In a week" }),
-        issue2.dueDate ? /* @__PURE__ */ jsx3(ui4.item, { danger: true, onClick: () => edits.update({ dueDate: null }), children: "Clear" }) : null
-      ] })
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx8(ui10.text, { style: railHeading, children: "Properties" }),
+      /* @__PURE__ */ jsx8(RailRow, { icon: /* @__PURE__ */ jsx8(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: flux2.projects().map((item) => /* @__PURE__ */ jsx8(ui10.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
+      /* @__PURE__ */ jsx8(RailRow, { icon: /* @__PURE__ */ jsx8(StatusIcon, { status: issue2.status }), label: "Status", value: STATUS_LABELS[issue2.status], menu: "Status: " + STATUS_LABELS[issue2.status], children: pickerItems(flux2, issue2, "status") }),
+      /* @__PURE__ */ jsx8(RailRow, { icon: /* @__PURE__ */ jsx8(PriorityIcon, { priority: issue2.priority }), label: "Priority", value: issue2.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue2.priority], muted: issue2.priority === "none", menu: "Priority: " + PRIORITY_LABELS[issue2.priority], children: pickerItems(flux2, issue2, "priority") }),
+      /* @__PURE__ */ jsx8(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx8(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx8(ui10.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: pickerItems(flux2, issue2, "assignees") }),
+      /* @__PURE__ */ jsx8(RailRow, { icon: /* @__PURE__ */ jsx8(ui10.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate })) })
     ] }),
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 2 }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: railHeading, children: "Labels" }),
-      labels.length === 0 ? /* @__PURE__ */ jsxs3(ui4.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx3(ui4.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx8(ui10.text, { style: railHeading, children: "Labels" }),
+      labels.length === 0 ? /* @__PURE__ */ jsxs8(ui10.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx8(ui10.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
         labelItems
-      ] }) : /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
-        labels.map((item) => /* @__PURE__ */ jsxs3(ui4.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" } }, children: [
-          /* @__PURE__ */ jsx3(ui4.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
-          /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
+      ] }) : /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
+        labels.map((item) => /* @__PURE__ */ jsxs8(ui10.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+          /* @__PURE__ */ jsx8(ui10.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
+          /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
           labelItems
         ] }, item.id)),
-        /* @__PURE__ */ jsx3(ui4.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
+        /* @__PURE__ */ jsx8(ui10.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 4 }, children: [
-      /* @__PURE__ */ jsx3(ui4.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { gap: 4 }, children: [
+      /* @__PURE__ */ jsx8(ui10.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
       issue2.threadIds.map((id2) => {
         const thread = threadInfo(id2);
-        return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxs3(ui4.pressable, { label: thread?.title || "Archived thread", onClick: () => ui4.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-            /* @__PURE__ */ jsx3(ui4.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx3(ui4.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
-            /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: thread ? thread.title || "Untitled thread" : "Archived thread" })
+        return /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsxs8(ui10.pressable, { label: thread?.title || "Archived thread", onClick: () => ui10.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
+            /* @__PURE__ */ jsx8(ui10.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx8(ui10.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
+            /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: thread ? thread.title || "Untitled thread" : "Archived thread" })
           ] }),
-          /* @__PURE__ */ jsx3(ui4.iconButton, { icon: "x", label: "Detach thread", onClick: () => void flux2.detach(issue2.id, id2) })
+          /* @__PURE__ */ jsx8(ui10.iconButton, { icon: "x", label: "Detach thread", onClick: () => {
+            flux2.detach(issue2.id, id2);
+            ui10.toast(`Detached from ${issue2.key}.`);
+          } })
         ] }, id2);
       }),
-      /* @__PURE__ */ jsx3(ui4.button, { size: "sm", kind: another ? "secondary" : "primary", icon: "bot", onClick: () => startAgent(issue2.id), style: { marginTop: 4, width: "100%" }, children: another ? "Start another agent" : "Start agent" })
+      /* @__PURE__ */ jsx8(ui10.button, { size: "sm", kind: another ? "secondary" : "primary", icon: "bot", onClick: () => startAgent(issue2.id), style: { marginTop: 4, width: "100%" }, children: another ? "Start another agent" : "Start agent" })
     ] })
   ] });
 }
 function RailRow({ icon, value, menu, muted, children }) {
-  return /* @__PURE__ */ jsxs3(ui4.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" } }, children: [
+  return /* @__PURE__ */ jsxs8(ui10.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
     icon,
-    /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13, flex: 1, color: muted ? "text3" : "text" }, children: value }),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: value }),
     children
   ] });
 }
 function Connections() {
-  const list2 = hub.all().filter((flux2) => flux2.state !== "unconfigured" || flux2.id === "default");
+  const list2 = hub.connected();
   const active = hub.active;
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-    /* @__PURE__ */ jsxs3(ui4.menu, { label: active.workspace?.name || active.baseUrl || "Flux", style: ghostChip, children: [
-      /* @__PURE__ */ jsx3(ui4.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: active.connection().state === "ready" ? "green" : "amber" } }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 13 }, children: active.workspace?.name || "Flux" }),
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
-      list2.map((item) => {
-        const connection = item.connection();
-        const title = connection.workspace?.name || connection.baseUrl || "Not connected";
-        return /* @__PURE__ */ jsx3(ui4.item, { checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
-      }),
-      /* @__PURE__ */ jsx3(ui4.separator, {}),
-      /* @__PURE__ */ jsx3(ui4.item, { onClick: () => {
-        adding = !adding;
-      }, children: "Connect another Flux…" })
-    ] }),
-    adding ? /* @__PURE__ */ jsx3(AddConnection, {}) : null
+  return /* @__PURE__ */ jsxs8(ui10.menu, { label: active.workspace?.name || active.baseUrl || "Flux", style: ghostChip, children: [
+    /* @__PURE__ */ jsx8(ui10.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: active.connection().state === "ready" ? "green" : "amber" } }),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 13 }, children: active.workspace?.name || "Flux" }),
+    /* @__PURE__ */ jsx8(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
+    list2.map((item) => {
+      const connection = item.connection();
+      const title = connection.workspace?.name || connection.baseUrl || item.url || "Not connected";
+      return /* @__PURE__ */ jsx8(ui10.item, { checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
+    }),
+    /* @__PURE__ */ jsx8(ui10.separator, {}),
+    /* @__PURE__ */ jsx8(ui10.item, { icon: "settings", href: SETTINGS, children: "Flux settings…" })
   ] });
 }
-function AddConnection() {
-  return /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }, children: [
-    /* @__PURE__ */ jsx3(ui4.field, { value: addURL, placeholder: "https://flux.example.com", onChange: (value) => {
-      addURL = value;
-    } }, "flux-url"),
-    /* @__PURE__ */ jsx3(ui4.field, { value: addToken, placeholder: "API token", onChange: (value) => {
-      addToken = value;
-    } }, "flux-token"),
-    /* @__PURE__ */ jsx3(ui4.button, { size: "sm", kind: "primary", onClick: () => saveConnection(), children: "Add" })
+var SETTINGS = "swarm://settings/flux/flux";
+function CantLoad({ flux: flux2 }) {
+  const connection = flux2.connection();
+  return /* @__PURE__ */ jsxs8(ui10.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: [
+    /* @__PURE__ */ jsx8(IssuesArt, {}),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux" }),
+    /* @__PURE__ */ jsx8(ui10.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }, selectable: true, children: connection.state === "offline" ? offline(connection.message, false) : connection.message }),
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }, children: [
+      /* @__PURE__ */ jsx8(ui10.button, { kind: "secondary", onClick: () => void flux2.resync().catch(() => {
+      }), children: "Try again" }),
+      /* @__PURE__ */ jsx8(ui10.link, { label: "Flux settings", href: SETTINGS })
+    ] })
   ] });
-}
-function saveConnection() {
-  const url2 = addURL.trim();
-  const token = addToken.trim();
-  if (!url2 || !token) {
-    ui4.toast("Give Flux's URL and an API token.");
-    return;
-  }
-  const current = parseExtras(String(settings.get("connections") ?? ""));
-  current.push({ id: crypto.randomUUID(), url: url2, token });
-  settings.set({ connections: JSON.stringify(current) });
-  addURL = "";
-  addToken = "";
-  adding = false;
 }
 function Setup({ flux: flux2 }) {
   const connection = flux2.connection();
   const refused = connection.state === "unauthorized";
-  return /* @__PURE__ */ jsx3(ui4.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs3(ui4.box, { style: { width: "100%", maxWidth: 420, gap: 20 }, children: [
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { alignItems: "center", gap: 10 }, children: [
-      /* @__PURE__ */ jsx3(ui4.box, { style: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx3(FluxMark, { size: 24, color: "text" }) }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: 18, fontWeight: 600 }, children: "Connect Flux" }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { color: "text2", textAlign: "center" }, children: "See your issues here, start a thread from one, and keep its status in step as the thread works on it." })
+  return /* @__PURE__ */ jsx8(ui10.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui10.box, { style: { width: "100%", maxWidth: 420, gap: 20 }, children: [
+    /* @__PURE__ */ jsxs8(ui10.box, { style: { alignItems: "center", gap: 10 }, children: [
+      /* @__PURE__ */ jsx8(ui10.box, { style: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx8(FluxMark, { size: 24, color: "text" }) }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 18, fontWeight: 600 }, children: "Connect Flux" }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { color: "text2", textAlign: "center" }, children: "See your issues here, start a thread from one, and keep its status in step as the thread works on it." })
     ] }),
-    refused ? /* @__PURE__ */ jsxs3(ui4.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx3(ui4.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx3(ui4.text, { style: { color: "text", flex: 1 }, children: connection.message || "Flux didn't take that token: make another." })
+    refused ? /* @__PURE__ */ jsxs8(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx8(ui10.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx8(ui10.text, { style: { color: "text", flex: 1 }, children: connection.message || "Flux didn't take that token: make another." })
     ] }) : null,
-    /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 14, padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }, children: [
-      /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 6 }, children: [
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontWeight: 500 }, children: "Address" }),
-        /* @__PURE__ */ jsx3(ui4.field, { value: addURL, placeholder: "https://flux.example.com", onChange: (value) => {
-          addURL = value;
-        }, onSubmit: () => saveConnection() }, "flux-url")
-      ] }),
-      /* @__PURE__ */ jsxs3(ui4.box, { style: { gap: 6 }, children: [
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontWeight: 500 }, children: "API token" }),
-        /* @__PURE__ */ jsx3(ui4.field, { value: addToken, placeholder: "Paste the token", onChange: (value) => {
-          addToken = value;
-        }, onSubmit: () => saveConnection() }, "flux-token"),
-        /* @__PURE__ */ jsx3(ui4.text, { style: { fontSize: "small", color: "text3" }, children: "Make one in Flux, under Settings, API tokens." })
-      ] }),
-      /* @__PURE__ */ jsx3(ui4.box, { style: { flexDirection: "row", justifyContent: "flex-end" }, children: /* @__PURE__ */ jsx3(ui4.button, { kind: "primary", onClick: () => saveConnection(), children: "Connect" }) })
-    ] })
+    /* @__PURE__ */ jsx8(ui10.box, { style: { padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx8(ConnectForm, { name: "setup", target: refused ? flux2.id : null, url: flux2.url }) })
   ] }) });
 }
-function unstarted(flux2) {
+function unstarted(flux2, projectId) {
   const me2 = flux2.me?.id ?? "";
-  return flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status) && issue2.status !== "review" && issue2.threadIds.length === 0 && (issue2.assigneeIds.length === 0 || issue2.assigneeIds.includes(me2))).sort((left, right) => Number(right.assigneeIds.includes(me2)) - Number(left.assigneeIds.includes(me2)) || PRIORITY_LEVEL[right.priority] - PRIORITY_LEVEL[left.priority] || right.updatedAt.localeCompare(left.updatedAt)).slice(0, 5);
+  return flux2.issues().filter((issue2) => (!projectId || issue2.projectId === projectId) && !CLOSED_STATUSES.has(issue2.status) && issue2.status !== "review" && issue2.threadIds.length === 0 && (issue2.assigneeIds.length === 0 || issue2.assigneeIds.includes(me2))).sort((left, right) => Number(right.assigneeIds.includes(me2)) - Number(left.assigneeIds.includes(me2)) || PRIORITY_LEVEL[right.priority] - PRIORITY_LEVEL[left.priority] || right.updatedAt.localeCompare(left.updatedAt)).slice(0, 5);
+}
+
+// src/settings.tsx
+import { call as call4, ui as ui11 } from "swarm";
+import { jsx as jsx9, jsxs as jsxs9 } from "swarm/jsx-runtime";
+var editing = /* @__PURE__ */ new Set();
+var adding = false;
+var swarmProjects2 = null;
+var reading = false;
+function refreshProjects() {
+  if (reading) return;
+  reading = true;
+  call4("Projects", {}).then((projects) => {
+    swarmProjects2 = projects.map((project) => ({ id: project.id, name: project.name }));
+  }).catch(() => {
+    swarmProjects2 = [];
+  }).finally(() => {
+    reading = false;
+    ui11.update();
+  });
+}
+var card = { gap: 14, padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" };
+function FluxSettings() {
+  const list2 = hub.connected();
+  if (list2.length === 0) {
+    return /* @__PURE__ */ jsxs9(ui11.box, { style: { gap: 16, maxWidth: 640 }, children: [
+      /* @__PURE__ */ jsx9(ui11.text, { style: { color: "text2" }, children: "Flux issues in Swarm: agents read and update them with swarm flux, and a thread started on an issue keeps it current." }),
+      /* @__PURE__ */ jsxs9(ui11.box, { style: card, children: [
+        /* @__PURE__ */ jsx9(ui11.text, { style: { fontWeight: 600 }, children: "Connect Flux" }),
+        /* @__PURE__ */ jsx9(ConnectForm, { name: "first", target: null })
+      ] })
+    ] });
+  }
+  const active = hub.active;
+  const several = list2.length > 1;
+  const connection = active.connection();
+  return /* @__PURE__ */ jsxs9(ui11.box, { style: { gap: 24, maxWidth: 640 }, children: [
+    /* @__PURE__ */ jsxs9(ui11.box, { style: { gap: 12 }, children: [
+      list2.map((flux2) => /* @__PURE__ */ jsx9(ConnectionCard, { flux: flux2, active: several ? flux2.id === active.id : null }, flux2.id)),
+      adding ? /* @__PURE__ */ jsxs9(ui11.box, { style: card, children: [
+        /* @__PURE__ */ jsx9(ui11.text, { style: { fontWeight: 600 }, children: "Add another Flux" }),
+        /* @__PURE__ */ jsx9(ConnectForm, { name: "another", target: null, done: () => {
+          adding = false;
+        }, cancel: () => {
+          adding = false;
+        } })
+      ] }) : /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", size: "sm", icon: "plus", onClick: () => {
+        adding = true;
+      }, style: { alignSelf: "flex-start" }, children: "Add another Flux" })
+    ] }),
+    connection.state === "ready" || active.projects().length > 0 ? /* @__PURE__ */ jsx9(ProjectLinks, { flux: active }) : null
+  ] });
+}
+var DOT2 = {
+  ready: "green",
+  connecting: "amber",
+  offline: "amber",
+  unauthorized: "red",
+  error: "red",
+  unconfigured: "text3"
+};
+function hostOf(flux2) {
+  return (flux2.baseUrl || flux2.url || "Flux").replace(/^https?:\/\//, "");
+}
+function headline(flux2) {
+  const c = flux2.connection();
+  const host = hostOf(flux2);
+  switch (c.state) {
+    case "ready":
+      return `Connected to ${c.workspace?.name ?? "Flux"}`;
+    case "connecting":
+      return `Connecting to ${host}…`;
+    case "offline":
+      return `Can't reach ${host}`;
+    case "unauthorized":
+      return `${host} needs a new API token`;
+    case "error":
+      return `Can't connect to ${host}`;
+    default:
+      return "Not connected";
+  }
+}
+function detail(flux2) {
+  const c = flux2.connection();
+  const issues = `${c.issueCount} ${c.issueCount === 1 ? "issue" : "issues"}`;
+  if (c.state === "ready") return [c.me?.name, hostOf(flux2), `${issues} synced`].filter(Boolean).join(" · ");
+  if (c.state === "offline" && c.issueCount > 0) return `Offline · showing the ${issues} last synced`;
+  return c.message || hostOf(flux2);
+}
+function ConnectionCard({ flux: flux2, active }) {
+  const c = flux2.connection();
+  const mustAct = c.state === "unauthorized" || c.state === "error";
+  const open4 = mustAct || editing.has(flux2.id);
+  const name = `${headline(flux2)}, ${detail(flux2)}`;
+  return /* @__PURE__ */ jsxs9(ui11.box, { label: name, style: card, children: [
+    /* @__PURE__ */ jsxs9(ui11.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", flexWrap: "wrap" }, children: [
+      c.me ? /* @__PURE__ */ jsx9(Avatar, { member: { id: c.me.id, name: c.me.name, username: c.me.username, email: c.me.email, avatarUrl: c.me.avatarUrl ?? null, avatarColor: "gray" }, size: 32 }) : null,
+      /* @__PURE__ */ jsxs9(ui11.box, { style: { flex: 1, minWidth: 160, gap: 2 }, children: [
+        /* @__PURE__ */ jsxs9(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx9(ui11.box, { style: { width: 8, height: 8, borderRadius: "full", flexShrink: 0, backgroundColor: DOT2[c.state], ...c.state === "connecting" ? { animation: { name: "pulse" } } : {} } }),
+          /* @__PURE__ */ jsx9(ui11.text, { style: { fontWeight: 500, minWidth: 0 }, maxLines: 1, children: headline(flux2) }),
+          active ? /* @__PURE__ */ jsx9(ui11.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover" }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 11, color: "text2" }, children: "Active" }) }) : null
+        ] }),
+        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: "small", color: "text2" }, maxLines: 2, children: detail(flux2) })
+      ] }),
+      /* @__PURE__ */ jsxs9(ui11.box, { style: { flexDirection: "row", gap: 8 }, children: [
+        active === false ? /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", size: "sm", tooltip: `Use ${hostOf(flux2)} for the board and swarm flux`, onClick: () => {
+          hub.use(flux2.id);
+          ui11.toast(`Switched to ${c.workspace?.name ?? hostOf(flux2)}.`);
+        }, children: "Use" }) : null,
+        c.state === "ready" || c.state === "error" ? /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", size: "sm", tooltip: "Pull everything from Flux again", onClick: () => resync(flux2), children: "Resync" }) : null,
+        c.state === "ready" || c.state === "offline" ? /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", size: "sm", tooltip: editing.has(flux2.id) ? void 0 : "Change its URL or token", onClick: () => void (editing.has(flux2.id) ? editing.delete(flux2.id) : editing.add(flux2.id)), children: editing.has(flux2.id) ? "Cancel" : "Change" }) : null
+      ] })
+    ] }),
+    open4 ? /* @__PURE__ */ jsx9(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
+    /* @__PURE__ */ jsx9(ui11.pressable, { label: `Disconnect ${hostOf(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
+  ] });
+}
+function resync(flux2) {
+  ui11.toast("Resyncing from Flux.");
+  flux2.resync().catch(() => {
+  });
+}
+function disconnect(flux2) {
+  const was = flux2.connection().workspace?.name ?? hostOf(flux2);
+  editing.delete(flux2.id);
+  hub.disconnect(flux2.id);
+  ui11.toast(`Disconnected from ${was}.`);
+}
+function ProjectLinks({ flux: flux2 }) {
+  if (swarmProjects2 === null) refreshProjects();
+  const projects = flux2.projects();
+  const known2 = swarmProjects2 ?? [];
+  return /* @__PURE__ */ jsxs9(ui11.box, { style: { gap: 12 }, children: [
+    /* @__PURE__ */ jsxs9(ui11.box, { style: { gap: 4 }, children: [
+      /* @__PURE__ */ jsx9(ui11.text, { style: { fontWeight: 600 }, children: "Where agents work" }),
+      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: "small", color: "text2" }, children: "An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none." })
+    ] }),
+    projects.length === 0 ? /* @__PURE__ */ jsx9(ui11.text, { style: { color: "text3" }, children: `${flux2.connection().workspace?.name ?? "This Flux"} has no projects yet.` }) : /* @__PURE__ */ jsx9(ui11.box, { style: { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }, children: projects.map((project, i2) => {
+      const linked = project.swarmProjectId;
+      const shown = linked ? known2.find((p) => p.id === linked)?.name ?? (swarmProjects2 ? "A removed project" : "…") : "Not linked";
+      return /* @__PURE__ */ jsxs9(ui11.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 12, paddingRight: 8, height: 44, borderTop: i2 === 0 ? "none" : "1px solid divider" }, children: [
+        /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }),
+        /* @__PURE__ */ jsx9(ui11.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: project.name }),
+        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: "small", color: "text3" }, children: project.key }),
+        /* @__PURE__ */ jsxs9(ui11.menu, { label: `Swarm project for ${project.name}: ${shown}`, style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+          /* @__PURE__ */ jsx9(ui11.text, { style: { flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }, maxLines: 1, children: shown }),
+          /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
+          /* @__PURE__ */ jsx9(ui11.item, { checked: !linked, onClick: () => flux2.link(project.id, null), children: "Not linked" }),
+          known2.length ? /* @__PURE__ */ jsx9(ui11.separator, {}) : null,
+          known2.map((p) => /* @__PURE__ */ jsx9(ui11.item, { checked: p.id === linked, onClick: () => flux2.link(project.id, p.id), children: p.name }, p.id))
+        ] })
+      ] }, project.id);
+    }) })
+  ] });
 }
 
 // main.tsx
-import { jsx as jsx4, jsxs as jsxs4 } from "swarm/jsx-runtime";
+import { jsx as jsx10, jsxs as jsxs10 } from "swarm/jsx-runtime";
 var flux = new Proxy({}, {
   get(_target, prop) {
     const current = hub.active;
@@ -80915,42 +82765,26 @@ function badges() {
   for (const [thread, issue2] of links) {
     if (seen.has(thread)) continue;
     seen.add(thread);
-    ui5.badge(thread, { text: issue2.key, tone: TONE[issue2.status] === "faint" ? "muted" : TONE[issue2.status], tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})` });
+    ui12.badge(thread, { text: issue2.key, tone: TONE[issue2.status] === "faint" ? "muted" : TONE[issue2.status], tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})` });
   }
-  for (const t of shownBadges) if (!seen.has(t)) ui5.badge(t, null);
+  for (const t of shownBadges) if (!seen.has(t)) ui12.badge(t, null);
   shownBadges = seen;
 }
 var shownBadges = /* @__PURE__ */ new Set();
-function connect() {
-  hub.configure(String(settings2.get("url") ?? ""), String(settings2.get("token") ?? ""), String(settings2.get("connections") ?? ""));
+function connect2() {
+  hub.fromSettings();
 }
 async function refreshWorking() {
   try {
-    if (setThreads(await call4("Threads", {}))) ui5.update();
+    if (setThreads(await call5("Threads", {}))) ui12.update();
   } catch {
   }
-}
-var pictures = /* @__PURE__ */ new Map();
-function imageOf(src) {
-  const id2 = fluxAssetId(src, flux.baseUrl);
-  if (!id2) return src;
-  const got = pictures.get(id2);
-  if (got instanceof Uint8Array) return got;
-  if (got === "failed") return src;
-  if (!got) {
-    pictures.set(id2, "loading");
-    flux.requireClient().asset(id2).then(
-      (a3) => void pictures.set(id2, new Uint8Array(a3.bytes)),
-      () => void pictures.set(id2, "failed")
-    ).finally(() => ui5.update());
-  }
-  return null;
 }
 var viewing = /* @__PURE__ */ new Map();
 function issueView(issue2, thread) {
   const d = flux.detail(issue2.id);
   const project = flux.projects().find((p) => p.id === issue2.projectId);
-  return /* @__PURE__ */ jsx4(
+  return /* @__PURE__ */ jsx10(
     IssueView,
     {
       detail: d,
@@ -80966,8 +82800,8 @@ function issueView(issue2, thread) {
       start: thread && !issue2.threadIds.includes(thread) ? async () => void await flux.attach(issue2.id, thread, true) : void 0,
       open: thread ? (other) => void viewing.set(thread, other.id) : void 0,
       image: imageOf,
-      description: /* @__PURE__ */ jsx4(DescriptionEditor, { flux, issue: issue2, markdown: d.descriptionMarkdown, image: imageOf }),
-      comment: /* @__PURE__ */ jsx4(CommentEditor, { flux, issue: issue2, image: imageOf })
+      description: /* @__PURE__ */ jsx10(DescriptionEditor, { flux, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf }),
+      comment: /* @__PURE__ */ jsx10(CommentEditor, { flux, issue: issue2, image: imageOf })
     },
     issue2.id
   );
@@ -80978,32 +82812,32 @@ function issueCard(issue2) {
   const parent = issue2.parentId ? flux.issue(issue2.parentId) : void 0;
   const labels = flux.labels().filter((label) => issue2.labelIds.includes(label.id));
   const chip2 = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" };
-  return /* @__PURE__ */ jsxs4(ui5.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui5.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, cursor: "pointer" }, children: [
-    /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
-      /* @__PURE__ */ jsx4(ProjectMark, { project, size: 13 }),
-      parent ? /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 11, color: "text3", flex: 1 }, children: issue2.key }),
-      /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status, size: 12 }),
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text2" }, children: STATUS_LABELS[issue2.status] })
+  return /* @__PURE__ */ jsxs10(ui12.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui12.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512 }, children: [
+    /* @__PURE__ */ jsxs10(ui12.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
+      /* @__PURE__ */ jsx10(ProjectMark, { project, size: 13 }),
+      parent ? /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
+      /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 11, color: "text3", flex: 1 }, children: issue2.key }),
+      /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status, size: 12 }),
+      /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, color: "text2" }, children: STATUS_LABELS[issue2.status] })
     ] }),
-    /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
-    /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", flexWrap: "wrap", marginTop: 4 }, children: [
-      /* @__PURE__ */ jsx4(ui5.box, { style: { ...chip2, width: 22, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }, children: /* @__PURE__ */ jsx4(PriorityIcon, { priority: issue2.priority, size: 12 }) }),
-      issue2.dueDate ? /* @__PURE__ */ jsxs4(ui5.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx4(ui5.icon, { icon: "calendar", style: { width: 11, height: 11, color: "text2" } }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12 }, children: issue2.dueDate })
+    /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
+    /* @__PURE__ */ jsxs10(ui12.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", flexWrap: "wrap", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsx10(ui12.box, { style: { ...chip2, width: 22, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }, children: /* @__PURE__ */ jsx10(PriorityIcon, { priority: issue2.priority, size: 12 }) }),
+      issue2.dueDate ? /* @__PURE__ */ jsxs10(ui12.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx10(ui12.icon, { icon: "calendar", style: { width: 11, height: 11, color: "text2" } }),
+        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12 }, children: issue2.dueDate })
       ] }) : null,
-      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx4(ui5.box, { style: chip2, children: /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12 }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` }) }) : null,
-      labels.map((label) => /* @__PURE__ */ jsxs4(ui5.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx4(ui5.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3" } }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12 }, children: label.name })
+      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx10(ui12.box, { style: chip2, children: /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12 }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` }) }) : null,
+      labels.map((label) => /* @__PURE__ */ jsxs10(ui12.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx10(ui12.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3" } }),
+        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12 }, children: label.name })
       ] }, label.id)),
-      issue2.threadIds.length > 0 ? /* @__PURE__ */ jsxs4(ui5.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx4(ui5.icon, { icon: "bot", style: { width: 11, height: 11, color: "text2" } }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12 }, children: issue2.threadIds.length === 1 ? "Agent" : `${issue2.threadIds.length} agents` })
+      issue2.threadIds.length > 0 ? /* @__PURE__ */ jsxs10(ui12.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx10(ui12.icon, { icon: "bot", style: { width: 11, height: 11, color: "text2" } }),
+        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12 }, children: issue2.threadIds.length === 1 ? "Agent" : `${issue2.threadIds.length} agents` })
       ] }) : null,
-      /* @__PURE__ */ jsx4(ui5.box, { style: { flex: 1 } }),
-      issue2.assigneeIds.map((id2) => /* @__PURE__ */ jsx4(Avatar, { member: members2.find((m) => m.id === id2), size: 20 }, id2))
+      /* @__PURE__ */ jsx10(ui12.box, { style: { flex: 1 } }),
+      issue2.assigneeIds.map((id2) => /* @__PURE__ */ jsx10(Avatar, { member: members2.find((m) => m.id === id2), size: 20 }, id2))
     ] })
   ] }, issue2.id);
 }
@@ -81011,13 +82845,13 @@ function activate() {
   hub.onChange = () => {
     badges();
     syncNav(flux);
-    ui5.update();
+    ui12.update();
     void refreshWorking();
   };
   watchMergeRequests(hub);
   setInterval(() => void refreshWorking(), 5e3);
-  connect();
-  settings2.onChange(connect);
+  connect2();
+  settings2.onChange(connect2);
   registerCli((name) => hub.get(name));
   tool("issue_images", (params2) => issueImages(flux, params2));
   hook("message", ({ thread }) => {
@@ -81028,62 +82862,81 @@ function activate() {
     return { context: fresh.map((i2) => threadInstructions(i2.key)).join("\n\n") };
   });
   on2("event", (e) => {
+    if (e.type === "project.added" || e.type === "project.renamed" || e.type === "project.removed") refreshProjects();
     if (e.type !== "thread.deleted" || !e.thread) return;
     for (const i2 of flux.issuesOfThread(e.thread)) flux.detach(i2.id, e.thread);
   });
-  ui5.shareIcon({ id: "mark", path: "icon.svg" });
-  ui5.nav({
+  ui12.shareIcon({ id: "mark", path: "icon.svg" });
+  ui12.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => /* @__PURE__ */ jsx10(FluxSettings, {}) });
+  ui12.nav({
     id: "flux",
     title: "Flux",
     icon: "flux:mark",
     fill: true,
     search: "Find a view",
     items: navItems(flux),
-    render: ({ args: args2 }) => /* @__PURE__ */ jsx4(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", image: imageOf })
+    render: ({ args: args2 }) => /* @__PURE__ */ jsx10(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", image: imageOf })
   });
   syncNav(flux);
-  ui5.overlay({
+  ui12.overlay({ id: "flux-palette", width: 480, bare: true, render: () => /* @__PURE__ */ jsx10(Palette, {}) });
+  ui12.overlay({ id: "flux-confirm", width: 400, bare: true, render: () => /* @__PURE__ */ jsx10(Confirm, {}) });
+  ui12.overlay({ id: "flux-due", title: "Due date", width: 300, bare: true, render: () => /* @__PURE__ */ jsx10(DuePicker, {}) });
+  ui12.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, render: () => /* @__PURE__ */ jsx10(StartAgentDialog, { flux }) });
+  ui12.overlay({
     id: "flux-new",
     title: "New issue",
     width: 672,
     bare: true,
-    render: () => /* @__PURE__ */ jsx4(NewIssue, { flux })
+    render: () => /* @__PURE__ */ jsx10(NewIssue, { flux })
   });
-  ui5.header({
+  ui12.header({
     id: "flux-issue",
     render: ({ thread }) => {
       const issue2 = thread ? flux.issuesOfThread(thread)[0] : void 0;
       if (!issue2) return null;
-      return /* @__PURE__ */ jsxs4(ui5.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status, size: 12 }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, fontWeight: 500, color: "text2", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text2", maxWidth: 144, minWidth: 0 }, maxLines: 1, children: issue2.title })
+      return /* @__PURE__ */ jsxs10(ui12.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status, size: 12 }),
+        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, fontWeight: 500, color: "text2", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, color: "text2", maxWidth: 144, minWidth: 0 }, maxLines: 1, children: issue2.title })
       ] });
     }
   });
-  ui5.home({
+  ui12.home({
     id: "flux-open",
     title: "Flux issues",
     icon: "flux:mark",
-    render: () => {
+    // Open issues nobody's agent has started, yours first, one click from the prompt; the form's project's, where it's linked to one.
+    render: (context2) => {
       if (flux.projects().length === 0) {
-        return /* @__PURE__ */ jsx4(ui5.pressable, { label: "Connect Flux", onClick: () => ui5.navTo("flux", ""), children: /* @__PURE__ */ jsx4(ui5.text, { tone: "muted", children: "Connect Flux to pick up issues from here →" }) });
+        return /* @__PURE__ */ jsx10(ui12.pressable, { label: "Connect Flux", onClick: () => ui12.navTo("flux", ""), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 14, color: "currentColor" }, children: "Connect Flux to pick up issues from here →" }) });
       }
-      const open2 = unstarted(flux);
+      const linked = context2.args.project ? flux.projectOfSwarm(context2.args.project) : null;
+      const open4 = unstarted(flux, linked?.id);
       const me2 = flux.me?.id;
-      if (open2.length === 0) {
-        return /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 4 }, children: [
-          /* @__PURE__ */ jsx4(ui5.text, { tone: "muted", children: "Nothing waiting." }),
-          /* @__PURE__ */ jsx4(ui5.link, { label: "Browse Flux", href: "swarm://plugin/flux" })
+      if (open4.length === 0) {
+        return /* @__PURE__ */ jsxs10(ui12.box, { style: { flexDirection: "row", gap: 4, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 14, color: "text2" }, children: `Nothing waiting${linked ? ` in ${linked.name}` : ""}.` }),
+          /* @__PURE__ */ jsx10(ui12.link, { label: "Browse Flux", href: linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux" })
         ] });
       }
-      return /* @__PURE__ */ jsx4(ui5.box, { style: { gap: 0 }, children: open2.map((issue2) => /* @__PURE__ */ jsxs4(ui5.pressable, { label: `${issue2.key} ${issue2.title}`, tooltip: "Add to the prompt", onClick: () => ui5.prefill({ prompt: `Work on ${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx4(PriorityIcon, { priority: issue2.priority, size: 13 }),
-        /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status, size: 13 }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text2", width: 64 }, children: issue2.key }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text2" }, children: me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned" })
-      ] }, issue2.id)) });
+      return /* @__PURE__ */ jsx10(ui12.box, { style: { gap: 0, marginLeft: -4, marginRight: -4 }, children: open4.map((issue2) => /* @__PURE__ */ jsxs10(
+        ui12.pressable,
+        {
+          label: `${issue2.key} ${issue2.title}`,
+          tooltip: "Add to the prompt",
+          onClick: () => ui12.prefill({ append: true, prompt: `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }),
+          style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } },
+          children: [
+            /* @__PURE__ */ jsx10(PriorityIcon, { priority: issue2.priority, size: 14 }),
+            /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status, size: 14 }),
+            /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, color: "text2", flexShrink: 0, minWidth: 56 }, children: issue2.key }),
+            /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 14, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title }),
+            /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned" }),
+            /* @__PURE__ */ jsx10(ui12.icon, { icon: "external", style: { width: 14, height: 14, color: "text2", flexShrink: 0, opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 } } })
+          ]
+        },
+        issue2.id
+      )) });
     }
   });
   try {
@@ -81102,62 +82955,63 @@ function activate() {
     });
   } catch {
   }
-  ui5.directive({
+  ui12.directive({
     name: "flux",
     render: ({ args: args2 }) => {
       const issue2 = args2.key ? flux.findIssue(args2.key) : null;
-      return issue2 ? issueCard(issue2) : /* @__PURE__ */ jsx4(ui5.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
+      return issue2 ? issueCard(issue2) : /* @__PURE__ */ jsx10(ui12.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
     }
   });
-  let search = "";
-  ui5.panel({
+  let search2 = "";
+  ui12.panel({
     id: "flux",
     title: "Flux issue",
     icon: "list",
     render: ({ thread }) => {
       const c = flux.connection();
       if (c.state === "unconfigured" || c.state === "unauthorized" || c.state !== "ready" && c.issueCount === 0) {
-        return /* @__PURE__ */ jsxs4(ui5.column, { gap: "s3", padding: "s4", children: [
-          /* @__PURE__ */ jsx4(ui5.text, { weight: 600, children: "Flux" }),
-          c.state !== "unconfigured" && /* @__PURE__ */ jsx4(ui5.text, { tone: "muted", children: c.message || `Flux is ${c.state}.` }),
-          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx4(ui5.text, { tone: "faint", children: "Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux." })
+        return /* @__PURE__ */ jsxs10(ui12.column, { gap: "s3", padding: "s4", children: [
+          /* @__PURE__ */ jsx10(ui12.text, { weight: 600, children: "Flux" }),
+          c.state !== "unconfigured" && /* @__PURE__ */ jsx10(ui12.text, { tone: "muted", children: c.message || `Flux is ${c.state}.` }),
+          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx10(ui12.text, { tone: "faint", children: "Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux." }),
+          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx10(ui12.link, { label: "Open Flux settings", href: "swarm://settings/flux/flux" })
         ] });
       }
       const attached = flux.issuesOfThread(thread);
       const shown = viewing.has(thread) ? flux.issue(viewing.get(thread)) : null;
-      const needle = search.trim().toLowerCase();
+      const needle = search2.trim().toLowerCase();
       const me2 = flux.me?.id ?? "";
-      const open2 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
-      return /* @__PURE__ */ jsx4(ui5.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs4(ui5.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
-        c.state !== "ready" && /* @__PURE__ */ jsxs4(ui5.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
-          /* @__PURE__ */ jsx4(ui5.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13 } }),
-          /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
+      const open4 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
+      return /* @__PURE__ */ jsx10(ui12.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs10(ui12.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
+        c.state !== "ready" && /* @__PURE__ */ jsxs10(ui12.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
+          /* @__PURE__ */ jsx10(ui12.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13 } }),
+          /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
         ] }),
-        shown ? /* @__PURE__ */ jsxs4(ui5.box, { style: { gap: 12 }, children: [
-          /* @__PURE__ */ jsxs4(ui5.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", cursor: "pointer", hover: { color: "text" } }, children: [
-            /* @__PURE__ */ jsx4(ui5.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
-            /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].key : "Back" })
+        shown ? /* @__PURE__ */ jsxs10(ui12.box, { style: { gap: 12 }, children: [
+          /* @__PURE__ */ jsxs10(ui12.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
+            /* @__PURE__ */ jsx10(ui12.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
+            /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].key : "Back" })
           ] }),
           issueView(shown, thread)
         ] }) : attached.map((i2) => issueView(i2, thread)),
-        attached.length || shown ? null : /* @__PURE__ */ jsxs4(ui5.box, { style: { gap: 10 }, children: [
-          /* @__PURE__ */ jsxs4(ui5.box, { style: { gap: 2 }, children: [
-            /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
-            /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text2" }, children: "The agent in this thread will report progress to it." })
+        attached.length || shown ? null : /* @__PURE__ */ jsxs10(ui12.box, { style: { gap: 10 }, children: [
+          /* @__PURE__ */ jsxs10(ui12.box, { style: { gap: 2 }, children: [
+            /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
+            /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, color: "text2" }, children: "The agent in this thread will report progress to it." })
           ] }),
-          /* @__PURE__ */ jsx4(ui5.field, { value: search, placeholder: "Search issues", onChange: (v2) => void (search = v2) }, "search"),
-          /* @__PURE__ */ jsx4(
-            ui5.list,
+          /* @__PURE__ */ jsx10(ui12.field, { value: search2, placeholder: "Search issues", onChange: (v2) => void (search2 = v2) }, "search"),
+          /* @__PURE__ */ jsx10(
+            ui12.list,
             {
-              count: open2.length,
+              count: open4.length,
               rowHeight: 36,
-              rowKey: (n) => open2[n].id,
+              rowKey: (n) => open4[n].id,
               row: (n) => {
-                const i2 = open2[n];
-                return /* @__PURE__ */ jsxs4(ui5.pressable, { label: `Attach ${i2.key} ${i2.title}`, onClick: async () => void await flux.attach(i2.id, thread, false), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-                  /* @__PURE__ */ jsx4(StatusIcon, { status: i2.status, size: 13 }),
-                  /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text2", width: 72 }, children: i2.key }),
-                  /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13, flex: 1, minWidth: 0 }, maxLines: 1, children: i2.title })
+                const i2 = open4[n];
+                return /* @__PURE__ */ jsxs10(ui12.pressable, { label: `Attach ${i2.key} ${i2.title}`, onClick: () => void flux.attach(i2.id, thread, false).then(() => ui12.toast(`Attached to ${i2.key}.`), (e) => ui12.toast(`Couldn't attach ${i2.key}: ${e instanceof Error ? e.message : String(e)}`)), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
+                  /* @__PURE__ */ jsx10(StatusIcon, { status: i2.status, size: 13 }),
+                  /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 12, color: "text2", width: 72 }, children: i2.key }),
+                  /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 13, flex: 1, minWidth: 0 }, maxLines: 1, children: i2.title })
                 ] });
               }
             },

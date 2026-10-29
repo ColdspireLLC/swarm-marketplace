@@ -156,6 +156,7 @@ export function htmlToMarkdown(
     codeBlockStyle: "fenced",
     bulletListMarker: "-",
     emDelimiter: "_",
+    hr: "---",
   });
   turndown.addRule("mention", {
     filter: (node) =>
@@ -177,6 +178,26 @@ export function htmlToMarkdown(
         (node as HTMLElement).getAttribute("data-checked") === "true";
       const text = content.replace(/^\n+|\n+$/g, "").replace(/\n/g, "\n  ");
       return `- [${checked ? "x" : " "}] ${text}\n`;
+    },
+  });
+  // Flux's tables, as GFM's: their first row the header. A cell's
+  // lines are joined, and its pipes escaped.
+  turndown.addRule("table", {
+    filter: "table",
+    replacement: (_content, node) => {
+      const rows = Array.from((node as HTMLElement).querySelectorAll("tr") as ArrayLike<HTMLElement>).map((tr) =>
+        Array.from(tr.children).map((cell) =>
+          turndown
+            .turndown((cell as HTMLElement).innerHTML)
+            .replace(/\n+/g, " ")
+            .replace(/\|/g, "\\|")
+            .trim(),
+        ),
+      );
+      if (rows.length === 0) return "";
+      const width = Math.max(...rows.map((row) => row.length));
+      const line = (row: string[]) => `| ${Array.from({ length: width }, (_, i) => row[i] ?? "").join(" | ")} |`;
+      return `\n\n${[line(rows[0]!), line(Array.from({ length: width }, () => "---")), ...rows.slice(1).map(line)].join("\n")}\n\n`;
     },
   });
   turndown.addRule("image", {
