@@ -8,7 +8,11 @@
 import { ui, type Child, type ColorValue, type Style } from "swarm";
 import type { Comment, Issue, IssueDetail, Label, Member, Project } from "./contract";
 import { PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
-import { asIcon, emojiImage, glyphImage, MARK_HEX } from "./marks";
+import { asIcon, emojiBytes, glyphBytes, MARK_HEX } from "./marks";
+import { pictureBytes } from "./pictures";
+import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
+import { dayDelta, dueLabel } from "./dates";
+import { dueItems } from "./due";
 
 /** A Flux color, as the theme's where it has one. */
 export const colorOf: Record<ColorName, ColorValue> = {
@@ -82,16 +86,40 @@ export function PriorityIcon({ priority, size = 14 }: { priority: Priority; size
 	);
 }
 
-/** A member's avatar: their picture, or their initial in their color. */
+/**
+ * A member's avatar, as Flux's (WorkspaceAvatar): their picture, read with
+ * the token where it's Flux's, or their initial on their color while it
+ * comes or when there's none, in a rounded square. No member is Flux's
+ * unassigned mark.
+ */
 export function Avatar({ member, size = 18 }: { member: Member | undefined; size?: number }) {
-	if (!member) return <ui.icon icon="user" style={{ width: size - 4, height: size - 4, color: "text3" }} />;
-	if (member.avatarUrl) {
-		return <ui.image src={member.avatarUrl} alt={member.name} style={{ width: size, height: size, borderRadius: "full", objectFit: "cover", flexShrink: 0 }} />;
-	}
+	if (!member) return <Unassigned size={size} />;
+	const bytes = pictureBytes(member.avatarUrl);
+	const box = { width: size, height: size, borderRadius: size >= 28 ? 6 : 4, flexShrink: 0, overflow: "hidden", alignItems: "center", justifyContent: "center" } as const;
+	if (bytes) return <ui.image src={bytes} alt="" tooltip={member.name} style={{ ...box, objectFit: "cover" }} />;
 	return (
-		<ui.box label={member.name} style={{ width: size, height: size, borderRadius: "full", backgroundColor: colorOf[member.avatarColor], alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-			<ui.text style={{ color: "white", fontSize: Math.round(size * 0.5), fontWeight: 600 }}>{(member.name || member.username).slice(0, 1).toUpperCase()}</ui.text>
+		<ui.box label={member.name} style={{ ...box, backgroundColor: colorOf[member.avatarColor] }}>
+			<ui.text style={{ color: "white", fontSize: Math.max(9, Math.round(size * 0.55)), fontWeight: 600 }}>{(member.name || member.username).trim().slice(0, 1).toUpperCase()}</ui.text>
 		</ui.box>
+	);
+}
+
+/** Flux's unassigned mark (UnassignedAvatar): a dotted square round a person. */
+export function Unassigned({ size = 18 }: { size?: number }) {
+	return (
+		<ui.canvas width={20} height={20} label="Unassigned" style={{ width: size, height: size, flexShrink: 0 }} draw={(g) => {
+			for (let i = 0; i < 24; i++) {
+				// The dotted outline: dots along a rounded square, as its dash does.
+				const t = (i / 24) * 4;
+				const side = Math.floor(t);
+				const f = t - side;
+				const at = 2.5 + f * 15;
+				const [x, y] = side === 0 ? [at, 0.6] : side === 1 ? [19.4, at] : side === 2 ? [20 - at, 19.4] : [0.6, 20 - at];
+				g.circle(x, y, 0.6, "text3");
+			}
+			g.circle(10, 7.65, 1.85, "text3");
+			g.path("M6.45 13.7c.4-1.75 1.75-2.75 3.55-2.75s3.15 1 3.55 2.75c.08.32-.16.65-.5.65H6.95c-.34 0-.58-.33-.5-.65Z", "text3");
+		}} />
 	);
 }
 
@@ -104,12 +132,12 @@ export function FluxMark({ size = 14, color = "text2" }: { size?: number; color?
 export function ProjectMark({ project, size = 14 }: { project: Project | undefined; size?: number }) {
 	if (!project) return <FluxMark size={size} />;
 	const box = { width: size, height: size, flexShrink: 0 } as const;
-	const emoji = emojiImage(project?.emoji);
-	if (emoji) return <ui.image src={emoji} alt={project?.key ?? "Project"} style={box} />;
+	const emoji = emojiBytes(project?.emoji);
+	if (emoji) return <ui.image src={emoji} alt="" tooltip={project.name} style={box} />;
 	const icon = asIcon(project?.icon);
 	if (icon && project) return <ui.icon icon={icon} style={{ ...box, color: colorOf[project.color] }} />;
-	const glyph = project ? glyphImage(project.icon, MARK_HEX[project.color]) : null;
-	if (glyph) return <ui.image src={glyph} alt={project?.key ?? "Project"} style={box} />;
+	const glyph = glyphBytes(project.icon, MARK_HEX[project.color]);
+	if (glyph) return <ui.image src={glyph} alt="" tooltip={project.name} style={box} />;
 	return (
 		<ui.box style={{ width: size, height: size, borderRadius: 3, backgroundColor: project ? colorOf[project.color] : "text3", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
 			<ui.text style={{ color: "white", fontSize: Math.round(size * 0.6), fontWeight: 700 }}>{(project?.key ?? "?").slice(0, 1)}</ui.text>
@@ -120,7 +148,7 @@ export function ProjectMark({ project, size = 14 }: { project: Project | undefin
 /** A property's chip, as bb's, in Swarm's look: it opens Swarm's menu of the choices. */
 const chip: Style = {
 	height: 28, paddingLeft: 9, paddingRight: 10, gap: 6, borderRadius: "control", flexDirection: "row", alignItems: "center",
-	border: "1px solid border", backgroundColor: "raised", color: "text", cursor: "pointer",
+	border: "1px solid border", backgroundColor: "raised", color: "text",
 	hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover", borderColor: "borderStrong" },
 	focus: { boxShadow: "0 0 0 2px color-mix(in srgb, accent 45%, transparent)" },
 	transition: { duration: 120, colors: true },
@@ -139,8 +167,6 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 	const assignees = members.filter((m) => issue.assigneeIds.includes(m.id));
 	const chosen = labels.filter((l) => issue.labelIds.includes(l.id));
 	const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
-	const today = new Date();
-	const day = (d: number) => new Date(today.getFullYear(), today.getMonth(), today.getDate() + d).toISOString().slice(0, 10);
 	return (
 		<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
 			{project && (
@@ -152,19 +178,19 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 			<ui.menu label={"Status: " + STATUS_LABELS[issue.status]} style={chip}>
 				<StatusIcon status={issue.status} />
 				<ui.text style={{ fontSize: 13 }}>{STATUS_LABELS[issue.status]}</ui.text>
-				{STATUSES.map((s) => <ui.item key={s} checked={issue.status === s} onClick={() => edits.update({ status: s })}>{STATUS_LABELS[s]}</ui.item>)}
+				{STATUSES.map((s) => <ui.item key={s} {...statusMark(s)} checked={issue.status === s} onClick={() => edits.update({ status: s })}>{STATUS_LABELS[s]}</ui.item>)}
 			</ui.menu>
 			<ui.menu label={"Priority: " + PRIORITY_LABELS[issue.priority]} tooltip={PRIORITY_LABELS[issue.priority]} style={issue.priority === "none" ? square : chip}>
 				<PriorityIcon priority={issue.priority} />
 				{issue.priority !== "none" && <ui.text style={{ fontSize: 13 }}>{PRIORITY_LABELS[issue.priority]}</ui.text>}
-				{PRIORITIES.map((p) => <ui.item key={p} checked={issue.priority === p} onClick={() => edits.update({ priority: p })}>{PRIORITY_LABELS[p]}</ui.item>)}
+				{PRIORITIES.map((p) => <ui.item key={p} {...priorityMark(p)} checked={issue.priority === p} onClick={() => edits.update({ priority: p })}>{PRIORITY_LABELS[p]}</ui.item>)}
 			</ui.menu>
 			<ui.menu label={assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign"} tooltip="Assignees" style={assignees.length === 1 ? square : chip}>
-				{assignees.length === 0 ? <ui.icon icon="user" style={{ width: 14, height: 14, color: "text2" }} /> : assignees.slice(0, 3).map((m) => <Avatar key={"av-" + m.id} member={m} />)}
+				{assignees.length === 0 ? <Unassigned size={16} /> : assignees.slice(0, 3).map((m) => <Avatar key={"av-" + m.id} member={m} />)}
 				{assignees.length > 1 && <ui.text style={{ fontSize: 13 }}>{String(assignees.length)}</ui.text>}
 				{me && <ui.item key="me" icon="user" onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, me) })}>{issue.assigneeIds.includes(me) ? "Unassign me" : "Assign to me"}</ui.item>}
 				{me && <ui.separator key="sep" />}
-				{members.map((m) => <ui.item key={m.id} checked={issue.assigneeIds.includes(m.id)} detail={"@" + m.username} onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, m.id) })}>{m.name}</ui.item>)}
+				{members.map((m) => <ui.item key={m.id} {...memberMark(m)} checked={issue.assigneeIds.includes(m.id)} detail={"@" + m.username} onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, m.id) })}>{m.name}</ui.item>)}
 			</ui.menu>
 			<ui.menu label={chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels"} tooltip="Labels" style={chosen.length ? chip : square}>
 				{chosen.length === 0 && <ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />}
@@ -174,15 +200,12 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 						<ui.text style={{ fontSize: 13 }}>{l.name}</ui.text>
 					</ui.box>
 				))}
-				{labels.length === 0 ? <ui.item key="none" disabled>No labels yet</ui.item> : labels.map((l) => <ui.item key={l.id} checked={issue.labelIds.includes(l.id)} onClick={() => edits.update({ labelIds: toggle(issue.labelIds, l.id) })}>{l.name}</ui.item>)}
+				{labels.length === 0 ? <ui.item key="none" disabled>No labels yet</ui.item> : labels.map((l) => <ui.item key={l.id} {...labelMark(l.color)} checked={issue.labelIds.includes(l.id)} onClick={() => edits.update({ labelIds: toggle(issue.labelIds, l.id) })}>{l.name}</ui.item>)}
 			</ui.menu>
-			<ui.menu label={issue.dueDate ? "Due " + issue.dueDate : "Due date"} tooltip="Due date" style={issue.dueDate ? chip : square}>
-				<ui.icon icon="calendar" style={{ width: 14, height: 14, color: issue.dueDate && issue.dueDate < day(0) ? "red" : "text2" }} />
-				{issue.dueDate && <ui.text style={{ fontSize: 13 }}>{issue.dueDate}</ui.text>}
-				<ui.item key="today" onClick={() => edits.update({ dueDate: day(0) })}>Today</ui.item>
-				<ui.item key="tomorrow" onClick={() => edits.update({ dueDate: day(1) })}>Tomorrow</ui.item>
-				<ui.item key="week" onClick={() => edits.update({ dueDate: day(7) })}>In a week</ui.item>
-				{issue.dueDate && <ui.item key="clear" danger onClick={() => edits.update({ dueDate: null })}>Clear the due date</ui.item>}
+			<ui.menu label={issue.dueDate ? "Due " + dueLabel(issue.dueDate) : "Due date"} tooltip="Due date" style={issue.dueDate ? chip : square}>
+				<ui.icon icon="calendar" style={{ width: 14, height: 14, color: issue.dueDate && dayDelta(issue.dueDate) < 0 ? "red" : "text2" }} />
+				{issue.dueDate && <ui.text style={{ fontSize: 13 }}>{dueLabel(issue.dueDate)}</ui.text>}
+				{dueItems(issue.dueDate, (dueDate) => edits.update({ dueDate }))}
 			</ui.menu>
 			{start && (
 				<ui.pressable label="Start agent" onClick={start} style={chip}>
@@ -195,16 +218,28 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 }
 
 /** Markdown's inline: `code`, [links](url), **bold** and *emphasis*, as one paragraph's runs. */
-export function inline(text: string): Child[] {
+/** What an @name is: a member, or a project (which a click opens); null for neither, left as text. */
+export type MentionOf = (name: string) => { kind: "member" } | { kind: "project"; open: () => void } | null;
+
+const mentionChip: Style = { backgroundColor: "hover", borderRadius: 4, fontWeight: 550 };
+
+export function inlineText(text: string, mention?: MentionOf): Child[] {
 	const out: Child[] = [];
-	const re = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(?<![\w*])\*([^*\n]+)\*(?!\w)/g;
+	const re = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(?<![\w*])\*([^*\n]+)\*(?!\w)|(?<![\w@])@([\w][\w.-]*[\w]|[\w])/g;
 	let at = 0;
 	for (let m; (m = re.exec(text)); ) {
 		if (m.index > at) out.push(text.slice(at, m.index));
 		if (m[1] !== undefined) out.push(<ui.text style={{ fontFamily: "mono", fontSize: "small", backgroundColor: "hover", borderRadius: 4 }}>{m[1]}</ui.text>);
 		else if (m[2] !== undefined) out.push(<ui.link href={m[3]}>{m[2]}</ui.link>);
 		else if (m[4] !== undefined) out.push(<ui.text style={{ fontWeight: 600 }}>{m[4]}</ui.text>);
-		else out.push(<ui.text style={{ fontStyle: "italic" }}>{m[5]}</ui.text>);
+		else if (m[5] !== undefined) out.push(<ui.text style={{ fontStyle: "italic" }}>{m[5]}</ui.text>);
+		else {
+			// A mention, as Flux's chip; a project's opens it.
+			const what = mention?.(m[6]!);
+			if (!what) out.push(m[0]);
+			else if (what.kind === "project") out.push(<ui.text style={mentionChip} onClick={what.open}>{m[0]}</ui.text>);
+			else out.push(<ui.text style={mentionChip}>{m[0]}</ui.text>);
+		}
 		at = m.index + m[0].length;
 	}
 	if (at < text.length) out.push(text.slice(at));
@@ -221,7 +256,8 @@ export type ImageOf = (src: string) => string | Uint8Array | null;
  * boxes tick, when given what does), bullets and numbered lists, quotes,
  * code blocks and images.
  */
-export function Markdown({ md, onTask, image }: { md: string; onTask?: (index: number, done: boolean) => unknown; image?: ImageOf }) {
+export function Markdown({ md, onTask, image, mention }: { md: string; onTask?: (index: number, done: boolean) => unknown; image?: ImageOf; mention?: MentionOf }) {
+	const inline = (text: string) => inlineText(text, mention);
 	const blocks: Child[] = [];
 	const picture = (key: string, src: string, alt: string): Child => {
 		const got = image ? image(src) : src;
@@ -233,6 +269,34 @@ export function Markdown({ md, onTask, image }: { md: string; onTask?: (index: n
 	for (let i = 0; i < lines.length; ) {
 		const l = lines[i]!;
 		if (l.trim() === "") {
+			i++;
+			continue;
+		}
+		if (/^\s*\|.*\|\s*$/.test(l) && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1] ?? "")) {
+			// A GFM table: its header, then its rows, in bordered cells.
+			const cells = (row: string) => row.trim().replace(/^\||\|$/g, "").split(/(?<!\\)\|/).map((cell) => cell.trim().replace(/\\\|/g, "|"));
+			const head = cells(l);
+			const body: string[][] = [];
+			for (i += 2; i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i]!); i++) body.push(cells(lines[i]!));
+			const row = (r: string[], n: number, header: boolean) => (
+				<ui.box key={"r" + n} style={{ flexDirection: "row", borderTop: n === 0 ? "none" : "1px solid border", backgroundColor: header ? "hover" : "transparent" }}>
+					{head.map((_, c) => (
+						<ui.box key={"c" + c} style={{ flex: 1, minWidth: 0, padding: "s3 s4", borderLeft: c === 0 ? "none" : "1px solid border" }}>
+							<ui.text style={{ ...prose, fontWeight: header ? 600 : 400 }}>{inline(r[c] ?? "")}</ui.text>
+						</ui.box>
+					))}
+				</ui.box>
+			);
+			blocks.push(
+				<ui.box key={"table" + i} style={{ borderRadius: "control", border: "1px solid border", overflow: "hidden" }}>
+					{row(head, 0, true)}
+					{body.map((r, n) => row(r, n + 1, false))}
+				</ui.box>,
+			);
+			continue;
+		}
+		if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)) {
+			blocks.push(<ui.box key={"hr" + i} style={{ height: 1, backgroundColor: "border", marginTop: 8, marginBottom: 8 }} />);
 			i++;
 			continue;
 		}
@@ -382,7 +446,7 @@ export function IssueView(props: {
 				<ui.box style={{ marginTop: 10, gap: 4 }}>
 					<ui.text style={{ fontSize: "small", color: "text2" }}>Sub-issue of</ui.text>
 					<ui.pressable label={`${d.parent.key} ${d.parent.title}`} onClick={() => props.open?.(d.parent!)}
-						style={{ flexDirection: "row", gap: 7, alignItems: "center", cursor: "pointer", color: "text", hover: { color: "accent" } }}>
+						style={{ flexDirection: "row", gap: 7, alignItems: "center", color: "text", hover: { color: "accent" } }}>
 						<StatusIcon status={d.parent.status} size={13} />
 						<ui.text style={{ fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", color: "currentColor" }}>{`${d.parent.key} ${d.parent.title}`}</ui.text>
 					</ui.pressable>
@@ -455,6 +519,69 @@ export function IssueView(props: {
 				})}
 				{props.comment}
 			</ui.box>
+		</ui.box>
+	);
+}
+
+// Flux's empty issues art (app/src/components/issues-empty.tsx): four
+// status coins, one in progress, one done, one waiting and one started.
+// Drawn once in each theme's colors, as Flux's are set per theme.
+const COIN = {
+	light: { accent: "#4a4a4d", check: "text", done: "#d4d4d6", pie: "#7a7a7d", side: "#b0b0b3" },
+	dark: { accent: "#e6e6e8", check: "bg", done: "#e6e6e8", pie: "#9b9b9e", side: "#5c5c5f" },
+} as const;
+
+function drawCoins(g: Parameters<NonNullable<Parameters<typeof ui.canvas>[0]>["draw"]>[0], c: (typeof COIN)["light"] | (typeof COIN)["dark"]) {
+	const side = { stroke: c.side, lineWidth: 1.5 } as const;
+	const face = { fill: "bg", stroke: c.side, lineWidth: 1.5 } as const;
+	const coin = (x: number, y: number) => {
+		g.path(`M${x} ${y + 19.5}c-9.39 0-17-5.96-17-13.3V${y + 1}h34v5.2c0 7.34-7.61 13.3-17 13.3Z`, side);
+		g.ellipse(x, y + 0.05, 17, 13.05, face);
+	};
+	// Top left: dotted, not started.
+	coin(18, 14);
+	for (let i = 0; i < 18; i++) {
+		const a = (i / 18) * Math.PI * 2;
+		g.circle(18 + 13 * Math.cos(a), 14 + 9 * Math.sin(a), 0.75, c.accent);
+	}
+	// Bottom right: done.
+	coin(62, 53.5);
+	g.ellipse(62, 53.5, 13, 9, { fill: c.done, stroke: c.accent, lineWidth: 1.5 });
+	g.path("m55.5 53.64 3.05 2.39a1 1 0 0 0 1.22.01l8.73-6.54", { stroke: c.check, lineWidth: 2.5 });
+	// Top right: to do.
+	coin(62, 14);
+	g.ellipse(62, 14, 13, 9, { stroke: c.accent, lineWidth: 1.5 });
+	// Bottom left: in progress, a slice filled.
+	g.path("M18 73C8.61 73 1 67.04 1 59.7v-5.2h34v5.2C35 67.03 27.39 73 18 73Z", face);
+	g.ellipse(18, 53.55, 17, 13.05, face);
+	g.ellipse(18, 53.5, 13, 9, { stroke: c.accent, lineWidth: 1.5 });
+	g.path("M28 53.5c0 3.31-4.48 6-10 6v-12c5.52 0 10 2.69 10 6Z", { fill: c.pie });
+}
+
+function drawTray(g: Parameters<NonNullable<Parameters<typeof ui.canvas>[0]>["draw"]>[0], c: (typeof COIN)["light"] | (typeof COIN)["dark"]) {
+	g.path("m2.36 55.6 3.2 14.06A12 12 0 0 0 17.26 79h43.48a12 12 0 0 0 11.7-9.34l3.2-14.06", { stroke: c.side, lineWidth: 1.5 });
+	g.path("M10.4 9.11A10 10 0 0 1 20.22 1h37.56a10 10 0 0 1 9.82 8.11l8.11 42.2a10 10 0 0 1-9.82 11.9H54.7a6.36 6.36 0 0 0-5.65 3.45 6.36 6.36 0 0 1-5.66 3.45H34.6a6.36 6.36 0 0 1-5.66-3.45 6.36 6.36 0 0 0-5.65-3.46H12.1a10 10 0 0 1-9.8-11.89l8.11-42.2Z", { fill: "bg", stroke: c.side, lineWidth: 1.5 });
+	g.path("M14.3 9.03a5 5 0 0 1 4.91-4.08H58.8a5 5 0 0 1 4.91 4.08l8.07 43.22a6 6 0 0 1-5.9 7.1H52.76a5.72 5.72 0 0 0-5.24 3.41 5.72 5.72 0 0 1-5.23 3.42h-6.58a5.72 5.72 0 0 1-5.23-3.42 5.72 5.72 0 0 0-5.24-3.4h-13.1a6 6 0 0 1-5.9-7.1L14.3 9.02Z", { stroke: c.accent, lineWidth: 1.5 });
+}
+
+/** Flux's empty tray: nothing matches, or nothing in progress. */
+export function TrayArt() {
+	const box = { width: 78, height: 80, flexShrink: 0 } as const;
+	return (
+		<ui.box style={box}>
+			<ui.canvas width={78} height={80} label="" style={{ ...box, dark: { display: "none" } }} draw={(g) => drawTray(g, COIN.light)} />
+			<ui.canvas width={78} height={80} label="" style={{ ...box, display: "none", dark: { display: "flex" } }} draw={(g) => drawTray(g, COIN.dark)} />
+		</ui.box>
+	);
+}
+
+/** Flux's art over an empty list of issues, in the theme's colors. */
+export function IssuesArt() {
+	const box = { width: 80, height: 74, flexShrink: 0 } as const;
+	return (
+		<ui.box style={box}>
+			<ui.canvas width={80} height={74} label="" style={{ ...box, dark: { display: "none" } }} draw={(g) => drawCoins(g, COIN.light)} />
+			<ui.canvas width={80} height={74} label="" style={{ ...box, display: "none", dark: { display: "flex" } }} draw={(g) => drawCoins(g, COIN.dark)} />
 		</ui.box>
 	);
 }

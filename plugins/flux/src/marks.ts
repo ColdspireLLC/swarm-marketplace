@@ -241,24 +241,42 @@ export function emojiImage(emoji: string | null | undefined): string | null {
 	return svg ? svgURL(svg) : null;
 }
 
+/** The same pictures as bytes, made once each: a recording names bytes by their hash, where it carries a data: URL whole, on every card. */
+const bytesOf = new Map<string, Uint8Array>();
+function svgBytes(key: string, svg: () => string | null): Uint8Array | null {
+	let b = bytesOf.get(key);
+	if (!b) {
+		const text = svg();
+		if (!text) return null;
+		bytesOf.set(key, (b = new TextEncoder().encode(text)));
+	}
+	return b;
+}
+
+export function emojiBytes(emoji: string | null | undefined): Uint8Array | null {
+	if (!emoji) return null;
+	const code = emojiCode(emoji);
+	return svgBytes("emoji:" + code, () => EMOJI[code] ?? null);
+}
+
+export function glyphBytes(id: string | null | undefined, color: string): Uint8Array | null {
+	if (!id || !EXTRA[id]) return null;
+	return svgBytes(`glyph:${id}:${color}`, () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">${EXTRA[id]!.replaceAll("currentColor", color)}</svg>`);
+}
+
 export function glyphImage(id: string | null | undefined, color: string): string | null {
 	if (!id || !EXTRA[id]) return null;
 	const inner = EXTRA[id].replaceAll("currentColor", color);
 	return svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">${inner}</svg>`);
 }
 
-/** A colored tile for a sidebar row. That row draws an SVG, which has no text, so the letter stays on the board. */
-export function tileImage(color: ColorName): string {
-	return svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="${MARK_HEX[color]}"/></svg>`);
-}
-
-/** What a sidebar row draws for a project: a Nucleo icon, or an SVG mark. */
-export function navMark(project: { emoji: string | null; icon: string | null; color: ColorName }): { icon?: IconName; mark?: string } {
+/** What a sidebar row or a menu item draws for a project: a Nucleo icon, an SVG mark, or its key's letter on its color. */
+export function navMark(project: { key?: string; emoji: string | null; icon: string | null; color: ColorName }): { icon?: IconName; mark?: Uint8Array; initial?: string; tint?: string } {
 	const icon = asIcon(project.icon);
 	if (icon) return { icon };
-	const emoji = emojiImage(project.emoji);
+	const emoji = emojiBytes(project.emoji);
 	if (emoji) return { mark: emoji };
-	const glyph = glyphImage(project.icon, MARK_HEX[project.color]);
+	const glyph = glyphBytes(project.icon, MARK_HEX[project.color]);
 	if (glyph) return { mark: glyph };
-	return { mark: tileImage(project.color) };
+	return { initial: (project.key || "?").slice(0, 1).toUpperCase(), tint: MARK_HEX[project.color] };
 }

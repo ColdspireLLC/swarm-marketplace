@@ -11,6 +11,7 @@ import { FluxClient, FluxHttpError, describe, isUnauthorized, isUnreachable, typ
 import { htmlToMarkdown, markdownToHtml } from "./content";
 import type { Comment, Issue, IssueDetail, IssuePatch, Label, Member, Project } from "./contract";
 import { parseDescription, descriptionState, writeLiveDescription } from "./description";
+import { ItemStore } from "./store";
 import { COLORS, CLOSED_STATUSES, PRIORITIES, STATUSES, parseIssueKey, type ColorName, type Priority, type Status } from "./flux";
 
 export class FluxNotReadyError extends Error {
@@ -21,6 +22,37 @@ export class FluxNotFoundError extends Error {
 }
 
 export type State = "unconfigured" | "connecting" | "ready" | "offline" | "unauthorized" | "error";
+
+type Write = { itemId: string; baseVersion: number; body: Record<string, unknown> | null };
+
+/**
+ * A change that can wait for Flux, as bb's: as data, so it outlives a
+ * restart; its writes are built again from the copy when it's sent.
+ */
+type PendingChange =
+	| { type: "issue"; id: string; patch: IssuePatch }
+	| { type: "description"; id: string; markdown: string }
+	| { type: "comment"; id: string; body: Record<string, unknown> }
+	| { type: "commentEdit"; id: string; html: string }
+	| { type: "commentDelete"; id: string }
+	| { type: "label"; id: string; body: Record<string, unknown> };
+
+interface Queued {
+	seq: number;
+	/** What it is, if it can't be sent: "Comment on ABC-12". */
+	label: string;
+	change: PendingChange;
+}
+
+/** A change made offline that Flux didn't take, or that no longer applied, kept to say so. */
+export interface Dropped {
+	id: string;
+	label: string;
+	reason: string;
+	at: string;
+}
+
+const MAX_DROPPED = 20;
 
 interface Item {
 	id: string;
@@ -59,6 +91,19 @@ export class Flux {
 	workspace: { id: string; name: string; slug: string } | null = null;
 	members: Member[] = [];
 	private replica: Replica;
+	/** The copy on disk, and what of it changed since it was last written. */
+	private readonly disk: ItemStore;
+	private dirty = new Set<string>();
+	private cleared = false;
+	private loaded: Promise<void>;
+	/** The changes made while Flux couldn't be reached, oldest first, and those it didn't take. */
+	private queue: Queued[] = [];
+	private dropped: Dropped[] = [];
+	/** The synced items the queue's changes show over, by id; undefined where the item is new. */
+	private shadow = new Map<string, Item | undefined>();
+	private sending = false;
+	/** When the copy last caught up with Flux. */
+	private syncedAt: string | null = null;
 	private stopFollow: AbortController | null = null;
 	private pullSoon: number | null = null;
 	private ready: Promise<void> = Promise.resolve();
@@ -70,12 +115,30 @@ export class Flux {
 
 	/** id names the connection. storePrefix keeps its copy apart from the first one's. */
 	constructor(readonly id = "default", private readonly storePrefix = "") {
-		this.replica = storage.get<Replica>(this.storeKey("replica")) ?? { scope: "", version: -1, items: {} };
+		this.replica = { scope: "", version: -1, items: {} };
+		this.disk = new ItemStore(storePrefix || "default");
+		// The copy was one value once, which ran out of memory on a big
+		// workspace: it's the database's now, and the old one is dropped.
+		if (storage.keys().includes(this.storeKey("replica"))) storage.delete(this.storeKey("replica"));
+		const meta = storage.get<{ scope: string; version: number }>(this.storeKey("copy"));
+		this.loaded = meta
+			? this.disk.load().then(
+					(items) => {
+						this.replica = { scope: meta.scope, version: meta.version, items };
+						this.replayQueue();
+						this.onChange();
+					},
+					() => {},
+				)
+			: Promise.resolve();
+		this.queue = storage.get<Queued[]>(this.storeKey("queue")) ?? [];
+		this.dropped = storage.get<Dropped[]>(this.storeKey("dropped")) ?? [];
+		this.syncedAt = storage.get<string>(this.storeKey("syncedAt")) ?? null;
 		this.members = storage.get<Member[]>(this.storeKey("members")) ?? [];
 		this.me = storage.get<Account>(this.storeKey("me")) ?? null;
 	}
 
-	private storeKey(name: "replica" | "members" | "me") {
+	private storeKey(name: "replica" | "copy" | "members" | "me" | "queue" | "dropped" | "syncedAt") {
 		return this.storePrefix ? `${this.storePrefix}:${name}` : name;
 	}
 
@@ -121,6 +184,36 @@ export class Flux {
 		this.ready = this.connect(gen);
 	}
 
+	/** The URL as set, which may not be one Flux takes. */
+	get url() {
+		return this.configured.split("\n")[0] ?? "";
+	}
+
+	/** Connects again from nothing: the account, the workspace, every item. Its threads' links stay. */
+	resync(): Promise<void> {
+		const [url = "", token = ""] = this.configured.split("\n");
+		this.reset(this.replica.scope);
+		this.configured = "";
+		this.configure(url, token);
+		return this.ready;
+	}
+
+	/** Stops, and drops the copy of the workspace, the account and the members. */
+	forget() {
+		this.stop();
+		this.client = null;
+		this.state = "unconfigured";
+		this.message = "";
+		this.workspace = null;
+		this.me = null;
+		this.members = [];
+		this.reset("");
+		this.cleared = false;
+		void this.disk.write([], [], true).catch(() => {});
+		for (const name of ["copy", "members", "me"] as const) storage.delete(this.storeKey(name));
+		this.onChange();
+	}
+
 	stop() {
 		this.generation++;
 		this.configured = "";
@@ -133,6 +226,7 @@ export class Flux {
 	private async connect(gen: number): Promise<void> {
 		const client = this.client!;
 		try {
+			await this.loaded;
 			client.workspaceId = null;
 			this.me = await client.me();
 			const ws = await client.workspace();
@@ -141,7 +235,7 @@ export class Flux {
 			this.workspace = ws;
 			const scope = `${client.baseUrl}#${ws.id}`;
 			if (this.replica.scope !== scope) {
-				this.replica = { scope, version: -1, items: {} };
+				this.reset(scope);
 				if (!this.storePrefix) storage.set("links", {});
 			}
 			this.members = (await client.members()).members.map(member);
@@ -151,6 +245,7 @@ export class Flux {
 			if (gen !== this.generation) return;
 			this.state = "ready";
 			this.message = "";
+			void this.flush();
 		} catch (e) {
 			if (gen !== this.generation) return;
 			this.fail(e);
@@ -160,6 +255,8 @@ export class Flux {
 	}
 
 	private fail(e: unknown) {
+		// In the plugin's log too, with the URL, as the page says it in a line.
+		console.warn(`Flux at ${this.baseUrl || this.url || "(no URL)"}: ${describe(e)}`);
 		if (isUnauthorized(e)) {
 			this.state = "unauthorized";
 			this.message = (e as Error).message;
@@ -231,6 +328,7 @@ export class Flux {
 					this.state = "ready";
 					this.message = "";
 					this.onChange();
+					void this.flush();
 				}
 			} catch (e) {
 				if (isUnauthorized(e)) {
@@ -284,8 +382,8 @@ export class Flux {
 		} else if (frame.event === "meta") {
 			void this.refreshMembers().catch(() => {});
 		} else if (frame.event === "reset") {
-			this.replica = { scope: this.replica.scope, version: -1, items: {} };
-			storage.set(this.storeKey("replica"), this.replica);
+			this.reset(this.replica.scope);
+			this.save();
 			this.schedulePull(gen);
 		}
 	}
@@ -329,7 +427,7 @@ export class Flux {
 				page = await client.pull(this.replica.version);
 			} catch (e) {
 				if (e instanceof FluxHttpError && e.code === "history_compacted") {
-					this.replica = { scope: this.replica.scope, version: -1, items: {} };
+					this.reset(this.replica.scope);
 					continue;
 				}
 				throw e;
@@ -338,18 +436,211 @@ export class Flux {
 			this.replica.version = page.nextVersion;
 			if (!page.hasMore) break;
 		}
-		if (changed) {
-			storage.set(this.storeKey("replica"), this.replica);
-			this.onChange();
-		}
+		const shown = changed || this.cleared;
+		this.syncedAt = new Date().toISOString();
+		storage.set(this.storeKey("syncedAt"), this.syncedAt);
+		if (changed) this.replayQueue();
+		this.save();
+		if (shown) this.onChange();
+	}
+
+	/** Drops the copy, to be pulled again from the start. */
+	private reset(scope: string) {
+		this.replica = { scope, version: -1, items: {} };
+		this.dirty.clear();
+		this.cleared = true;
+	}
+
+	/** Writes what changed in the copy to disk, then the version it's at. */
+	private save() {
+		const ids = [...this.dirty];
+		const clear = this.cleared;
+		const meta = { scope: this.replica.scope, version: this.replica.version };
+		this.dirty.clear();
+		this.cleared = false;
+		// The synced items, not the changes waiting over them.
+		const synced = (id: string) => (this.shadow.has(id) ? this.shadow.get(id) : this.replica.items[id]);
+		const items = ids.map(synced).filter((it): it is Item => !!it);
+		const gone = ids.filter((id) => !synced(id));
+		void this.disk.write(items, gone, clear).then(
+			() => storage.set(this.storeKey("copy"), meta),
+			() => {},
+		);
 	}
 
 	private apply(it: SyncItem): boolean {
-		const had = this.replica.items[it.id];
+		const shadowed = this.shadow.has(it.id);
+		const had = shadowed ? this.shadow.get(it.id) : this.replica.items[it.id];
 		if (had && had.version >= it.version) return false;
-		if (it.deleted || !isObject(it.body)) delete this.replica.items[it.id];
-		else this.replica.items[it.id] = { id: it.id, version: it.version, createdAt: it.createdAt, updatedAt: it.updatedAt, body: it.body };
+		const next = it.deleted || !isObject(it.body) ? undefined : { id: it.id, version: it.version, createdAt: it.createdAt, updatedAt: it.updatedAt, body: it.body };
+		// Under a change waiting to be sent, the synced item changes; the
+		// change shows over it again once the pull is in (replayQueue).
+		if (shadowed) this.shadow.set(it.id, next);
+		else if (next) this.replica.items[it.id] = next;
+		else delete this.replica.items[it.id];
+		this.dirty.add(it.id);
 		return true;
+	}
+
+	// ---- Changes made offline ----
+
+	/**
+	 * Sends a change that can wait for Flux; while Flux can't be reached
+	 * it's queued, shown at once, and sent when Flux is back, in order, as
+	 * bb's. label says what it is if it can't be.
+	 */
+	private async change(label: string, change: PendingChange): Promise<void> {
+		if (this.state === "ready" && this.queue.length === 0) {
+			try {
+				await this.send(change);
+				return;
+			} catch (e) {
+				if (!isUnreachable(e)) throw e;
+				this.state = "offline";
+				this.message = describe(e);
+			}
+		} else if (this.state === "unconfigured" || this.state === "unauthorized" || this.replica.version < 0) {
+			throw new FluxNotReadyError(this.message || "Flux isn't connected.");
+		}
+		// Built now too, so a change that can't apply fails now.
+		this.overlay(this.build(change));
+		const seq = (this.queue[this.queue.length - 1]?.seq ?? 0) + 1;
+		this.queue.push({ seq, label, change });
+		storage.set(this.storeKey("queue"), this.queue);
+		this.onChange();
+	}
+
+	/** A change's writes, from the copy as it is now: what others changed meanwhile in other fields stays. */
+	private build(change: PendingChange): Write[] {
+		switch (change.type) {
+			case "issue":
+				return this.issueWrites(change.id, change.patch);
+			case "description": {
+				const it = this.item(change.id, "issue");
+				const html = markdownToHtml(change.markdown, { baseUrl: this.baseUrl, members: this.mentionTargets() });
+				return [{ itemId: it.id, baseVersion: it.version, body: { ...it.body, description: html } }];
+			}
+			case "comment": {
+				// Sent once, even if it landed before a reconnect.
+				if (this.replica.items[change.id] && !this.shadow.has(change.id)) return [];
+				this.item(asString(change.body.issueId), "issue");
+				return [{ itemId: change.id, baseVersion: -1, body: change.body }];
+			}
+			case "commentEdit": {
+				const it = this.item(change.id, "comment");
+				return [{ itemId: it.id, baseVersion: it.version, body: { ...it.body, body: change.html } }];
+			}
+			case "commentDelete": {
+				const it = this.replica.items[change.id];
+				return it ? [{ itemId: it.id, baseVersion: it.version, body: null }] : [];
+			}
+			case "label":
+				if (this.replica.items[change.id] && !this.shadow.has(change.id)) return [];
+				return [{ itemId: change.id, baseVersion: -1, body: change.body }];
+		}
+	}
+
+	/** Sends a change now. */
+	private async send(change: PendingChange): Promise<void> {
+		if (change.type === "description") await this.writeDescription(change.id, change.markdown);
+		else await this.transact(() => this.build(change));
+	}
+
+	/** Shows writes over the synced copy, keeping what they cover. */
+	private overlay(writes: Write[]) {
+		const now = new Date().toISOString();
+		for (const w of writes) {
+			const had = this.replica.items[w.itemId];
+			if (!this.shadow.has(w.itemId)) this.shadow.set(w.itemId, had);
+			if (w.body === null) delete this.replica.items[w.itemId];
+			else this.replica.items[w.itemId] = { id: w.itemId, version: had?.version ?? -1, createdAt: had?.createdAt ?? now, updatedAt: now, body: w.body };
+		}
+	}
+
+	/** Puts the synced items back where changes showed over them. */
+	private restoreSynced() {
+		for (const [id, it] of this.shadow) {
+			if (it) this.replica.items[id] = it;
+			else delete this.replica.items[id];
+		}
+		this.shadow.clear();
+	}
+
+	/** Shows the queued changes over the copy as it is now; one that no longer applies is dropped. */
+	private replayQueue() {
+		this.restoreSynced();
+		for (const q of [...this.queue]) {
+			try {
+				this.overlay(this.build(q.change));
+			} catch (e) {
+				// Nothing synced yet to judge by: decide once there is.
+				if (this.replica.version < 0) continue;
+				this.drop(q, e);
+			}
+		}
+	}
+
+	/** Sends the changes made while Flux couldn't be reached, oldest first. */
+	async flush(): Promise<void> {
+		if (this.sending || this.queue.length === 0) return;
+		this.sending = true;
+		try {
+			while (this.queue.length > 0 && this.state === "ready") {
+				const q = this.queue[0]!;
+				this.restoreSynced();
+				try {
+					await this.send(q.change);
+					this.queue = this.queue.filter((x) => x !== q);
+				} catch (e) {
+					// Still away, or the token's gone: kept for the next connection.
+					if (isUnreachable(e) || isUnauthorized(e)) {
+						this.replayQueue();
+						this.onChange();
+						return;
+					}
+					this.drop(q, e);
+				}
+				storage.set(this.storeKey("queue"), this.queue);
+				this.replayQueue();
+				this.onChange();
+			}
+		} finally {
+			this.sending = false;
+		}
+	}
+
+	/** Gives up on a queued change, keeping why to show. */
+	private drop(q: Queued, e: unknown) {
+		if (!this.queue.includes(q)) return;
+		this.queue = this.queue.filter((x) => x !== q);
+		storage.set(this.storeKey("queue"), this.queue);
+		const reason = e instanceof FluxNotFoundError ? "it was deleted in Flux meanwhile" : describe(e);
+		console.warn(`Flux: couldn't send a change made offline (${q.label}): ${reason}`);
+		// Following an issue isn't worth telling anyone of.
+		if (q.change.type === "issue" && q.change.patch.subscribe && Object.keys(q.change.patch).length === 1) return;
+		this.dropped = [...this.dropped, { id: crypto.randomUUID(), label: q.label, reason, at: new Date().toISOString() }].slice(-MAX_DROPPED);
+		storage.set(this.storeKey("dropped"), this.dropped);
+	}
+
+	/** Clears what couldn't be sent from the list, once seen. */
+	dismissDropped() {
+		this.dropped = [];
+		storage.set(this.storeKey("dropped"), this.dropped);
+		this.onChange();
+	}
+
+	/** Tries Flux again now, rather than at the next retry. */
+	reconnect() {
+		const [url = "", token = ""] = this.configured.split("\n");
+		this.configured = "";
+		this.configure(url, token);
+	}
+
+	/** Refuses a change that needs Flux now (it numbers issues, say), while it can't be reached. */
+	private online() {
+		if (this.state === "offline" || this.state === "connecting") {
+			throw new FluxNotReadyError(`Flux can't be reached right now, so this has to wait until it's back${this.message ? ` (${this.message})` : ""}.`);
+		}
 	}
 
 	requireClient(): FluxClient {
@@ -542,8 +833,9 @@ export class Flux {
 					const had = before.get(a.itemId);
 					if (w.body === null) delete this.replica.items[a.itemId];
 					else this.replica.items[a.itemId] = { id: a.itemId, version: a.version, createdAt: had?.createdAt ?? now, updatedAt: now, body: w.body };
+					this.dirty.add(a.itemId);
 				}
-				storage.set(this.storeKey("replica"), this.replica);
+				this.save();
 				this.onChange();
 				return;
 			} catch (e) {
@@ -576,17 +868,19 @@ export class Flux {
 		assigneeIds?: string[];
 		labelIds?: string[];
 		parentId?: string | null;
+		dueDate?: string | null;
+		/** HTML, as Flux keeps it, where the description is a copy's: it's kept as it is. */
+		descriptionHtml?: string;
 	}): Promise<Issue> {
 		const me = this.me;
 		if (!me) throw new FluxNotReadyError("Flux is not connected.");
-		const description = input.descriptionMarkdown?.trim() ? markdownToHtml(await liftDataImages(input.descriptionMarkdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() }) : "";
+		this.online();
+		const description = input.descriptionHtml !== undefined ? input.descriptionHtml : input.descriptionMarkdown?.trim() ? markdownToHtml(await liftDataImages(input.descriptionMarkdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() }) : "";
 		const assignees = unique(input.assigneeIds ?? []);
 		const issueId = crypto.randomUUID();
 		await this.transact(() => {
 			const project = this.item(input.projectId, "project");
-			let highest = 0;
-			for (const i of this.ofType("issue")) if (i.body.projectId === project.id) highest = Math.max(highest, asNumber(i.body.number));
-			const number = Math.max(asNumber(project.body.nextNumber, 1), highest + 1);
+			const number = this.freeNumber(project);
 			return [
 				{ itemId: project.id, baseVersion: project.version, body: { ...project.body, nextNumber: number + 1 } },
 				{
@@ -604,7 +898,7 @@ export class Flux {
 						labelIds: unique(input.labelIds ?? []),
 						subscriberIds: unique([me.id, ...assignees]),
 						creatorId: me.id,
-						dueDate: null,
+						dueDate: input.dueDate ?? null,
 						parentId: input.parentId ?? null,
 						position: 0,
 					},
@@ -615,7 +909,20 @@ export class Flux {
 	}
 
 	async updateIssue(id: string, patch: IssuePatch): Promise<Issue> {
-		await this.transact(() => {
+		const issue = this.issue(id);
+		if (patch.projectId !== undefined && patch.projectId !== issue?.projectId) {
+			// A move numbers the issue in its new project: Flux has to be here.
+			this.online();
+			await this.transact(() => this.issueWrites(id, patch));
+		} else {
+			await this.change(issue ? `Change to ${issue.key}` : "A change to an issue", { type: "issue", id, patch });
+		}
+		return this.issue(id)!;
+	}
+
+	/** An issue's writes for patch, from the copy as it is now. */
+	private issueWrites(id: string, patch: IssuePatch): Write[] {
+		{
 			const it = this.item(id, "issue");
 			const next = { ...it.body };
 			if (patch.title !== undefined) next.title = patch.title;
@@ -630,17 +937,24 @@ export class Flux {
 				if (patch.position === undefined) next.position = 0;
 			}
 			if (patch.position !== undefined) next.position = patch.position;
+			const writes: { itemId: string; baseVersion: number; body: Record<string, unknown> | null }[] = [];
 			if (patch.projectId !== undefined && patch.projectId !== asString(it.body.projectId)) {
-				next.projectId = patch.projectId;
+				// As Flux's move: the first free number there, which the
+				// project's next number then passes.
+				const project = this.item(patch.projectId, "project");
+				const number = this.freeNumber(project);
+				next.projectId = project.id;
+				next.number = number;
+				writes.push({ itemId: project.id, baseVersion: project.version, body: { ...project.body, nextNumber: Math.max(asNumber(project.body.nextNumber, 1), number + 1) } });
 			}
+			if (patch.subscribe) next.subscriberIds = unique([...asStringList(next.subscriberIds), patch.subscribe]);
 			if (patch.assigneeIds !== undefined) {
 				next.assigneeIds = unique(patch.assigneeIds);
 				// Flux keeps the creator and every assignee subscribed.
 				next.subscriberIds = unique([...asStringList(it.body.subscriberIds), asString(it.body.creatorId), ...patch.assigneeIds].filter(Boolean));
 			}
-			return [{ itemId: id, baseVersion: it.version, body: next }];
-		});
-		return this.issue(id)!;
+			return [{ itemId: id, baseVersion: it.version, body: next }, ...writes];
+		}
 	}
 
 	/**
@@ -649,6 +963,15 @@ export class Flux {
 	 * saves it.
 	 */
 	async replaceDescription(id: string, markdown: string): Promise<void> {
+		this.item(id, "issue");
+		// Pictures pasted in go up now, or the change waits with them in it.
+		if (this.state === "ready") markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
+		const issue = this.issue(id);
+		await this.change(issue ? `Description of ${issue.key}` : "A description", { type: "description", id, markdown });
+	}
+
+	/** Writes a description into the issue's live document, then its HTML. */
+	private async writeDescription(id: string, markdown: string): Promise<void> {
 		const client = this.requireClient();
 		this.item(id, "issue");
 		markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
@@ -692,61 +1015,74 @@ export class Flux {
 		const me = this.me;
 		if (!me) throw new FluxNotReadyError("Flux is not connected.");
 		const commentId = crypto.randomUUID();
-		const html = markdownToHtml(await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() });
-		await this.transact(() => {
-			const it = this.item(issueId, "issue");
-			const writes: { itemId: string; baseVersion: number; body: Record<string, unknown> }[] = [
-				{ itemId: commentId, baseVersion: -1, body: { type: "comment", issueId, authorId: me.id, body: html, ...(agent ? { agent } : {}) } },
-			];
-			const subs = asStringList(it.body.subscriberIds);
-			if (!subs.includes(me.id)) writes.push({ itemId: issueId, baseVersion: it.version, body: { ...it.body, subscriberIds: [...subs, me.id] } });
-			return writes;
-		});
+		const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
+		const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
+		const issue = this.item(issueId, "issue");
+		await this.change(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me.id, body: html, ...(agent ? { agent } : {}) } });
+		// Commenters follow the issue, as Flux has it.
+		if (!asStringList(issue.body.subscriberIds).includes(me.id)) {
+			await this.change(`Following ${this.issue(issueId)?.key ?? "an issue"}`, { type: "issue", id: issueId, patch: { subscribe: me.id } }).catch(() => {});
+		}
 		return this.comments(issueId).find((c) => c.id === commentId)!;
 	}
 
+	/** Deletes an issue as Flux does: its comments with it; its sub-issues stay, without their parent; its threads' links go. */
 	async deleteIssue(id: string): Promise<void> {
+		this.online();
+		const threads = this.issue(id)?.threadIds ?? [];
 		await this.transact(() => {
 			const it = this.item(id, "issue");
-			return [{ itemId: id, baseVersion: it.version, body: null }];
+			return [
+				...this.ofType("comment").filter((c) => c.body.issueId === id).map((c) => ({ itemId: c.id, baseVersion: c.version, body: null })),
+				...this.ofType("issue").filter((i) => i.body.parentId === id).map((i) => ({ itemId: i.id, baseVersion: i.version, body: { ...i.body, parentId: null } })),
+				{ itemId: id, baseVersion: it.version, body: null },
+			];
 		});
+		for (const thread of threads) this.detach(id, thread);
+	}
+
+	/** The first number free in a project, from its next number on. */
+	private freeNumber(project: Item): number {
+		const taken = new Set<number>();
+		for (const i of this.ofType("issue")) if (i.body.projectId === project.id) taken.add(asNumber(i.body.number));
+		let number = Math.max(1, asNumber(project.body.nextNumber, 1));
+		while (taken.has(number)) number++;
+		return number;
 	}
 
 	async duplicateIssue(id: string): Promise<Issue> {
 		const issue = this.issue(id);
 		if (!issue) throw new FluxNotFoundError(`No Flux issue with id ${id}.`);
-		const detail = this.detail(id);
+		// As Flux's Duplicate: every field, the description as it is.
 		return this.createIssue({
 			projectId: issue.projectId,
-			title: `${issue.title} copy`,
-			descriptionMarkdown: detail.descriptionMarkdown,
+			title: issue.title.trim() ? `${issue.title} copy` : "",
+			descriptionHtml: asString(this.replica.items[id]?.body.description),
 			status: issue.status,
 			priority: issue.priority,
 			assigneeIds: issue.assigneeIds,
 			labelIds: issue.labelIds,
 			parentId: issue.parentId,
+			dueDate: issue.dueDate,
 		});
 	}
 
 	async updateComment(id: string, markdown: string): Promise<void> {
 		const me = this.me;
 		if (!me) throw new FluxNotReadyError("Flux is not connected.");
-		const html = markdownToHtml(await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() });
-		await this.transact(() => {
-			const it = this.item(id, "comment");
-			if (asString(it.body.authorId) !== me.id) throw new Error("You can edit your own comments.");
-			return [{ itemId: id, baseVersion: it.version, body: { ...it.body, body: html } }];
-		});
+		const it = this.item(id, "comment");
+		if (asString(it.body.authorId) !== me.id) throw new Error("You can edit your own comments.");
+		const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
+		const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
+		await this.change(`Edit to a comment on ${this.issue(asString(it.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id, html });
 	}
 
 	async deleteComment(id: string): Promise<void> {
 		const me = this.me;
 		if (!me) throw new FluxNotReadyError("Flux is not connected.");
-		await this.transact(() => {
-			const it = this.item(id, "comment");
-			if (asString(it.body.authorId) !== me.id) throw new Error("You can delete your own comments.");
-			return [{ itemId: id, baseVersion: it.version, body: null }];
-		});
+		const it = this.item(id, "comment");
+		if (asString(it.body.authorId) !== me.id) throw new Error("You can delete your own comments.");
+		await this.change(`Deleting a comment on ${this.issue(asString(it.body.issueId))?.key ?? "an issue"}`, { type: "commentDelete", id });
 	}
 
 	/** A label of name, in the color fewest labels use when none is given. */
@@ -758,7 +1094,7 @@ export class Flux {
 		for (const l of this.labels()) used.set(l.color, (used.get(l.color) ?? 0) + 1);
 		const pick = color ?? [...used.entries()].sort((a, b) => a[1] - b[1])[0]![0];
 		const id = crypto.randomUUID();
-		await this.transact(() => [{ itemId: id, baseVersion: -1, body: { type: "label", name: name.trim(), color: pick } }]);
+		await this.change(`Label “${name.trim()}”`, { type: "label", id, body: { type: "label", name: name.trim(), color: pick } });
 		return this.labels().find((l) => l.id === id)!;
 	}
 
@@ -824,6 +1160,9 @@ export class Flux {
 			workspace: this.workspace,
 			me: this.me,
 			issueCount: this.ofType("issue").length,
+			queued: this.queue.length,
+			dropped: this.dropped,
+			syncedAt: this.syncedAt,
 		};
 	}
 
@@ -862,6 +1201,15 @@ function parseSSE(frame: string): { event: string; data: string } | null {
 const DATA_IMAGE = /!\[([^\]]*)\]\((data:image\/([a-zA-Z0-9.+-]+);base64,([^)]+))\)/g;
 
 /** Uploads Markdown's data-URL pictures and puts Flux's URLs in their place. */
+/** Signs in to a Flux with url and token, saving nothing: who it is, and its workspace. */
+export async function checkFlux(url: string, token: string): Promise<{ baseUrl: string; account: string; workspace: { id: string; name: string } }> {
+	const client = new FluxClient({ baseUrl: url, token, deviceId: storage.get<string>("deviceId") ?? crypto.randomUUID() });
+	const me = await client.me();
+	const ws = await client.workspace();
+	if (!ws.id) throw new Error("Finish setting up your Flux workspace in Flux first.");
+	return { baseUrl: client.baseUrl, account: me.name, workspace: { id: ws.id, name: ws.name } };
+}
+
 export async function liftDataImages(markdown: string, upload: (bytes: Uint8Array, type: string, name: string) => Promise<string>): Promise<string> {
 	if (!markdown.includes("data:image/")) return markdown;
 	let out = "";

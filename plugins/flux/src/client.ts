@@ -172,7 +172,17 @@ export class FluxClient {
     const text = await response.text();
     const parsed = parseJson(text);
     if (!response.ok) throw this.refused(response.status, parsed);
-    return schema.parse(parsed ?? null);
+    // GET /user is a 204 for a visitor: a token Flux doesn't know as one.
+    if (response.status === 204 && path === "/user") {
+      throw this.refused(401, null);
+    }
+    const result = schema.safeParse(parsed ?? null);
+    if (result.success) return result.data;
+    throw new FluxHttpError(
+      response.status,
+      unexpected(this.baseUrl, `${init.method ?? "GET"} ${path}`, response, text, result.error),
+      parsed,
+    );
   }
 
   /** The error for a refused request, telling the owner about a 401. */
@@ -255,7 +265,9 @@ export class FluxClient {
   }
 
   pull(since: number, signal?: AbortSignal) {
-    return this.request(pullSchema, `/sync/pull/${since}?limit=1000`, {
+    // A page at a time, small: a page is read whole into the plugin's
+    // memory, which a big workspace's descriptions in one page ran out of.
+    return this.request(pullSchema, `/sync/pull/${since}?limit=100`, {
       signal,
     });
   }
@@ -328,6 +340,28 @@ function parseJson(text: string): unknown {
   }
 }
 
+/**
+ * What Flux answered that the plugin can't read, said in a line: a web page
+ * where its API should be is a URL that isn't Flux's, else what was wrong
+ * and the start of what came.
+ */
+function unexpected(
+  baseUrl: string,
+  request: string,
+  response: Response,
+  text: string,
+  error: z.ZodError,
+): string {
+  const type = response.headers.get("content-type") ?? "";
+  if (type.includes("text/html") || /^\s*<(!doctype|html)/i.test(text)) {
+    return `${baseUrl} answered ${request} with a web page, not Flux's API. Check the Flux URL: the address you open Flux at.`;
+  }
+  const issue = error.issues[0];
+  const where = issue?.path.length ? `${issue.path.join(".")}: ` : "";
+  const start = text.replace(/\s+/g, " ").trim().slice(0, 80);
+  return `Flux answered ${request} with what Swarm's Flux can't read (${where}${issue?.message ?? "not what it expected"})${start ? `: ${start}${text.length > 80 ? "…" : ""}` : ", an empty body"}.`;
+}
+
 function errorMessage(status: number, body: unknown): string {
   if (status === 401) {
     return "Flux rejected the API token. Create a new one in Flux under Settings → API tokens.";
@@ -348,6 +382,10 @@ function errorMessage(status: number, body: unknown): string {
 }
 
 export function describe(cause: unknown): string {
+  if (cause instanceof z.ZodError) {
+    const issue = cause.issues[0];
+    return `Flux sent what Swarm's Flux can't read (${issue?.path.length ? `${issue.path.join(".")}: ` : ""}${issue?.message ?? "not what it expected"}).`;
+  }
   if (cause instanceof Error) {
     const inner = (cause as Error & { cause?: unknown }).cause;
     if (inner instanceof Error && inner.message) {

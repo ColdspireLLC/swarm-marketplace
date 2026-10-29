@@ -5,16 +5,20 @@
 // panel to attach one, see it and move it along; ::flux{key="ABC-12"} in
 // a reply shows an issue's card.
 import swarm, { call, hook, on, settings, tool, ui, type Child } from "swarm";
-import { fluxAssetId } from "./src/assets";
+import { imageOf } from "./src/pictures";
+import { DuePicker } from "./src/due";
+import { Confirm } from "./src/confirm";
+import { Palette } from "./src/palette";
 import { registerCli } from "./src/cli";
 import type { Issue } from "./src/contract";
-import { CommentEditor, DescriptionEditor } from "./src/edit";
+import { CommentEditor, DescriptionEditor, StartAgentDialog } from "./src/edit";
 import { CLOSED_STATUSES, PRIORITY_LEVEL, STATUS_LABELS, type Status } from "./src/flux";
 import { watchMergeRequests } from "./src/follow";
 import { hub } from "./src/hub";
 import { issueImages } from "./src/images";
 import { FluxPage, NewIssue, navItems, syncNav, unstarted } from "./src/page";
 import { threadInstructions } from "./src/prompt";
+import { FluxSettings, refreshProjects } from "./src/settings";
 import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
 import { Avatar, IssueView, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
@@ -54,7 +58,7 @@ function badges() {
 let shownBadges = new Set<string>();
 
 function connect() {
-	hub.configure(String(settings.get("url") ?? ""), String(settings.get("token") ?? ""), String(settings.get("connections") ?? ""));
+	hub.fromSettings();
 }
 
 /** Threads' titles, and whether their agents are working now, as the core last said. */
@@ -66,27 +70,6 @@ async function refreshWorking() {
 	}
 }
 
-/** Flux's pictures, which it shows its members only: read with the token, by their asset's ID. */
-const pictures = new Map<string, Uint8Array | "loading" | "failed">();
-function imageOf(src: string): string | Uint8Array | null {
-	const id = fluxAssetId(src, flux.baseUrl);
-	if (!id) return src;
-	const got = pictures.get(id);
-	if (got instanceof Uint8Array) return got;
-	if (got === "failed") return src;
-	if (!got) {
-		pictures.set(id, "loading");
-		flux
-			.requireClient()
-			.asset(id)
-			.then(
-				(a) => void pictures.set(id, new Uint8Array(a.bytes)),
-				() => void pictures.set(id, "failed"),
-			)
-			.finally(() => ui.update());
-	}
-	return null;
-}
 
 /** The issue each thread's panel shows, when the user went to another (a parent, a sub-issue). */
 const viewing = new Map<string, string>();
@@ -111,7 +94,7 @@ function issueView(issue: Issue, thread?: string): Child {
 			start={thread && !issue.threadIds.includes(thread) ? async () => void (await flux.attach(issue.id, thread, true)) : undefined}
 			open={thread ? (other) => void viewing.set(thread, other.id) : undefined}
 			image={imageOf}
-			description={<DescriptionEditor flux={flux} issue={issue} markdown={d.descriptionMarkdown} image={imageOf} />}
+			description={<DescriptionEditor flux={flux} issue={issue} markdown={d.descriptionMarkdown} html={d.descriptionHtml} image={imageOf} />}
 			comment={<CommentEditor flux={flux} issue={issue} image={imageOf} />}
 		/>
 	);
@@ -125,7 +108,7 @@ function issueCard(issue: Issue): Child {
 	const labels = flux.labels().filter((label) => issue.labelIds.includes(label.id));
 	const chip = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" } as const;
 	return (
-		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, cursor: "pointer" }}>
+		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512 }}>
 			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
 				<ProjectMark project={project} size={13} />
 				{parent ? <ui.text style={{ fontSize: 11, color: "text3" }}>{`${parent.key} ›`}</ui.text> : null}
@@ -173,12 +156,15 @@ export function activate() {
 	});
 	// Its threads gone, their links go too.
 	on("event", (e) => {
+		if (e.type === "project.added" || e.type === "project.renamed" || e.type === "project.removed") refreshProjects();
 		if (e.type !== "thread.deleted" || !e.thread) return;
 		for (const i of flux.issuesOfThread(e.thread)) flux.detach(i.id, e.thread);
 	});
 
 	// ::flux{key="ABC-12"}: an issue's card in a reply.
 	ui.shareIcon({ id: "mark", path: "icon.svg" });
+	// Its page of Settings: the Fluxes it's connected to, and where their agents work.
+	ui.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => <FluxSettings /> });
 	ui.nav({
 		id: "flux",
 		title: "Flux",
@@ -189,6 +175,11 @@ export function activate() {
 		render: ({ args }) => <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} image={imageOf} />,
 	});
 	syncNav(flux);
+
+	ui.overlay({ id: "flux-palette", width: 480, bare: true, render: () => <Palette /> });
+	ui.overlay({ id: "flux-confirm", width: 400, bare: true, render: () => <Confirm /> });
+	ui.overlay({ id: "flux-due", title: "Due date", width: 300, bare: true, render: () => <DuePicker /> });
+	ui.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, render: () => <StartAgentDialog flux={flux} /> });
 
 	ui.overlay({
 		id: "flux-new",
@@ -217,33 +208,43 @@ export function activate() {
 		id: "flux-open",
 		title: "Flux issues",
 		icon: "flux:mark",
-		render: () => {
+		// Open issues nobody's agent has started, yours first, one click from the prompt; the form's project's, where it's linked to one.
+		render: (context) => {
 			if (flux.projects().length === 0) {
 				return (
-					<ui.pressable label="Connect Flux" onClick={() => ui.navTo("flux", "")}>
-						<ui.text tone="muted">Connect Flux to pick up issues from here →</ui.text>
+					<ui.pressable label="Connect Flux" onClick={() => ui.navTo("flux", "")} style={{ alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
+						<ui.text style={{ fontSize: 14, color: "currentColor" }}>Connect Flux to pick up issues from here →</ui.text>
 					</ui.pressable>
 				);
 			}
-			const open = unstarted(flux);
+			const linked = context.args.project ? flux.projectOfSwarm(context.args.project) : null;
+			const open = unstarted(flux, linked?.id);
 			const me = flux.me?.id;
 			if (open.length === 0) {
 				return (
-					<ui.box style={{ flexDirection: "row", gap: 4 }}>
-						<ui.text tone="muted">Nothing waiting.</ui.text>
-						<ui.link label="Browse Flux" href="swarm://plugin/flux" />
+					<ui.box style={{ flexDirection: "row", gap: 4, alignItems: "center" }}>
+						<ui.text style={{ fontSize: 14, color: "text2" }}>{`Nothing waiting${linked ? ` in ${linked.name}` : ""}.`}</ui.text>
+						<ui.link label="Browse Flux" href={linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux"} />
 					</ui.box>
 				);
 			}
 			return (
-				<ui.box style={{ gap: 0 }}>
+				<ui.box style={{ gap: 0, marginLeft: -4, marginRight: -4 }}>
 					{open.map((issue) => (
-						<ui.pressable key={issue.id} label={`${issue.key} ${issue.title}`} tooltip="Add to the prompt" onClick={() => ui.prefill({ prompt: `Work on ${issue.key} (${issue.title}). Run \`swarm flux start ${issue.key}\` first so the issue tracks this thread.` })} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
-							<PriorityIcon priority={issue.priority} size={13} />
-							<StatusIcon status={issue.status} size={13} />
-							<ui.text style={{ fontSize: 12, color: "text2", width: 64 }}>{issue.key}</ui.text>
-							<ui.text style={{ flex: 1, minWidth: 0 }} maxLines={1}>{issue.title}</ui.text>
-							<ui.text style={{ fontSize: 12, color: "text2" }}>{me && issue.assigneeIds.includes(me) ? "Yours" : "Unassigned"}</ui.text>
+						<ui.pressable
+							key={issue.id}
+							label={`${issue.key} ${issue.title}`}
+							tooltip="Add to the prompt"
+							// As bb's: the issue as a mention after what's typed, and how the thread tracks it.
+							onClick={() => ui.prefill({ append: true, prompt: `Work on @flux-issues:${issue.key} (${issue.title}). Run \`swarm flux start ${issue.key}\` first so the issue tracks this thread.` })}
+							style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }}
+						>
+							<PriorityIcon priority={issue.priority} size={14} />
+							<StatusIcon status={issue.status} size={14} />
+							<ui.text style={{ fontSize: 12, color: "text2", flexShrink: 0, minWidth: 56 }}>{issue.key}</ui.text>
+							<ui.text style={{ fontSize: 14, flex: 1, minWidth: 0 }} maxLines={1}>{issue.title}</ui.text>
+							<ui.text style={{ fontSize: 12, color: "text2", flexShrink: 0 }}>{me && issue.assigneeIds.includes(me) ? "Yours" : "Unassigned"}</ui.text>
+							<ui.icon icon="external" style={{ width: 14, height: 14, color: "text2", flexShrink: 0, opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }} />
 						</ui.pressable>
 					))}
 				</ui.box>
@@ -294,6 +295,7 @@ export function activate() {
 						<ui.text weight={600}>Flux</ui.text>
 						{c.state !== "unconfigured" && <ui.text tone="muted">{c.message || `Flux is ${c.state}.`}</ui.text>}
 						{(c.state === "unconfigured" || c.state === "unauthorized") && <ui.text tone="faint">Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux.</ui.text>}
+						{(c.state === "unconfigured" || c.state === "unauthorized") && <ui.link label="Open Flux settings" href="swarm://settings/flux/flux" />}
 					</ui.column>
 				);
 			}
@@ -318,7 +320,7 @@ export function activate() {
 						)}
 						{shown ? (
 							<ui.box style={{ gap: 12 }}>
-								<ui.pressable label="Back" onClick={() => void viewing.delete(thread)} style={{ flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", cursor: "pointer", hover: { color: "text" } }}>
+								<ui.pressable label="Back" onClick={() => void viewing.delete(thread)} style={{ flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
 									<ui.icon icon="chevron-right" style={{ width: 12, height: 12, transform: "rotate(180deg)" }} />
 									<ui.text style={{ fontSize: "small" }}>{attached.length ? "Back to " + attached[0]!.key : "Back"}</ui.text>
 								</ui.pressable>
@@ -342,7 +344,7 @@ export function activate() {
 									row={(n) => {
 										const i = open[n]!;
 										return (
-											<ui.pressable label={`Attach ${i.key} ${i.title}`} onClick={async () => void (await flux.attach(i.id, thread, false))} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
+											<ui.pressable label={`Attach ${i.key} ${i.title}`} onClick={() => void flux.attach(i.id, thread, false).then(() => ui.toast(`Attached to ${i.key}.`), (e: unknown) => ui.toast(`Couldn't attach ${i.key}: ${e instanceof Error ? e.message : String(e)}`))} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
 												<StatusIcon status={i.status} size={13} />
 												<ui.text style={{ fontSize: 12, color: "text2", width: 72 }}>{i.key}</ui.text>
 												<ui.text style={{ fontSize: 13, flex: 1, minWidth: 0 }} maxLines={1}>{i.title}</ui.text>

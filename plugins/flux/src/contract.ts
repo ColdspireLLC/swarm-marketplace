@@ -83,4 +83,6 @@ export interface IssuePatch {
 	parentId?: string | null;
 	projectId?: string;
 	position?: number;
+	/** A member who follows the issue from now on, as a commenter does. */
+	subscribe?: string;
 }
