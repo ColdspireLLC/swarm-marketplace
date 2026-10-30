@@ -1,9 +1,8 @@
-Your Flux issues, in Swarm, for you and for your agents.
+Your Flux issues in Swarm, for you and your agents.
 
-**For the agents**: `swarm flux` reads and updates issues, as bb's agents do with `bb flux`: list them, read one with its comments and images, create, comment, move it along. A skill tells them how, and to track planned work in Flux rather than in Markdown files.
+- **Board and list**: Flux's keys, palette and drag and drop, and each issue's page.
+- **Start from an issue**: Start agent hands it and its pictures to a new thread.
+- **Issues that keep up**: a thread keeps its issue current, and its merge request moves the status.
+- **Agents that use Flux**: `swarm flux` reads and updates issues, and a skill shows them how.
 
-**For a thread**: attach it to an issue (`swarm flux start ABC-12`, or its Flux panel) and its agent keeps the issue current. A thread started from an issue is linked both ways, and the issue's status follows the thread's merge request.
-
-**For you**: Flux's board and list, with its keys, its property palette and drag and drop; each issue's page with its description and comments in Swarm's editor, sub-issues filed in place, due dates on Swarm's own calendar, and Start agent, which hands the issue and its pictures to a new thread; your projects, made and managed as in Flux, each with its icon or emoji and color; issues to pick up on the new-thread page; changes made offline, sent when Flux is back; several Flux connections on its own page of Settings; and `::flux{key="ABC-12"}` showing an issue's card in a reply.
-
-It asks to reach your Flux (the address you set, on the internet or on your own network, as over Tailscale), to keep its copy of the workspace in its own storage, to start threads, to read Swarm's threads, so a thread's issue follows it, and to suggest issues when you mention one in the composer. Connect it on its page of Settings (Settings, Plugins, Flux) with your Flux's address and an API token (Flux: Settings, API tokens).
+It asks to reach your Flux, keep a copy of its workspace and work with your threads. Connect it in Settings, Plugins, Flux, with your Flux's address and an API token.
