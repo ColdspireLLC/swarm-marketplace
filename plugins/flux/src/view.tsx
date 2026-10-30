@@ -205,7 +205,8 @@ const chip: Style = {
 	height: 28, paddingLeft: 9, paddingRight: 10, gap: 6, borderRadius: "control", flexDirection: "row", alignItems: "center",
 	border: "1px solid border", backgroundColor: "raised", color: "text",
 	hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" }, checked: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" },
-	focus: { boxShadow: "0 0 0 2px color-mix(in srgb, accent 45%, transparent)" },
+	// No ring of its own: Swarm's shows as the keys reach it, not as a
+	// click or its menu closing leaves it the focus, as the other menus'.
 	transition: { duration: 120, colors: true },
 };
 const square: Style = { ...chip, width: 28, paddingLeft: 0, paddingRight: 0, justifyContent: "center" };
