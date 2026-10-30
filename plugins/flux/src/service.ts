@@ -106,7 +106,7 @@ export class Flux {
 	message = "";
 	client: FluxClient | null = null;
 	me: Account | null = null;
-	workspace: { id: string; name: string; slug: string } | null = null;
+	workspace: { id: string; name: string; slug: string; color?: string; imageUrl?: string | null } | null = null;
 	members: Member[] = [];
 	private replica: Replica;
 	/** The copy on disk, and what of it changed since it was last written. */
