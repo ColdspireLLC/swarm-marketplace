@@ -6,19 +6,19 @@
 // a reply shows an issue's card.
 import swarm, { call, hook, on, settings, tool, ui, type Child } from "swarm";
 import { imageOf } from "./src/pictures";
-import { DuePicker } from "./src/due";
-import { Confirm } from "./src/confirm";
-import { Palette } from "./src/palette";
+import { Confirm, closeConfirm } from "./src/confirm";
+import { Palette, closePalette } from "./src/palette";
 import { registerCli } from "./src/cli";
 import type { Issue } from "./src/contract";
-import { CommentEditor, DescriptionEditor, StartAgentDialog } from "./src/edit";
+import { CommentEditor, DescriptionEditor, StartAgentDialog, forgetStart, warmStart } from "./src/edit";
 import { CLOSED_STATUSES, PRIORITY_LEVEL, STATUS_LABELS, type Status } from "./src/flux";
 import { watchMergeRequests } from "./src/follow";
 import { hub } from "./src/hub";
 import { issueImages } from "./src/images";
-import { FluxPage, NewIssue, navItems, syncNav, unstarted } from "./src/page";
+import { FluxPage, NewIssue, closeCreate, navItems, syncNav, unstarted } from "./src/page";
 import { threadInstructions } from "./src/prompt";
 import { FluxSettings, refreshProjects } from "./src/settings";
+import { ProjectDialog, closeProject, openNewProject } from "./src/projects";
 import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
 import { Avatar, IssueView, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
@@ -170,22 +170,30 @@ export function activate() {
 		title: "Flux",
 		icon: "flux:mark",
 		fill: true,
+		// Its title bar is its own: the toolbar, or an issue's breadcrumb.
+		bare: true,
 		search: "Find a view",
 		items: navItems(flux),
 		render: ({ args }) => <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} image={imageOf} />,
 	});
 	syncNav(flux);
+	// Swarm's projects read ahead, for Start agent to open with one chosen.
+	warmStart();
 
-	ui.overlay({ id: "flux-palette", width: 480, bare: true, render: () => <Palette /> });
-	ui.overlay({ id: "flux-confirm", width: 400, bare: true, render: () => <Confirm /> });
-	ui.overlay({ id: "flux-due", title: "Due date", width: 300, bare: true, render: () => <DuePicker /> });
-	ui.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, render: () => <StartAgentDialog flux={flux} /> });
+	// Each forgets what it was open for as Swarm closes it: Escape, or a click outside.
+	ui.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: () => <Palette /> });
+	ui.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: () => <Confirm /> });
+	ui.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: () => <StartAgentDialog flux={flux} /> });
+	// New project, and a project's settings, as Flux's dialog.
+	ui.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: () => <ProjectDialog flux={flux} /> });
+	ui.command({ id: "flux-new-project", title: "New Flux project", detail: "Its name, key and icon, then its board", icon: "folder-add", run: () => openNewProject() });
 
 	ui.overlay({
 		id: "flux-new",
 		title: "New issue",
 		width: 672,
 		bare: true,
+		onClose: closeCreate,
 		render: () => <NewIssue flux={flux} />,
 	});
 

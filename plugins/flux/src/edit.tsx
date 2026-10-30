@@ -136,6 +136,25 @@ let busy = false;
 let swarmProject = "";
 let swarmProjects: { id: string; name: string }[] | null = null;
 
+/** Reads Swarm's projects ahead, so Start agent opens with its project chosen, not a moment after. */
+export function warmStart() {
+	void call("Projects", {}).then(
+		(list) => {
+			swarmProjects = list.map((p) => ({ id: p.id, name: p.name }));
+		},
+		() => {},
+	);
+}
+
+/** The Swarm project an issue's agent starts in, from what's known now: its Flux project's link, one of its name, the only one. */
+function knownProject(flux: Flux, issue: Issue): string {
+	const linked = flux.projects().find((project) => project.id === issue.projectId);
+	if (linked?.swarmProjectId) return linked.swarmProjectId;
+	const name = linked?.name.trim().toLowerCase();
+	const match = name ? swarmProjects?.find((project) => project.name.trim().toLowerCase() === name) : undefined;
+	return match?.id ?? (swarmProjects?.length === 1 ? swarmProjects[0]!.id : "");
+}
+
 /** Opens Start agent's dialog for the issue, as bb's: over whatever shows it. */
 export function startAgent(issueId: string) {
 	starting = issueId;
@@ -144,8 +163,13 @@ export function startAgent(issueId: string) {
 }
 
 function closeStart() {
-	starting = null;
+	forgetStart();
 	ui.hideOverlay("flux-start");
+}
+
+/** Forgets the issue Start agent was for, as Swarm closes its dialog. */
+export function forgetStart() {
+	starting = null;
 }
 
 /** Start agent's dialog: the issue it's for, what starting does, Swarm's pickers and the issue's prompt. */
@@ -162,7 +186,8 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 		const start = startPrompt(flux.detail(issue.id), flux.baseUrl);
 		prompt = start.prompt;
 		imageIds = start.imageIds;
-		swarmProject = "";
+		// Chosen as it opens, from what's read already; read again behind it.
+		swarmProject = knownProject(flux, issue);
 		void loadProjects(flux, issue);
 	}
 	const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
@@ -170,7 +195,7 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 	const moves = issue.status === "backlog" || issue.status === "todo";
 	const images = imageIds.length;
 	return (
-		<ui.box label={`Start an agent on ${issue.key}`} keys={["Escape"]} onKeyDown={closeStart} style={{ position: "relative", gap: 14, padding: 20 }}>
+		<ui.box label={`Start an agent on ${issue.key}`} style={{ position: "relative", gap: 14, padding: 20 }}>
 			<ui.iconButton icon="x" label="Close" style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28 }} onClick={closeStart} />
 			<ui.box style={{ gap: 6 }}>
 				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }}>

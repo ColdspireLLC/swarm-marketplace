@@ -6,8 +6,7 @@
 import { ui, type Child } from "swarm";
 import { CLOSED_STATUSES, PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS } from "./flux";
 import type { Issue, IssuePatch } from "./contract";
-import { dueChoices } from "./dates";
-import { openDuePicker } from "./due";
+import { dueChoices, dueHint, dueLabel, isoDay, parseDue } from "./dates";
 import { hub } from "./hub";
 import { navMark } from "./marks";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
@@ -38,8 +37,13 @@ export function openPalette(kind: PaletteKind, ids: string[], apply: (id: string
 }
 
 function close() {
-	open = null;
+	closePalette();
 	ui.hideOverlay("flux-palette");
+}
+
+/** Forgets what the palette was open for, as Swarm closes it. */
+export function closePalette() {
+	open = null;
 }
 
 interface Row {
@@ -89,10 +93,12 @@ function rows(issues: Issue[]): Row[] {
 		case "project":
 			return flux.projects().map((p) => ({ key: p.id, label: p.name, detail: p.key, mark: navMark(p), on: all((i) => i.projectId === p.id), run: () => each(() => ({ projectId: p.id })) }));
 		case "due": {
-			const first = issues[0]!;
+			// A date typed, as Flux reads it (2 weeks, Feb 9, next friday), first.
+			const typed = parseDue(search);
+			const day = typed ? isoDay(typed) : null;
 			return [
+				...(typed && day ? [{ key: "typed", label: `Due ${dueLabel(day)}`, detail: dueHint(typed), mark: { icon: "calendar" }, on: all((i) => i.dueDate === day), run: () => each(() => ({ dueDate: day })) }] : []),
 				...dueChoices().map((c) => ({ key: c.label, label: c.label, detail: c.hint, mark: { icon: "calendar" }, on: all((i) => i.dueDate === c.value), run: () => each(() => ({ dueDate: c.value })) })),
-				{ key: "custom", label: "Custom…", mark: { icon: "calendar" }, on: false, run: () => openDuePicker(first.dueDate, (dueDate) => each(() => ({ dueDate }))) },
 				...(issues.some((i) => i.dueDate) ? [{ key: "none", label: "No due date", mark: { icon: "x" }, on: false, run: () => each(() => ({ dueDate: null })) }] : []),
 			];
 		}
@@ -118,7 +124,7 @@ export function Palette() {
 	// Enter can come before the render of the last keys typed.
 	const filtered = () => {
 		const needle = search.trim().toLowerCase();
-		return rows(issues).filter((r) => r.key === "create" || !needle || r.label.toLowerCase().includes(needle) || (r.detail ?? "").toLowerCase().includes(needle)).slice(0, 50);
+		return rows(issues).filter((r) => r.key === "create" || r.key === "typed" || !needle || r.label.toLowerCase().includes(needle) || (r.detail ?? "").toLowerCase().includes(needle)).slice(0, 50);
 	};
 	const needle = search.trim().toLowerCase();
 	const found = filtered();
@@ -132,7 +138,8 @@ export function Palette() {
 		close();
 		row.run();
 	};
-	const keys = ["ArrowUp", "ArrowDown", "Enter", "Escape", ...(needle ? [] : ["1", "2", "3", "4", "5", "6", "7", "8", "9"])];
+	// Escape is Swarm's, which closes it (closePalette).
+	const keys = ["ArrowUp", "ArrowDown", "Enter", ...(needle ? [] : ["1", "2", "3", "4", "5", "6", "7", "8", "9"])];
 	const subject = issues.length === 1 ? `${issues[0]!.key} ${issues[0]!.title}` : `${issues.length} issues`;
 	return (
 		<ui.box
@@ -141,7 +148,6 @@ export function Palette() {
 				if (k.key === "ArrowUp") sel = (sel - 1 + found.length) % Math.max(found.length, 1);
 				else if (k.key === "ArrowDown") sel = (sel + 1) % Math.max(found.length, 1);
 				else if (k.key === "Enter") choose(sel);
-				else if (k.key === "Escape") close();
 				else if (/^[1-9]$/.test(k.key)) choose(Number(k.key) - 1);
 			}}
 			style={{ width: 480, maxHeight: 460, padding: 8, gap: 4 }}
@@ -170,7 +176,8 @@ export function Palette() {
 /** A row's mark: its picture, its letter on its color, or its icon. */
 function mark(m: Record<string, unknown>): Child {
 	const box = { width: 16, height: 16, flexShrink: 0 } as const;
-	if (typeof m.mark === "string" || m.mark instanceof Uint8Array) return <ui.image src={m.mark} alt="" style={box} />;
+	// A member's picture is rounded as their avatar; a mark drawn for it, an SVG, is as it is.
+	if (typeof m.mark === "string" || m.mark instanceof Uint8Array) return <ui.image src={m.mark} alt="" style={typeof m.initial === "string" ? { ...box, borderRadius: 4, overflow: "hidden", objectFit: "cover" } : box} />;
 	if (typeof m.initial === "string") {
 		return (
 			<ui.box style={{ ...box, borderRadius: 4, backgroundColor: (m.tint as string) as never, alignItems: "center", justifyContent: "center" }}>

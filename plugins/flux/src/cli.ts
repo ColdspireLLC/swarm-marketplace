@@ -4,6 +4,7 @@
 // (io.thread): an issue's key defaults to the thread's issue, a comment is
 // its agent's, and start attaches the thread.
 import { call, command, type CommandIO } from "swarm";
+import { agentLogo } from "./agentlogos";
 import type { CommentAgent } from "./agent";
 import { describe } from "./client";
 import type { Issue, IssuePatch, Label } from "./contract";
@@ -92,7 +93,8 @@ async function context(io: CommandIO): Promise<Context> {
 		return {
 			thread: io.thread,
 			project: d.info.project,
-			agent: { name: names[d.info.provider] ?? d.info.provider, provider: d.info.provider, threadId: io.thread },
+			// Its mark too, so Flux, and bb, draw the agent as Swarm does.
+			agent: { name: names[d.info.provider] ?? d.info.provider, provider: d.info.provider, threadId: io.thread, ...agentLogo(d.info.provider) },
 		};
 	} catch {
 		return { thread: io.thread, project: "", agent: null };

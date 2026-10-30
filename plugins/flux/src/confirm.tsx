@@ -1,6 +1,6 @@
 // Flux's "Delete this issue?": a question before what can't be undone,
-// with Cancel and the danger's own button, Delete. Escape and Cancel
-// keep it.
+// with Cancel and the danger's own button, Delete. Escape, a click
+// outside and Cancel keep it.
 import { ui } from "swarm";
 
 let asking: { title: string; text: string; action: string; run: () => unknown } | null = null;
@@ -12,8 +12,13 @@ export function confirm(title: string, text: string, action: string, run: () => 
 }
 
 function close() {
-	asking = null;
+	closeConfirm();
 	ui.hideOverlay("flux-confirm");
+}
+
+/** Forgets the question, as Swarm closes its dialog. */
+export function closeConfirm() {
+	asking = null;
 }
 
 export function Confirm() {
