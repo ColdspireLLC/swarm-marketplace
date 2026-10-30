@@ -205,12 +205,12 @@ test("Flux's page of Settings connects, adds another, switches and disconnects",
 	await w.resize(1280, 900);
 	// Swarm's own form draws none of the settings the page keeps.
 	await w.settings("Plugins");
-	// Its row, by its version, as the plugin is named in the sidebar too.
-	await w.click(manifest.version);
-	await w.see("Its page of Settings");
+	// Its card, by what it says, as the plugin is named on the rail too.
+	await w.click(manifest.description);
+	await w.see("Permissions");
 	expect(await w.has("Flux URL for Flux")).toBe(false);
 	expect(await w.has("More Fluxes for Flux")).toBe(false);
-	await w.click("Open Flux");
+	await w.click("Flux settings");
 	await w.see("Connect Flux");
 	await w.screenshot("flux-settings-empty");
 	await w.click("https://flux.example.com");
