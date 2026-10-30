@@ -17,12 +17,12 @@ stream); the board and the issue page; descriptions and comments in the
 editor Swarm draws; several Flux connections; uploads. `swarm flux`
 takes `--flux NAME` for one of them. A thread started on an issue is
 linked both ways, and the issue's status follows that thread's merge
-request.
+request. The sidebar's projects drag into a new order, as Flux's.
 
 Its page of Settings (Settings, Plugins, Flux; or Flux settings… in the
 board's Flux menu) connects it: a Flux's URL and an API token, tried with
 Flux before they're kept, more Fluxes beside it, Resync and Disconnect,
-and the Flux projects: each one's icon, its order, Delete, and which
+and the Flux projects: each one's icon, Delete, and which
 Swarm project its agents work in. New project (there, in the board's
 project menu, or the palette) makes one as Flux's own dialog does: its
 name, a key from the name until one's typed, and an icon in one of

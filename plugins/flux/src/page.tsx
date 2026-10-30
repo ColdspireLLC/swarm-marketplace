@@ -11,7 +11,7 @@ import type { Flux } from "./service";
 import { threadInfo } from "./threads";
 import { MARK_HEX, navMark } from "./marks";
 import { pictureBytes } from "./pictures";
-import { projectAt, projectMenuItems } from "./projects";
+import { confirmDelete, duplicateProject, openNewProject, openProjectSettings, projectAt, projectMenuItems } from "./projects";
 import { confirm } from "./confirm";
 import { openPalette, type PaletteKind } from "./palette";
 import { dayDelta, dueChoices, dueLabel } from "./dates";
@@ -97,7 +97,7 @@ function openList(path: string) {
 	ui.navTo("flux", path);
 }
 
-export function navItems(flux: Flux): { id: string; title: string; icon?: IconName; path?: string; section?: string; badge?: string; mark?: string | Uint8Array; initial?: string; tint?: string }[] {
+export function navItems(flux: Flux): { id: string; title: string; icon?: IconName; path?: string; section?: string; badge?: string; mark?: string | Uint8Array; initial?: string; tint?: string; movable?: boolean }[] {
 	const open = flux.issues().filter((issue) => !CLOSED_STATUSES.has(issue.status));
 	const count = (n: number) => (n ? String(n) : undefined);
 	return [
@@ -109,6 +109,7 @@ export function navItems(flux: Flux): { id: string; title: string; icon?: IconNa
 			path: `p/${project.key}`,
 			section: "Projects",
 			badge: count(open.filter((issue) => issue.projectId === project.id).length),
+			movable: true,
 		})),
 	];
 }
@@ -135,8 +136,12 @@ function parsePath(path: string): { kind: "list"; project: string | null } | { k
 	return { kind: "list", project: null };
 }
 
-export function FluxPage({ path, slot, image }: { path: string; slot: string; image: ImageOf }) {
+export function FluxPage({ path, slot, item, section, image }: { path: string; slot: string; item?: string; section?: string; image: ImageOf }) {
 	const flux = hub.active;
+	if (!slot) shownPath = path;
+	// The sidebar's: New project on its heading, a project's right-click.
+	if (slot === "section") return section === "Projects" ? <NewProjectButton /> : null;
+	if (slot === "item") return <SidebarProjectMenu flux={flux} project={flux.projects().find((p) => "p-" + p.id === item)} />;
 	const route = parsePath(path);
 	const connection = flux.connection();
 	const unset = connection.state === "unconfigured" || connection.state === "unauthorized";
@@ -288,6 +293,39 @@ export function SyncBars({ flux }: { flux: Flux }) {
 				</ui.box>
 			) : null}
 		</ui.box>
+	);
+}
+
+/** The path the page shows, for what's drawn apart from it. */
+let shownPath = "";
+
+/** New project, at the end of the sidebar's Projects heading, as Flux's. */
+function NewProjectButton() {
+	return (
+		<ui.pressable label="New project" tooltip="New project" onClick={openNewProject} style={{ width: 20, height: 20, marginTop: -4, marginBottom: -4, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text3", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }}>
+			<ui.icon icon="plus" style={{ width: 13, height: 13, color: "currentColor" }} />
+		</ui.pressable>
+	);
+}
+
+/** A project's right-click in the sidebar, as Flux's. */
+function SidebarProjectMenu({ flux, project }: { flux: Flux; project: Project | undefined }) {
+	if (!project) return null;
+	// On its board, the board follows it: to a new key, or away as it goes.
+	const route = parsePath(shownPath);
+	const here = route.kind === "list" && route.project === project.key;
+	return (
+		<ui.menu context label={`${project.name} actions`}>
+			{() => [
+				<ui.item key="new" icon="plus" onClick={() => openCreate(flux, project.id)}>New issue</ui.item>,
+				<ui.separator key="sep1" />,
+				<ui.item key="edit" icon="pencil" onClick={() => openProjectSettings(project, here)}>Edit</ui.item>,
+				<ui.item key="link" icon="external" onClick={() => { ui.copy(flux.projectUrl(project)); ui.toast(`Copied ${project.name}'s link.`); }}>Copy link</ui.item>,
+				<ui.item key="dup" icon="copy" onClick={() => void duplicateProject(flux, project)}>Duplicate</ui.item>,
+				<ui.separator key="sep2" />,
+				<ui.item key="del" icon="trash" danger onClick={() => confirmDelete(flux, project, here ? () => openList("") : undefined)}>Delete</ui.item>,
+			]}
+		</ui.menu>
 	);
 }
 

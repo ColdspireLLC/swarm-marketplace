@@ -802,6 +802,10 @@ export class Flux {
 		return `${this.baseUrl}/issue/${issue.key}`;
 	}
 
+	projectUrl(project: Project): string {
+		return `${this.baseUrl}/p/${project.key}`;
+	}
+
 	private mentionTargets() {
 		return [...this.projects().map((p) => ({ id: `project:${p.id}`, username: p.key, name: p.name })), ...this.members];
 	}
@@ -859,6 +863,8 @@ export class Flux {
 					this.replica.items[w.itemId] = { id: w.itemId, version: (had?.version ?? -1) + 1, createdAt: had?.createdAt ?? now, updatedAt: now, body: w.body };
 				}
 			}
+			// Shown at once, as the sidebar's order is: Flux answers in its own time.
+			this.onChange();
 			const ops: SyncOp[] = writes.map((w) =>
 				w.body === null
 					? { type: "delete", id: crypto.randomUUID(), itemId: w.itemId, baseVersion: w.baseVersion }
@@ -1157,13 +1163,13 @@ export class Flux {
 	 * name's, the next free; Flux's folder, gray, for a mark; numbered from
 	 * 1, and after the others. It shows at once, and waits for Flux.
 	 */
-	async createProject(input: { name: string; key?: string; mark?: ProjectMarkValue }): Promise<Project> {
+	async createProject(input: { name: string; key?: string; keyFrom?: string; mark?: ProjectMarkValue }): Promise<Project> {
 		const name = input.name.trim().slice(0, PROJECT_NAME_MAX);
 		if (!name) throw new Error("Give the project a name.");
 		const typed = normalizeProjectKey(input.key ?? "");
 		const problem = typed ? this.keyProblem(typed) : null;
 		if (problem) throw new Error(`${problem}.`);
-		const key = uniqueProjectKey(this.keyed(), typed || name);
+		const key = uniqueProjectKey(this.keyed(), typed || input.keyFrom || name);
 		const id = crypto.randomUUID();
 		const body = { type: "project", key, aliases: [], name, mark: input.mark ?? { type: "icon", value: "folder", color: "gray" }, nextNumber: 1, position: this.projects().length };
 		await this.change(`Project “${name}”`, { type: "project", id, body });
