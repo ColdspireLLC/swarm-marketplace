@@ -24,6 +24,28 @@
           "range": "^1.0.0",
           "tagPrefix": "flux/"
         }
+      },
+      "adds": [
+        "App page",
+        "Side panel",
+        "Agent skill"
+      ],
+      "permissions": {
+        "required": [
+          "api:read",
+          "storage",
+          "network:*"
+        ],
+        "api": [
+          "read"
+        ],
+        "storage": true,
+        "network": [
+          "*"
+        ],
+        "localNetwork": true,
+        "threads": true,
+        "mentions": true
       }
     }
   ]
