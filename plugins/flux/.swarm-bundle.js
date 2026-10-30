@@ -79997,6 +79997,7 @@ function ProjectMark({ project, size: size3 = 14 }) {
   if (glyph) return /* @__PURE__ */ jsx4(ui5.image, { src: glyph, alt: "", tooltip: project.name, style: box });
   return /* @__PURE__ */ jsx4(ui5.box, { style: { width: size3, height: size3, borderRadius: 3, backgroundColor: project ? colorOf[project.color] : "text3", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 700 }, children: (project?.key ?? "?").slice(0, 1) }) });
 }
+var RAISED_HOVER = "color-mix(in srgb, text 8%, raised)";
 var chip = {
   height: 28,
   paddingLeft: 9,
@@ -80008,8 +80009,8 @@ var chip = {
   border: "1px solid border",
   backgroundColor: "raised",
   color: "text",
-  hover: { backgroundColor: "hover" },
-  checked: { backgroundColor: "hover", borderColor: "borderStrong" },
+  hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" },
+  checked: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" },
   focus: { boxShadow: "0 0 0 2px color-mix(in srgb, accent 45%, transparent)" },
   transition: { duration: 120, colors: true }
 };
@@ -81200,8 +81201,8 @@ function MarkPicker({ value, label, size: size3 = 28, bordered = false, onChange
         flexShrink: 0,
         borderRadius: "control",
         ...bordered ? { border: "1px solid border", backgroundColor: "raised" } : {},
-        hover: { backgroundColor: "hover" },
-        checked: { backgroundColor: "hover" },
+        hover: { backgroundColor: bordered ? RAISED_HOVER : "hover" },
+        checked: { backgroundColor: bordered ? RAISED_HOVER : "hover" },
         transition: { duration: 110, colors: true }
       }
     }
@@ -82353,8 +82354,8 @@ function SelectionBar({ flux: flux2 }) {
   };
   return /* @__PURE__ */ jsx9(ui11.box, { style: { position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }, children: /* @__PURE__ */ jsxs8(ui11.box, { label: "Selected issues", style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }, children: [
     /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }, children: `${issues.length} selected` }),
-    /* @__PURE__ */ jsx9(ui11.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
-    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }, children: [
+    /* @__PURE__ */ jsx9(ui11.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
+    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: [
       /* @__PURE__ */ jsx9(ui11.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
       /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
       () => [
@@ -82370,7 +82371,7 @@ function SelectionBar({ flux: flux2 }) {
         /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, ids, clear), children: "Delete" }, "del")
       ]
     ] }),
-    /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full" } })
+    /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER } } })
   ] }) }, "selection-bar");
 }
 function assignToMe(flux2, issues) {
@@ -83446,7 +83447,7 @@ function issueCard(issue2) {
   const parent = issue2.parentId ? flux.issue(issue2.parentId) : void 0;
   const labels = flux.labels().filter((label) => issue2.labelIds.includes(label.id));
   const chip2 = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" };
-  return /* @__PURE__ */ jsxs10(ui13.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui13.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512 }, children: [
+  return /* @__PURE__ */ jsxs10(ui13.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui13.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, cursor: "pointer", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
     /* @__PURE__ */ jsxs10(ui13.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
       /* @__PURE__ */ jsx11(ProjectMark, { project, size: 13 }),
       parent ? /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,

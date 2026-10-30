@@ -17,7 +17,7 @@ import { openPalette, type PaletteKind } from "./palette";
 import { dayDelta, dueChoices, dueLabel } from "./dates";
 import { dueItems } from "./due";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
-import { AgentAvatar, Avatar, FluxMark, IssuesArt, Markdown, TrayArt, Unassigned, PriorityIcon, ProjectMark, Properties, StatusIcon, colorOf, type MentionOf } from "./view";
+import { AgentAvatar, Avatar, RAISED_HOVER, FluxMark, IssuesArt, Markdown, TrayArt, Unassigned, PriorityIcon, ProjectMark, Properties, StatusIcon, colorOf, type MentionOf } from "./view";
 import { clearDraft, drafted, editDraft } from "./drafts";
 import type { ImageOf } from "./view";
 import {
@@ -1020,10 +1020,10 @@ function SelectionBar({ flux }: { flux: Flux }) {
 		<ui.box key="selection-bar" style={{ position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }}>
 			<ui.box label="Selected issues" style={{ flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }}>
 				<ui.text style={{ fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }}>{`${issues.length} selected`}</ui.text>
-				<ui.pressable label="Move to…" tooltip="Change status (S)" onClick={() => openPalette("status", ids, (id, patch) => apply(flux, id, patch))} style={{ ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }}>
+				<ui.pressable label="Move to…" tooltip="Change status (S)" onClick={() => openPalette("status", ids, (id, patch) => apply(flux, id, patch))} style={{ ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }}>
 					<ui.text style={{ fontSize: 13, fontWeight: 500 }}>Move to…</ui.text>
 				</ui.pressable>
-				<ui.menu label="Actions" style={{ ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }}>
+				<ui.menu label="Actions" style={{ ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }}>
 					<ui.icon icon="command" style={{ width: 13, height: 13, color: "text2" }} />
 					<ui.text style={{ fontSize: 13, fontWeight: 500 }}>Actions</ui.text>
 					{() => [
@@ -1037,7 +1037,7 @@ function SelectionBar({ flux }: { flux: Flux }) {
 						<ui.item key="del" icon="trash" danger onClick={() => askDelete(flux, ids, clear)}>Delete</ui.item>,
 					]}
 				</ui.menu>
-				<ui.iconButton icon="x" label="Clear selection" tooltip="Clear selection (Esc)" onClick={clear} style={{ width: 28, height: 28, borderRadius: "full" }} />
+				<ui.iconButton icon="x" label="Clear selection" tooltip="Clear selection (Esc)" onClick={clear} style={{ width: 28, height: 28, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER } }} />
 			</ui.box>
 		</ui.box>
 	);

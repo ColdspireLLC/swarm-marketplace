@@ -194,10 +194,17 @@ export function ProjectMark({ project, size = 14 }: { project: Project | undefin
 }
 
 /** A property's chip, as bb's, in Swarm's look: it opens Swarm's menu of the choices. */
+/**
+ * Under the pointer, a control on the raised surface: a little of the
+ * text's color over it. The theme's hover is for the page, and on the
+ * raised surface, already as light in the dark theme, it doesn't show.
+ */
+export const RAISED_HOVER = "color-mix(in srgb, text 8%, raised)";
+
 const chip: Style = {
 	height: 28, paddingLeft: 9, paddingRight: 10, gap: 6, borderRadius: "control", flexDirection: "row", alignItems: "center",
 	border: "1px solid border", backgroundColor: "raised", color: "text",
-	hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover", borderColor: "borderStrong" },
+	hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" }, checked: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" },
 	focus: { boxShadow: "0 0 0 2px color-mix(in srgb, accent 45%, transparent)" },
 	transition: { duration: 120, colors: true },
 };

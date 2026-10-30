@@ -6,6 +6,7 @@
 // alias; the order, and Delete, which Flux does to the project alone.
 // From the board's project menu, the palette, and Flux's page of
 // Settings.
+import { RAISED_HOVER } from "./view";
 import { ui, type Child, type UIMark } from "swarm";
 import type { Project } from "./contract";
 import { confirm } from "./confirm";
@@ -87,7 +88,7 @@ export function MarkPicker({ value, label, size = 28, bordered = false, onChange
 			style={{
 				width: size, height: size, flexShrink: 0, borderRadius: "control",
 				...(bordered ? { border: "1px solid border", backgroundColor: "raised" } : {}),
-				hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" },
+				hover: { backgroundColor: bordered ? RAISED_HOVER : "hover" }, checked: { backgroundColor: bordered ? RAISED_HOVER : "hover" },
 				transition: { duration: 110, colors: true },
 			}}
 		/>

@@ -21,7 +21,7 @@ import { FluxSettings, refreshProjects } from "./src/settings";
 import { ProjectDialog, closeProject, openNewProject } from "./src/projects";
 import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
-import { Avatar, IssueView, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
+import { Avatar, IssueView, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
 
 // The page and the commands use whichever Flux is active.
 const flux = new Proxy({} as Flux, {
@@ -108,7 +108,7 @@ function issueCard(issue: Issue): Child {
 	const labels = flux.labels().filter((label) => issue.labelIds.includes(label.id));
 	const chip = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" } as const;
 	return (
-		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512 }}>
+		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, cursor: "pointer", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }}>
 			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
 				<ProjectMark project={project} size={13} />
 				{parent ? <ui.text style={{ fontSize: 11, color: "text3" }}>{`${parent.key} ›`}</ui.text> : null}
