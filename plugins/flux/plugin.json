@@ -2,7 +2,7 @@
   "$schema": "./plugin.schema.json",
   "id": "flux",
   "name": "Flux",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Issues from a Flux tracker: agents read and update them with swarm flux, a thread attached to an issue keeps it current, and each thread's Flux panel attaches one. Ported from bb's Flux plugin.",
   "icon": "icon.svg",
   "main": "main.tsx",

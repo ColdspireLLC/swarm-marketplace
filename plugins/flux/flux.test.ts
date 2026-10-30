@@ -17,7 +17,7 @@ interface Stored {
 	body: Record<string, unknown> | null;
 }
 
-async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; long?: boolean; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean; crowd?: boolean } = {}) {
+async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; long?: boolean; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean; crowd?: boolean; long_name?: boolean } = {}) {
 	let version = 0;
 	const items = new Map<string, Stored>();
 	const put = (id: string, body: Record<string, unknown> | null) => {
@@ -60,6 +60,10 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 			put(`k${n}`, { type: "issue", projectId: "p1", number: 200 + n, title: `Crowded issue ${n}`, description: "", status: "todo", priority: "low", assigneeIds: ["u1", "u2", `u${3 + (n % 8)}`], labelIds: [0, 7, 14, 21].map((k) => `lc${(n + k) % 30}`), subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 100 + n });
 		}
 	}
+	if (opts.long_name) {
+		put("p6", { type: "project", key: "CON", name: "Conduish desktop", mark: { type: "icon", value: "console", color: "green" }, position: 5, nextNumber: 2 });
+		put("cd1", { type: "issue", projectId: "p6", number: 1, title: "Its window remembers its size", description: "", status: "todo", priority: "medium", assigneeIds: ["u1"], labelIds: [], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 80 });
+	}
 	if (opts.marks) {
 		// A project with no emoji or icon: its key's letter on its color.
 		put("p3", { type: "project", key: "NUD", name: "Nudge", mark: { type: "color", color: "green" }, position: 2, nextNumber: 2 });
@@ -94,7 +98,7 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 		if (req.headers["authorization"] !== "Bearer tok") return { status: 401, json: { message: "no" } };
 		const path = req.path;
 		if (path === "/user") return { json: ME };
-		if (path === "/workspace") return { json: { id: opts.workspace ? "w-" + opts.workspace.toLowerCase() : "w1", name: opts.workspace ?? "Coldspire", slug: (opts.workspace ?? "coldspire").toLowerCase(), latestVersion: version } };
+		if (path === "/workspace") return { json: { id: opts.workspace ? "w-" + opts.workspace.toLowerCase() : "w1", name: opts.workspace ?? "Coldspire", slug: (opts.workspace ?? "coldspire").toLowerCase(), color: "indigo", latestVersion: version } };
 		if (path === "/workspace/members") return { json: { members: [ME, { ...ME, id: "u2", username: "bob", name: "Bob", email: "bob@example.com", avatarUrl: opts.marks ? `/assets/${ASSET}` : null }, ...crew] } };
 		if (path.startsWith("/sync/pull/")) {
 			// Pages of the limit asked, as Flux's (200 when none, 1000 at most).
@@ -279,7 +283,8 @@ test("Where agents work links a Flux project to a Swarm project", async (t) => {
 	// The board's Flux menu opens its page of Settings.
 	await w.click("Flux");
 	await w.see("Fix the login redirect");
-	await w.click("Coldspire");
+	// Which Flux is beside its name in the sidebar.
+	await w.click("Workspace: Coldspire");
 	await w.click("Flux settings…");
 	await w.see("Where agents work");
 	await w.click("Swarm project for Alpha: Not linked");
@@ -347,12 +352,6 @@ test("an empty board shows Flux's art", async (t) => {
 	await w.see("Nothing in progress");
 	await w.screenshot("flux-empty");
 	// The project menu's trigger keeps the ghost's background while it's open.
-	await w.click("Coldspire");
-	await w.see("Flux settings…");
-	await w.screenshot("flux-menu-open");
-	await w.key("Escape");
-	await w.gone("Flux settings…");
-	// So does the project menu's.
 	await w.click("Project: All projects");
 	await w.see("Alpha");
 	await w.screenshot("flux-project-menu-open");
@@ -1035,7 +1034,7 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.see("All projects");
 	// The scopes are the title bar's, which can draw a moment after the board.
 	await w.see("My issues");
-	await w.see("Coldspire");
+	await w.see("New issue");
 	await w.screenshot("flux-board");
 	await w.dark(true);
 	await w.screenshot("flux-board-dark");
@@ -1376,7 +1375,8 @@ test("Flux's Settings list the projects to make, mark, reorder and delete", asyn
 	await w.resize(1280, 900);
 	await w.click("Flux");
 	await w.see("Fix the login redirect");
-	await w.click("Coldspire");
+	// Which Flux is beside its name in the sidebar.
+	await w.click("Workspace: Coldspire");
 	await w.click("Flux settings…");
 	await w.see("Where agents work");
 	await w.see("New project");
@@ -1438,4 +1438,34 @@ test("a project made offline waits, and goes when Flux is back", async (t) => {
 	await w.click("Retry now");
 	await t.until(() => [...items.values()].some((it) => it.body?.type === "project" && it.body.name === "Offline" && it.body.key === "OFFLI"), { what: "the project sent" });
 	await w.gone("waiting to send");
+});
+
+test("the title bar gives way as it narrows: the filter, New issue's name, the scopes, the project's name last; nothing cut short or under another", async (t) => {
+	await flux(t, { long_name: true });
+	const w = await t.window();
+	await w.resize(1440, 600);
+	await w.click("Flux");
+	await w.click("Conduish desktop");
+	await w.see("Its window remembers its size");
+	for (const width of [1440, 1180, 1100, 1000, 940, 900, 780, 640]) {
+		await w.resize(width, 600);
+		await t.sleep(150);
+		await w.screenshot(`flux-bar-${width}`);
+		// Always there whole: New issue, Display, the project menu, which has the workspace.
+		await w.see("New issue");
+		await w.see("Display");
+		await w.see("Project: Conduish desktop");
+	}
+	// Which Flux is beside its name in the sidebar.
+	await w.resize(1440, 600);
+	await w.click("Workspace: Coldspire");
+	await w.see("Flux settings…");
+	await t.sleep(200);
+	await w.screenshot("flux-bar-workspace");
+	await w.key("Escape");
+	await w.gone("Flux settings…");
+	await w.screenshot("flux-side-workspace");
+	await w.dark(true);
+	await w.screenshot("flux-side-workspace-dark");
+	await w.dark(false);
 });

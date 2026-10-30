@@ -38088,6 +38088,9 @@ var workspaceSchema = external_exports.object({
   id: external_exports.string(),
   name: external_exports.string(),
   slug: external_exports.string(),
+  /** Its mark's color, and its logo, a Flux asset, where it has one. */
+  color: external_exports.string().optional(),
+  imageUrl: external_exports.string().nullable().optional(),
   latestVersion: external_exports.number()
 });
 var membersSchema = external_exports.object({
@@ -81686,6 +81689,7 @@ function FluxPage({ path, slot, image }) {
   const connection = flux2.connection();
   const unset = connection.state === "unconfigured" || connection.state === "unauthorized";
   const cantLoad = (connection.state === "error" || connection.state === "offline") && connection.issueCount === 0;
+  if (slot === "side") return unset ? null : /* @__PURE__ */ jsx9(WorkspaceSwitcher, {});
   if (slot === "head") {
     if (unset || cantLoad) return /* @__PURE__ */ jsx9(HeadTitle, {});
     if (route.kind === "issue") return /* @__PURE__ */ jsx9(IssueHead, { flux: flux2, issueKey: route.key });
@@ -81803,10 +81807,8 @@ function HeadTitle() {
 }
 function BarEnd({ onCreate }) {
   return /* @__PURE__ */ jsx9(Fragment2, { children: [
-    /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 2, marginRight: 2, backgroundColor: "border", media: [{ minWidth: WIDE, style: { display: "flex" } }] } }, "sep"),
-    /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(Connections, {}) }, "flux"),
-    /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", media: [{ minWidth: SM, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(ui11.button, { kind: "primary", size: "sm", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) }, "new"),
-    /* @__PURE__ */ jsx9(ui11.box, { style: { media: [{ minWidth: SM, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "plus", label: "New issue", onClick: onCreate, style: { width: 28, height: 28 } }) }, "new-narrow")
+    /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(ui11.button, { kind: "primary", size: "sm", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) }, "new"),
+    /* @__PURE__ */ jsx9(ui11.box, { style: { flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui11.pressable, { label: "New issue", tooltip: "New issue (C)", onClick: onCreate, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", backgroundColor: "accent", transition: { duration: 120, colors: true }, hover: { backgroundColor: "color-mix(in srgb, text 12%, accent)" } }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "plus", style: { width: 14, height: 14, color: "accentText" } }) }) }, "new-narrow")
   ] });
 }
 var searching = false;
@@ -81828,7 +81830,7 @@ function Toolbar({ flux: flux2, project, scope, options }) {
       }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14 }, children: "Cancel" }) })
     ] }) : null,
     /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, flexShrink: 1 }, children: [
+      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
         project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx9(FluxMark, { size: 16 }),
         /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
         /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
@@ -81836,15 +81838,15 @@ function Toolbar({ flux: flux2, project, scope, options }) {
         projects.map((item) => /* @__PURE__ */ jsx9(ui11.item, { ...navMark(item), checked: item.key === project?.key, badge: String(flux2.issues().filter((i2) => i2.projectId === item.id && !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(`p/${item.key}`), children: item.name }, item.id)),
         projectMenuItems(project)
       ] }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: SM, style: { display: "flex" } }] } }),
-      /* @__PURE__ */ jsx9(ui11.box, { label: "Issues", style: { display: "none", flexDirection: "row", gap: 2, alignItems: "center", media: [{ minWidth: SM, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui11.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage4.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { media: [{ minWidth: SM, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui11.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
+      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] } }),
+      /* @__PURE__ */ jsx9(ui11.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui11.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage4.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
+      /* @__PURE__ */ jsx9(ui11.box, { style: { flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui11.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
         /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
         /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
         SCOPES.map((item) => /* @__PURE__ */ jsx9(ui11.item, { checked: scope === item, onClick: () => storage4.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
       ] }) }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
+      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, minWidth: 8 } }),
+      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
       /* @__PURE__ */ jsx9(ui11.pressable, { label: "Filter issues", tooltip: "Filter issues (/)", onClick: () => {
         searching = true;
       }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "search", style: { width: 14, height: 14, color: "currentColor" } }) }),
@@ -81858,7 +81860,9 @@ function Toolbar({ flux: flux2, project, scope, options }) {
     ] })
   ] });
 }
-var WIDE = 704;
+var WIDE = 860;
+var NEW_AT = 680;
+var TABS_AT = 615;
 function customized(options) {
   const d = DEFAULT_DISPLAY;
   return options.grouping !== d.grouping || options.ordering !== d.ordering || options.showClosed !== d.showClosed || options.showEmptyGroups !== d.showEmptyGroups || options.showSubIssues !== d.showSubIssues || options.properties.length !== d.properties.length || options.properties.some((p) => !d.properties.includes(p));
@@ -82343,34 +82347,31 @@ function clickIssue(issue2, event) {
 }
 function SelectionBar({ flux: flux2 }) {
   const issues = flux2.issues().filter((issue2) => selected.has(issue2.id));
+  const ids = issues.map((issue2) => issue2.id);
   const clear = () => {
     selected = /* @__PURE__ */ new Set();
   };
-  const status = issues.every((issue2) => issue2.status === issues[0]?.status) ? issues[0]?.status : void 0;
-  return /* @__PURE__ */ jsx9(ui11.box, { label: "Selected issues", style: { position: "absolute", bottom: 16, left: 0, right: 0, alignItems: "center", zIndex: 10 }, children: /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 14, paddingRight: 4, borderRadius: "full", backgroundColor: "bg", border: "1px solid border", boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }, children: [
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, color: "text2", paddingRight: 8 }, children: `${issues.length} selected` }),
-    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Move to…", style: { ...ghostChip, borderRadius: "full" }, children: [
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }),
-      STATUSES.map((item) => /* @__PURE__ */ jsx9(ui11.item, { ...statusMark(item), checked: item === status, onClick: () => {
-        for (const issue2 of issues) apply2(flux2, issue2.id, { status: item });
-      }, children: STATUS_LABELS[item] }, item))
-    ] }),
-    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Actions", style: { ...ghostChip, borderRadius: "full" }, children: [
+  return /* @__PURE__ */ jsx9(ui11.box, { style: { position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }, children: /* @__PURE__ */ jsxs8(ui11.box, { label: "Selected issues", style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }, children: [
+    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }, children: `${issues.length} selected` }),
+    /* @__PURE__ */ jsx9(ui11.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
+    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }, children: [
       /* @__PURE__ */ jsx9(ui11.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
       /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
-      propertyMenus(flux2, issues, false),
-      /* @__PURE__ */ jsx9(ui11.separator, {}),
-      /* @__PURE__ */ jsx9(ui11.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }),
-      /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => {
-        for (const issue2 of issues) duplicate(flux2, issue2.id);
-      }, children: "Duplicate" }),
-      /* @__PURE__ */ jsx9(ui11.item, { icon: "external", onClick: () => ui11.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }),
-      /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => ui11.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }),
-      /* @__PURE__ */ jsx9(ui11.separator, {}),
-      /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, issues.map((issue2) => issue2.id), clear), children: "Delete" })
+      () => [
+        propertyMenus(flux2, issues, false),
+        /* @__PURE__ */ jsx9(ui11.separator, {}, "sep1"),
+        /* @__PURE__ */ jsx9(ui11.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }, "me"),
+        /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => {
+          for (const issue2 of issues) duplicate(flux2, issue2.id);
+        }, children: "Duplicate" }, "dup"),
+        /* @__PURE__ */ jsx9(ui11.item, { icon: "external", onClick: () => ui11.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }, "link"),
+        /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => ui11.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }, "id"),
+        /* @__PURE__ */ jsx9(ui11.separator, {}, "sep2"),
+        /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, ids, clear), children: "Delete" }, "del")
+      ]
     ] }),
-    /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "x", label: "Clear selection", onClick: clear })
-  ] }) });
+    /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full" } })
+  ] }) }, "selection-bar");
 }
 function assignToMe(flux2, issues) {
   const me2 = flux2.me?.id;
@@ -82496,6 +82497,10 @@ function onListKey(flux2, key, flat, groups, options) {
     for (const issue2 of on3) apply2(flux2, issue2.id, patch(issue2));
   };
   const pick2 = (kind) => openPalette(kind, ids, (id2, patch) => apply2(flux2, id2, patch));
+  if (key.key === "Escape" && selected.size > 0) {
+    selected = /* @__PURE__ */ new Set();
+    return;
+  }
   const move = (next2) => {
     const issue2 = flat[Math.max(0, Math.min(flat.length - 1, next2))];
     if (!issue2) return;
@@ -83125,17 +83130,37 @@ function RailRow({ icon, value, menu, muted, children }) {
     children
   ] });
 }
-function Connections() {
+function workspaceColor(flux2) {
+  const c = flux2.workspace?.color;
+  return COLORS.includes(c ?? "") ? c : "gray";
+}
+function workspaceInitial(flux2) {
+  return (flux2.workspace?.name || flux2.baseUrl || "F").replace(/^https?:\/\//, "").trim().slice(0, 1).toUpperCase();
+}
+function WorkspaceMark({ flux: flux2, size: size3 }) {
+  const box = { width: size3, height: size3, flexShrink: 0, borderRadius: Math.round(size3 / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" };
+  const logo = flux2 === hub.active ? pictureBytes(flux2.workspace?.imageUrl) : null;
+  if (logo) return /* @__PURE__ */ jsx9(ui11.image, { src: logo, alt: "", style: { ...box, objectFit: "cover" } });
+  return /* @__PURE__ */ jsx9(ui11.box, { style: { ...box, backgroundColor: colorOf[workspaceColor(flux2)] }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 600 }, children: workspaceInitial(flux2) }) });
+}
+function workspaceMark(flux2) {
+  const logo = flux2 === hub.active ? pictureBytes(flux2.workspace?.imageUrl) : null;
+  return logo ? { mark: logo } : { initial: workspaceInitial(flux2), tint: MARK_HEX[workspaceColor(flux2)] };
+}
+function WorkspaceSwitcher() {
   const list2 = hub.connected();
   const active = hub.active;
-  return /* @__PURE__ */ jsxs8(ui11.menu, { label: active.workspace?.name || active.baseUrl || "Flux", style: ghostChip, children: [
-    /* @__PURE__ */ jsx9(ui11.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: active.connection().state === "ready" ? "green" : "amber" } }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13 }, children: active.workspace?.name || "Flux" }),
-    /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
+  const name2 = active.workspace?.name || active.baseUrl || "Flux";
+  const ready = active.connection().state === "ready";
+  return /* @__PURE__ */ jsxs8(ui11.menu, { label: `Workspace: ${name2}${ready ? "" : " (offline)"}`, tooltip: ready ? `Workspace: ${name2}` : `${name2} can't be reached`, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 24, minWidth: 0, maxWidth: "100%", paddingLeft: 4, paddingRight: 4, borderRadius: "control", color: "text2", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+    /* @__PURE__ */ jsx9(WorkspaceMark, { flux: active, size: 16 }),
+    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, minWidth: 0, color: "currentColor" }, maxLines: 1, children: name2 }),
+    ready ? null : /* @__PURE__ */ jsx9(ui11.box, { style: { width: 6, height: 6, flexShrink: 0, borderRadius: "full", backgroundColor: "amber" } }),
+    /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, flexShrink: 0, color: "text3" } }),
     list2.map((item) => {
       const connection = item.connection();
       const title = connection.workspace?.name || connection.baseUrl || item.url || "Not connected";
-      return /* @__PURE__ */ jsx9(ui11.item, { checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
+      return /* @__PURE__ */ jsx9(ui11.item, { ...workspaceMark(item), checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
     }),
     /* @__PURE__ */ jsx9(ui11.separator, {}),
     /* @__PURE__ */ jsx9(ui11.item, { icon: "settings", href: SETTINGS, children: "Flux settings…" })
@@ -83484,6 +83509,8 @@ function activate() {
     fill: true,
     // Its title bar is its own: the toolbar, or an issue's breadcrumb.
     bare: true,
+    // Which Flux, beside its name in the sidebar.
+    side: true,
     search: "Find a view",
     items: navItems(flux),
     render: ({ args: args2 }) => /* @__PURE__ */ jsx11(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", image: imageOf })

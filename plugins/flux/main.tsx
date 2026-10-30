@@ -172,6 +172,8 @@ export function activate() {
 		fill: true,
 		// Its title bar is its own: the toolbar, or an issue's breadcrumb.
 		bare: true,
+		// Which Flux, beside its name in the sidebar.
+		side: true,
 		search: "Find a view",
 		items: navItems(flux),
 		render: ({ args }) => <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} image={imageOf} />,

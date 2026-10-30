@@ -5,11 +5,12 @@ import { storage, ui, type Child, type ColorValue, type IconName, type MenuChild
 import type { Comment as IssueComment, Issue, IssuePatch, Label, Member, Project } from "./contract";
 import { ConnectForm } from "./connect";
 import { hub } from "./hub";
-import { CLOSED_STATUSES, PRIORITIES, PRIORITY_LABELS, PRIORITY_LEVEL, STATUSES, STATUS_LABELS, type Priority, type Status } from "./flux";
+import { CLOSED_STATUSES, COLORS, PRIORITIES, PRIORITY_LABELS, PRIORITY_LEVEL, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
 import { CommentEditor, DescriptionEditor, mentionOptions, startAgent } from "./edit";
 import type { Flux } from "./service";
 import { threadInfo } from "./threads";
-import { navMark } from "./marks";
+import { MARK_HEX, navMark } from "./marks";
+import { pictureBytes } from "./pictures";
 import { projectAt, projectMenuItems } from "./projects";
 import { confirm } from "./confirm";
 import { openPalette, type PaletteKind } from "./palette";
@@ -143,6 +144,8 @@ export function FluxPage({ path, slot, image }: { path: string; slot: string; im
 	// The title bar is the page's own (a bare page): the board's toolbar,
 	// an issue's breadcrumb, the same bar either way, so nothing in it
 	// moves as one opens the other; Flux's name is the sidebar's.
+	// Which Flux, at the end of the sidebar's row that names the page.
+	if (slot === "side") return unset ? null : <WorkspaceSwitcher />;
 	if (slot === "head") {
 		if (unset || cantLoad) return <HeadTitle />;
 		if (route.kind === "issue") return <IssueHead flux={flux} issueKey={route.key} />;
@@ -298,16 +301,17 @@ function HeadTitle() {
 	);
 }
 
-/** The bar's end: which Flux, and New issue; the switcher where there's room for it, New issue its icon where there isn't. */
+/** The bar's end: New issue, its icon where there's no room for its name, never cut short. */
 function BarEnd({ onCreate }: { onCreate: () => void }) {
 	return <>{[
-		<ui.box key="sep" style={{ display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 2, marginRight: 2, backgroundColor: "border", media: [{ minWidth: WIDE, style: { display: "flex" } }] }} />,
-		<ui.box key="flux" style={{ display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] }}><Connections /></ui.box>,
-		<ui.box key="new" style={{ display: "none", media: [{ minWidth: SM, style: { display: "flex" } }] }}>
+		<ui.box key="new" style={{ display: "none", flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "flex" } }] }}>
 			<ui.button kind="primary" size="sm" icon="plus" tooltip="New issue (C)" onClick={onCreate}>New issue</ui.button>
 		</ui.box>,
-		<ui.box key="new-narrow" style={{ media: [{ minWidth: SM, style: { display: "none" } }] }}>
-			<ui.iconButton icon="plus" label="New issue" onClick={onCreate} style={{ width: 28, height: 28 }} />
+		<ui.box key="new-narrow" style={{ flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "none" } }] }}>
+			{/* As Swarm's primary button, its + alone: the accent, its ink, a little of the text's over it under the pointer. */}
+			<ui.pressable label="New issue" tooltip="New issue (C)" onClick={onCreate} style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", backgroundColor: "accent", transition: { duration: 120, colors: true }, hover: { backgroundColor: "color-mix(in srgb, text 12%, accent)" } }}>
+				<ui.icon icon="plus" style={{ width: 14, height: 14, color: "accentText" }} />
+			</ui.pressable>
 		</ui.box>,
 	]}</>;
 }
@@ -336,7 +340,8 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 				</ui.box>
 			) : null}
 			<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...(narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null) }}>
-				<ui.menu label={`Project: ${project ? project.name : "All projects"}`} style={{ ...ghostChip, minWidth: 0, flexShrink: 1 }}>
+				{/* The one part that shrinks: its name cut short, once all else has given way. */}
+				<ui.menu label={`Project: ${project ? project.name : "All projects"}`} style={{ ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }}>
 					{project ? <ProjectMark project={project} size={16} /> : <FluxMark size={16} />}
 					<ui.text style={{ fontSize: 14, minWidth: 0 }} maxLines={1}>{project ? project.name : "All projects"}</ui.text>
 					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2", flexShrink: 0 }} />
@@ -346,8 +351,8 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 					))}
 					{projectMenuItems(project)}
 				</ui.menu>
-				<ui.box style={{ display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: SM, style: { display: "flex" } }] }} />
-				<ui.box label="Issues" style={{ display: "none", flexDirection: "row", gap: 2, alignItems: "center", media: [{ minWidth: SM, style: { display: "flex" } }] }}>
+				<ui.box style={{ display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }} />
+				<ui.box label="Issues" style={{ display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }}>
 					{SCOPES.map((item) => (
 						<ui.pressable key={item} label={SCOPE_LABELS[item]} role="tab" checked={scope === item} onClick={() => storage.set("scope", item)} style={{ height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }}>
 							<ui.text style={{ fontSize: 14, color: "currentColor" }} maxLines={1}>{SCOPE_LABELS[item]}</ui.text>
@@ -355,15 +360,15 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 					))}
 				</ui.box>
 				{/* Narrow, the scopes are a menu. */}
-				<ui.box style={{ media: [{ minWidth: SM, style: { display: "none" } }] }}>
+				<ui.box style={{ flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }}>
 					<ui.menu label={`Issues: ${SCOPE_LABELS[scope]}`} style={ghostChip}>
 						<ui.text style={{ fontSize: 14 }}>{SCOPE_LABELS[scope]}</ui.text>
 						<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
 						{SCOPES.map((item) => <ui.item key={"scope-" + item} checked={scope === item} onClick={() => storage.set("scope", item)}>{SCOPE_LABELS[item]}</ui.item>)}
 					</ui.menu>
 				</ui.box>
-				<ui.box style={{ flex: 1 }} />
-				<ui.box style={{ display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] }}>{filter(false)}</ui.box>
+				<ui.box style={{ flex: 1, minWidth: 8 }} />
+				<ui.box style={{ display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }}>{filter(false)}</ui.box>
 				<ui.pressable label="Filter issues" tooltip="Filter issues (/)" onClick={() => { searching = true; }} style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }}>
 					<ui.icon icon="search" style={{ width: 14, height: 14, color: "currentColor" }} />
 				</ui.pressable>
@@ -377,8 +382,14 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 	);
 }
 
-/** Where the bar has room for the filter field, as Flux's @2xl. */
-const WIDE = 704;
+// Where the bar has room for each of its parts in full, widest first, as
+// it narrows: the filter field (else its icon, which opens it across the
+// bar), New issue's name (else its +), the scopes as tabs (else a menu).
+// Each is where the next would no longer fit beside a project name the
+// picker's widest, so nothing's cut short or slides under another.
+const WIDE = 860;
+const NEW_AT = 680;
+const TABS_AT = 615;
 
 /** Whether the display differs from Flux's default, but for its layout: its button has a dot, and it can be reset. */
 function customized(options: DisplayOptions): boolean {
@@ -1000,29 +1011,33 @@ function clickIssue(issue: Issue, event?: { mod?: boolean; shift?: boolean }) {
 
 function SelectionBar({ flux }: { flux: Flux }) {
 	const issues = flux.issues().filter((issue) => selected.has(issue.id));
+	const ids = issues.map((issue) => issue.id);
 	const clear = () => { selected = new Set(); };
-	const status = issues.every((issue) => issue.status === issues[0]?.status) ? issues[0]?.status : undefined;
+	// As Flux's: a pill over the board while issues are selected, rising in
+	// and sinking out, its width following what it says; Move to… is the
+	// palette of statuses, Actions every bulk action, and a way out.
 	return (
-		<ui.box label="Selected issues" style={{ position: "absolute", bottom: 16, left: 0, right: 0, alignItems: "center", zIndex: 10 }}>
-			<ui.box style={{ flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 14, paddingRight: 4, borderRadius: "full", backgroundColor: "bg", border: "1px solid border", boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }}>
-				<ui.text style={{ fontSize: 13, color: "text2", paddingRight: 8 }}>{`${issues.length} selected`}</ui.text>
-				<ui.menu label="Move to…" style={{ ...ghostChip, borderRadius: "full" }}>
+		<ui.box key="selection-bar" style={{ position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }}>
+			<ui.box label="Selected issues" style={{ flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }}>
+				<ui.text style={{ fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }}>{`${issues.length} selected`}</ui.text>
+				<ui.pressable label="Move to…" tooltip="Change status (S)" onClick={() => openPalette("status", ids, (id, patch) => apply(flux, id, patch))} style={{ ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }}>
 					<ui.text style={{ fontSize: 13, fontWeight: 500 }}>Move to…</ui.text>
-					{STATUSES.map((item) => <ui.item key={item} {...statusMark(item)} checked={item === status} onClick={() => { for (const issue of issues) apply(flux, issue.id, { status: item }); }}>{STATUS_LABELS[item]}</ui.item>)}
-				</ui.menu>
-				<ui.menu label="Actions" style={{ ...ghostChip, borderRadius: "full" }}>
+				</ui.pressable>
+				<ui.menu label="Actions" style={{ ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full" }}>
 					<ui.icon icon="command" style={{ width: 13, height: 13, color: "text2" }} />
 					<ui.text style={{ fontSize: 13, fontWeight: 500 }}>Actions</ui.text>
-					{propertyMenus(flux, issues, false)}
-					<ui.separator />
-					<ui.item icon="user" onClick={() => assignToMe(flux, issues)}>Assign to me</ui.item>
-					<ui.item icon="copy" onClick={() => { for (const issue of issues) duplicate(flux, issue.id); }}>Duplicate</ui.item>
-					<ui.item icon="external" onClick={() => ui.copy(issues.map((issue) => flux.issueUrl(issue)).join("\n"))}>Copy link</ui.item>
-					<ui.item icon="copy" onClick={() => ui.copy(issues.map((issue) => issue.key).join("\n"))}>Copy ID</ui.item>
-					<ui.separator />
-					<ui.item icon="trash" danger onClick={() => askDelete(flux, issues.map((issue) => issue.id), clear)}>Delete</ui.item>
+					{() => [
+						propertyMenus(flux, issues, false),
+						<ui.separator key="sep1" />,
+						<ui.item key="me" icon="user" onClick={() => assignToMe(flux, issues)}>Assign to me</ui.item>,
+						<ui.item key="dup" icon="copy" onClick={() => { for (const issue of issues) duplicate(flux, issue.id); }}>Duplicate</ui.item>,
+						<ui.item key="link" icon="external" onClick={() => ui.copy(issues.map((issue) => flux.issueUrl(issue)).join("\n"))}>Copy link</ui.item>,
+						<ui.item key="id" icon="copy" onClick={() => ui.copy(issues.map((issue) => issue.key).join("\n"))}>Copy ID</ui.item>,
+						<ui.separator key="sep2" />,
+						<ui.item key="del" icon="trash" danger onClick={() => askDelete(flux, ids, clear)}>Delete</ui.item>,
+					]}
 				</ui.menu>
-				<ui.iconButton icon="x" label="Clear selection" onClick={clear} />
+				<ui.iconButton icon="x" label="Clear selection" tooltip="Clear selection (Esc)" onClick={clear} style={{ width: 28, height: 28, borderRadius: "full" }} />
 			</ui.box>
 		</ui.box>
 	);
@@ -1150,6 +1165,11 @@ function onListKey(flux: Flux, key: { key: string; shift: boolean; mod: boolean 
 	const ids = on.map((issue) => issue.id);
 	const change = (patch: (issue: Issue) => IssuePatch) => { for (const issue of on) apply(flux, issue.id, patch(issue)); };
 	const pick = (kind: PaletteKind) => openPalette(kind, ids, (id, patch) => apply(flux, id, patch));
+	// Escape clears a selection first, as Flux's.
+	if (key.key === "Escape" && selected.size > 0) {
+		selected = new Set();
+		return;
+	}
 	const move = (next: number) => {
 		const issue = flat[Math.max(0, Math.min(flat.length - 1, next))];
 		if (!issue) return;
@@ -1896,18 +1916,56 @@ function RailRow({ icon, value, menu, muted, children }: { icon: Child; label: s
 	);
 }
 
-function Connections() {
+/** A workspace's color, as Flux keeps it. */
+function workspaceColor(flux: Flux): ColorName {
+	const c = flux.workspace?.color;
+	return (COLORS as readonly string[]).includes(c ?? "") ? (c as ColorName) : "gray";
+}
+
+/** A workspace's initial, as Flux's WorkspaceAvatar draws it without a logo. */
+function workspaceInitial(flux: Flux): string {
+	return (flux.workspace?.name || flux.baseUrl || "F").replace(/^https?:\/\//, "").trim().slice(0, 1).toUpperCase();
+}
+
+/** A workspace's mark, as Flux's WorkspaceAvatar: its logo, else its initial on its color, in a rounded square. */
+function WorkspaceMark({ flux, size }: { flux: Flux; size: number }) {
+	const box = { width: size, height: size, flexShrink: 0, borderRadius: Math.round(size / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" } as const;
+	const logo = flux === hub.active ? pictureBytes(flux.workspace?.imageUrl) : null;
+	if (logo) return <ui.image src={logo} alt="" style={{ ...box, objectFit: "cover" }} />;
+	return (
+		<ui.box style={{ ...box, backgroundColor: colorOf[workspaceColor(flux)] }}>
+			<ui.text style={{ color: "white", fontSize: Math.round(size * 0.6), fontWeight: 600 }}>{workspaceInitial(flux)}</ui.text>
+		</ui.box>
+	);
+}
+
+/** The same, as a menu item's mark. */
+function workspaceMark(flux: Flux): { mark: Uint8Array } | { initial: string; tint: string } {
+	const logo = flux === hub.active ? pictureBytes(flux.workspace?.imageUrl) : null;
+	return logo ? { mark: logo } : { initial: workspaceInitial(flux), tint: MARK_HEX[workspaceColor(flux)] };
+}
+
+/**
+ * Which Flux, beside Flux's name in the sidebar: changed seldom, it has no
+ * place on the bar. Its dot says whether it's reachable; its name gives way
+ * to the sidebar's title, cut short.
+ */
+function WorkspaceSwitcher() {
 	const list = hub.connected();
 	const active = hub.active;
+	const name = active.workspace?.name || active.baseUrl || "Flux";
+	const ready = active.connection().state === "ready";
 	return (
-		<ui.menu label={active.workspace?.name || active.baseUrl || "Flux"} style={ghostChip}>
-			<ui.box style={{ width: 8, height: 8, borderRadius: "full", backgroundColor: active.connection().state === "ready" ? "green" : "amber" }} />
-			<ui.text style={{ fontSize: 13 }}>{active.workspace?.name || "Flux"}</ui.text>
-			<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text3" }} />
+		<ui.menu label={`Workspace: ${name}${ready ? "" : " (offline)"}`} tooltip={ready ? `Workspace: ${name}` : `${name} can't be reached`} style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 24, minWidth: 0, maxWidth: "100%", paddingLeft: 4, paddingRight: 4, borderRadius: "control", color: "text2", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }}>
+			<WorkspaceMark flux={active} size={16} />
+			<ui.text style={{ fontSize: 13, minWidth: 0, color: "currentColor" }} maxLines={1}>{name}</ui.text>
+			{/* Away, it says so; reachable, the mark is enough. */}
+			{ready ? null : <ui.box style={{ width: 6, height: 6, flexShrink: 0, borderRadius: "full", backgroundColor: "amber" }} />}
+			<ui.icon icon="chevron-down" style={{ width: 12, height: 12, flexShrink: 0, color: "text3" }} />
 			{list.map((item) => {
 				const connection = item.connection();
 				const title = connection.workspace?.name || connection.baseUrl || item.url || "Not connected";
-				return <ui.item key={item.id} checked={item.id === active.id} onClick={() => hub.use(item.id)}>{title}</ui.item>;
+				return <ui.item key={item.id} {...workspaceMark(item)} checked={item.id === active.id} onClick={() => hub.use(item.id)}>{title}</ui.item>;
 			})}
 			<ui.separator />
 			<ui.item icon="settings" href={SETTINGS}>Flux settings…</ui.item>

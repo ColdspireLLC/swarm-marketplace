@@ -66,6 +66,9 @@ export const workspaceSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
+  /** Its mark's color, and its logo, a Flux asset, where it has one. */
+  color: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
   latestVersion: z.number(),
 });
 
