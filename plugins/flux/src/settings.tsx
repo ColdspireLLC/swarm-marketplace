@@ -5,7 +5,8 @@ import { call, ui, type ColorValue } from "swarm";
 import { ConnectForm } from "./connect";
 import { hub } from "./hub";
 import type { Flux, State } from "./service";
-import { Avatar, ProjectMark } from "./view";
+import { Avatar } from "./view";
+import { MarkPicker, confirmDelete, keyNote, markOf, moveProject, openNewProject, openProjectSettings, setMark } from "./projects";
 
 /** The Fluxes whose Change form is open, and whether Add another is. */
 const editing = new Set<string>();
@@ -161,35 +162,57 @@ function disconnect(flux: Flux) {
 	ui.toast(`Disconnected from ${was}.`);
 }
 
-/** Which Swarm project each Flux project's agents work in. */
+/**
+ * Flux's projects, as its own Settings list them, and which Swarm project
+ * each one's agents work in: each one's mark, which Swarm's gallery
+ * changes at once, its name and key, the Swarm project, and a menu of its
+ * settings, its place in the order and Delete; New project at the top.
+ */
 function ProjectLinks({ flux }: { flux: Flux }) {
 	if (swarmProjects === null) refreshProjects();
 	const projects = flux.projects();
 	const known = swarmProjects ?? [];
+	const column = { fontSize: 12, fontWeight: 500, color: "text3" } as const;
 	return (
 		<ui.box style={{ gap: 12 }}>
-			<ui.box style={{ gap: 4 }}>
-				<ui.text style={{ fontWeight: 600 }}>Where agents work</ui.text>
-				<ui.text style={{ fontSize: "small", color: "text2" }}>An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none.</ui.text>
+			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+				<ui.box style={{ flex: 1, minWidth: 0, gap: 4 }}>
+					<ui.text style={{ fontWeight: 600 }}>Projects</ui.text>
+					<ui.text style={{ fontSize: "small", color: "text2" }}>Each project's icon, name and key, as Flux shows them. An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none.</ui.text>
+				</ui.box>
+				<ui.button kind="secondary" size="sm" icon="plus" onClick={openNewProject}>New project</ui.button>
 			</ui.box>
 			{projects.length === 0 ? (
 				<ui.text style={{ color: "text3" }}>{`${flux.connection().workspace?.name ?? "This Flux"} has no projects yet.`}</ui.text>
 			) : (
 				<ui.box style={{ borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }}>
+					<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 32, borderBottom: "1px solid divider" }}>
+						<ui.text style={{ ...column, flex: 1, paddingLeft: 40 }}>Name</ui.text>
+						<ui.text style={{ ...column, width: 52 }}>Key</ui.text>
+						<ui.text style={{ ...column, width: 240 }}>Where agents work</ui.text>
+					</ui.box>
 					{projects.map((project, i) => {
 						const linked = project.swarmProjectId;
 						const shown = linked ? (known.find((p) => p.id === linked)?.name ?? (swarmProjects ? "A removed project" : "…")) : "Not linked";
 						return (
-							<ui.box key={project.id} style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 12, paddingRight: 8, height: 44, borderTop: i === 0 ? "none" : "1px solid divider" }}>
-								<ProjectMark project={project} size={16} />
+							<ui.box key={project.id} style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 44, borderTop: i === 0 ? "none" : "1px solid divider" }}>
+								<MarkPicker label={`Icon of ${project.name}`} value={markOf(project)} onChange={(next) => setMark(flux, project, next)} />
 								<ui.text style={{ flex: 1, minWidth: 0 }} maxLines={1}>{project.name}</ui.text>
-								<ui.text style={{ fontSize: "small", color: "text3" }}>{project.key}</ui.text>
+								<ui.text style={{ width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }} tooltip={keyNote(flux, project)}>{project.key}</ui.text>
 								<ui.menu label={`Swarm project for ${project.name}: ${shown}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
 									<ui.text style={{ flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }} maxLines={1}>{shown}</ui.text>
 									<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text3" }} />
 									<ui.item checked={!linked} onClick={() => flux.link(project.id, null)}>Not linked</ui.item>
 									{known.length ? <ui.separator /> : null}
 									{known.map((p) => <ui.item key={p.id} checked={p.id === linked} onClick={() => flux.link(project.id, p.id)}>{p.name}</ui.item>)}
+								</ui.menu>
+								<ui.menu label={`Actions for ${project.name}`} tooltip="Project actions" style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }}>
+									<ui.icon icon="more" style={{ width: 14, height: 14, color: "currentColor" }} />
+									<ui.item icon="settings" onClick={() => openProjectSettings(project)}>Project settings…</ui.item>
+									<ui.item icon="up" disabled={i === 0} onClick={() => moveProject(flux, project, -1)}>Move up</ui.item>
+									<ui.item icon="down" disabled={i === projects.length - 1} onClick={() => moveProject(flux, project, 1)}>Move down</ui.item>
+									<ui.separator />
+									<ui.item icon="trash" danger onClick={() => confirmDelete(flux, project)}>Delete project…</ui.item>
 								</ui.menu>
 							</ui.box>
 						);

@@ -7,8 +7,10 @@
 // are drawn on canvases.
 import { ui, type Child, type ColorValue, type Style } from "swarm";
 import type { Comment, Issue, IssueDetail, Label, Member, Project } from "./contract";
+import type { CommentAgent } from "./agent";
+import { agentLogo } from "./agentlogos";
 import { PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
-import { asIcon, emojiBytes, glyphBytes, MARK_HEX } from "./marks";
+import { asIcon, emojiSrc, glyphBytes, MARK_HEX } from "./marks";
 import { pictureBytes } from "./pictures";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
 import { dayDelta, dueLabel } from "./dates";
@@ -104,6 +106,52 @@ export function Avatar({ member, size = 18 }: { member: Member | undefined; size
 	);
 }
 
+/**
+ * A coding agent's avatar, as Flux's (AgentAvatar): its provider's mark in
+ * the provider's color, the light theme's or the dark's, on a neutral tile;
+ * its initial where it has no mark.
+ */
+export function AgentAvatar({ agent: said, size = 20 }: { agent: CommentAgent; size?: number }) {
+	// A comment whose agent has no mark is drawn with its provider's, as Swarm has it.
+	const agent = said.icon ? said : { ...said, ...agentLogo(said.provider) };
+	const box = { width: size, height: size, borderRadius: 4, flexShrink: 0, alignItems: "center", justifyContent: "center", backgroundColor: "color-mix(in srgb, text 8%, transparent)" } as const;
+	const mark = Math.round(size * 0.7);
+	const light = agentMark(agent, "light");
+	const dark = agentMark(agent, "dark");
+	return (
+		<ui.box label={agent.name} tooltip={agent.name} style={box}>
+			{light && dark ? [
+				<ui.image key="light" src={light} alt="" style={{ width: mark, height: mark, dark: { display: "none" } }} />,
+				<ui.image key="dark" src={dark} alt="" style={{ width: mark, height: mark, display: "none", dark: { display: "flex" } }} />,
+			] : <ui.text style={{ fontSize: Math.max(9, Math.round(size * 0.55)), fontWeight: 600 }}>{agent.name.trim().slice(0, 1).toUpperCase() || "?"}</ui.text>}
+		</ui.box>
+	);
+}
+
+// Flux draws an agent's mark as a mask: its shape in the tint, whatever
+// colors the SVG has. A picture here is the SVG with each of its colors
+// the tint, made once each.
+const agentMarks = new Map<string, Uint8Array | null>();
+function agentMark(agent: CommentAgent, theme: "light" | "dark"): Uint8Array | null {
+	if (!agent.icon) return null;
+	const tint = agent.tint?.[theme] ?? (theme === "dark" ? "#ececec" : "#1f1f1f");
+	const key = tint + agent.icon;
+	if (agentMarks.has(key)) return agentMarks.get(key)!;
+	let bytes: Uint8Array | null = null;
+	try {
+		const svg = new TextDecoder().decode(Uint8Array.fromBase64(agent.icon.slice(agent.icon.indexOf(",") + 1)));
+		const tinted = svg
+			.replace(/\b(fill|stroke|stop-color)\s*=\s*"(?!none")[^"]*"/gi, `$1="${tint}"`)
+			.replace(/\b(fill|stroke|stop-color)\s*:\s*(?!none)[^;"']+/gi, `$1:${tint}`)
+			.replace(/<svg\b(?![^>]*\bfill\s*=)/i, `<svg fill="${tint}"`);
+		if (/<svg\b/i.test(tinted)) bytes = new TextEncoder().encode(tinted);
+	} catch {
+		bytes = null;
+	}
+	agentMarks.set(key, bytes);
+	return bytes;
+}
+
 /** Flux's unassigned mark (UnassignedAvatar): a dotted square round a person. */
 export function Unassigned({ size = 18 }: { size?: number }) {
 	return (
@@ -132,7 +180,7 @@ export function FluxMark({ size = 14, color = "text2" }: { size?: number; color?
 export function ProjectMark({ project, size = 14 }: { project: Project | undefined; size?: number }) {
 	if (!project) return <FluxMark size={size} />;
 	const box = { width: size, height: size, flexShrink: 0 } as const;
-	const emoji = emojiBytes(project?.emoji);
+	const emoji = emojiSrc(project.emoji);
 	if (emoji) return <ui.image src={emoji} alt="" tooltip={project.name} style={box} />;
 	const icon = asIcon(project?.icon);
 	if (icon && project) return <ui.icon icon={icon} style={{ ...box, color: colorOf[project.color] }} />;
@@ -178,19 +226,21 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 			<ui.menu label={"Status: " + STATUS_LABELS[issue.status]} style={chip}>
 				<StatusIcon status={issue.status} />
 				<ui.text style={{ fontSize: 13 }}>{STATUS_LABELS[issue.status]}</ui.text>
-				{STATUSES.map((s) => <ui.item key={s} {...statusMark(s)} checked={issue.status === s} onClick={() => edits.update({ status: s })}>{STATUS_LABELS[s]}</ui.item>)}
+				{() => STATUSES.map((s) => <ui.item key={s} {...statusMark(s)} checked={issue.status === s} onClick={() => edits.update({ status: s })}>{STATUS_LABELS[s]}</ui.item>)}
 			</ui.menu>
 			<ui.menu label={"Priority: " + PRIORITY_LABELS[issue.priority]} tooltip={PRIORITY_LABELS[issue.priority]} style={issue.priority === "none" ? square : chip}>
 				<PriorityIcon priority={issue.priority} />
 				{issue.priority !== "none" && <ui.text style={{ fontSize: 13 }}>{PRIORITY_LABELS[issue.priority]}</ui.text>}
-				{PRIORITIES.map((p) => <ui.item key={p} {...priorityMark(p)} checked={issue.priority === p} onClick={() => edits.update({ priority: p })}>{PRIORITY_LABELS[p]}</ui.item>)}
+				{() => PRIORITIES.map((p) => <ui.item key={p} {...priorityMark(p)} checked={issue.priority === p} onClick={() => edits.update({ priority: p })}>{PRIORITY_LABELS[p]}</ui.item>)}
 			</ui.menu>
 			<ui.menu label={assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign"} tooltip="Assignees" style={assignees.length === 1 ? square : chip}>
 				{assignees.length === 0 ? <Unassigned size={16} /> : assignees.slice(0, 3).map((m) => <Avatar key={"av-" + m.id} member={m} />)}
 				{assignees.length > 1 && <ui.text style={{ fontSize: 13 }}>{String(assignees.length)}</ui.text>}
-				{me && <ui.item key="me" icon="user" onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, me) })}>{issue.assigneeIds.includes(me) ? "Unassign me" : "Assign to me"}</ui.item>}
-				{me && <ui.separator key="sep" />}
-				{members.map((m) => <ui.item key={m.id} {...memberMark(m)} checked={issue.assigneeIds.includes(m.id)} detail={"@" + m.username} onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, m.id) })}>{m.name}</ui.item>)}
+				{() => [
+					me && <ui.item key="me" icon="user" onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, me) })}>{issue.assigneeIds.includes(me) ? "Unassign me" : "Assign to me"}</ui.item>,
+					me && <ui.separator key="sep" />,
+					members.map((m) => <ui.item key={m.id} {...memberMark(m)} checked={issue.assigneeIds.includes(m.id)} detail={"@" + m.username} onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, m.id) })}>{m.name}</ui.item>),
+				]}
 			</ui.menu>
 			<ui.menu label={chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels"} tooltip="Labels" style={chosen.length ? chip : square}>
 				{chosen.length === 0 && <ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />}
@@ -200,12 +250,12 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 						<ui.text style={{ fontSize: 13 }}>{l.name}</ui.text>
 					</ui.box>
 				))}
-				{labels.length === 0 ? <ui.item key="none" disabled>No labels yet</ui.item> : labels.map((l) => <ui.item key={l.id} {...labelMark(l.color)} checked={issue.labelIds.includes(l.id)} onClick={() => edits.update({ labelIds: toggle(issue.labelIds, l.id) })}>{l.name}</ui.item>)}
+				{() => labels.length === 0 ? <ui.item key="none" disabled>No labels yet</ui.item> : labels.map((l) => <ui.item key={l.id} {...labelMark(l.color)} checked={issue.labelIds.includes(l.id)} onClick={() => edits.update({ labelIds: toggle(issue.labelIds, l.id) })}>{l.name}</ui.item>)}
 			</ui.menu>
 			<ui.menu label={issue.dueDate ? "Due " + dueLabel(issue.dueDate) : "Due date"} tooltip="Due date" style={issue.dueDate ? chip : square}>
 				<ui.icon icon="calendar" style={{ width: 14, height: 14, color: issue.dueDate && dayDelta(issue.dueDate) < 0 ? "red" : "text2" }} />
 				{issue.dueDate && <ui.text style={{ fontSize: 13 }}>{dueLabel(issue.dueDate)}</ui.text>}
-				{dueItems(issue.dueDate, (dueDate) => edits.update({ dueDate }))}
+				{() => dueItems(issue.dueDate, (dueDate) => edits.update({ dueDate }))}
 			</ui.menu>
 			{start && (
 				<ui.pressable label="Start agent" onClick={start} style={chip}>
@@ -221,7 +271,7 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 /** What an @name is: a member, or a project (which a click opens); null for neither, left as text. */
 export type MentionOf = (name: string) => { kind: "member" } | { kind: "project"; open: () => void } | null;
 
-const mentionChip: Style = { backgroundColor: "hover", borderRadius: 4, fontWeight: 550 };
+const mentionChip: Style = { backgroundColor: "hover", borderRadius: 4, fontWeight: 500 };
 
 export function inlineText(text: string, mention?: MentionOf): Child[] {
 	const out: Child[] = [];
@@ -505,7 +555,7 @@ export function IssueView(props: {
 					return (
 						<ui.box key={c.id} style={{ gap: 6 }}>
 							<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-								{c.agent ? <ui.box style={{ width: 18, height: 18, borderRadius: 5, backgroundColor: "accentSoft", alignItems: "center", justifyContent: "center" }}><ui.icon icon="robot" style={{ width: 12, height: 12, color: "accent" }} /></ui.box> : <Avatar member={who} />}
+								{c.agent ? <AgentAvatar agent={c.agent} size={18} /> : <Avatar member={who} />}
 								<ui.text style={{ fontSize: "small", color: "text2" }}>
 									<ui.text style={{ fontWeight: 600, color: "text" }}>{c.agent ? c.agent.name : (who?.name ?? "Someone")}</ui.text>
 									{(c.agent && who ? " for " + who.name : "") + " · " + ago(c.createdAt)}

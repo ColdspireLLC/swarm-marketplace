@@ -132,18 +132,3 @@ export function parseDue(query: string, now = new Date()): Date | null {
 	}
 	return null;
 }
-
-/** A month's weeks as days, Sunday first, padded with the days around it. */
-export function monthGrid(month: Date): Date[][] {
-	const first = new Date(month.getFullYear(), month.getMonth(), 1);
-	const start = addDays(first, -first.getDay());
-	const weeks: Date[][] = [];
-	for (let w = 0; w < 6; w++) {
-		const week = Array.from({ length: 7 }, (_, d) => addDays(start, w * 7 + d));
-		if (w > 0 && week[0]!.getMonth() !== month.getMonth()) break;
-		weeks.push(week);
-	}
-	return weeks;
-}
-
-export const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

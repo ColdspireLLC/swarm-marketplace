@@ -22,7 +22,13 @@ request.
 Its page of Settings (Settings, Plugins, Flux; or Flux settings… in the
 board's Flux menu) connects it: a Flux's URL and an API token, tried with
 Flux before they're kept, more Fluxes beside it, Resync and Disconnect,
-and which Swarm project each Flux project's agents work in. A Flux on
+and the Flux projects: each one's icon, its order, Delete, and which
+Swarm project its agents work in. New project (there, in the board's
+project menu, or the palette) makes one as Flux's own dialog does: its
+name, a key from the name until one's typed, and an icon in one of
+Flux's colors or an emoji, from Swarm's gallery. A project's settings
+(the board's project menu) rename it, change its mark, and change its
+key, the old one kept, so ABC-12 still finds its issue. A Flux on
 your own network, a LAN's address or Tailscale's, needs Reach your own
 network granted (Settings, Plugins, Flux), as Swarm keeps plugins off
 your network unless you say. From the

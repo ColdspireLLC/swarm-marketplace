@@ -1,10 +1,12 @@
 // The marks a property's menu items show, as Flux's menus do: a status's
-// ring, a priority's bars, a member's initial on their color, a label's
-// dot. A menu item takes a picture (an SVG here, in colors that read in
-// either theme) or a tile, where the board draws them on a canvas.
+// ring, a priority's bars, a member's picture or their initial on their
+// color, a label's dot. A menu item takes a picture (an SVG here, in
+// colors that read in either theme) or a tile, where the board draws them
+// on a canvas.
 import type { ColorName, Priority, Status } from "./flux";
 import type { Member } from "./contract";
 import { MARK_HEX } from "./marks";
+import { pictureBytes } from "./pictures";
 
 // As bytes, made once each: a menu names them by their hash, where it
 // would carry a data: URL whole in every card's every menu.
@@ -69,9 +71,11 @@ export function priorityMark(priority: Priority): { mark: Uint8Array } {
 	};
 }
 
-/** A member's initial on their color, as their avatar without a picture. */
-export function memberMark(member: Member): { initial: string; tint: string } {
-	return { initial: (member.name || member.username).trim().slice(0, 1).toUpperCase() || "?", tint: MARK_HEX[member.avatarColor] };
+/** A member's picture, as their avatar; while it comes, or when there's none, their initial on their color. */
+export function memberMark(member: Member): { mark?: Uint8Array; initial: string; tint: string } {
+	const tile = { initial: (member.name || member.username).trim().slice(0, 1).toUpperCase() || "?", tint: MARK_HEX[member.avatarColor] };
+	const picture = member.avatarUrl ? pictureBytes(member.avatarUrl) : null;
+	return picture ? { mark: picture, ...tile } : tile;
 }
 
 /** A label's dot in its color. */

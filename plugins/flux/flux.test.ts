@@ -17,7 +17,7 @@ interface Stored {
 	body: Record<string, unknown> | null;
 }
 
-async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean } = {}) {
+async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; long?: boolean; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean; crowd?: boolean } = {}) {
 	let version = 0;
 	const items = new Map<string, Stored>();
 	const put = (id: string, body: Record<string, unknown> | null) => {
@@ -47,9 +47,27 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 	for (let n = 0; n < (opts.many ?? 0); n++) {
 		put(`m${n}`, { type: "issue", projectId: "p1", number: 100 + n, title: `Issue number ${n}`, description: `<p>${"A long description. ".repeat(1000)}</p>`, status: statuses[n % 5], priority: "medium", assigneeIds: ["u1"], labelIds: ["l1"], subscriberIds: ["u1"], creatorId: "u1", dueDate: null, parentId: null, position: 10 + n });
 	}
+	if (opts.long) {
+		const paragraphs = Array.from({ length: 30 }, (_, i) => `<p>Step ${i + 1} of the plan, written out at some length so the page scrolls.</p>`).join("");
+		put("g1", { type: "issue", projectId: "p1", number: 7, title: "Write it all down", description: paragraphs, status: "todo", priority: "none", assigneeIds: [], labelIds: [], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 70 });
+	}
+	// crowd: a workspace of 30 labels and 10 members, and 300 issues in one
+	// column, each with a few of each, whose every card has its menus.
+	const crew = opts.crowd ? Array.from({ length: 8 }, (_, n) => ({ ...ME, id: `u${n + 3}`, username: `crew${n}`, name: `Crew ${n}`, email: `crew${n}@example.com`, avatarColor: "green" })) : [];
+	if (opts.crowd) {
+		for (let n = 0; n < 30; n++) put(`lc${n}`, { type: "label", name: `Label ${n}`, color: ["red", "blue", "green", "purple", "yellow"][n % 5] });
+		for (let n = 0; n < 300; n++) {
+			put(`k${n}`, { type: "issue", projectId: "p1", number: 200 + n, title: `Crowded issue ${n}`, description: "", status: "todo", priority: "low", assigneeIds: ["u1", "u2", `u${3 + (n % 8)}`], labelIds: [0, 7, 14, 21].map((k) => `lc${(n + k) % 30}`), subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 100 + n });
+		}
+	}
 	if (opts.marks) {
 		// A project with no emoji or icon: its key's letter on its color.
 		put("p3", { type: "project", key: "NUD", name: "Nudge", mark: { type: "color", color: "green" }, position: 2, nextNumber: 2 });
+		// A project with one of Swarm's icons, in its color, and one with an emoji of Twemoji's.
+		put("p4", { type: "project", key: "BOT", name: "Robots", mark: { type: "icon", value: "robot", color: "purple" }, position: 3, nextNumber: 2 });
+		put("p5", { type: "project", key: "FOX", name: "Foxes", mark: { type: "emoji", value: "🦊", color: "amber" }, position: 4, nextNumber: 2 });
+		put("b1", { type: "issue", projectId: "p4", number: 1, title: "Robots have their color", description: "", status: "progress", priority: "low", assigneeIds: ["u1", "u2"], labelIds: [], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 51 });
+		put("f1", { type: "issue", projectId: "p5", number: 1, title: "A fox, as Twemoji draws it", description: "", status: "backlog", priority: "none", assigneeIds: [], labelIds: [], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 52 });
 		put("n1", { type: "issue", projectId: "p3", number: 1, title: "Bob's picture shows", description: "", status: "todo", priority: "urgent", assigneeIds: ["u2"], labelIds: ["l1"], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 50 });
 	}
 	if (opts.rich) {
@@ -77,7 +95,7 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 		const path = req.path;
 		if (path === "/user") return { json: ME };
 		if (path === "/workspace") return { json: { id: opts.workspace ? "w-" + opts.workspace.toLowerCase() : "w1", name: opts.workspace ?? "Coldspire", slug: (opts.workspace ?? "coldspire").toLowerCase(), latestVersion: version } };
-		if (path === "/workspace/members") return { json: { members: [ME, { ...ME, id: "u2", username: "bob", name: "Bob", email: "bob@example.com", avatarUrl: opts.marks ? `/assets/${ASSET}` : null }] } };
+		if (path === "/workspace/members") return { json: { members: [ME, { ...ME, id: "u2", username: "bob", name: "Bob", email: "bob@example.com", avatarUrl: opts.marks ? `/assets/${ASSET}` : null }, ...crew] } };
 		if (path.startsWith("/sync/pull/")) {
 			// Pages of the limit asked, as Flux's (200 when none, 1000 at most).
 			const since = Number(path.split("/").pop());
@@ -466,6 +484,54 @@ test("a big workspace syncs, is kept on disk, and draws", async (t) => {
 	await t.until(async () => (await t.run("status")).stdout.includes("Issues synced: 502"), { what: "the copy kept" });
 }, { timeout: 120_000 });
 
+test("a column of 300 cards, of 30 labels and 10 members, draws: their menus' items come as one opens", async (t) => {
+	const { items } = await flux(t, { crowd: true });
+	expect((await t.run("status")).stdout).toContain("Issues synced: 302");
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	// Every issue, the unassigned too: the board laid out as it stays.
+	await w.see("Write the docs");
+	await w.see("Crowded issue 0");
+	const texts = (await w.texts()).join("\n");
+	expect(texts).not.toContain("couldn't draw");
+	expect(texts).not.toContain("Its rows are");
+	expect(texts).not.toContain("its recording is");
+	expect((await t.log(200)).join("\n")).not.toContain("Its list's rows");
+	await w.screenshot("flux-crowd");
+	// The issues' labels: a card's chips name them too, so what's chosen
+	// is told by what's pushed.
+	const labels = () => JSON.stringify([...items.values()].filter((i) => i.body?.type === "issue").map((i) => i.body!.labelIds));
+	let was = labels();
+	// A card's label chip: its menu, every label, as it opens.
+	await w.click("Labels: Label 7");
+	await w.see("New label…");
+	await w.screenshot("flux-crowd-labels");
+	await w.key("Down");
+	await w.key("Enter");
+	await t.until(() => labels() !== was, { what: "a label pushed" });
+	// Its assignees, each with their mark, and their handle under their name.
+	await w.click("Assignees: Ada Lovelace, Bob, Crew 0");
+	await w.see("@crew7");
+	await w.screenshot("flux-crowd-assignees");
+	await w.key("Escape");
+	await w.gone("@crew7");
+	// Its right-click menu, and a submenu in it.
+	was = labels();
+	// On its key: the card's middle is its chips', each a menu of its own.
+	await w.rightClick("ABC-201");
+	await w.see("Set parent");
+	await w.click("Labels");
+	await w.see("Back");
+	// No card in view has it: the menu's item, not a chip.
+	await w.see("Label 29");
+	await w.screenshot("flux-crowd-context-labels");
+	await w.click("Label 29");
+	await t.until(() => labels() !== was, { what: "a label pushed from the right-click menu" });
+	expect((await w.texts()).join("\n")).not.toContain("couldn't draw");
+}, { timeout: 120_000 });
+
 test("marks, avatars and menus' icons, as Flux draws them", async (t) => {
 	const { srv } = await flux(t, { marks: true });
 	const w = await t.window();
@@ -480,6 +546,12 @@ test("marks, avatars and menus' icons, as Flux draws them", async (t) => {
 	await w.dark(true);
 	await w.screenshot("flux-marks-dark");
 	await w.dark(false);
+	// The sidebar and the project picker show each project's mark: Robots' icon in purple, the fox as Twemoji's.
+	await w.click("Project: All projects");
+	await w.see("Foxes");
+	await t.sleep(300);
+	await w.screenshot("flux-project-menu");
+	await w.key("Escape");
 	await w.click("Bob's picture shows");
 	await w.see("Properties");
 	await w.click("Status: Todo");
@@ -491,6 +563,12 @@ test("marks, avatars and menus' icons, as Flux draws them", async (t) => {
 	await w.click("Priority: Urgent");
 	await w.see("Medium");
 	await w.screenshot("flux-priority-menu");
+	await w.key("Escape");
+	// Members show their pictures, where they have one.
+	await w.click("Assignees: Bob");
+	await w.see("@bob");
+	await t.sleep(300);
+	await w.screenshot("flux-assignee-menu");
 	await w.key("Escape");
 });
 
@@ -582,6 +660,50 @@ test("dragging a card opens a gap where it lands, as Flux's board", async (t) =>
 	}, { what: "the row moved into Todo, first" });
 });
 
+test("the title edits in place: nothing under it moves", async (t) => {
+	await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Fix the login redirect");
+	await w.see("Description");
+	await w.screenshot("flux-title");
+	await w.click("Title");
+	await w.see("Issue title");
+	await w.screenshot("flux-title-editing");
+	await w.key("End");
+	await w.type(" when the session has expired in another tab");
+	await w.screenshot("flux-title-wrapped");
+	await w.key("Escape");
+	await w.see("Fix the login redirect");
+});
+
+test("typing at the end of a description leaves the page where it was", async (t) => {
+	await flux(t, { long: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Write it all down");
+	await w.see("Description");
+	await w.click("Description");
+	await w.key("Mod+End");
+	await w.scroll("Title", 0, 250);
+	await w.screenshot("flux-desc-end");
+	await w.type("x");
+	await t.sleep(1500);
+	await w.screenshot("flux-desc-x");
+	await w.type(" ");
+	await t.sleep(1500);
+	await w.screenshot("flux-desc-space");
+	await w.type("y");
+	await t.sleep(1500);
+	await w.screenshot("flux-desc-y");
+	await w.type("z");
+	await w.screenshot("flux-desc-z");
+});
+
 test("a description Swarm can't keep shows as it is, to edit in Flux", async (t) => {
 	await flux(t, { rich: true });
 	// Agents read its table as Markdown's.
@@ -631,42 +753,52 @@ test("keys, the palette, delete and move, as Flux's", async (t) => {
 	await w.see("No priority");
 	await w.click("No priority");
 	await t.until(() => ["s7", "s21"].some((id) => items.get(id)!.body!.priority === "none"), { what: "the priority set in place" });
-	// Delete asks first; Cancel keeps it.
-	await w.rightClick("Write the docs");
-	// The menu open, done opening, before its item's clicked.
-	await w.see("Move to project");
-	await t.sleep(300);
-	await w.click("Delete");
-	await w.see("Delete this issue?");
-	await w.screenshot("flux-confirm");
-	await w.click("Cancel");
+	// Delete asks first; Escape keeps it, though the board takes Escape itself, and so does Cancel.
+	for (const leave of ["Escape", "Cancel"]) {
+		await w.rightClick("Write the docs");
+		// The menu open, its items built as it opens, before one's clicked.
+		await w.see("Move to project");
+		await w.click("Delete");
+		await w.see("Delete this issue?");
+		if (leave === "Escape") {
+			await w.key("Escape");
+			await w.gone("Delete this issue?");
+			expect(items.get("i2")!.deleted).toBe(false);
+			continue;
+		}
+		await w.screenshot("flux-confirm");
+		await w.click("Cancel");
+	}
 	await w.gone("Delete this issue?");
 	expect(items.get("i2")!.deleted).toBe(false);
 	// Moved to another project, it takes a number free there, and its page follows it.
 	await w.click("Write the docs");
 	await w.see("Add sub-issues");
+	// The page takes the keys as it appears.
 	await w.key("Shift+P");
 	await w.click("Move to project…");
 	await w.type("swa");
 	await w.key("Enter");
 	await t.until(() => items.get("i2")!.body!.projectId === "p2", { what: "the move pushed" });
+	await w.gone("Move to project…");
 	const number = items.get("i2")!.body!.number as number;
 	const taken = [...items.values()].filter((it) => it.id !== "i2" && it.body?.type === "issue" && it.body?.projectId === "p2").map((it) => it.body!.number);
 	expect(taken.includes(number)).toBe(false);
 	await w.see(`SWARM-${number}`);
-	// A due date typed, as Flux reads it.
+	// A due date typed, as Flux reads it, in the palette, where it comes first.
 	await w.key("Shift+D");
 	await w.see("Set due date…");
-	await w.click("Custom…");
-	await w.gone("Set due date…");
-	await w.see("Next month");
 	await w.type("2 weeks");
-	await w.screenshot("flux-due-picker");
-	await w.key("Enter");
 	const due = new Date();
 	due.setDate(due.getDate() + 14);
+	const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][due.getMonth()];
+	await w.see(`Due ${month} ${due.getDate()}${due.getFullYear() === new Date().getFullYear() ? "" : `, ${due.getFullYear()}`}`);
+	await w.screenshot("flux-due-typed");
+	await w.key("Enter");
 	const local = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, "0")}-${String(due.getDate()).padStart(2, "0")}`;
 	await t.until(() => items.get("i2")!.body!.dueDate === local, { what: "two weeks from today pushed" });
+	// The palette gone, as the user sees it go, before the page's keys.
+	await w.gone("Set due date…");
 	// Deleted, its comments go with it.
 	await w.key("Mod+Backspace");
 	await w.see("Delete this issue?");
@@ -685,6 +817,8 @@ test("changes made offline wait, and go when Flux is back", async (t) => {
 	// Changed while Flux is away: shown at once, and waiting.
 	await w.click("Write the docs");
 	await w.see("Add sub-issues");
+	// The page takes the keys as it appears: a frame after it shows.
+	await t.sleep(250);
 	await w.key("Shift+1");
 	await w.see("1 waiting to send", { timeout: 15000 });
 	await w.see("Urgent");
@@ -693,6 +827,8 @@ test("changes made offline wait, and go when Flux is back", async (t) => {
 	await w.key("Escape");
 	await w.click("Fix the login redirect");
 	await w.see("Add sub-issues");
+	// The page takes the keys as it appears: a frame after it shows.
+	await t.sleep(250);
 	await w.key("Shift+2");
 	await w.see("2 waiting to send");
 	await w.screenshot("flux-offline");
@@ -897,7 +1033,8 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	// is the toolbar's alone.
 	await w.see("Find a view");
 	await w.see("All projects");
-	expect(await w.has("My issues")).toBe(true);
+	// The scopes are the title bar's, which can draw a moment after the board.
+	await w.see("My issues");
 	await w.see("Coldspire");
 	await w.screenshot("flux-board");
 	await w.dark(true);
@@ -954,6 +1091,22 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	week.setDate(week.getDate() + 7);
 	const local = `${week.getFullYear()}-${String(week.getMonth() + 1).padStart(2, "0")}-${String(week.getDate()).padStart(2, "0")}`;
 	await t.until(() => items.get("i2")!.body!.dueDate === local, { what: "a week from today pushed" });
+	// Custom…, Swarm's calendar in the menu's place, on the day set, once the card has it: a day on, and Enter.
+	await w.see(`${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][week.getMonth()]} ${week.getDate()}`);
+	await w.rightClick("Write the docs");
+	await w.click("Due date");
+	await w.click("Custom…");
+	await w.see("Previous month");
+	await w.screenshot("flux-due-calendar");
+	await w.dark(true);
+	await w.screenshot("flux-due-calendar-dark");
+	await w.dark(false);
+	await w.key("Right");
+	await w.key("Enter");
+	await w.gone("Previous month");
+	week.setDate(week.getDate() + 1);
+	const next = `${week.getFullYear()}-${String(week.getMonth() + 1).padStart(2, "0")}-${String(week.getDate()).padStart(2, "0")}`;
+	await t.until(() => items.get("i2")!.body!.dueDate === next, { what: "the day after pushed" });
 	await w.click("Fix the login redirect", { mod: true });
 	await w.see("1 selected");
 	await w.click("Write the docs");
@@ -1026,7 +1179,8 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.click("Issue title");
 	await w.key("End");
 	await w.type(" and Firefox");
-	await t.sleep(600);
+	// The draft saved as it's typed, then Escape.
+	await t.until(() => items.get("i1")!.body!.title === "Fix the login redirect on Safari and Firefox", { what: "the draft pushed" });
 	await w.key("Escape");
 	await w.gone("Issue title");
 	await t.until(() => items.get("i1")!.body!.title === "Fix the login redirect on Safari", { what: "the title put back", timeout: 10000 });
@@ -1057,7 +1211,6 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.see("Sub-issue of");
 	await w.click("ABC-1 Fix the login redirect on Safari");
 	await w.gone("Sub-issue of");
-	console.log("DBG", items.get("i1")!.body!.title);
 	await w.see("Sub-issues");
 	// Narrow, with Swarm's sidebar hidden: the properties are chips under
 	// the title, as bb's are, and the board scrolls sideways.
@@ -1073,7 +1226,7 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.see("Sub-issue of");
 	await w.key("Escape");
 	await w.see("Backlog");
-	await w.see("Coldspire");
+	await w.see("Project: All projects");
 	await w.screenshot("flux-board-narrow");
 	// Narrow, the board settles column by column, as Flux's: a little way
 	// goes back, past halfway on to the next.
@@ -1083,4 +1236,206 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.screenshot("flux-board-snap-next");
 	await w.dark(true);
 	await w.screenshot("flux-board-narrow-dark");
+});
+
+test("a new project, as Flux makes it: its name's key, its mark from Swarm's gallery, then its board", async (t) => {
+	const { pushes } = await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	await w.click("Project: All projects");
+	await w.see("New project…");
+	await t.sleep(300);
+	await w.click("New project…");
+	await w.see("Project name");
+	await w.type("Plugins");
+	// The key is the name's, as Flux derives it, until one's typed.
+	await w.see("Issues numbered PLUGI-1, PLUGI-2, …");
+	await w.screenshot("flux-new-project");
+	await w.dark(true);
+	await w.screenshot("flux-new-project-dark");
+	await w.dark(false);
+	// Its mark: Swarm's gallery of Flux's icons, in Flux's colors.
+	await w.click("Project icon: Folder, gray");
+	await w.see("Developer");
+	await w.see("Search icons");
+	await t.sleep(300);
+	await w.screenshot("flux-mark-picker");
+	await w.dark(true);
+	await w.screenshot("flux-mark-picker-dark");
+	await w.dark(false);
+	// As it opens it's at the icon chosen; its search finds the others by their words.
+	await w.type("launch");
+	await w.click("Rocket");
+	await w.click("Blue");
+	await w.see("Project icon: Rocket, blue");
+	// And Swarm's emoji, found by name.
+	await w.click("Emoji");
+	await w.type("bee");
+	await w.see("Honeybee");
+	await t.sleep(300);
+	await w.screenshot("flux-mark-picker-emoji");
+	await w.click("Icons");
+	await w.click("Rocket");
+	await w.key("Escape");
+	await w.gone("Matches");
+	// A key another project has, or a word Flux's routes use, isn't one.
+	await w.click("KEY");
+	await w.key("Mod+A");
+	await w.type("abc");
+	await w.see("Alpha has the key ABC");
+	await w.screenshot("flux-new-project-taken");
+	await w.key("Mod+A");
+	await w.type("inbox");
+	await w.see("That project key is reserved");
+	await w.key("Mod+A");
+	await w.type("plg");
+	await w.see("Issues numbered PLG-1, PLG-2, …");
+	expect(pushes().length).toBe(0);
+	await w.key("Mod+Enter");
+	await t.until(() => pushes().length === 1, { what: "the project pushed" });
+	const [created] = pushes()[0]!;
+	expect(created).toMatchObject({ type: "upsert", baseVersion: -1, body: { type: "project", key: "PLG", aliases: [], name: "Plugins", mark: { type: "icon", value: "rocket", color: "blue" }, nextNumber: 1, position: 1 } });
+	// Its board opens, and the sidebar lists it.
+	await w.gone("Project name");
+	await w.see("Project: Plugins");
+	await w.see("Created Plugins.");
+	expect((await t.run("projects")).stdout).toContain("PLG");
+	// New issues number from 1 in it.
+	expect((await t.run("create", "--project", "PLG", "--title", "First")).stdout).toContain("Created PLG-1 · First");
+});
+
+test("a project's settings rename it, rekey it keeping the old key, and change its mark; Delete says what happens to its issues", async (t) => {
+	const { items, pushes } = await flux(t, { demo: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	await w.click("Alpha");
+	await w.see("Project: Alpha");
+	await w.click("Project: Alpha");
+	await w.see("Project settings…");
+	await t.sleep(300);
+	await w.click("Project settings…");
+	await w.see("Project settings");
+	await w.see("Issues numbered ABC-1, ABC-2, …");
+	await w.screenshot("flux-project-settings");
+	await w.dark(true);
+	await w.screenshot("flux-project-settings-dark");
+	await w.dark(false);
+	await w.click("Project name");
+	await w.key("Mod+A");
+	await w.type("Alphabet");
+	await w.click("KEY");
+	await w.key("Mod+A");
+	await w.type("swarm");
+	await w.see("Swarm has the key SWARM");
+	await w.key("Mod+A");
+	await w.type("alp");
+	await w.see("Issues become ALP-1, ALP-2, …; ABC-1 still finds its issue");
+	await w.click("Project icon: Rocket, an emoji");
+	await w.see("Suggested");
+	await w.type("fox");
+	await w.click("Fox");
+	await w.key("Escape");
+	await w.gone("Suggested");
+	const before = pushes().length;
+	await w.click("Save  ⌘↵");
+	await t.until(() => items.get("p1")!.body!.key === "ALP", { what: "the key pushed" });
+	const [edit] = pushes()[before]!;
+	// The old key stays an alias; the counter is the copy's, untouched.
+	expect(edit).toMatchObject({ itemId: "p1", body: { type: "project", key: "ALP", aliases: ["ABC"], name: "Alphabet", mark: { type: "emoji", value: "🦊" }, nextNumber: 3, position: 0 } });
+	// Its board follows it to its new key, and its issues' old keys still find them.
+	await w.gone("Save  ⌘↵");
+	await w.see("Project: Alphabet");
+	await w.see("ALP-1");
+	expect((await t.run("show", "ABC-1")).stdout).toContain("# ALP-1 · Fix the login redirect");
+	// Delete asks, saying Flux keeps the issues without their project.
+	// The menu open, done opening, before its item's clicked: once more if
+	// the first click came as the bar settled on the new key.
+	await w.click("Project: Alphabet");
+	await t.sleep(300);
+	if (!(await w.has("Project settings…"))) await w.click("Project: Alphabet");
+	await w.see("Project settings…");
+	await t.sleep(300);
+	await w.click("Project settings…");
+	await w.see("Delete…");
+	await w.click("Delete…");
+	await w.see("Delete Alphabet?");
+	await w.see("Flux keeps its 2 issues, without a project: they lose their ALP keys, and only All projects lists them. This can't be undone.");
+	await w.screenshot("flux-project-delete");
+	await w.click("Cancel");
+	await w.gone("Delete Alphabet?");
+	expect(items.get("p1")!.deleted).toBe(false);
+});
+
+test("Flux's Settings list the projects to make, mark, reorder and delete", async (t) => {
+	const { items, pushes } = await flux(t, { demo: true });
+	const w = await t.window();
+	await w.resize(1280, 900);
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	await w.click("Coldspire");
+	await w.click("Flux settings…");
+	await w.see("Where agents work");
+	await w.see("New project");
+	await w.screenshot("flux-settings-projects");
+	await w.dark(true);
+	await w.screenshot("flux-settings-projects-dark");
+	await w.dark(false);
+	// The mark changes at once, from the gallery in its row.
+	await w.click("Icon of Swarm: Honeybee, an emoji");
+	await w.click("Icons");
+	await w.click("Robot");
+	await t.until(() => (items.get("p2")!.body!.mark as { value?: string }).value === "robot", { what: "the mark pushed" });
+	await w.key("Escape");
+	// Moved up, each project's place is its position, as Flux's sidebar's drag writes them.
+	await w.click("Actions for Swarm");
+	await w.see("Move up");
+	await t.sleep(300);
+	await w.click("Move up");
+	await t.until(() => items.get("p2")!.body!.position === 0 && items.get("p1")!.body!.position === 1, { what: "the order pushed" });
+	expect(pushes()[pushes().length - 1]!.map((op: { itemId: string }) => op.itemId).sort()).toEqual(["p1", "p2"]);
+	// Delete, from its menu, asks first, then deletes the project alone, as Flux.
+	await w.click("Actions for Alpha");
+	await w.see("Delete project…");
+	await t.sleep(300);
+	await w.click("Delete project…");
+	await w.see("Delete Alpha?");
+	await w.click("Delete");
+	await w.gone("Delete Alpha?");
+	await t.until(() => !!items.get("p1")!.deleted, { what: "the project deleted" });
+	expect(items.get("i1")!.deleted).toBe(false);
+	await w.gone("Actions for Alpha");
+	// New project, from here too.
+	await w.click("New project");
+	await w.see("Project name");
+	// Docs, a word Flux's routes use, isn't a key: the next free is.
+	await w.type("Docs");
+	await w.see("Issues numbered DOCSA-1, DOCSA-2, …");
+	await w.key("Enter");
+	await t.until(() => [...items.values()].some((it) => it.body?.type === "project" && it.body.name === "Docs" && it.body.key === "DOCSA"), { what: "the project made" });
+});
+
+test("a project made offline waits, and goes when Flux is back", async (t) => {
+	const { items, away } = await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	away.down = true;
+	// From the palette, as Flux's command menu has it.
+	await w.palette("New Flux project");
+	await w.see("Project name");
+	await w.type("Offline");
+	await w.key("Enter");
+	// Shown at once, its board open, and waiting.
+	await w.see("Project: Offline");
+	await w.see("1 waiting to send", { timeout: 15000 });
+	expect([...items.values()].some((it) => it.body?.name === "Offline")).toBe(false);
+	away.down = false;
+	await w.click("Retry now");
+	await t.until(() => [...items.values()].some((it) => it.body?.type === "project" && it.body.name === "Offline" && it.body.key === "OFFLI"), { what: "the project sent" });
+	await w.gone("waiting to send");
 });

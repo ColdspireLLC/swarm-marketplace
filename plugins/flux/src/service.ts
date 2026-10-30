@@ -12,6 +12,7 @@ import { htmlToMarkdown, markdownToHtml } from "./content";
 import type { Comment, Issue, IssueDetail, IssuePatch, Label, Member, Project } from "./contract";
 import { parseDescription, descriptionState, writeLiveDescription } from "./description";
 import { ItemStore } from "./store";
+import { aliasesAfter, keyOwner, keyProblem as formatProblem, normalizeProjectKey, uniqueProjectKey, type Keyed } from "./keys";
 import { COLORS, CLOSED_STATUSES, PRIORITIES, STATUSES, parseIssueKey, type ColorName, type Priority, type Status } from "./flux";
 
 export class FluxNotReadyError extends Error {
@@ -35,7 +36,21 @@ type PendingChange =
 	| { type: "comment"; id: string; body: Record<string, unknown> }
 	| { type: "commentEdit"; id: string; html: string }
 	| { type: "commentDelete"; id: string }
-	| { type: "label"; id: string; body: Record<string, unknown> };
+	| { type: "label"; id: string; body: Record<string, unknown> }
+	| { type: "project"; id: string; body: Record<string, unknown> }
+	| { type: "projectEdit"; id: string; patch: ProjectPatch }
+	| { type: "projectOrder"; ids: string[] }
+	| { type: "projectDelete"; id: string };
+
+/** A project's mark as Flux keeps it: an icon of its gallery in one of its colors, or an emoji. */
+export type ProjectMarkValue = { type: "icon"; value: string; color: ColorName } | { type: "emoji"; value: string };
+
+/** What a project's settings change: its name, its key (the old one kept as an alias) and its mark. */
+export interface ProjectPatch {
+	name?: string;
+	key?: string;
+	mark?: ProjectMarkValue;
+}
 
 interface Queued {
 	seq: number;
@@ -53,6 +68,9 @@ export interface Dropped {
 }
 
 const MAX_DROPPED = 20;
+
+/** The longest name Flux gives a project. */
+export const PROJECT_NAME_MAX = 60;
 
 interface Item {
 	id: string;
@@ -537,6 +555,26 @@ export class Flux {
 			case "label":
 				if (this.replica.items[change.id] && !this.shadow.has(change.id)) return [];
 				return [{ itemId: change.id, baseVersion: -1, body: change.body }];
+			case "project": {
+				if (this.replica.items[change.id] && !this.shadow.has(change.id)) return [];
+				// Its key, if another took it meanwhile, the next free, as Flux's.
+				const key = uniqueProjectKey(this.keyed(), asString(change.body.key), change.id);
+				return [{ itemId: change.id, baseVersion: -1, body: { ...change.body, key } }];
+			}
+			case "projectEdit":
+				return this.projectWrites(change.id, change.patch);
+			case "projectOrder": {
+				// The order asked, then any project it didn't know of, each at its place.
+				const ids = [...change.ids.filter((id) => this.replica.items[id]?.body.type === "project"), ...this.projects().map((p) => p.id).filter((id) => !change.ids.includes(id))];
+				return ids.flatMap((id, position) => {
+					const it = this.replica.items[id]!;
+					return asNumber(it.body.position) === position ? [] : [{ itemId: id, baseVersion: it.version, body: { ...it.body, position } }];
+				});
+			}
+			case "projectDelete": {
+				const it = this.replica.items[change.id];
+				return it ? [{ itemId: it.id, baseVersion: it.version, body: null }] : [];
+			}
 		}
 	}
 
@@ -1096,6 +1134,101 @@ export class Flux {
 		const id = crypto.randomUUID();
 		await this.change(`Label “${name.trim()}”`, { type: "label", id, body: { type: "label", name: name.trim(), color: pick } });
 		return this.labels().find((l) => l.id === id)!;
+	}
+
+	// ---- Projects ----
+
+	/** Each project's key and the keys it had, for a key's rules. */
+	keyed(): Keyed[] {
+		return this.projects().map((p) => ({ id: p.id, name: p.name, key: p.key, aliases: asStringList(this.replica.items[p.id]?.body.aliases) }));
+	}
+
+	/** Why key can't be the project ignore's, or a new one's: as Flux's dialog says, or whose it is; null for one it takes. */
+	keyProblem(key: string, ignore?: string): string | null {
+		const problem = formatProblem(key);
+		if (problem) return problem;
+		const owner = key ? keyOwner(this.keyed(), key, ignore) : null;
+		if (!owner) return null;
+		return owner.old ? `${key} was ${owner.project.name}'s key, and still finds its issues` : `${owner.project.name} has the key ${key}`;
+	}
+
+	/**
+	 * A project as Flux's New project makes it: the key given, or its
+	 * name's, the next free; Flux's folder, gray, for a mark; numbered from
+	 * 1, and after the others. It shows at once, and waits for Flux.
+	 */
+	async createProject(input: { name: string; key?: string; mark?: ProjectMarkValue }): Promise<Project> {
+		const name = input.name.trim().slice(0, PROJECT_NAME_MAX);
+		if (!name) throw new Error("Give the project a name.");
+		const typed = normalizeProjectKey(input.key ?? "");
+		const problem = typed ? this.keyProblem(typed) : null;
+		if (problem) throw new Error(`${problem}.`);
+		const key = uniqueProjectKey(this.keyed(), typed || name);
+		const id = crypto.randomUUID();
+		const body = { type: "project", key, aliases: [], name, mark: input.mark ?? { type: "icon", value: "folder", color: "gray" }, nextNumber: 1, position: this.projects().length };
+		await this.change(`Project “${name}”`, { type: "project", id, body });
+		return this.projects().find((p) => p.id === id)!;
+	}
+
+	/** Changes a project's name, key or mark; a key it leaves stays among its aliases, as Flux keeps it. */
+	async updateProject(id: string, patch: ProjectPatch): Promise<Project> {
+		const project = this.projects().find((p) => p.id === id);
+		if (!project) throw new FluxNotFoundError("The project was deleted in Flux.");
+		const next: ProjectPatch = {};
+		if (patch.name !== undefined) {
+			const name = patch.name.trim().slice(0, PROJECT_NAME_MAX);
+			if (!name) throw new Error("A project needs a name.");
+			if (name !== project.name) next.name = name;
+		}
+		if (patch.key !== undefined) {
+			const key = normalizeProjectKey(patch.key);
+			const problem = this.keyProblem(key, id) ?? (key ? null : "Project keys must be 2–5 letters");
+			if (problem) throw new Error(`${problem}.`);
+			if (key !== project.key) next.key = key;
+		}
+		if (patch.mark) next.mark = patch.mark;
+		if (Object.keys(next).length === 0) return project;
+		await this.change(`Change to ${next.name ?? project.name}`, { type: "projectEdit", id, patch: next });
+		return this.projects().find((p) => p.id === id) ?? project;
+	}
+
+	/** A project's writes for patch, from the copy as it is now: never its counter, which only numbering an issue raises. */
+	private projectWrites(id: string, patch: ProjectPatch): Write[] {
+		const it = this.item(id, "project");
+		const body: Record<string, unknown> = { ...it.body };
+		if (patch.name !== undefined) body.name = patch.name;
+		if (patch.mark) body.mark = patch.mark;
+		if (patch.key !== undefined) {
+			const was = asString(it.body.key);
+			const key = uniqueProjectKey(this.keyed(), patch.key, id);
+			body.key = key;
+			body.aliases = aliasesAfter(asStringList(it.body.aliases), was, key);
+		}
+		return [{ itemId: id, baseVersion: it.version, body }];
+	}
+
+	/** Moves a project to place to among them, as Flux's sidebar's drag: each one's position its place. */
+	async moveProject(id: string, to: number): Promise<void> {
+		const ids = this.projects().map((p) => p.id);
+		const from = ids.indexOf(id);
+		if (from < 0) throw new FluxNotFoundError("The project was deleted in Flux.");
+		const at = Math.max(0, Math.min(to, ids.length - 1));
+		if (at === from) return;
+		ids.splice(from, 1);
+		ids.splice(at, 0, id);
+		await this.change("The projects' order", { type: "projectOrder", ids });
+	}
+
+	/**
+	 * Deletes a project as Flux does: the project alone. Its issues stay in
+	 * Flux, without a project, so their keys go with it; Swarm forgets
+	 * where its agents worked.
+	 */
+	async deleteProject(id: string): Promise<void> {
+		const project = this.projects().find((p) => p.id === id);
+		if (!project) return;
+		await this.change(`Deleting ${project.name}`, { type: "projectDelete", id });
+		this.link(id, null);
 	}
 
 	// ---- Threads ----
