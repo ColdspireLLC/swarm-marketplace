@@ -1369,8 +1369,41 @@ test("a project's settings rename it, rekey it keeping the old key, and change i
 	expect(items.get("p1")!.deleted).toBe(false);
 });
 
-test("Flux's Settings list the projects to make, mark, reorder and delete", async (t) => {
-	const { items, pushes } = await flux(t, { demo: true });
+test("the sidebar's projects drag into a new order, as Flux's", async (t) => {
+	const { items, pushes } = await flux(t, { demo: true, marks: true });
+	const w = await t.window();
+	await w.resize(1280, 900);
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	const order = () => [...items.values()].filter((it) => it.body?.type === "project" && !it.deleted).sort((a, b) => (a.body!.position as number) - (b.body!.position as number)).map((it) => it.body!.name);
+	const before = order();
+	// Above All projects, it's the first project: that row stays first.
+	await w.drag("Robots", "All projects", { place: "above", shot: "flux-nav-drag" });
+	await t.until(() => order()[0] === "Robots", { what: "the order pushed" });
+	expect(order()).toEqual(["Robots", ...before.filter((name) => name !== "Robots")]);
+	expect(pushes()[pushes().length - 1]!.length).toBe(before.indexOf("Robots") + 1);
+	await w.screenshot("flux-nav-dropped");
+	// Dark, and to the list's foot.
+	await w.dark(true);
+	await w.drag("Robots", before[before.length - 1]!, { place: "below", shot: "flux-nav-drag-dark" });
+	await t.until(() => order()[order().length - 1] === "Robots", { what: "the order pushed" });
+	await w.dark(false);
+	// All projects stays where it is.
+	const moved = order();
+	await w.drag("All projects", "Alpha", { place: "below" });
+	await t.sleep(300);
+	expect(order()).toEqual(moved);
+	// What the search filters doesn't drag.
+	await w.click("Find a view");
+	await w.type("o");
+	await w.see("Robots");
+	await w.drag("Robots", "Foxes", { place: "above" });
+	await t.sleep(300);
+	expect(order()).toEqual(moved);
+});
+
+test("Flux's Settings list the projects to make, mark and delete", async (t) => {
+	const { items } = await flux(t, { demo: true });
 	const w = await t.window();
 	await w.resize(1280, 900);
 	await w.click("Flux");
@@ -1390,13 +1423,6 @@ test("Flux's Settings list the projects to make, mark, reorder and delete", asyn
 	await w.click("Robot");
 	await t.until(() => (items.get("p2")!.body!.mark as { value?: string }).value === "robot", { what: "the mark pushed" });
 	await w.key("Escape");
-	// Moved up, each project's place is its position, as Flux's sidebar's drag writes them.
-	await w.click("Actions for Swarm");
-	await w.see("Move up");
-	await t.sleep(300);
-	await w.click("Move up");
-	await t.until(() => items.get("p2")!.body!.position === 0 && items.get("p1")!.body!.position === 1, { what: "the order pushed" });
-	expect(pushes()[pushes().length - 1]!.map((op: { itemId: string }) => op.itemId).sort()).toEqual(["p1", "p2"]);
 	// Delete, from its menu, asks first, then deletes the project alone, as Flux.
 	await w.click("Actions for Alpha");
 	await w.see("Delete project…");
@@ -1468,4 +1494,43 @@ test("the title bar gives way as it narrows: the filter, New issue's name, the s
 	await w.dark(true);
 	await w.screenshot("flux-side-workspace-dark");
 	await w.dark(false);
+});
+
+test("the sidebar makes a project with its heading's plus, and each project's right-click is Flux's", async (t) => {
+	const { items } = await flux(t, { demo: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.see("Fix the login redirect");
+	// The plus on the Projects heading.
+	await w.click("New project");
+	await w.see("Project name");
+	await w.key("Escape");
+	await w.gone("Project name");
+	const projects = () => [...items.values()].filter((i) => i.body?.type === "project" && !i.deleted);
+	// A right-click on the sidebar's row, not on the board's.
+	await w.rightClick("Swarm");
+	await w.see("Copy link");
+	await t.sleep(200);
+	await w.screenshot("flux-sidebar-project-menu");
+	await w.click("Duplicate");
+	await t.until(() => projects().length === 3, { what: "the copy pushed" });
+	const copy = projects().find((i) => i.body!.name === "Swarm copy")!;
+	expect(copy.body!.key).not.toBe("SWARM");
+	await w.see("Swarm copy");
+	// New issue is in that project; Delete says what becomes of its issues.
+	await w.rightClick("Alpha");
+	await w.see("Copy link");
+	await t.sleep(200);
+	await w.click("New issue");
+	await w.see("Issue title");
+	await w.key("Escape");
+	await w.gone("Issue title");
+	await w.rightClick("Alpha");
+	await w.see("Copy link");
+	await t.sleep(200);
+	await w.click("Delete");
+	await w.see("Delete Alpha?");
+	await w.click("Cancel");
+	await w.gone("Delete Alpha?");
 });

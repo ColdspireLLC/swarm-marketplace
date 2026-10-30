@@ -6,7 +6,7 @@ import { ConnectForm } from "./connect";
 import { hub } from "./hub";
 import type { Flux, State } from "./service";
 import { Avatar } from "./view";
-import { MarkPicker, confirmDelete, keyNote, markOf, moveProject, openNewProject, openProjectSettings, setMark } from "./projects";
+import { MarkPicker, confirmDelete, keyNote, markOf, openNewProject, openProjectSettings, setMark } from "./projects";
 
 /** The Fluxes whose Change form is open, and whether Add another is. */
 const editing = new Set<string>();
@@ -166,7 +166,7 @@ function disconnect(flux: Flux) {
  * Flux's projects, as its own Settings list them, and which Swarm project
  * each one's agents work in: each one's mark, which Swarm's gallery
  * changes at once, its name and key, the Swarm project, and a menu of its
- * settings, its place in the order and Delete; New project at the top.
+ * settings and Delete; New project at the top.
  */
 function ProjectLinks({ flux }: { flux: Flux }) {
 	if (swarmProjects === null) refreshProjects();
@@ -209,8 +209,6 @@ function ProjectLinks({ flux }: { flux: Flux }) {
 								<ui.menu label={`Actions for ${project.name}`} tooltip="Project actions" style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }}>
 									<ui.icon icon="more" style={{ width: 14, height: 14, color: "currentColor" }} />
 									<ui.item icon="settings" onClick={() => openProjectSettings(project)}>Project settings…</ui.item>
-									<ui.item icon="up" disabled={i === 0} onClick={() => moveProject(flux, project, -1)}>Move up</ui.item>
-									<ui.item icon="down" disabled={i === projects.length - 1} onClick={() => moveProject(flux, project, 1)}>Move down</ui.item>
 									<ui.separator />
 									<ui.item icon="trash" danger onClick={() => confirmDelete(flux, project)}>Delete project…</ui.item>
 								</ui.menu>

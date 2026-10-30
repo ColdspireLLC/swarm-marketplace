@@ -77977,6 +77977,9 @@ ${token}`;
   issueUrl(issue2) {
     return `${this.baseUrl}/issue/${issue2.key}`;
   }
+  projectUrl(project) {
+    return `${this.baseUrl}/p/${project.key}`;
+  }
   mentionTargets() {
     return [...this.projects().map((p) => ({ id: `project:${p.id}`, username: p.key, name: p.name })), ...this.members];
   }
@@ -78027,6 +78030,7 @@ ${token}`;
           this.replica.items[w2.itemId] = { id: w2.itemId, version: (had?.version ?? -1) + 1, createdAt: had?.createdAt ?? now, updatedAt: now, body: w2.body };
         }
       }
+      this.onChange();
       const ops = writes.map(
         (w2) => w2.body === null ? { type: "delete", id: crypto.randomUUID(), itemId: w2.itemId, baseVersion: w2.baseVersion } : { type: "upsert", id: crypto.randomUUID(), itemId: w2.itemId, baseVersion: w2.baseVersion, body: w2.body }
       );
@@ -78291,7 +78295,7 @@ ${token}`;
     const typed = normalizeProjectKey(input2.key ?? "");
     const problem = typed ? this.keyProblem(typed) : null;
     if (problem) throw new Error(`${problem}.`);
-    const key = uniqueProjectKey(this.keyed(), typed || name2);
+    const key = uniqueProjectKey(this.keyed(), typed || input2.keyFrom || name2);
     const id2 = crypto.randomUUID();
     const body = { type: "project", key, aliases: [], name: name2, mark: input2.mark ?? { type: "icon", value: "folder", color: "gray" }, nextNumber: 1, position: this.projects().length };
     await this.change(`Project “${name2}”`, { type: "project", id: id2, body });
@@ -81229,9 +81233,16 @@ function confirmDelete(flux2, project, after) {
     ui10.toast(`Deleted ${project.name}.`);
   });
 }
-function moveProject(flux2, project, by) {
-  const at3 = flux2.projects().findIndex((p) => p.id === project.id);
-  void flux2.moveProject(project.id, at3 + by).catch((e) => ui10.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
+async function duplicateProject(flux2, project) {
+  try {
+    const copy3 = await flux2.createProject({ name: `${project.name} copy`.slice(0, 60), keyFrom: project.key, mark: markOf2(project) ?? void 0 });
+    ui10.navTo("flux", `p/${copy3.key}`);
+  } catch (e) {
+    ui10.toast(`Couldn't duplicate ${project.name}: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+function moveProject(flux2, project, to) {
+  void flux2.moveProject(project.id, to).catch((e) => ui10.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
 }
 function setMark2(flux2, project, next2) {
   void flux2.updateProject(project.id, { mark: next2 }).catch((e) => ui10.toast(`Couldn't change ${project.name}'s icon: ${e instanceof Error ? e.message : String(e)}`));
@@ -81663,7 +81674,8 @@ function navItems(flux2) {
       ...navMark(project),
       path: `p/${project.key}`,
       section: "Projects",
-      badge: count(open5.filter((issue2) => issue2.projectId === project.id).length)
+      badge: count(open5.filter((issue2) => issue2.projectId === project.id).length),
+      movable: true
     }))
   ];
 }
@@ -81685,8 +81697,11 @@ function parsePath(path) {
   if (parts[0] === "p" && parts[1]) return { kind: "list", project: decodeURIComponent(parts[1]) };
   return { kind: "list", project: null };
 }
-function FluxPage({ path, slot, image }) {
+function FluxPage({ path, slot, item, section, image }) {
   const flux2 = hub.active;
+  if (!slot) shownPath = path;
+  if (slot === "section") return section === "Projects" ? /* @__PURE__ */ jsx9(NewProjectButton, {}) : null;
+  if (slot === "item") return /* @__PURE__ */ jsx9(SidebarProjectMenu, { flux: flux2, project: flux2.projects().find((p) => "p-" + p.id === item) });
   const route = parsePath(path);
   const connection = flux2.connection();
   const unset = connection.state === "unconfigured" || connection.state === "unauthorized";
@@ -81799,6 +81814,27 @@ function SyncBars({ flux: flux2 }) {
       ] }),
       /* @__PURE__ */ jsx9(ui11.pressable, { label: "Dismiss", onClick: () => flux2.dismissDropped(), style: barButton, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Dismiss" }) })
     ] }) : null
+  ] });
+}
+var shownPath = "";
+function NewProjectButton() {
+  return /* @__PURE__ */ jsx9(ui11.pressable, { label: "New project", tooltip: "New project", onClick: openNewProject, style: { width: 20, height: 20, marginTop: -4, marginBottom: -4, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text3", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "plus", style: { width: 13, height: 13, color: "currentColor" } }) });
+}
+function SidebarProjectMenu({ flux: flux2, project }) {
+  if (!project) return null;
+  const route = parsePath(shownPath);
+  const here = route.kind === "list" && route.project === project.key;
+  return /* @__PURE__ */ jsx9(ui11.menu, { context: true, label: `${project.name} actions`, children: () => [
+    /* @__PURE__ */ jsx9(ui11.item, { icon: "plus", onClick: () => openCreate(flux2, project.id), children: "New issue" }, "new"),
+    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep1"),
+    /* @__PURE__ */ jsx9(ui11.item, { icon: "pencil", onClick: () => openProjectSettings(project, here), children: "Edit" }, "edit"),
+    /* @__PURE__ */ jsx9(ui11.item, { icon: "external", onClick: () => {
+      ui11.copy(flux2.projectUrl(project));
+      ui11.toast(`Copied ${project.name}'s link.`);
+    }, children: "Copy link" }, "link"),
+    /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => void duplicateProject(flux2, project), children: "Duplicate" }, "dup"),
+    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep2"),
+    /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project, here ? () => openList("") : void 0), children: "Delete" }, "del")
   ] });
 }
 function HeadTitle() {
@@ -83366,8 +83402,6 @@ function ProjectLinks({ flux: flux2 }) {
           /* @__PURE__ */ jsxs9(ui12.menu, { label: `Actions for ${project.name}`, tooltip: "Project actions", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
             /* @__PURE__ */ jsx10(ui12.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
             /* @__PURE__ */ jsx10(ui12.item, { icon: "settings", onClick: () => openProjectSettings(project), children: "Project settings…" }),
-            /* @__PURE__ */ jsx10(ui12.item, { icon: "up", disabled: i2 === 0, onClick: () => moveProject(flux2, project, -1), children: "Move up" }),
-            /* @__PURE__ */ jsx10(ui12.item, { icon: "down", disabled: i2 === projects.length - 1, onClick: () => moveProject(flux2, project, 1), children: "Move down" }),
             /* @__PURE__ */ jsx10(ui12.separator, {}),
             /* @__PURE__ */ jsx10(ui12.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project), children: "Delete project…" })
           ] })
@@ -83513,9 +83547,17 @@ function activate() {
     bare: true,
     // Which Flux, beside its name in the sidebar.
     side: true,
+    // New project on the Projects heading, and each project's menu.
+    sections: true,
+    itemMenus: true,
     search: "Find a view",
     items: navItems(flux),
-    render: ({ args: args2 }) => /* @__PURE__ */ jsx11(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", image: imageOf })
+    // Its projects drag up and down the sidebar, as Flux's.
+    onItemMove: ({ item, index }) => {
+      const project = flux.projects().find((p) => "p-" + p.id === item);
+      if (project) moveProject(flux, project, index);
+    },
+    render: ({ args: args2 }) => /* @__PURE__ */ jsx11(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", item: args2.item, section: args2.section, image: imageOf })
   });
   syncNav(flux);
   warmStart();

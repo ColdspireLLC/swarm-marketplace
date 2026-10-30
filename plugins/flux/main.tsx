@@ -18,7 +18,7 @@ import { issueImages } from "./src/images";
 import { FluxPage, NewIssue, closeCreate, navItems, syncNav, unstarted } from "./src/page";
 import { threadInstructions } from "./src/prompt";
 import { FluxSettings, refreshProjects } from "./src/settings";
-import { ProjectDialog, closeProject, openNewProject } from "./src/projects";
+import { ProjectDialog, closeProject, moveProject, openNewProject } from "./src/projects";
 import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
 import { Avatar, IssueView, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
@@ -174,9 +174,17 @@ export function activate() {
 		bare: true,
 		// Which Flux, beside its name in the sidebar.
 		side: true,
+		// New project on the Projects heading, and each project's menu.
+		sections: true,
+		itemMenus: true,
 		search: "Find a view",
 		items: navItems(flux),
-		render: ({ args }) => <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} image={imageOf} />,
+		// Its projects drag up and down the sidebar, as Flux's.
+		onItemMove: ({ item, index }) => {
+			const project = flux.projects().find((p) => "p-" + p.id === item);
+			if (project) moveProject(flux, project, index);
+		},
+		render: ({ args }) => <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} item={args.item} section={args.section} image={imageOf} />,
 	});
 	syncNav(flux);
 	// Swarm's projects read ahead, for Start agent to open with one chosen.

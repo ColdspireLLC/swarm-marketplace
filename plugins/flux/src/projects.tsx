@@ -3,7 +3,7 @@
 // name, its key, Flux's way from the name until one's typed, and its
 // mark, from Swarm's gallery of icons and emoji in Flux's colors; the
 // same dialog for a project's settings, which keeps an old key as an
-// alias; the order, and Delete, which Flux does to the project alone.
+// alias; the sidebar's order, and Delete, which Flux does to the project alone.
 // From the board's project menu, the palette, and Flux's page of
 // Settings.
 import { RAISED_HOVER } from "./view";
@@ -121,10 +121,19 @@ export function confirmDelete(flux: Flux, project: Project, after?: () => void) 
 	});
 }
 
-/** Moves a project up or down the list, saying so if Flux won't have it. */
-export function moveProject(flux: Flux, project: Project, by: number) {
-	const at = flux.projects().findIndex((p) => p.id === project.id);
-	void flux.moveProject(project.id, at + by).catch((e: unknown) => ui.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
+/** A copy of a project, as Flux's Duplicate: its mark and key, no issues; then its board. */
+export async function duplicateProject(flux: Flux, project: Project) {
+	try {
+		const copy = await flux.createProject({ name: `${project.name} copy`.slice(0, 60), keyFrom: project.key, mark: markOf(project) ?? undefined });
+		ui.navTo("flux", `p/${copy.key}`);
+	} catch (e) {
+		ui.toast(`Couldn't duplicate ${project.name}: ${e instanceof Error ? e.message : String(e)}`);
+	}
+}
+
+/** Moves a project to a place in the list, saying so if Flux won't have it. */
+export function moveProject(flux: Flux, project: Project, to: number) {
+	void flux.moveProject(project.id, to).catch((e: unknown) => ui.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
 }
 
 /** A project's mark changed from a list, at once, as Flux's settings do. */
