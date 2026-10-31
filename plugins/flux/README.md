@@ -1,13 +1,11 @@
 # Flux
 
-Flux issues in Swarm, ported from bb's Flux plugin (SWARM-132) with
-Swarm's SDK (docs/sdk.md). Agents read and update issues with
-`swarm flux …`, as bb's agents do with `bb flux …` (its skill says how);
-a thread attached to an issue (`swarm flux start ABC-12`, or its Flux
-panel) is told to keep it current; `::flux{key="ABC-12"}` in a reply shows
-the issue's card.
+Flux issues in Swarm. Agents read and update issues with `swarm flux …`
+(its skill says how); a thread attached to an issue (`swarm flux start
+ABC-12`, or its Flux panel) is told to keep it current;
+`::flux{key="ABC-12"}` in a reply shows the issue's card.
 
-What carries over as it was: the Flux client, Markdown and HTML
+What it shares with Flux's other clients: the Flux client, Markdown and HTML
 (`marked`, `turndown`), descriptions written into the issue's live Yjs
 document through Flux's WebSocket (`yjs`, TipTap's schema, `domino` for a
 DOM), the prompts and the CLI's output. What's Swarm's: the copy of the

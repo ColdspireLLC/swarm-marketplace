@@ -1,12 +1,11 @@
 # Swarm's marketplace
 
-The plugins Coldspire reviews for [Swarm](https://gitlab.coldspire.com/coldspire/swarm),
+The plugins Coldspire reviews for [Swarm](https://github.com/ColdspireLLC/swarm),
 and the catalog Swarm reads them from. Every Swarm lists it first, as
 **Swarm**, under Settings, Plugins, Marketplaces, and installs from it
 with `swarm plugin install marketplace:swarm/ID`.
 
-It lives on GitLab, [coldspire/swarm-marketplace](https://gitlab.coldspire.com/coldspire/swarm-marketplace),
-and is mirrored to GitHub, [ColdspireLLC/swarm-marketplace](https://github.com/ColdspireLLC/swarm-marketplace),
+It's on GitHub, [ColdspireLLC/swarm-marketplace](https://github.com/ColdspireLLC/swarm-marketplace),
 which is where Swarm reads it:
 `https://raw.githubusercontent.com/ColdspireLLC/swarm-marketplace/main/marketplace.json`.
 
@@ -28,22 +27,21 @@ which is where Swarm reads it:
 | [Flux](plugins/flux) | Flux issues in Swarm, for you and your agents. |
 
 Swarm's own plugins, Inline visualizations, Plugin development and the
-Thread list, come with Swarm and are kept in its repository
-([`plugins/`](https://gitlab.coldspire.com/coldspire/swarm/-/tree/main/plugins)),
-not here: they're updated with Swarm, and their IDs are reserved.
+Thread list, come with Swarm, not here: they're updated with Swarm, and
+their IDs are reserved.
 
 ## Listing a plugin
 
 Open a pull request on GitHub,
-[ColdspireLLC/swarm-marketplace](https://github.com/ColdspireLLC/swarm-marketplace),
-or a merge request on Coldspire's GitLab if you have it there. It adds
+[ColdspireLLC/swarm-marketplace](https://github.com/ColdspireLLC/swarm-marketplace).
+It adds
 your plugin's entry to `marketplace.json`, with its icon (an SVG glyph in
 `currentColor`, which Swarm tints, or a PNG; 1 MB at most) and its
 `PLUGIN_OVERVIEW.md` in `listings/ID/`. The code stays in your repository
 or package: the entry points at a public git repository and a range of
 its tags (`"range": "^1.0.0"`), or an npm package, so updates come as you
-tag them. GitHub is a mirror, so Coldspire brings a pull request there
-into GitLab, where it's merged, and it comes back with the mirror.
+tag them. Coldspire reviews it, and merges it on its side, so your pull
+request closes as the change comes back to this repository.
 
 The **Plugin development** plugin, which comes with Swarm, gives an agent the
 `submit-a-plugin` skill, which does all of this with you.
