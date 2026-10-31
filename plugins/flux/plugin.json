@@ -2,7 +2,7 @@
   "$schema": "./plugin.schema.json",
   "id": "flux",
   "name": "Flux",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Flux issues in Swarm, kept current by your threads.",
   "adds": ["App page", "Side panel", "Agent skill"],
   "icon": "icon.svg",
