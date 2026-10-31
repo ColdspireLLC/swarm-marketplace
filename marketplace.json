@@ -7,7 +7,7 @@
     {
       "id": "flux",
       "displayName": "Flux",
-      "description": "Flux issues in Swarm: agents read and update them, a thread attached to an issue keeps it current, and each thread has its issue beside it.",
+      "description": "Flux issues in Swarm, kept current by your threads.",
       "icon": "plugins/flux/icon.svg",
       "tags": [
         "issues",
