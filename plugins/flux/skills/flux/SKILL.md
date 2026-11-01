@@ -25,12 +25,18 @@ whose output another command or script will read. `swarm flux help` lists the co
    members, so look at them with the Flux plugin's `issue_images` tool (`flux_issue_images`) rather than
    fetching a link.
 
-2. If you're taking on work that didn't start from Flux, attach this thread.
-   That moves a Backlog or Todo issue to In Progress:
+2. Whenever you work on an issue, attach this thread to it, including one
+   you file yourself for the work you're about to do. That shows the thread
+   on the issue, and moves a Backlog or Todo issue to In Progress:
 
    ```sh
    swarm flux start ABC-12
+   swarm flux create --project ABC --title "Retry pushes after a 409" --start   # file and attach in one go
    ```
+
+   Attach only the issue you're working on now. Leave follow-ups for later
+   unattached, and file the steps of one piece of work as sub-issues
+   (`--parent ABC-12`), not as separate top-level issues.
 
 3. Comment at real milestones, not on every step: a settled plan, a change
    ready to check, or a blocker. Comments are Markdown; `@username` notifies
