@@ -12,8 +12,8 @@ var __commonJS = (cb, mod) => function __require() {
   }
 };
 var __export = (target, all2) => {
-  for (var name2 in all2)
-    __defProp(target, name2, { get: all2[name2], enumerable: true });
+  for (var name in all2)
+    __defProp(target, name, { get: all2[name], enumerable: true });
 };
 var __copyProps = (to, from4, except, desc) => {
   if (from4 && typeof from4 === "object" || typeof from4 === "function") {
@@ -1661,7 +1661,7 @@ var require_xmlnames = __commonJS({
     var ncname = "[" + ncnamestartchars + "][" + ncnamechars + "]*";
     var namestartchars = ncnamestartchars + ":";
     var namechars = ncnamechars + ":";
-    var name2 = new RegExp("^[" + namestartchars + "][" + namechars + "]*$");
+    var name = new RegExp("^[" + namestartchars + "][" + namechars + "]*$");
     var qname = new RegExp("^(" + ncname + "|" + ncname + ":" + ncname + ")$");
     var hassurrogates = /[\uD800-\uDB7F\uDC00-\uDFFF]/;
     var surrogatechars = /[\uD800-\uDB7F\uDC00-\uDFFF]/g;
@@ -1675,7 +1675,7 @@ var require_xmlnames = __commonJS({
     var surrogateqname = new RegExp("^(" + ncname + "|" + ncname + ":" + ncname + ")$");
     function isValidName(s) {
       if (simplename.test(s)) return true;
-      if (name2.test(s)) return true;
+      if (name.test(s)) return true;
       if (!hassurrogates.test(s)) return false;
       if (!surrogatename.test(s)) return false;
       var chars = s.match(surrogatechars), pairs = s.match(surrogatepairs);
@@ -1814,12 +1814,12 @@ var require_attributes = __commonJS({
         }
       };
     }
-    exports.registerChangeHandler = function(c, name2, handler) {
+    exports.registerChangeHandler = function(c, name, handler) {
       var p = c.prototype;
       if (!Object.prototype.hasOwnProperty.call(p, "_attributeChangeHandlers")) {
         p._attributeChangeHandlers = Object.create(p._attributeChangeHandlers || null);
       }
-      p._attributeChangeHandlers[name2] = handler;
+      p._attributeChangeHandlers[name] = handler;
     };
   }
 });
@@ -2162,9 +2162,9 @@ var require_select = __commonJS({
       var regex = rules2.inside.source.replace(/</g, start).replace(/>/g, end);
       return new RegExp(regex);
     };
-    var replace2 = function(regex, name2, val) {
+    var replace2 = function(regex, name, val) {
       regex = regex.source;
-      regex = regex.replace(name2, val.source || val);
+      regex = regex.replace(name, val.source || val);
       return new RegExp(regex);
     };
     var truncateUrl = function(url2, num) {
@@ -2290,8 +2290,8 @@ var require_select = __commonJS({
       ":empty": function(el) {
         return !el.firstChild;
       },
-      ":not": function(sel2) {
-        var test = compileGroup(sel2);
+      ":not": function(sel) {
+        var test = compileGroup(sel);
         return function(el) {
           return !test(el);
         };
@@ -2341,13 +2341,13 @@ var require_select = __commonJS({
       ":focus": function(el) {
         return el === el.ownerDocument.activeElement;
       },
-      ":is": function(sel2) {
-        return compileGroup(sel2);
+      ":is": function(sel) {
+        return compileGroup(sel);
       },
       // :matches is an older name for :is; see
       // https://github.com/w3c/csswg-drafts/issues/3258
-      ":matches": function(sel2) {
-        return selectors[":is"](sel2);
+      ":matches": function(sel) {
+        return selectors[":is"](sel);
       },
       ":nth-match": function(param, last2) {
         var args2 = param.split(/\s*,\s*/), arg = args2.shift(), test = compileGroup(args2.join(","));
@@ -2419,9 +2419,9 @@ var require_select = __commonJS({
       },
       ":read-only": function(el) {
         if (el.readOnly) return true;
-        var attr = el.getAttribute("contenteditable"), prop = el.contentEditable, name2 = el.nodeName.toLowerCase();
-        name2 = name2 !== "input" && name2 !== "textarea";
-        return (name2 || el.disabled) && attr == null && prop !== "true";
+        var attr = el.getAttribute("contenteditable"), prop = el.contentEditable, name = el.nodeName.toLowerCase();
+        name = name !== "input" && name !== "textarea";
+        return (name || el.disabled) && attr == null && prop !== "true";
       },
       ":read-write": function(el) {
         return !selectors[":read-only"](el);
@@ -2544,7 +2544,7 @@ var require_select = __commonJS({
           return test(el) && el;
         };
       },
-      "ref": function(test, name2) {
+      "ref": function(test, name) {
         var node2;
         function ref(el) {
           var doc4 = el.ownerDocument, nodes = doc4.getElementsByTagName("*"), i2 = nodes.length;
@@ -2559,7 +2559,7 @@ var require_select = __commonJS({
         }
         ref.combinator = function(el) {
           if (!node2 || !node2.getAttribute) return;
-          var attr = node2.getAttribute(name2) || "";
+          var attr = node2.getAttribute(name) || "";
           if (attr[0] === "#") attr = attr.substring(1);
           if (attr === el.id && test(node2)) {
             return node2;
@@ -2597,39 +2597,39 @@ var require_select = __commonJS({
     rules2.ident = replace2(rules2.ident, "cssid", rules2.cssid);
     rules2.str_escape = replace2(rules2.str_escape, "escape", rules2.escape);
     var compile2 = function(sel_) {
-      var sel2 = sel_.replace(/^\s+|\s+$/g, ""), test, filter = [], buff = [], subject, qname, cap, op, ref;
-      while (sel2) {
-        if (cap = rules2.qname.exec(sel2)) {
-          sel2 = sel2.substring(cap[0].length);
+      var sel = sel_.replace(/^\s+|\s+$/g, ""), test, filter = [], buff = [], subject, qname, cap, op, ref;
+      while (sel) {
+        if (cap = rules2.qname.exec(sel)) {
+          sel = sel.substring(cap[0].length);
           qname = decodeid(cap[1]);
           buff.push(tok(qname, true));
-        } else if (cap = rules2.simple.exec(sel2)) {
-          sel2 = sel2.substring(cap[0].length);
+        } else if (cap = rules2.simple.exec(sel)) {
+          sel = sel.substring(cap[0].length);
           qname = "*";
           buff.push(tok(qname, true));
           buff.push(tok(cap));
         } else {
           throw new SyntaxError("Invalid selector.");
         }
-        while (cap = rules2.simple.exec(sel2)) {
-          sel2 = sel2.substring(cap[0].length);
+        while (cap = rules2.simple.exec(sel)) {
+          sel = sel.substring(cap[0].length);
           buff.push(tok(cap));
         }
-        if (sel2[0] === "!") {
-          sel2 = sel2.substring(1);
+        if (sel[0] === "!") {
+          sel = sel.substring(1);
           subject = makeSubject();
           subject.qname = qname;
           buff.push(subject.simple);
         }
-        if (cap = rules2.ref.exec(sel2)) {
-          sel2 = sel2.substring(cap[0].length);
+        if (cap = rules2.ref.exec(sel)) {
+          sel = sel.substring(cap[0].length);
           ref = combinators.ref(makeSimple(buff), decodeid(cap[1]));
           filter.push(ref.combinator);
           buff = [];
           continue;
         }
-        if (cap = rules2.combinator.exec(sel2)) {
-          sel2 = sel2.substring(cap[0].length);
+        if (cap = rules2.combinator.exec(sel)) {
+          sel = sel.substring(cap[0].length);
           op = cap[1] || cap[2] || cap[3];
           if (op === ",") {
             filter.push(combinators.noop(makeSimple(buff)));
@@ -2646,7 +2646,7 @@ var require_select = __commonJS({
       }
       test = makeTest(filter);
       test.qname = qname;
-      test.sel = sel2;
+      test.sel = sel;
       if (subject) {
         subject.lname = test.qname;
         subject.test = test;
@@ -2725,8 +2725,8 @@ var require_select = __commonJS({
       };
       return subject;
     };
-    var compileGroup = function(sel2) {
-      var test = compile2(sel2), tests = [test];
+    var compileGroup = function(sel) {
+      var test = compile2(sel), tests = [test];
       while (test.sel) {
         test = compile2(test.sel);
         tests.push(test);
@@ -2739,8 +2739,8 @@ var require_select = __commonJS({
         }
       };
     };
-    var find3 = function(sel2, node2) {
-      var results = [], test = compile2(sel2), scope = node2.getElementsByTagName(test.qname), i2 = 0, el;
+    var find3 = function(sel, node2) {
+      var results = [], test = compile2(sel), scope = node2.getElementsByTagName(test.qname), i2 = 0, el;
       while (el = scope[i2++]) {
         if (test(el)) results.push(el);
       }
@@ -2759,32 +2759,32 @@ var require_select = __commonJS({
       }
       return results;
     };
-    module.exports = exports = function(sel2, context2) {
+    module.exports = exports = function(sel, context2) {
       var id2, r;
-      if (context2.nodeType !== 11 && sel2.indexOf(" ") === -1) {
-        if (sel2[0] === "#" && context2.rooted && /^#[A-Z_][-A-Z0-9_]*$/i.test(sel2)) {
+      if (context2.nodeType !== 11 && sel.indexOf(" ") === -1) {
+        if (sel[0] === "#" && context2.rooted && /^#[A-Z_][-A-Z0-9_]*$/i.test(sel)) {
           if (context2.doc._hasMultipleElementsWithId) {
-            id2 = sel2.substring(1);
+            id2 = sel.substring(1);
             if (!context2.doc._hasMultipleElementsWithId(id2)) {
               r = context2.doc.getElementById(id2);
               return r ? [r] : [];
             }
           }
         }
-        if (sel2[0] === "." && /^\.\w+$/.test(sel2)) {
-          return context2.getElementsByClassName(sel2.substring(1));
+        if (sel[0] === "." && /^\.\w+$/.test(sel)) {
+          return context2.getElementsByClassName(sel.substring(1));
         }
-        if (/^\w+$/.test(sel2)) {
-          return context2.getElementsByTagName(sel2);
+        if (/^\w+$/.test(sel)) {
+          return context2.getElementsByTagName(sel);
         }
       }
-      return find3(sel2, context2);
+      return find3(sel, context2);
     };
     exports.selectors = selectors;
     exports.operators = operators;
     exports.combinators = combinators;
-    exports.matches = function(el, sel2) {
-      var test = { sel: sel2 };
+    exports.matches = function(el, sel) {
+      var test = { sel };
       do {
         test = compile2(test.sel);
         if (test(el)) {
@@ -3243,8 +3243,8 @@ var require_Element = __commonJS({
         names = names.split(/[ \t\r\n\f]+/);
         return new FilteredElementList(this, classNamesElementFilter(names));
       } },
-      getElementsByName: { value: function getElementsByName(name2) {
-        return new FilteredElementList(this, elementNameFilter(String(name2)));
+      getElementsByName: { value: function getElementsByName(name) {
+        return new FilteredElementList(this, elementNameFilter(String(name)));
       } },
       // Utility methods used by the public API methods above
       clone: { value: function clone2() {
@@ -3879,8 +3879,8 @@ var require_Element = __commonJS({
     Element2._Attr = Attr;
     function AttributesArray(elt) {
       NamedNodeMap.call(this, elt);
-      for (var name2 in elt._attrsByQName) {
-        this[name2] = elt._attrsByQName[name2];
+      for (var name in elt._attrsByQName) {
+        this[name] = elt._attrsByQName[name];
       }
       for (var i2 = 0; i2 < elt._attrKeys.length; i2++) {
         this[i2] = elt._attrsByLName[elt._attrKeys[i2]];
@@ -3923,9 +3923,9 @@ var require_Element = __commonJS({
         this.updateCache();
         return this.childrenByNumber[n] || null;
       } },
-      namedItem: { value: function namedItem(name2) {
+      namedItem: { value: function namedItem(name) {
         this.updateCache();
-        return this.childrenByName[name2] || null;
+        return this.childrenByName[name] || null;
       } },
       // This attribute returns the entire name->element map.
       // It is not part of the HTMLCollection API, but we need it in
@@ -3951,8 +3951,8 @@ var require_Element = __commonJS({
               var id2 = c.getAttribute("id");
               if (id2 && !this.childrenByName[id2])
                 this.childrenByName[id2] = c;
-              var name2 = c.getAttribute("name");
-              if (name2 && this.element.namespaceURI === NAMESPACE.HTML && namedElts.test(this.element.localName) && !this.childrenByName[name2])
+              var name = c.getAttribute("name");
+              if (name && this.element.namespaceURI === NAMESPACE.HTML && namedElts.test(this.element.localName) && !this.childrenByName[name])
                 this.childrenByName[id2] = c;
             }
           }
@@ -3989,12 +3989,12 @@ var require_Element = __commonJS({
         });
       };
     }
-    function elementNameFilter(name2) {
+    function elementNameFilter(name) {
       return function(e) {
         if (e.namespaceURI !== NAMESPACE.HTML) {
           return false;
         }
-        return e.getAttribute("name") === name2;
+        return e.getAttribute("name") === name;
       };
     }
   }
@@ -5254,13 +5254,13 @@ var require_CSSStyleDeclaration = __commonJS({
         return result;
       }
       for (let i2 = 0; i2 < styleValues.length; i2 += 2) {
-        const name2 = styleValues[i2];
+        const name = styleValues[i2];
         let value2 = styleValues[i2 + 1];
         if (value2.endsWith(IMPORTANT_BANG)) {
-          result.priority[name2] = "important";
+          result.priority[name] = "important";
           value2 = value2.slice(0, -IMPORTANT_BANG.length).trim();
         }
-        result.property[name2] = value2;
+        result.property[name] = value2;
       }
       return result;
     }
@@ -5285,11 +5285,11 @@ var require_CSSStyleDeclaration = __commonJS({
       _serialize: { value: function() {
         var styles = this._parsed;
         var s = "";
-        for (var name2 in styles.property) {
+        for (var name in styles.property) {
           if (s) s += " ";
-          s += name2 + ": " + styles.property[name2];
-          if (styles.priority[name2]) {
-            s += " !" + styles.priority[name2];
+          s += name + ": " + styles.property[name];
+          if (styles.priority[name]) {
+            s += " !" + styles.priority[name];
           }
           s += ";";
         }
@@ -5682,10 +5682,10 @@ var require_defineElement = __commonJS({
       return () => {
       };
     };
-    function EventHandlerChangeHandler(elt, name2, oldval, newval) {
+    function EventHandlerChangeHandler(elt, name, oldval, newval) {
       var doc4 = elt.ownerDocument || /* @__PURE__ */ Object.create(null);
       var form = elt.form || /* @__PURE__ */ Object.create(null);
-      elt[name2] = new EventHandlerBuilder(newval, doc4, form, elt).build();
+      elt[name] = new EventHandlerBuilder(newval, doc4, form, elt).build();
     }
     function addEventHandlers(c, eventHandlerTypes) {
       var p = c.prototype;
@@ -7469,19 +7469,19 @@ var require_Document = __commonJS({
       mutationevents: "mutationevent",
       uievents: "uievent"
     };
-    var mirrorAttr = function(f2, name2, defaultValue) {
+    var mirrorAttr = function(f2, name, defaultValue) {
       return {
         get: function() {
           var o = f2.call(this);
           if (o) {
-            return o[name2];
+            return o[name];
           }
           return defaultValue;
         },
         set: function(value) {
           var o = f2.call(this);
           if (o) {
-            o[name2] = value;
+            o[name] = value;
           }
         }
       };
@@ -7604,8 +7604,8 @@ var require_Document = __commonJS({
       } },
       createEvent: { value: function createEvent(interfaceName) {
         interfaceName = interfaceName.toLowerCase();
-        var name2 = replacementEvent[interfaceName] || interfaceName;
-        var constructor = events[supportedEvents[name2]];
+        var name = replacementEvent[interfaceName] || interfaceName;
+        var constructor = events[supportedEvents[name]];
         if (constructor) {
           var e = new constructor();
           e._initialized = false;
@@ -8062,10 +8062,10 @@ var require_Document = __commonJS({
         }
       });
     });
-    function namedHTMLChild(parent, name2) {
+    function namedHTMLChild(parent, name) {
       if (parent && parent.isHTML) {
         for (var kid = parent.firstChild; kid !== null; kid = kid.nextSibling) {
-          if (kid.nodeType === Node6.ELEMENT_NODE && kid.localName === name2 && kid.namespaceURI === NAMESPACE.HTML) {
+          if (kid.nodeType === Node6.ELEMENT_NODE && kid.localName === name && kid.namespaceURI === NAMESPACE.HTML) {
             return kid;
           }
         }
@@ -8161,11 +8161,11 @@ var require_DocumentType = __commonJS({
     var Node6 = require_Node();
     var Leaf2 = require_Leaf();
     var ChildNode = require_ChildNode();
-    function DocumentType(ownerDocument, name2, publicId, systemId) {
+    function DocumentType(ownerDocument, name, publicId, systemId) {
       Leaf2.call(this);
       this.nodeType = Node6.DOCUMENT_TYPE_NODE;
       this.ownerDocument = ownerDocument || null;
-      this.name = name2;
+      this.name = name;
       this.publicId = publicId || "";
       this.systemId = systemId || "";
     }
@@ -10913,11 +10913,11 @@ var require_HTMLParser = __commonJS({
       }
       return false;
     }
-    function adjustSVGTagName(name2) {
-      if (name2 in svgTagNameAdjustments)
-        return svgTagNameAdjustments[name2];
+    function adjustSVGTagName(name) {
+      if (name in svgTagNameAdjustments)
+        return svgTagNameAdjustments[name];
       else
-        return name2;
+        return name;
     }
     function adjustSVGAttributes(attrs) {
       for (var i2 = 0, n = attrs.length; i2 < n; i2++) {
@@ -10943,9 +10943,9 @@ var require_HTMLParser = __commonJS({
     }
     function transferAttributes(attrs, elt) {
       for (var i2 = 0, n = attrs.length; i2 < n; i2++) {
-        var name2 = attrs[i2][0], value = attrs[i2][1];
-        if (elt.hasAttribute(name2)) continue;
-        elt._setAttribute(name2, value);
+        var name = attrs[i2][0], value = attrs[i2][1];
+        if (elt.hasAttribute(name)) continue;
+        elt._setAttribute(name, value);
       }
     }
     HTMLParser2.ElementStack = function ElementStack() {
@@ -11386,22 +11386,22 @@ var require_HTMLParser = __commonJS({
         }
         return false;
       }
-      function addAttribute(name2, value) {
+      function addAttribute(name, value) {
         for (var i2 = 0; i2 < attributes.length; i2++) {
-          if (attributes[i2][0] === name2) return;
+          if (attributes[i2][0] === name) return;
         }
         if (value !== void 0) {
-          attributes.push([name2, value]);
+          attributes.push([name, value]);
         } else {
-          attributes.push([name2]);
+          attributes.push([name]);
         }
       }
       function handleSimpleAttribute() {
         SIMPLEATTR.lastIndex = nextchar - 1;
         var matched = SIMPLEATTR.exec(chars);
         if (!matched) throw new Error("should never happen");
-        var name2 = matched[1];
-        if (!name2) return false;
+        var name = matched[1];
+        if (!name) return false;
         var value = matched[2];
         var len = value.length;
         switch (value[0]) {
@@ -11418,9 +11418,9 @@ var require_HTMLParser = __commonJS({
             break;
         }
         for (var i2 = 0; i2 < attributes.length; i2++) {
-          if (attributes[i2][0] === name2) return true;
+          if (attributes[i2][0] === name) return true;
         }
-        attributes.push([name2, value]);
+        attributes.push([name, value]);
         return true;
       }
       function beginTagName() {
@@ -11609,8 +11609,8 @@ var require_HTMLParser = __commonJS({
           }
         }
       }
-      function createHTMLElt(doc5, name2, attrs) {
-        var elt = html.createElement(doc5, name2, null);
+      function createHTMLElt(doc5, name, attrs) {
+        var elt = html.createElement(doc5, name, null);
         if (attrs) {
           for (var i2 = 0, n = attrs.length; i2 < n; i2++) {
             elt._setAttribute(attrs[i2][0], attrs[i2][1]);
@@ -11619,9 +11619,9 @@ var require_HTMLParser = __commonJS({
         return elt;
       }
       var foster_parent_mode = false;
-      function insertHTMLElement(name2, attrs) {
+      function insertHTMLElement(name, attrs) {
         var elt = insertElement(function(doc5) {
-          return createHTMLElt(doc5, name2, attrs);
+          return createHTMLElt(doc5, name, attrs);
         });
         if (isA(elt, formassociatedSet)) {
           elt._form = form_element_pointer;
@@ -11642,9 +11642,9 @@ var require_HTMLParser = __commonJS({
         stack.push(elt);
         return elt;
       }
-      function insertForeignElement(name2, attrs, ns) {
+      function insertForeignElement(name, attrs, ns) {
         return insertElement(function(doc5) {
-          var elt = doc5._createElementNS(name2, ns, null);
+          var elt = doc5._createElementNS(name, ns, null);
           if (attrs) {
             for (var i2 = 0, n = attrs.length; i2 < n; i2++) {
               var attr = attrs[i2];
@@ -11777,14 +11777,14 @@ var require_HTMLParser = __commonJS({
           }
         }
       }
-      function parseRawText(name2, attrs) {
-        insertHTMLElement(name2, attrs);
+      function parseRawText(name, attrs) {
+        insertHTMLElement(name, attrs);
         tokenizer = rawtext_state;
         originalInsertionMode = parser;
         parser = text_mode;
       }
-      function parseRCDATA(name2, attrs) {
-        insertHTMLElement(name2, attrs);
+      function parseRCDATA(name, attrs) {
+        insertHTMLElement(name, attrs);
         tokenizer = rcdata_state;
         originalInsertionMode = parser;
         parser = text_mode;
@@ -14414,18 +14414,18 @@ var require_HTMLParser = __commonJS({
         NAMEDCHARREF.lastIndex = nextchar;
         var matched = NAMEDCHARREF.exec(chars);
         if (!matched) throw new Error("should never happen");
-        var name2 = matched[1];
-        if (!name2) {
+        var name = matched[1];
+        if (!name) {
           tokenizer = character_reference_end_state;
           return;
         }
-        nextchar += name2.length;
-        pushAll(tempbuf, str2buf(name2));
+        nextchar += name.length;
+        pushAll(tempbuf, str2buf(name));
         switch (return_state) {
           case attribute_value_double_quoted_state:
           case attribute_value_single_quoted_state:
           case attribute_value_unquoted_state:
-            if (name2[name2.length - 1] !== ";") {
+            if (name[name.length - 1] !== ";") {
               if (/[=A-Za-z0-9]/.test(chars[nextchar])) {
                 tokenizer = character_reference_end_state;
                 return;
@@ -14436,7 +14436,7 @@ var require_HTMLParser = __commonJS({
             break;
         }
         beginTempBuf();
-        var rv = namedCharRefs[name2];
+        var rv = namedCharRefs[name];
         if (typeof rv === "number") {
           tempbuf.push(rv);
         } else {
@@ -14615,11 +14615,11 @@ var require_HTMLParser = __commonJS({
             doc4._appendChild(doc4.createComment(value));
             return;
           case 5:
-            var name2 = value;
+            var name = value;
             var publicid = arg3;
             var systemid = arg4;
-            doc4.appendChild(new DocumentType(doc4, name2, publicid, systemid));
-            if (force_quirks || name2.toLowerCase() !== "html" || quirkyPublicIds.test(publicid) || systemid && systemid.toLowerCase() === quirkySystemId || systemid === void 0 && conditionallyQuirkyPublicIds.test(publicid))
+            doc4.appendChild(new DocumentType(doc4, name, publicid, systemid));
+            if (force_quirks || name.toLowerCase() !== "html" || quirkyPublicIds.test(publicid) || systemid && systemid.toLowerCase() === quirkySystemId || systemid === void 0 && conditionallyQuirkyPublicIds.test(publicid))
               doc4._quirks = true;
             else if (limitedQuirkyPublicIds.test(publicid) || systemid !== void 0 && conditionallyQuirkyPublicIds.test(publicid))
               doc4._limitedQuirks = true;
@@ -16705,8 +16705,8 @@ var require_core = __commonJS({
         };
       }
       Object.freeze(obj);
-      Object.getOwnPropertyNames(obj).forEach((name2) => {
-        const prop = obj[name2];
+      Object.getOwnPropertyNames(obj).forEach((name) => {
+        const prop = obj[name];
         const type = typeof prop;
         if ((type === "object" || type === "function") && !Object.isFrozen(prop)) {
           deepFreeze2(prop);
@@ -16749,18 +16749,18 @@ var require_core = __commonJS({
     var emitsWrappingTags = (node2) => {
       return !!node2.scope;
     };
-    var scopeToCSSClass = (name2, { prefix }) => {
-      if (name2.startsWith("language:")) {
-        return name2.replace("language:", "language-");
+    var scopeToCSSClass = (name, { prefix }) => {
+      if (name.startsWith("language:")) {
+        return name.replace("language:", "language-");
       }
-      if (name2.includes(".")) {
-        const pieces = name2.split(".");
+      if (name.includes(".")) {
+        const pieces = name.split(".");
         return [
           `${prefix}${pieces.shift()}`,
           ...pieces.map((x2, i2) => `${x2}${"_".repeat(i2 + 1)}`)
         ].join(" ");
       }
-      return `${prefix}${name2}`;
+      return `${prefix}${name}`;
     };
     var HTMLRenderer = class {
       /**
@@ -16918,9 +16918,9 @@ var require_core = __commonJS({
        * @param {Emitter & {root: DataNode}} emitter
        * @param {string} name
        */
-      __addSublanguage(emitter, name2) {
+      __addSublanguage(emitter, name) {
         const node2 = emitter.root;
-        if (name2) node2.scope = `language:${name2}`;
+        if (name) node2.scope = `language:${name}`;
         this.add(node2);
       }
       toHTML() {
@@ -18012,7 +18012,7 @@ var require_core = __commonJS({
         languageSubset = languageSubset || options.languages || Object.keys(languages);
         const plaintext = justTextHighlightResult(code2);
         const results = languageSubset.filter(getLanguage).filter(autoDetection).map(
-          (name2) => _highlight(name2, code2, false)
+          (name) => _highlight(name, code2, false)
         );
         results.unshift(plaintext);
         const sorted = results.sort((a3, b) => {
@@ -18140,9 +18140,9 @@ var require_core = __commonJS({
       function listLanguages() {
         return Object.keys(languages);
       }
-      function getLanguage(name2) {
-        name2 = (name2 || "").toLowerCase();
-        return languages[name2] || languages[aliases[name2]];
+      function getLanguage(name) {
+        name = (name || "").toLowerCase();
+        return languages[name] || languages[aliases[name]];
       }
       function registerAliases(aliasList, { languageName }) {
         if (typeof aliasList === "string") {
@@ -18152,8 +18152,8 @@ var require_core = __commonJS({
           aliases[alias.toLowerCase()] = languageName;
         });
       }
-      function autoDetection(name2) {
-        const lang = getLanguage(name2);
+      function autoDetection(name) {
+        const lang = getLanguage(name);
         return lang && !lang.disableAutodetect;
       }
       function upgradePluginAPI(plugin) {
@@ -18246,10 +18246,10 @@ var require_core = __commonJS({
 });
 
 // main.tsx
-import swarm3, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui13 } from "swarm";
+import swarm3, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui16 } from "swarm";
 
 // src/pictures.ts
-import { ui } from "swarm";
+import { ui as ui3 } from "swarm";
 
 // src/assets.ts
 var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
@@ -18274,10 +18274,10 @@ function fluxAssetId(src, baseUrl) {
 }
 
 // src/hub.ts
-import { settings, storage as storage3 } from "swarm";
+import { settings, storage as storage3, ui as ui2 } from "swarm";
 
 // src/service.ts
-import swarm, { storage as storage2 } from "swarm";
+import swarm, { storage as storage2, ui } from "swarm";
 
 // node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -19398,24 +19398,24 @@ function merge(a3, b) {
   });
   return clone(a3, def);
 }
-function partial(Class2, schema2, mask, name2 = "partial") {
+function partial(Class2, schema2, mask, name = "partial") {
   const currDef = schema2._zod.def;
   const checks = currDef.checks;
   const hasChecks = checks && checks.length > 0;
   if (hasChecks) {
-    throw new Error(`.${name2}() cannot be used on object schemas containing refinements`);
+    throw new Error(`.${name}() cannot be used on object schemas containing refinements`);
   }
-  const selected2 = mask ? new Set(maskedKeys(schema2, mask)) : void 0;
+  const selected = mask ? new Set(maskedKeys(schema2, mask)) : void 0;
   const newShape = {};
-  mirrorShape(newShape, schema2, Reflect.ownKeys(sourceShape(schema2)), Class2 && ((value, key) => selected2 && !selected2.has(key) ? value : new Class2({ type: "optional", innerType: value })));
+  mirrorShape(newShape, schema2, Reflect.ownKeys(sourceShape(schema2)), Class2 && ((value, key) => selected && !selected.has(key) ? value : new Class2({ type: "optional", innerType: value })));
   return clone(schema2, mergeDefs(schema2._zod.def, { shape: newShape, checks: [] }));
 }
 function required(Class2, schema2, mask) {
-  const selected2 = mask ? new Set(maskedKeys(schema2, mask)) : void 0;
+  const selected = mask ? new Set(maskedKeys(schema2, mask)) : void 0;
   const newShape = {};
   mirrorShape(newShape, schema2, Reflect.ownKeys(sourceShape(schema2)), (value, key) => (
     // overwrite with non-optional
-    selected2 && !selected2.has(key) ? value : new Class2({ type: "nonoptional", innerType: value })
+    selected && !selected.has(key) ? value : new Class2({ type: "nonoptional", innerType: value })
   ));
   return clone(schema2, mergeDefs(schema2._zod.def, { shape: newShape }));
 }
@@ -19743,7 +19743,7 @@ function newError(Definition) {
   return new Definition();
 }
 // @__NO_SIDE_EFFECTS__
-function $constructor(name2, initializer3, proto, params2) {
+function $constructor(name, initializer3, proto, params2) {
   const zodProto = {};
   function Internals(def) {
     this.def = def;
@@ -19761,10 +19761,10 @@ function $constructor(name2, initializer3, proto, params2) {
       } finally {
         _zodDesc.value = void 0;
       }
-    } else if (inst._zod.traits.has(name2)) {
+    } else if (inst._zod.traits.has(name)) {
       return;
     }
-    inst._zod.traits.add(name2);
+    inst._zod.traits.add(name);
     initializer3(inst, def);
     if (initialized) {
       const own2 = Object.getPrototypeOf(inst);
@@ -19790,7 +19790,7 @@ function $constructor(name2, initializer3, proto, params2) {
   const Parent = params2?.Parent ?? Object;
   class Definition extends Parent {
   }
-  Object.defineProperty(Definition, "name", { value: name2 });
+  Object.defineProperty(Definition, "name", { value: name });
   function _2(def) {
     const inst = params2?.Parent ? newError(Definition) : this;
     init2(inst, def);
@@ -19811,10 +19811,10 @@ function $constructor(name2, initializer3, proto, params2) {
     value: (inst) => {
       if (params2?.Parent && inst instanceof params2.Parent)
         return true;
-      return inst?._zod?.traits?.has(name2);
+      return inst?._zod?.traits?.has(name);
     }
   });
-  Object.defineProperty(_2, "name", { value: name2 });
+  Object.defineProperty(_2, "name", { value: name });
   return _2;
 }
 var $brand = /* @__PURE__ */ Symbol("zod_brand");
@@ -19824,8 +19824,8 @@ var $ZodAsyncError = class extends Error {
   }
 };
 var $ZodEncodeError = class extends Error {
-  constructor(name2) {
-    super(`Encountered unidirectional transform during encode: ${name2}`);
+  constructor(name) {
+    super(`Encountered unidirectional transform during encode: ${name}`);
     this.name = "ZodEncodeError";
   }
 };
@@ -31352,13 +31352,13 @@ ${code2}
   return fn;
 }
 function addConstant(ctx, value) {
-  for (const [name3, v2] of ctx.constants) {
+  for (const [name2, v2] of ctx.constants) {
     if (v2 === value)
-      return name3;
+      return name2;
   }
-  const name2 = `c${ctx.constantCounter++}`;
-  ctx.constants.set(name2, value);
-  return name2;
+  const name = `c${ctx.constantCounter++}`;
+  ctx.constants.set(name, value);
+  return name;
 }
 function addUserConstant(ctx, fn) {
   ctx.definite = false;
@@ -34185,7 +34185,7 @@ function foldIntersection(json2) {
     if (Object.keys(union2).length !== 1)
       return;
     const rest = allOf.filter((m) => m !== union2);
-    const branches = union2[keyword].map((branch2) => foldObjects([...rest, branch2]));
+    const branches = union2[keyword].map((branch) => foldObjects([...rest, branch]));
     if (branches.some((b) => !b))
       return;
     folded = { [keyword]: branches };
@@ -34903,8 +34903,8 @@ function stringifyKeyNames(bySchema, json2, visited) {
     const branches = json2[keyword];
     if (!Array.isArray(branches))
       continue;
-    const mapped = branches.map((branch2) => stringifyKeyNames(bySchema, branch2, visited));
-    if (mapped.some((branch2, i2) => branch2 !== branches[i2]))
+    const mapped = branches.map((branch) => stringifyKeyNames(bySchema, branch, visited));
+    if (mapped.some((branch, i2) => branch !== branches[i2]))
       json2 = { ...json2, [keyword]: mapped };
   }
   const types = Array.isArray(json2.type) ? json2.type : [json2.type];
@@ -38018,12 +38018,12 @@ var COLOR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 function parseCommentAgent(value) {
   if (!value || typeof value !== "object") return null;
   const raw = value;
-  const name2 = typeof raw.name === "string" ? raw.name.trim() : "";
-  const provider2 = typeof raw.provider === "string" ? raw.provider : "";
-  if (!name2 || !provider2) return null;
+  const name = typeof raw.name === "string" ? raw.name.trim() : "";
+  const provider = typeof raw.provider === "string" ? raw.provider : "";
+  if (!name || !provider) return null;
   const agent2 = {
-    name: name2.slice(0, MAX_NAME),
-    provider: provider2.slice(0, MAX_NAME)
+    name: name.slice(0, MAX_NAME),
+    provider: provider.slice(0, MAX_NAME)
   };
   if (typeof raw.icon === "string" && raw.icon.length <= MAX_AGENT_ICON && ICON.test(raw.icon)) {
     agent2.icon = raw.icon;
@@ -40407,8 +40407,25 @@ function markdownToHtml(markdown, options) {
   });
   return linkMentions(html.trim(), options.members);
 }
+var converted = /* @__PURE__ */ new Map();
+var convertedSize = 0;
+var CONVERTED_MAX = 1 << 21;
 function htmlToMarkdown(html, options) {
   if (!html.trim()) return "";
+  const key = `${options.baseUrl}\0${options.members.map((m) => `${m.id}=${m.username}`).join(",")}\0${html}`;
+  const had = converted.get(key);
+  if (had !== void 0) return had;
+  const md = convertHtml(html, options);
+  converted.set(key, md);
+  convertedSize += key.length + md.length;
+  for (const [k, v2] of converted) {
+    if (convertedSize <= CONVERTED_MAX) break;
+    converted.delete(k);
+    convertedSize -= k.length + v2.length;
+  }
+  return md;
+}
+function convertHtml(html, options) {
   const handles = new Map(
     options.members.map((member2) => [member2.id, member2.username])
   );
@@ -40488,8 +40505,8 @@ var import_domino = __toESM(require_lib(), 1);
 var __defProp2 = Object.defineProperty;
 var __exportAll = (all2, no_symbols) => {
   let target = {};
-  for (var name2 in all2) __defProp2(target, name2, {
-    get: all2[name2],
+  for (var name in all2) __defProp2(target, name, {
+    get: all2[name],
     enumerable: true
   });
   if (!no_symbols) __defProp2(target, Symbol.toStringTag, { value: "Module" });
@@ -41096,8 +41113,8 @@ var Mark = class _Mark {
     let type = schema2.marks[json2.type];
     if (!type)
       throw new RangeError(`There is no mark type ${json2.type} in this schema`);
-    let mark3 = type.create(json2.attrs);
-    return mark3;
+    let mark2 = type.create(json2.attrs);
+    return mark2;
   }
   /**
   Test whether two sets of marks are identical.
@@ -41954,10 +41971,10 @@ var Node3 = class _Node {
   toString() {
     if (this.type.spec.toDebugString)
       return this.type.spec.toDebugString(this);
-    let name2 = this.type.name;
+    let name = this.type.name;
     if (this.content.size)
-      name2 += "(" + this.content.toStringInner() + ")";
-    return wrapMarks(this.marks, name2);
+      name += "(" + this.content.toStringInner() + ")";
+    return wrapMarks(this.marks, name);
   }
   /**
   Get the content match in this node at the given index.
@@ -42017,9 +42034,9 @@ var Node3 = class _Node {
     checkAttrs(this.type.attrs, this.attrs, "node", this.type.name);
     let copy3 = Mark.none;
     for (let i2 = 0; i2 < this.marks.length; i2++) {
-      let mark3 = this.marks[i2];
-      checkAttrs(mark3.type.attrs, mark3.attrs, "mark", mark3.type.name);
-      copy3 = mark3.addToSet(copy3);
+      let mark2 = this.marks[i2];
+      checkAttrs(mark2.type.attrs, mark2.attrs, "mark", mark2.type.name);
+      copy3 = mark2.addToSet(copy3);
     }
     if (!Mark.sameSet(copy3, this.marks))
       throw new RangeError(`Invalid collection of marks for node ${this.type.name}: ${this.marks.map((m) => m.type.name)}`);
@@ -42114,10 +42131,10 @@ function wrapMarks(marks, str2) {
     str2 = marks[i2].type.name + "(" + str2 + ")";
   return str2;
 }
-function checkAttrs(attrs, values, type, name2) {
+function checkAttrs(attrs, values, type, name) {
   for (let attr in values)
     if (!(attr in attrs))
-      throw new RangeError(`Unsupported attribute ${attr} for ${type} of type ${name2}`);
+      throw new RangeError(`Unsupported attribute ${attr} for ${type} of type ${name}`);
   for (let attr in attrs) {
     if (attrs[attr].validate)
       attrs[attr].validate(values[attr]);
@@ -42204,7 +42221,7 @@ var ContentMatch = class _ContentMatch {
   */
   fillBefore(after, toEnd = false, startIndex = 0) {
     let seen = [this];
-    function search2(match2, types) {
+    function search(match2, types) {
       let finished = match2.matchFragment(after, startIndex);
       if (finished && (!toEnd || finished.validEnd))
         return Fragment.from(types.map((tp) => tp.createAndFill()));
@@ -42212,14 +42229,14 @@ var ContentMatch = class _ContentMatch {
         let { type, next: next2 } = match2.next[i2];
         if (!(type.isText || type.hasRequiredAttrs()) && seen.indexOf(next2) == -1) {
           seen.push(next2);
-          let found2 = search2(next2, types.concat(type));
+          let found2 = search(next2, types.concat(type));
           if (found2)
             return found2;
         }
       }
       return null;
     }
-    return search2(this, []);
+    return search(this, []);
   }
   /**
   Find a set of wrapping node types that would allow a node of the
@@ -42366,18 +42383,18 @@ function parseExprRange(stream, expr) {
     stream.err("Unclosed braced range");
   return { type: "range", min: min3, max: max3, expr };
 }
-function resolveName(stream, name2) {
-  let types = stream.nodeTypes, type = types[name2];
+function resolveName(stream, name) {
+  let types = stream.nodeTypes, type = types[name];
   if (type)
     return [type];
   let result = [];
   for (let typeName in types) {
     let type2 = types[typeName];
-    if (type2.isInGroup(name2))
+    if (type2.isInGroup(name))
       result.push(type2);
   }
   if (result.length == 0)
-    stream.err("No node type or group '" + name2 + "' found");
+    stream.err("No node type or group '" + name + "' found");
   return result;
 }
 function parseExprAtom(stream) {
@@ -42537,44 +42554,44 @@ function defaultAttrs(attrs) {
 }
 function computeAttrs(attrs, value) {
   let built = /* @__PURE__ */ Object.create(null);
-  for (let name2 in attrs) {
-    let attr = attrs[name2];
-    let given = value && value[name2];
+  for (let name in attrs) {
+    let attr = attrs[name];
+    let given = value && value[name];
     if (given === void 0) {
       if (attr.hasDefault)
         given = attr.default;
       else
-        throw new RangeError("No value supplied for attribute " + name2);
+        throw new RangeError("No value supplied for attribute " + name);
     } else if (attr.validate) {
       attr.validate(given);
     }
-    built[name2] = given;
+    built[name] = given;
   }
   return built;
 }
 function initAttrs(typeName, attrs) {
   let result = /* @__PURE__ */ Object.create(null);
   if (attrs)
-    for (let name2 in attrs)
-      result[name2] = new Attribute(typeName, name2, attrs[name2]);
+    for (let name in attrs)
+      result[name] = new Attribute(typeName, name, attrs[name]);
   return result;
 }
 var NodeType = class _NodeType {
   /**
   @internal
   */
-  constructor(name2, schema2, spec) {
-    this.name = name2;
+  constructor(name, schema2, spec) {
+    this.name = name;
     this.schema = schema2;
     this.spec = spec;
     this.markSet = null;
     this.groups = spec.group ? spec.group.split(" ") : [];
-    this.attrs = initAttrs(name2, spec.attrs);
+    this.attrs = initAttrs(name, spec.attrs);
     this.defaultAttrs = defaultAttrs(this.attrs);
     this.contentMatch = null;
     this.inlineContent = null;
-    this.isBlock = !(spec.inline || name2 == "text");
-    this.isText = name2 == "text";
+    this.isBlock = !(spec.inline || name == "text");
+    this.isText = name == "text";
   }
   /**
   True if this is an inline type.
@@ -42752,7 +42769,7 @@ var NodeType = class _NodeType {
   */
   static compile(nodes, schema2) {
     let result = /* @__PURE__ */ Object.create(null);
-    nodes.forEach((name2, spec) => result[name2] = new _NodeType(name2, schema2, spec));
+    nodes.forEach((name, spec) => result[name] = new _NodeType(name, schema2, spec));
     let topType = schema2.spec.topNode || "doc";
     if (!result[topType])
       throw new RangeError("Schema is missing its top node type ('" + topType + "')");
@@ -42766,9 +42783,9 @@ var NodeType = class _NodeType {
 function validateType(typeName, attrName, type) {
   let types = type.split("|");
   return (value) => {
-    let name2 = value === null ? "null" : typeof value;
-    if (types.indexOf(name2) < 0)
-      throw new RangeError(`Expected value of type ${types} for attribute ${attrName} on type ${typeName}, got ${name2}`);
+    let name = value === null ? "null" : typeof value;
+    if (types.indexOf(name) < 0)
+      throw new RangeError(`Expected value of type ${types} for attribute ${attrName} on type ${typeName}, got ${name}`);
   };
 }
 var Attribute = class {
@@ -42785,12 +42802,12 @@ var MarkType = class _MarkType {
   /**
   @internal
   */
-  constructor(name2, rank, schema2, spec) {
-    this.name = name2;
+  constructor(name, rank, schema2, spec) {
+    this.name = name;
     this.rank = rank;
     this.schema = schema2;
     this.spec = spec;
-    this.attrs = initAttrs(name2, spec.attrs);
+    this.attrs = initAttrs(name, spec.attrs);
     this.excluded = null;
     let defaults2 = defaultAttrs(this.attrs);
     this.instance = defaults2 ? new Mark(this, defaults2) : null;
@@ -42810,7 +42827,7 @@ var MarkType = class _MarkType {
   */
   static compile(marks, schema2) {
     let result = /* @__PURE__ */ Object.create(null), rank = 0;
-    marks.forEach((name2, spec) => result[name2] = new _MarkType(name2, rank++, schema2, spec));
+    marks.forEach((name, spec) => result[name] = new _MarkType(name, rank++, schema2, spec));
     return result;
   }
   /**
@@ -42912,24 +42929,24 @@ var Schema = class {
   /**
   @internal
   */
-  nodeType(name2) {
-    let found2 = this.nodes[name2];
+  nodeType(name) {
+    let found2 = this.nodes[name];
     if (!found2)
-      throw new RangeError("Unknown node type: " + name2);
+      throw new RangeError("Unknown node type: " + name);
     return found2;
   }
 };
 function gatherMarks(schema2, marks) {
   let found2 = [];
   for (let i2 = 0; i2 < marks.length; i2++) {
-    let name2 = marks[i2], mark3 = schema2.marks[name2], ok = mark3;
-    if (mark3) {
-      found2.push(mark3);
+    let name = marks[i2], mark2 = schema2.marks[name], ok = mark2;
+    if (mark2) {
+      found2.push(mark2);
     } else {
       for (let prop in schema2.marks) {
-        let mark4 = schema2.marks[prop];
-        if (name2 == "_" || mark4.spec.group && mark4.spec.group.split(" ").indexOf(name2) > -1)
-          found2.push(ok = mark4);
+        let mark3 = schema2.marks[prop];
+        if (name == "_" || mark3.spec.group && mark3.spec.group.split(" ").indexOf(name) > -1)
+          found2.push(ok = mark3);
       }
     }
     if (!ok)
@@ -43043,22 +43060,22 @@ var DOMParser2 = class _DOMParser {
       }
       result.splice(i2, 0, rule);
     }
-    for (let name2 in schema2.marks) {
-      let rules2 = schema2.marks[name2].spec.parseDOM;
+    for (let name in schema2.marks) {
+      let rules2 = schema2.marks[name].spec.parseDOM;
       if (rules2)
         rules2.forEach((rule) => {
           insert(rule = copy(rule));
           if (!(rule.mark || rule.ignore || rule.clearMark))
-            rule.mark = name2;
+            rule.mark = name;
         });
     }
-    for (let name2 in schema2.nodes) {
-      let rules2 = schema2.nodes[name2].spec.parseDOM;
+    for (let name in schema2.nodes) {
+      let rules2 = schema2.nodes[name].spec.parseDOM;
       if (rules2)
         rules2.forEach((rule) => {
           insert(rule = copy(rule));
           if (!(rule.node || rule.ignore || rule.mark))
-            rule.node = name2;
+            rule.node = name;
         });
     }
     return result;
@@ -43249,11 +43266,11 @@ var ParseContext = class {
     let outerWS = this.localPreserveWS, top = this.top;
     if (dom.tagName == "PRE" || /pre/.test(dom.style && dom.style.whiteSpace))
       this.localPreserveWS = true;
-    let name2 = dom.nodeName.toLowerCase(), ruleID;
-    if (listTags.hasOwnProperty(name2) && this.parser.normalizeLists)
+    let name = dom.nodeName.toLowerCase(), ruleID;
+    if (listTags.hasOwnProperty(name) && this.parser.normalizeLists)
       normalizeList(dom);
     let rule = this.options.ruleFromNode && this.options.ruleFromNode(dom) || (ruleID = this.parser.matchTag(dom, this, matchAfter));
-    out: if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name2)) {
+    out: if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom);
       this.ignoreFallback(dom, marks);
     } else if (!rule || rule.skip || rule.closeParent) {
@@ -43262,7 +43279,7 @@ var ParseContext = class {
       else if (rule && rule.skip.nodeType)
         dom = rule.skip;
       let sync, oldNeedsBlock = this.needsBlock;
-      if (blockTags.hasOwnProperty(name2)) {
+      if (blockTags.hasOwnProperty(name)) {
         if (top.content.length && top.content[0].isInline && this.open) {
           this.open--;
           top = this.top;
@@ -43304,10 +43321,10 @@ var ParseContext = class {
     let styles = dom.style;
     if (styles && styles.length)
       for (let i2 = 0; i2 < this.parser.matchedStyles.length; i2++) {
-        let name2 = this.parser.matchedStyles[i2], value = styles.getPropertyValue(name2);
+        let name = this.parser.matchedStyles[i2], value = styles.getPropertyValue(name);
         if (value)
           for (let after = void 0; ; ) {
-            let rule = this.parser.matchStyle(name2, value, this, after);
+            let rule = this.parser.matchStyle(name, value, this, after);
             if (!rule)
               break;
             if (rule.ignore)
@@ -43561,8 +43578,8 @@ var ParseContext = class {
         if (deflt && deflt.isTextblock && deflt.defaultAttrs)
           return deflt;
       }
-    for (let name2 in this.parser.schema.nodes) {
-      let type = this.parser.schema.nodes[name2];
+    for (let name in this.parser.schema.nodes) {
+      let type = this.parser.schema.nodes[name];
       if (type.isTextblock && type.defaultAttrs)
         return type;
     }
@@ -43570,13 +43587,13 @@ var ParseContext = class {
 };
 function normalizeList(dom) {
   for (let child = dom.firstChild, prevItem = null; child; child = child.nextSibling) {
-    let name2 = child.nodeType == 1 ? child.nodeName.toLowerCase() : null;
-    if (name2 && listTags.hasOwnProperty(name2) && prevItem) {
+    let name = child.nodeType == 1 ? child.nodeName.toLowerCase() : null;
+    if (name && listTags.hasOwnProperty(name) && prevItem) {
       prevItem.appendChild(child);
       child = prevItem;
-    } else if (name2 == "li") {
+    } else if (name == "li") {
       prevItem = child;
-    } else if (name2) {
+    } else if (name) {
       prevItem = null;
     }
   }
@@ -43592,8 +43609,8 @@ function copy(obj) {
 }
 function markMayApply(markType, nodeType) {
   let nodes = nodeType.schema.nodes;
-  for (let name2 in nodes) {
-    let parent = nodes[name2];
+  for (let name in nodes) {
+    let parent = nodes[name];
     if (!parent.allowsMarkType(markType))
       continue;
     let seen = [], scan = (match2) => {
@@ -43699,9 +43716,9 @@ var DOMSerializer = class _DOMSerializer {
   /**
   @internal
   */
-  serializeMark(mark3, inline2, options = {}) {
-    let toDOM = this.marks[mark3.type.name];
-    return toDOM && renderSpec(doc(options), toDOM(mark3, inline2), null, mark3.attrs);
+  serializeMark(mark2, inline2, options = {}) {
+    let toDOM = this.marks[mark2.type.name];
+    return toDOM && renderSpec(doc(options), toDOM(mark2, inline2), null, mark2.attrs);
   }
   static renderSpec(doc4, structure, xmlNS = null, blockArraysIn) {
     if (typeof structure == "string")
@@ -43734,10 +43751,10 @@ var DOMSerializer = class _DOMSerializer {
 };
 function gatherToDOM(obj) {
   let result = {};
-  for (let name2 in obj) {
-    let toDOM = obj[name2].spec.toDOM;
+  for (let name in obj) {
+    let toDOM = obj[name].spec.toDOM;
     if (toDOM)
-      result[name2] = toDOM;
+      result[name] = toDOM;
   }
   return result;
 }
@@ -43793,15 +43810,15 @@ function renderSpec(doc4, structure, xmlNS, blockArraysIn) {
   let attrs = structure[1], start = 1;
   if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
     start = 2;
-    for (let name2 in attrs)
-      if (attrs[name2] != null) {
-        let space2 = name2.indexOf(" ");
+    for (let name in attrs)
+      if (attrs[name] != null) {
+        let space2 = name.indexOf(" ");
         if (space2 > 0)
-          dom.setAttributeNS(name2.slice(0, space2), name2.slice(space2 + 1), attrs[name2]);
-        else if (name2 == "style" && dom.style)
-          dom.style.cssText = attrs[name2];
+          dom.setAttributeNS(name.slice(0, space2), name.slice(space2 + 1), attrs[name]);
+        else if (name == "style" && dom.style)
+          dom.style.cssText = attrs[name];
         else
-          dom.setAttribute(name2, attrs[name2]);
+          dom.setAttribute(name, attrs[name]);
       }
   }
   for (let i2 = start; i2 < structure.length; i2++) {
@@ -44206,11 +44223,11 @@ var AddMarkStep = class _AddMarkStep extends Step {
   /**
   Create a mark step.
   */
-  constructor(from4, to, mark3) {
+  constructor(from4, to, mark2) {
     super();
     this.from = from4;
     this.to = to;
-    this.mark = mark3;
+    this.mark = mark2;
   }
   apply(doc4) {
     let oldSlice = doc4.slice(this.from, this.to), $from = doc4.resolve(this.from);
@@ -44230,9 +44247,9 @@ var AddMarkStep = class _AddMarkStep extends Step {
         if (!Mark.sameSet(added, node2.marks)) {
           let from4 = Math.max(this.from, pos), to = Math.min(this.to, pos + node2.nodeSize);
           pushMarkStep(RemoveMarkStep, from4, to, this.mark, steps);
-          for (let mark3 of node2.marks)
-            if (!mark3.isInSet(added))
-              pushMarkStep(_AddMarkStep, from4, to, mark3, steps);
+          for (let mark2 of node2.marks)
+            if (!mark2.isInSet(added))
+              pushMarkStep(_AddMarkStep, from4, to, mark2, steps);
         }
       }
     });
@@ -44271,11 +44288,11 @@ var RemoveMarkStep = class _RemoveMarkStep extends Step {
   /**
   Create a mark-removing step.
   */
-  constructor(from4, to, mark3) {
+  constructor(from4, to, mark2) {
     super();
     this.from = from4;
     this.to = to;
-    this.mark = mark3;
+    this.mark = mark2;
   }
   apply(doc4) {
     let oldSlice = doc4.slice(this.from, this.to);
@@ -44321,12 +44338,12 @@ var RemoveMarkStep = class _RemoveMarkStep extends Step {
   }
 };
 Step.jsonID("removeMark", RemoveMarkStep);
-function pushMarkStep(cls, from4, to, mark3, target) {
+function pushMarkStep(cls, from4, to, mark2, target) {
   let last2 = target.length ? target[target.length - 1] : null;
-  if (last2 && last2 instanceof cls && last2.to == from4 && last2.mark.eq(mark3)) {
-    target[target.length - 1] = new cls(last2.from, to, mark3);
+  if (last2 && last2 instanceof cls && last2.to == from4 && last2.mark.eq(mark2)) {
+    target[target.length - 1] = new cls(last2.from, to, mark2);
   } else {
-    target.push(new cls(from4, to, mark3));
+    target.push(new cls(from4, to, mark2));
   }
 }
 var MarkSetStep = class _MarkSetStep extends Step {
@@ -44369,10 +44386,10 @@ var AddNodeMarkStep = class _AddNodeMarkStep extends Step {
   /**
   Create a node mark step.
   */
-  constructor(pos, mark3) {
+  constructor(pos, mark2) {
     super();
     this.pos = pos;
-    this.mark = mark3;
+    this.mark = mark2;
   }
   apply(doc4) {
     let node2 = doc4.nodeAt(this.pos);
@@ -44415,10 +44432,10 @@ var RemoveNodeMarkStep = class _RemoveNodeMarkStep extends Step {
   /**
   Create a mark-removing step.
   */
-  constructor(pos, mark3) {
+  constructor(pos, mark2) {
     super();
     this.pos = pos;
-    this.mark = mark3;
+    this.mark = mark2;
   }
   apply(doc4) {
     let node2 = doc4.nodeAt(this.pos);
@@ -44609,35 +44626,35 @@ function contentBetween(doc4, from4, to) {
   }
   return false;
 }
-function addMark(tr2, from4, to, mark3) {
+function addMark(tr2, from4, to, mark2) {
   let added = [];
   tr2.doc.nodesBetween(from4, to, (node2, pos, parent) => {
     if (!node2.isInline)
       return;
     let marks = node2.marks;
-    if (!mark3.isInSet(marks) && parent.type.allowsMarkType(mark3.type)) {
+    if (!mark2.isInSet(marks) && parent.type.allowsMarkType(mark2.type)) {
       let start = Math.max(pos, from4), end = Math.min(pos + node2.nodeSize, to);
-      pushMarkStep(AddMarkStep, start, end, mark3, added);
+      pushMarkStep(AddMarkStep, start, end, mark2, added);
     }
   });
   added.forEach((s) => tr2.step(s));
 }
-function removeMark(tr2, from4, to, mark3) {
+function removeMark(tr2, from4, to, mark2) {
   let matched = [], step = 0;
   tr2.doc.nodesBetween(from4, to, (node2, pos) => {
     if (!node2.isInline || !node2.isAtom)
       return;
     step++;
     let toRemove = null;
-    if (mark3 instanceof MarkType) {
+    if (mark2 instanceof MarkType) {
       let set2 = node2.marks, found2;
-      while (found2 = mark3.isInSet(set2)) {
+      while (found2 = mark2.isInSet(set2)) {
         (toRemove || (toRemove = [])).push(found2);
         set2 = found2.removeFromSet(set2);
       }
-    } else if (mark3) {
-      if (mark3.isInSet(node2.marks))
-        toRemove = [mark3];
+    } else if (mark2) {
+      if (mark2.isInSet(node2.marks))
+        toRemove = [mark2];
     } else {
       toRemove = node2.marks;
     }
@@ -45196,8 +45213,8 @@ var Fitter = class {
     this.frontier.push({ type, match: type.contentMatch });
   }
   closeFrontierNode() {
-    let open5 = this.frontier.pop();
-    let add = open5.match.fillBefore(Fragment.empty, true);
+    let open3 = this.frontier.pop();
+    let add = open3.match.fillBefore(Fragment.empty, true);
     if (add.childCount)
       this.placed = addToFragment(this.placed, this.frontier.length, add);
   }
@@ -45230,8 +45247,8 @@ function closeNodeStart(node2, openStart, openEnd) {
   }
   return node2.copy(frag);
 }
-function contentAfterFits($to, depth, type, match2, open5) {
-  let node2 = $to.node(depth), index = open5 ? $to.indexAfter(depth) : $to.index(depth);
+function contentAfterFits($to, depth, type, match2, open3) {
+  let node2 = $to.node(depth), index = open3 ? $to.indexAfter(depth) : $to.index(depth);
   if (index == node2.childCount && !type.compatibleContent(node2.type))
     return null;
   let fit = match2.fillBefore(node2.content, true, index);
@@ -45397,8 +45414,8 @@ var AttrStep = class _AttrStep extends Step {
     if (!node2)
       return StepResult.fail("No node at attribute step's position");
     let attrs = /* @__PURE__ */ Object.create(null);
-    for (let name2 in node2.attrs)
-      attrs[name2] = node2.attrs[name2];
+    for (let name in node2.attrs)
+      attrs[name] = node2.attrs[name];
     attrs[this.attr] = this.value;
     let updated = node2.type.create(attrs, null, node2.marks);
     return StepResult.fromReplace(doc4, this.pos, this.pos + 1, new Slice(Fragment.from(updated), 0, node2.isLeaf ? 0 : 1));
@@ -45434,8 +45451,8 @@ var DocAttrStep = class _DocAttrStep extends Step {
   }
   apply(doc4) {
     let attrs = /* @__PURE__ */ Object.create(null);
-    for (let name2 in doc4.attrs)
-      attrs[name2] = doc4.attrs[name2];
+    for (let name in doc4.attrs)
+      attrs[name] = doc4.attrs[name];
     attrs[this.attr] = this.value;
     let updated = doc4.type.create(attrs, doc4.content, doc4.marks);
     return StepResult.ok(updated);
@@ -45678,24 +45695,24 @@ var Transform = class {
   /**
   Add a mark to the node at position `pos`.
   */
-  addNodeMark(pos, mark3) {
-    this.step(new AddNodeMarkStep(pos, mark3));
+  addNodeMark(pos, mark2) {
+    this.step(new AddNodeMarkStep(pos, mark2));
     return this;
   }
   /**
   Remove a mark (or all marks of the given type) from the node at
   position `pos`.
   */
-  removeNodeMark(pos, mark3) {
+  removeNodeMark(pos, mark2) {
     let node2 = this.doc.nodeAt(pos);
     if (!node2)
       throw new RangeError("No node at position " + pos);
-    if (mark3 instanceof Mark) {
-      if (mark3.isInSet(node2.marks))
-        this.step(new RemoveNodeMarkStep(pos, mark3));
+    if (mark2 instanceof Mark) {
+      if (mark2.isInSet(node2.marks))
+        this.step(new RemoveNodeMarkStep(pos, mark2));
     } else {
       let set2 = node2.marks, found2, steps = [];
-      while (found2 = mark3.isInSet(set2)) {
+      while (found2 = mark2.isInSet(set2)) {
         steps.push(new RemoveNodeMarkStep(pos, found2));
         set2 = found2.removeFromSet(set2);
       }
@@ -45718,8 +45735,8 @@ var Transform = class {
   /**
   Add the given mark to the inline content between `from` and `to`.
   */
-  addMark(from4, to, mark3) {
-    addMark(this, from4, to, mark3);
+  addMark(from4, to, mark2) {
+    addMark(this, from4, to, mark2);
     return this;
   }
   /**
@@ -45728,8 +45745,8 @@ var Transform = class {
   a mark type, remove all marks of that type. When it is null,
   remove all marks of any type.
   */
-  removeMark(from4, to, mark3) {
-    removeMark(this, from4, to, mark3);
+  removeMark(from4, to, mark2) {
+    removeMark(this, from4, to, mark2);
     return this;
   }
   /**
@@ -46119,9 +46136,9 @@ var AllSelection = class _AllSelection extends Selection {
   replace(tr2, content = Slice.empty) {
     if (content == Slice.empty) {
       tr2.delete(0, tr2.doc.content.size);
-      let sel2 = Selection.atStart(tr2.doc);
-      if (!sel2.eq(tr2.selection))
-        tr2.setSelection(sel2);
+      let sel = Selection.atStart(tr2.doc);
+      if (!sel.eq(tr2.selection))
+        tr2.setSelection(sel);
     } else {
       super.replace(tr2, content);
     }
@@ -46253,14 +46270,14 @@ var Transaction = class extends Transform {
   /**
   Add a mark to the set of stored marks.
   */
-  addStoredMark(mark3) {
-    return this.ensureMarks(mark3.addToSet(this.storedMarks || this.selection.$head.marks()));
+  addStoredMark(mark2) {
+    return this.ensureMarks(mark2.addToSet(this.storedMarks || this.selection.$head.marks()));
   }
   /**
   Remove a mark or mark type from the set of stored marks.
   */
-  removeStoredMark(mark3) {
-    return this.ensureMarks(mark3.removeFromSet(this.storedMarks || this.selection.$head.marks()));
+  removeStoredMark(mark2) {
+    return this.ensureMarks(mark2.removeFromSet(this.storedMarks || this.selection.$head.marks()));
   }
   /**
   Whether the stored marks were explicitly set for this transaction.
@@ -46377,8 +46394,8 @@ function bind(f2, self) {
   return !self || !f2 ? f2 : f2.bind(self);
 }
 var FieldDesc = class {
-  constructor(name2, desc, self) {
-    this.name = name2;
+  constructor(name, desc, self) {
+    this.name = name;
     this.init = bind(desc.init, self);
     this.apply = bind(desc.apply, self);
   }
@@ -46549,8 +46566,8 @@ var EditorState = class _EditorState {
     let $config = new Configuration(this.schema, config2.plugins);
     let fields = $config.fields, instance = new _EditorState($config);
     for (let i2 = 0; i2 < fields.length; i2++) {
-      let name2 = fields[i2].name;
-      instance[name2] = this.hasOwnProperty(name2) ? this[name2] : fields[i2].init(config2, instance);
+      let name = fields[i2].name;
+      instance[name] = this.hasOwnProperty(name) ? this[name] : fields[i2].init(config2, instance);
     }
     return instance;
   }
@@ -46642,18 +46659,18 @@ var Plugin = class {
   }
 };
 var keys = /* @__PURE__ */ Object.create(null);
-function createKey(name2) {
-  if (name2 in keys)
-    return name2 + "$" + ++keys[name2];
-  keys[name2] = 0;
-  return name2 + "$";
+function createKey(name) {
+  if (name in keys)
+    return name + "$" + ++keys[name];
+  keys[name] = 0;
+  return name + "$";
 }
 var PluginKey = class {
   /**
   Create a plugin key.
   */
-  constructor(name2 = "key") {
-    this.key = createKey(name2);
+  constructor(name = "key") {
+    this.key = createKey(name);
   }
   /**
   Get the active plugin with this key, if any, from an editor
@@ -46862,13 +46879,13 @@ function findCutAfter($pos) {
   return null;
 }
 var joinUp = (state, dispatch) => {
-  let sel2 = state.selection, nodeSel = sel2 instanceof NodeSelection, point;
+  let sel = state.selection, nodeSel = sel instanceof NodeSelection, point;
   if (nodeSel) {
-    if (sel2.node.isTextblock || !canJoin(state.doc, sel2.from))
+    if (sel.node.isTextblock || !canJoin(state.doc, sel.from))
       return false;
-    point = sel2.from;
+    point = sel.from;
   } else {
-    point = joinPoint(state.doc, sel2.from, -1);
+    point = joinPoint(state.doc, sel.from, -1);
     if (point == null)
       return false;
   }
@@ -46881,13 +46898,13 @@ var joinUp = (state, dispatch) => {
   return true;
 };
 var joinDown = (state, dispatch) => {
-  let sel2 = state.selection, point;
-  if (sel2 instanceof NodeSelection) {
-    if (sel2.node.isTextblock || !canJoin(state.doc, sel2.to))
+  let sel = state.selection, point;
+  if (sel instanceof NodeSelection) {
+    if (sel.node.isTextblock || !canJoin(state.doc, sel.to))
       return false;
-    point = sel2.to;
+    point = sel.to;
   } else {
-    point = joinPoint(state.doc, sel2.to, 1);
+    point = joinPoint(state.doc, sel.to, 1);
     if (point == null)
       return false;
   }
@@ -46935,8 +46952,8 @@ var exitCode = (state, dispatch) => {
   return true;
 };
 var createParagraphNear = (state, dispatch) => {
-  let sel2 = state.selection, { $from, $to } = sel2;
-  if (sel2 instanceof AllSelection || $from.parent.inlineContent || $to.parent.inlineContent)
+  let sel = state.selection, { $from, $to } = sel;
+  if (sel instanceof AllSelection || $from.parent.inlineContent || $to.parent.inlineContent)
     return false;
   let type = defaultBlockAt($to.parent.contentMatchAt($to.indexAfter()));
   if (!type || !type.isTextblock)
@@ -47106,7 +47123,7 @@ function deleteBarrier(state, $cut, dispatch, dir) {
 }
 function selectTextblockSide(side) {
   return function(state, dispatch) {
-    let sel2 = state.selection, $pos = side < 0 ? sel2.$from : sel2.$to;
+    let sel = state.selection, $pos = side < 0 ? sel.$from : sel.$to;
     let depth = $pos.depth;
     while ($pos.node(depth).isInline) {
       if (!depth)
@@ -47892,8 +47909,8 @@ function withFlushedState(view, state, f2) {
   }
 }
 function endOfTextblockVertical(view, state, dir) {
-  let sel2 = state.selection;
-  let $pos = dir == "up" ? sel2.$from : sel2.$to;
+  let sel = state.selection;
+  let $pos = dir == "up" ? sel.$from : sel.$to;
   return withFlushedState(view, state, () => {
     let { node: dom } = view.docView.domFromPos($pos.pos, dir == "up" ? -1 : 1);
     for (; ; ) {
@@ -47930,26 +47947,26 @@ function endOfTextblockHorizontal(view, state, dir) {
   if (!$head.parent.isTextblock)
     return false;
   let offset3 = $head.parentOffset, atStart = !offset3, atEnd = offset3 == $head.parent.content.size;
-  let sel2 = view.domSelection();
-  if (!sel2)
+  let sel = view.domSelection();
+  if (!sel)
     return $head.pos == $head.start() || $head.pos == $head.end();
-  if (!maybeRTL.test($head.parent.textContent) || !sel2.modify)
+  if (!maybeRTL.test($head.parent.textContent) || !sel.modify)
     return dir == "left" || dir == "backward" ? atStart : atEnd;
   return withFlushedState(view, state, () => {
     let { focusNode: oldNode, focusOffset: oldOff, anchorNode, anchorOffset } = view.domSelectionRange();
-    let oldBidiLevel = sel2.caretBidiLevel;
-    sel2.modify("move", dir, "character");
+    let oldBidiLevel = sel.caretBidiLevel;
+    sel.modify("move", dir, "character");
     let parentDOM = $head.depth ? view.docView.domAfterPos($head.before()) : view.dom;
     let { focusNode: newNode, focusOffset: newOff } = view.domSelectionRange();
     let result = newNode && !contains(parentDOM, newNode) || oldNode == newNode && oldOff == newOff;
     try {
-      sel2.collapse(anchorNode, anchorOffset);
-      if (oldNode && (oldNode != anchorNode || oldOff != anchorOffset) && sel2.extend)
-        sel2.extend(oldNode, oldOff);
+      sel.collapse(anchorNode, anchorOffset);
+      if (oldNode && (oldNode != anchorNode || oldOff != anchorOffset) && sel.extend)
+        sel.extend(oldNode, oldOff);
     } catch (_2) {
     }
     if (oldBidiLevel != null)
-      sel2.caretBidiLevel = oldBidiLevel;
+      sel.caretBidiLevel = oldBidiLevel;
     return result;
   });
 }
@@ -47981,7 +47998,7 @@ var ViewDesc = class {
   matchesWidget(widget) {
     return false;
   }
-  matchesMark(mark3) {
+  matchesMark(mark2) {
     return false;
   }
   matchesNode(node2, outerDeco, innerDeco) {
@@ -48080,21 +48097,21 @@ var ViewDesc = class {
       }
     } else if (this.dom.firstChild) {
       if (offset3 == 0)
-        for (let search2 = dom; ; search2 = search2.parentNode) {
-          if (search2 == this.dom) {
+        for (let search = dom; ; search = search.parentNode) {
+          if (search == this.dom) {
             atEnd = false;
             break;
           }
-          if (search2.previousSibling)
+          if (search.previousSibling)
             break;
         }
       if (atEnd == null && offset3 == dom.childNodes.length)
-        for (let search2 = dom; ; search2 = search2.parentNode) {
-          if (search2 == this.dom) {
+        for (let search = dom; ; search = search.parentNode) {
+          if (search == this.dom) {
             atEnd = true;
             break;
           }
-          if (search2.nextSibling)
+          if (search.nextSibling)
             break;
         }
     }
@@ -48434,25 +48451,25 @@ var CompositionViewDesc = class extends ViewDesc {
   }
 };
 var MarkViewDesc = class _MarkViewDesc extends ViewDesc {
-  constructor(parent, mark3, dom, contentDOM, spec) {
+  constructor(parent, mark2, dom, contentDOM, spec) {
     super(parent, [], dom, contentDOM);
-    this.mark = mark3;
+    this.mark = mark2;
     this.spec = spec;
   }
-  static create(parent, mark3, inline2, view) {
-    let custom2 = view.nodeViews[mark3.type.name];
-    let spec = custom2 && custom2(mark3, view, inline2);
+  static create(parent, mark2, inline2, view) {
+    let custom2 = view.nodeViews[mark2.type.name];
+    let spec = custom2 && custom2(mark2, view, inline2);
     if (!spec || !spec.dom)
-      spec = DOMSerializer.renderSpec(document, mark3.type.spec.toDOM(mark3, inline2), null, mark3.attrs);
-    return new _MarkViewDesc(parent, mark3, spec.dom, spec.contentDOM || spec.dom, spec);
+      spec = DOMSerializer.renderSpec(document, mark2.type.spec.toDOM(mark2, inline2), null, mark2.attrs);
+    return new _MarkViewDesc(parent, mark2, spec.dom, spec.contentDOM || spec.dom, spec);
   }
   parseRule() {
     if (this.dirty & NODE_DIRTY || this.mark.type.spec.reparseInView)
       return null;
     return { mark: this.mark.type.name, attrs: this.mark.attrs, contentElement: this.contentDOM };
   }
-  matchesMark(mark3) {
-    return this.dirty != NODE_DIRTY && this.mark.eq(mark3);
+  matchesMark(mark2) {
+    return this.dirty != NODE_DIRTY && this.mark.eq(mark2);
   }
   markDirty(from4, to) {
     super.markDirty(from4, to);
@@ -48862,18 +48879,18 @@ function computeOuterDeco(outerDeco, node2, needsWrap) {
       continue;
     if (attrs.nodeName)
       result.push(top = new OuterDecoLevel(attrs.nodeName));
-    for (let name2 in attrs) {
-      let val = attrs[name2];
+    for (let name in attrs) {
+      let val = attrs[name];
       if (val == null)
         continue;
       if (needsWrap && result.length == 1)
         result.push(top = new OuterDecoLevel(node2.isInline ? "span" : "div"));
-      if (name2 == "class")
+      if (name == "class")
         top.class = (top.class ? top.class + " " : "") + val;
-      else if (name2 == "style")
+      else if (name == "style")
         top.style = (top.style ? top.style + ";" : "") + val;
-      else if (name2 != "nodeName")
-        top[name2] = val;
+      else if (name != "nodeName")
+        top[name] = val;
     }
   }
   return result;
@@ -48901,12 +48918,12 @@ function patchOuterDeco(outerDOM, nodeDOM, prevComputed, curComputed) {
   return curDOM;
 }
 function patchAttributes(dom, prev, cur) {
-  for (let name2 in prev)
-    if (name2 != "class" && name2 != "style" && name2 != "nodeName" && !(name2 in cur))
-      dom.removeAttribute(name2);
-  for (let name2 in cur)
-    if (name2 != "class" && name2 != "style" && name2 != "nodeName" && cur[name2] != prev[name2])
-      dom.setAttribute(name2, cur[name2]);
+  for (let name in prev)
+    if (name != "class" && name != "style" && name != "nodeName" && !(name in cur))
+      dom.removeAttribute(name);
+  for (let name in cur)
+    if (name != "class" && name != "style" && name != "nodeName" && cur[name] != prev[name])
+      dom.setAttribute(name, cur[name]);
   if (prev.class != cur.class) {
     let prevList = prev.class ? prev.class.split(" ").filter(Boolean) : [];
     let curList = cur.class ? cur.class.split(" ").filter(Boolean) : [];
@@ -49387,8 +49404,8 @@ function editorOwnsSelection(view) {
   return view.editable ? view.hasFocus() : hasSelection(view) && document.activeElement && document.activeElement.contains(view.dom);
 }
 function selectionToDOM(view, force = false) {
-  let sel2 = view.state.selection;
-  syncNodeSelection(view, sel2);
+  let sel = view.state.selection;
+  syncNodeSelection(view, sel);
   if (!editorOwnsSelection(view))
     return;
   let mouseDown = view.input.mouseDown;
@@ -49403,12 +49420,12 @@ function selectionToDOM(view, force = false) {
   if (view.cursorWrapper) {
     selectCursorWrapper(view);
   } else {
-    let { anchor: anchor3, head } = sel2, resetEditableFrom, resetEditableTo;
-    if (brokenSelectBetweenUneditable && !(sel2 instanceof TextSelection)) {
-      if (!sel2.$from.parent.inlineContent)
-        resetEditableFrom = temporarilyEditableNear(view, sel2.from);
-      if (!sel2.empty && !sel2.$from.parent.inlineContent)
-        resetEditableTo = temporarilyEditableNear(view, sel2.to);
+    let { anchor: anchor3, head } = sel, resetEditableFrom, resetEditableTo;
+    if (brokenSelectBetweenUneditable && !(sel instanceof TextSelection)) {
+      if (!sel.$from.parent.inlineContent)
+        resetEditableFrom = temporarilyEditableNear(view, sel.from);
+      if (!sel.empty && !sel.$from.parent.inlineContent)
+        resetEditableTo = temporarilyEditableNear(view, sel.to);
     }
     view.docView.setSelection(anchor3, head, view, force);
     if (brokenSelectBetweenUneditable) {
@@ -49417,7 +49434,7 @@ function selectionToDOM(view, force = false) {
       if (resetEditableTo)
         resetEditable(resetEditableTo);
     }
-    if (sel2.visible) {
+    if (sel.visible) {
       view.dom.classList.remove("ProseMirror-hideselection");
     } else {
       view.dom.classList.add("ProseMirror-hideselection");
@@ -49486,9 +49503,9 @@ function selectCursorWrapper(view) {
     node2.disabled = false;
   }
 }
-function syncNodeSelection(view, sel2) {
-  if (sel2 instanceof NodeSelection) {
-    let desc = view.docView.descAt(sel2.from);
+function syncNodeSelection(view, sel) {
+  if (sel instanceof NodeSelection) {
+    let desc = view.docView.descAt(sel.from);
     if (desc != view.lastSelectedViewDesc) {
       clearNodeSelection(view);
       if (desc)
@@ -49515,11 +49532,11 @@ function hasFocusAndSelection(view) {
   return hasSelection(view);
 }
 function hasSelection(view) {
-  let sel2 = view.domSelectionRange();
-  if (!sel2.anchorNode)
+  let sel = view.domSelectionRange();
+  if (!sel.anchorNode)
     return false;
   try {
-    return contains(view.dom, sel2.anchorNode) && (view.editable || contains(view.dom, sel2.focusNode));
+    return contains(view.dom, sel.anchorNode) && (view.editable || contains(view.dom, sel.focusNode));
   } catch (_2) {
     return false;
   }
@@ -49535,20 +49552,20 @@ function moveSelectionBlock(state, dir) {
   let $start = !$side.parent.inlineContent ? $side : $side.depth ? state.doc.resolve(dir > 0 ? $side.after() : $side.before()) : null;
   return $start && Selection.findFrom($start, dir);
 }
-function apply(view, sel2) {
-  view.dispatch(view.state.tr.setSelection(sel2).scrollIntoView());
+function apply(view, sel) {
+  view.dispatch(view.state.tr.setSelection(sel).scrollIntoView());
   return true;
 }
 function selectHorizontally(view, dir, mods) {
-  let sel2 = view.state.selection;
-  if (sel2 instanceof TextSelection) {
+  let sel = view.state.selection;
+  if (sel instanceof TextSelection) {
     if (mods.indexOf("s") > -1) {
-      let { $head } = sel2, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter;
+      let { $head } = sel, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter;
       if (!node2 || node2.isText || !node2.isLeaf)
         return false;
       let $newHead = view.state.doc.resolve($head.pos + node2.nodeSize * (dir < 0 ? -1 : 1));
-      return apply(view, new TextSelection(sel2.$anchor, $newHead));
-    } else if (!sel2.empty) {
+      return apply(view, new TextSelection(sel.$anchor, $newHead));
+    } else if (!sel.empty) {
       return false;
     } else if (view.endOfTextblock(dir > 0 ? "forward" : "backward")) {
       let next2 = moveSelectionBlock(view.state, dir);
@@ -49556,7 +49573,7 @@ function selectHorizontally(view, dir, mods) {
         return apply(view, next2);
       return false;
     } else if (!mac4 || mods.indexOf("m") < 0) {
-      let $head = sel2.$head, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter, desc;
+      let $head = sel.$head, node2 = $head.textOffset ? null : dir < 0 ? $head.nodeBefore : $head.nodeAfter, desc;
       if (!node2 || node2.isText)
         return false;
       let nodePos = dir < 0 ? $head.pos - node2.nodeSize : $head.pos;
@@ -49568,8 +49585,8 @@ function selectHorizontally(view, dir, mods) {
         return apply(view, new TextSelection(view.state.doc.resolve(dir < 0 ? nodePos : nodePos + node2.nodeSize)));
       }
     }
-  } else if (sel2 instanceof NodeSelection && sel2.node.isInline) {
-    return apply(view, new TextSelection(dir > 0 ? sel2.$to : sel2.$from));
+  } else if (sel instanceof NodeSelection && sel.node.isInline) {
+    return apply(view, new TextSelection(dir > 0 ? sel.$to : sel.$from));
   } else {
     let next2 = moveSelectionBlock(view.state, dir);
     if (next2)
@@ -49585,8 +49602,8 @@ function skipIgnoredNodes(view, dir) {
   return dir < 0 ? skipIgnoredNodesBefore(view) : skipIgnoredNodesAfter(view);
 }
 function skipIgnoredNodesBefore(view) {
-  let sel2 = view.domSelectionRange();
-  let node2 = sel2.focusNode, offset3 = sel2.focusOffset;
+  let sel = view.domSelectionRange();
+  let node2 = sel.focusNode, offset3 = sel.focusOffset;
   if (!node2)
     return;
   let moveNode, moveOffset, force = false;
@@ -49632,8 +49649,8 @@ function skipIgnoredNodesBefore(view) {
     setSelFocus(view, moveNode, moveOffset);
 }
 function skipIgnoredNodesAfter(view) {
-  let sel2 = view.domSelectionRange();
-  let node2 = sel2.focusNode, offset3 = sel2.focusOffset;
+  let sel = view.domSelectionRange();
+  let node2 = sel.focusNode, offset3 = sel.focusOffset;
   if (!node2)
     return;
   let len = nodeSize(node2);
@@ -49718,14 +49735,14 @@ function setSelFocus(view, node2, offset3) {
       offset3 = before.nodeValue.length;
     }
   }
-  let sel2 = view.domSelection(), range = view.domSelectionRange();
-  if (!sel2)
+  let sel = view.domSelection(), range = view.domSelectionRange();
+  if (!sel)
     return;
   if (selectionCollapsed(range)) {
-    sel2.collapse(node2, offset3);
-  } else if (sel2.extend) {
-    sel2.collapse(range.anchorNode, range.anchorOffset);
-    sel2.extend(node2, offset3);
+    sel.collapse(node2, offset3);
+  } else if (sel.extend) {
+    sel.collapse(range.anchorNode, range.anchorOffset);
+    sel.extend(node2, offset3);
   }
   view.domObserver.setCurSelection();
   let { state } = view;
@@ -49761,12 +49778,12 @@ function findDirection(view, pos) {
   return computed == "rtl" ? "rtl" : "ltr";
 }
 function selectVertically(view, dir, mods) {
-  let sel2 = view.state.selection;
-  if (sel2 instanceof TextSelection && !sel2.empty || mods.indexOf("s") > -1)
+  let sel = view.state.selection;
+  if (sel instanceof TextSelection && !sel.empty || mods.indexOf("s") > -1)
     return false;
   if (mac4 && mods.indexOf("m") > -1)
     return false;
-  let { $from, $to } = sel2;
+  let { $from, $to } = sel;
   if (!$from.parent.inlineContent || view.endOfTextblock(dir < 0 ? "up" : "down")) {
     let next2 = moveSelectionBlock(view.state, dir);
     if (next2 && next2 instanceof NodeSelection)
@@ -49774,7 +49791,7 @@ function selectVertically(view, dir, mods) {
   }
   if (!$from.parent.inlineContent) {
     let side = dir < 0 ? $from : $to;
-    let beyond = sel2 instanceof AllSelection ? Selection.near(side, dir) : Selection.findFrom(side, dir);
+    let beyond = sel instanceof AllSelection ? Selection.near(side, dir) : Selection.findFrom(side, dir);
     return beyond ? apply(view, beyond) : false;
   }
   return false;
@@ -50237,11 +50254,11 @@ editHandlers.keypress = (view, _event) => {
     event.preventDefault();
     return;
   }
-  let sel2 = view.state.selection;
-  if (!(sel2 instanceof TextSelection) || !sel2.$from.sameParent(sel2.$to)) {
+  let sel = view.state.selection;
+  if (!(sel instanceof TextSelection) || !sel.$from.sameParent(sel.$to)) {
     let text2 = String.fromCharCode(event.charCode);
     let deflt = () => view.state.tr.insertText(text2).scrollIntoView();
-    if (!/[\r\n]/.test(text2) && !view.someProp("handleTextInput", (f2) => f2(view, sel2.$from.pos, sel2.$to.pos, text2, deflt)))
+    if (!/[\r\n]/.test(text2) && !view.someProp("handleTextInput", (f2) => f2(view, sel.$from.pos, sel.$to.pos, text2, deflt)))
       view.dispatch(deflt());
     event.preventDefault();
   }
@@ -50285,15 +50302,15 @@ function selectClickedLeaf(view, inside) {
 function selectClickedNode(view, inside) {
   if (inside == -1)
     return false;
-  let sel2 = view.state.selection, selectedNode, selectAt;
-  if (sel2 instanceof NodeSelection)
-    selectedNode = sel2.node;
+  let sel = view.state.selection, selectedNode, selectAt;
+  if (sel instanceof NodeSelection)
+    selectedNode = sel.node;
   let $pos = view.state.doc.resolve(inside);
   for (let i2 = $pos.depth + 1; i2 > 0; i2--) {
     let node2 = i2 > $pos.depth ? $pos.nodeAfter : $pos.node(i2);
     if (NodeSelection.isSelectable(node2)) {
-      if (selectedNode && sel2.$from.depth > 0 && i2 >= sel2.$from.depth && $pos.before(sel2.$from.depth + 1) == sel2.$from.pos)
-        selectAt = $pos.before(sel2.$from.depth);
+      if (selectedNode && sel.$from.depth > 0 && i2 >= sel.$from.depth && $pos.before(sel.$from.depth + 1) == sel.$from.pos)
+        selectAt = $pos.before(sel.$from.depth);
       else
         selectAt = $pos.before(i2);
       break;
@@ -50549,15 +50566,15 @@ editHandlers.compositionstart = editHandlers.compositionupdate = (view) => {
     } else {
       endComposition(view, !state.selection.empty);
       if (gecko && state.selection.empty && $pos.parentOffset && !$pos.textOffset && $pos.nodeBefore.marks.length) {
-        let sel2 = view.domSelectionRange();
-        for (let node2 = sel2.focusNode, offset3 = sel2.focusOffset; node2 && isElt(node2) && offset3 != 0; ) {
+        let sel = view.domSelectionRange();
+        for (let node2 = sel.focusNode, offset3 = sel.focusOffset; node2 && isElt(node2) && offset3 != 0; ) {
           let before = offset3 < 0 ? node2.lastChild : node2.childNodes[offset3 - 1];
           if (!before)
             break;
           if (isText(before)) {
-            let sel3 = view.domSelection();
-            if (sel3)
-              sel3.collapse(before, before.nodeValue.length);
+            let sel2 = view.domSelection();
+            if (sel2)
+              sel2.collapse(before, before.nodeValue.length);
             break;
           } else {
             node2 = before;
@@ -50605,11 +50622,11 @@ function clearComposition(view) {
     view.input.compositionNodes.pop().markParentsDirty();
 }
 function findCompositionNode(view) {
-  let sel2 = view.domSelectionRange();
-  if (!sel2.focusNode)
+  let sel = view.domSelectionRange();
+  if (!sel.focusNode)
     return null;
-  let textBefore = textNodeBefore$1(sel2.focusNode, sel2.focusOffset);
-  let textAfter = textNodeAfter$1(sel2.focusNode, sel2.focusOffset);
+  let textBefore = textNodeBefore$1(sel.focusNode, sel.focusOffset);
+  let textAfter = textNodeAfter$1(sel.focusNode, sel.focusOffset);
   if (textBefore && textAfter && textBefore != textAfter) {
     let descAfter = textAfter.pmViewDesc, lastChanged = view.domObserver.lastChangedTextNode;
     if (textBefore == lastChanged || textAfter == lastChanged)
@@ -50630,9 +50647,9 @@ function endComposition(view, restarting = false) {
   view.domObserver.forceFlush();
   clearComposition(view);
   if (restarting || view.docView && view.docView.dirty) {
-    let sel2 = selectionFromDOM(view), cur = view.state.selection;
-    if (sel2 && !sel2.eq(cur))
-      view.dispatch(view.state.tr.setSelection(sel2));
+    let sel = selectionFromDOM(view), cur = view.state.selection;
+    if (sel && !sel.eq(cur))
+      view.dispatch(view.state.tr.setSelection(sel));
     else if ((view.markCursor || restarting) && !cur.$from.node(cur.$from.sharedDepth(cur.to)).inlineContent)
       view.dispatch(view.state.tr.deleteSelection());
     else
@@ -50647,11 +50664,11 @@ function captureCopy(view, dom) {
   let wrap2 = view.dom.parentNode.appendChild(document.createElement("div"));
   wrap2.appendChild(dom);
   wrap2.style.cssText = "position: fixed; left: -10000px; top: 10px";
-  let sel2 = getSelection(), range = document.createRange();
+  let sel = getSelection(), range = document.createRange();
   range.selectNodeContents(dom);
   view.dom.blur();
-  sel2.removeAllRanges();
-  sel2.addRange(range);
+  sel.removeAllRanges();
+  sel.addRange(range);
   setTimeout(() => {
     if (wrap2.parentNode)
       wrap2.parentNode.removeChild(wrap2);
@@ -50661,11 +50678,11 @@ function captureCopy(view, dom) {
 var brokenClipboardAPI = ie2 && ie_version < 15 || ios && webkit_version < 604;
 handlers.copy = editHandlers.cut = (view, _event) => {
   let event = _event;
-  let sel2 = view.state.selection, cut2 = event.type == "cut";
-  if (sel2.empty)
+  let sel = view.state.selection, cut2 = event.type == "cut";
+  if (sel.empty)
     return;
   let data = brokenClipboardAPI ? null : event.clipboardData;
-  let slice2 = sel2.content(), { dom, text: text2 } = serializeForClipboard(view, slice2);
+  let slice2 = sel.content(), { dom, text: text2 } = serializeForClipboard(view, slice2);
   if (data) {
     event.preventDefault();
     data.clearData();
@@ -50751,10 +50768,10 @@ handlers.dragstart = (view, _event) => {
     mouseDown.done();
   if (!event.dataTransfer)
     return;
-  let sel2 = view.state.selection;
-  let pos = sel2.empty ? null : view.posAtCoords(eventCoords(event));
+  let sel = view.state.selection;
+  let pos = sel.empty ? null : view.posAtCoords(eventCoords(event));
   let node2;
-  if (pos && pos.pos >= sel2.from && pos.pos <= (sel2 instanceof NodeSelection ? sel2.to - 1 : sel2.to)) ;
+  if (pos && pos.pos >= sel.from && pos.pos <= (sel instanceof NodeSelection ? sel.to - 1 : sel.to)) ;
   else if (mouseDown && mouseDown.mightDrag) {
     node2 = NodeSelection.create(view.state.doc, mouseDown.mightDrag.pos);
   } else if (event.target && isElt(event.target)) {
@@ -50970,8 +50987,8 @@ var NodeType2 = class _NodeType {
       return null;
     return new Decoration(from4.pos - offset3, to.pos - offset3, this);
   }
-  valid(node2, span, cursor2) {
-    let found2 = cursor2.nodeAt(span.from);
+  valid(node2, span, cursor) {
+    let found2 = cursor.nodeAt(span.from);
     return !!found2 && !found2.isText && span.from + found2.nodeSize == span.to;
   }
   eq(other) {
@@ -51552,17 +51569,17 @@ var SelectionState = class {
     this.focusNode = null;
     this.focusOffset = 0;
   }
-  set(sel2) {
-    this.anchorNode = sel2.anchorNode;
-    this.anchorOffset = sel2.anchorOffset;
-    this.focusNode = sel2.focusNode;
-    this.focusOffset = sel2.focusOffset;
+  set(sel) {
+    this.anchorNode = sel.anchorNode;
+    this.anchorOffset = sel.anchorOffset;
+    this.focusNode = sel.focusNode;
+    this.focusOffset = sel.focusOffset;
   }
   clear() {
     this.anchorNode = this.focusNode = null;
   }
-  eq(sel2) {
-    return sel2.anchorNode == this.anchorNode && sel2.anchorOffset == this.anchorOffset && sel2.focusNode == this.focusNode && sel2.focusOffset == this.focusOffset;
+  eq(sel) {
+    return sel.anchorNode == this.anchorNode && sel.anchorOffset == this.anchorOffset && sel.focusNode == this.focusNode && sel.focusOffset == this.focusOffset;
   }
 };
 var DOMObserver = class {
@@ -51649,8 +51666,8 @@ var DOMObserver = class {
     if (this.suppressingSelectionUpdates)
       return selectionToDOM(this.view);
     if (ie2 && ie_version <= 11 && !this.view.state.selection.empty) {
-      let sel2 = this.view.domSelectionRange();
-      if (sel2.focusNode && isEquivalentPosition(sel2.focusNode, sel2.focusOffset, sel2.anchorNode, sel2.anchorOffset))
+      let sel = this.view.domSelectionRange();
+      if (sel.focusNode && isEquivalentPosition(sel.focusNode, sel.focusOffset, sel.anchorNode, sel.anchorOffset))
         return this.flushSoon();
     }
     this.flush();
@@ -51658,13 +51675,13 @@ var DOMObserver = class {
   setCurSelection() {
     this.currentSelection.set(this.view.domSelectionRange());
   }
-  ignoreSelectionChange(sel2) {
-    if (!sel2.focusNode)
+  ignoreSelectionChange(sel) {
+    if (!sel.focusNode)
       return true;
     let ancestors = /* @__PURE__ */ new Set(), container;
-    for (let scan = sel2.focusNode; scan; scan = parentNode(scan))
+    for (let scan = sel.focusNode; scan; scan = parentNode(scan))
       ancestors.add(scan);
-    for (let scan = sel2.anchorNode; scan; scan = parentNode(scan))
+    for (let scan = sel.anchorNode; scan; scan = parentNode(scan))
       if (ancestors.has(scan)) {
         container = scan;
         break;
@@ -51906,7 +51923,7 @@ function parseBetween(view, from_, to_, addedNodes) {
   let startDoc = view.state.doc;
   let parser = view.someProp("domParser") || DOMParser2.fromSchema(view.state.schema);
   let $from = startDoc.resolve(from4);
-  let sel2 = null, doc4 = parser.parse(parent, {
+  let sel = null, doc4 = parser.parse(parent, {
     topNode: $from.parent,
     topMatch: $from.parent.contentMatchAt($from.index()),
     topOpen: true,
@@ -51921,9 +51938,9 @@ function parseBetween(view, from_, to_, addedNodes) {
     let anchor4 = find3[0].pos, head = find3[1] && find3[1].pos;
     if (head == null)
       head = anchor4;
-    sel2 = { anchor: anchor4 + from4, head: head + from4 };
+    sel = { anchor: anchor4 + from4, head: head + from4 };
   }
-  return { doc: doc4, sel: sel2, from: from4, to };
+  return { doc: doc4, sel, from: from4, to };
 }
 var ruleFromNode = (added) => (dom) => {
   let desc = dom.pmViewDesc;
@@ -51967,7 +51984,7 @@ function readDOMChange(view, from4, to, typeOver, addedNodes) {
   let shared = $before.sharedDepth(to);
   from4 = $before.before(shared + 1);
   to = view.state.doc.resolve(to).after(shared + 1);
-  let sel2 = view.state.selection;
+  let sel = view.state.selection;
   let parse4 = parseBetween(view, from4, to, addedNodes);
   let doc4 = view.state.doc, compare = doc4.slice(parse4.from, parse4.to);
   let preferredPos, preferredSide;
@@ -51987,13 +52004,13 @@ function readDOMChange(view, from4, to, typeOver, addedNodes) {
     return;
   }
   if (!change) {
-    if (typeOver && sel2 instanceof TextSelection && !sel2.empty && sel2.$head.sameParent(sel2.$anchor) && !view.composing && !(parse4.sel && parse4.sel.anchor != parse4.sel.head)) {
-      change = { start: sel2.from, endA: sel2.to, endB: sel2.to };
+    if (typeOver && sel instanceof TextSelection && !sel.empty && sel.$head.sameParent(sel.$anchor) && !view.composing && !(parse4.sel && parse4.sel.anchor != parse4.sel.head)) {
+      change = { start: sel.from, endA: sel.to, endB: sel.to };
     } else {
       if (parse4.sel) {
-        let sel3 = resolveSelection(view, view.state.doc, parse4.sel);
-        if (sel3 && !sel3.eq(view.state.selection)) {
-          let tr2 = view.state.tr.setSelection(sel3);
+        let sel2 = resolveSelection(view, view.state.doc, parse4.sel);
+        if (sel2 && !sel2.eq(view.state.selection)) {
+          let tr2 = view.state.tr.setSelection(sel2);
           if (compositionID)
             tr2.setMeta("composition", compositionID);
           view.dispatch(tr2);
@@ -52043,9 +52060,9 @@ function readDOMChange(view, from4, to, typeOver, addedNodes) {
   let mkTr = (base2) => {
     let tr2 = base2 || view.state.tr.replace(chFrom, chTo, parse4.doc.slice(change.start - parse4.from, change.endB - parse4.from));
     if (parse4.sel) {
-      let sel3 = resolveSelection(view, tr2.doc, parse4.sel);
-      if (sel3 && !(chrome && view.composing && sel3.empty && (change.start != change.endB || view.input.lastChromeDelete < Date.now() - 100) && (sel3.head == chFrom || sel3.head == tr2.mapping.map(chTo) - 1) || ie2 && sel3.empty && sel3.head == chFrom))
-        tr2.setSelection(sel3);
+      let sel2 = resolveSelection(view, tr2.doc, parse4.sel);
+      if (sel2 && !(chrome && view.composing && sel2.empty && (change.start != change.endB || view.input.lastChromeDelete < Date.now() - 100) && (sel2.head == chFrom || sel2.head == tr2.mapping.map(chTo) - 1) || ie2 && sel2.empty && sel2.head == chFrom))
+        tr2.setSelection(sel2);
     }
     if (compositionID)
       tr2.setMeta("composition", compositionID);
@@ -52092,19 +52109,19 @@ function resolveSelection(view, doc4, parsedSel) {
 }
 function isMarkChange(cur, prev) {
   let curMarks = cur.firstChild.marks, prevMarks = prev.firstChild.marks;
-  let added = curMarks, removed = prevMarks, type, mark3, update;
+  let added = curMarks, removed = prevMarks, type, mark2, update;
   for (let i2 = 0; i2 < prevMarks.length; i2++)
     added = prevMarks[i2].removeFromSet(added);
   for (let i2 = 0; i2 < curMarks.length; i2++)
     removed = curMarks[i2].removeFromSet(removed);
   if (added.length == 1 && removed.length == 0) {
-    mark3 = added[0];
+    mark2 = added[0];
     type = "add";
-    update = (node2) => node2.mark(mark3.addToSet(node2.marks));
+    update = (node2) => node2.mark(mark2.addToSet(node2.marks));
   } else if (added.length == 0 && removed.length == 1) {
-    mark3 = removed[0];
+    mark2 = removed[0];
     type = "remove";
-    update = (node2) => node2.mark(mark3.removeFromSet(node2.marks));
+    update = (node2) => node2.mark(mark2.removeFromSet(node2.marks));
   } else {
     return null;
   }
@@ -52112,7 +52129,7 @@ function isMarkChange(cur, prev) {
   for (let i2 = 0; i2 < prev.childCount; i2++)
     updated.push(update(prev.child(i2)));
   if (Fragment.from(updated).eq(cur))
-    return { mark: mark3, type };
+    return { mark: mark2, type };
 }
 function looksLikeBlockJoin(old, start, end, $newStart, $newEnd) {
   if (
@@ -52240,8 +52257,8 @@ var EditorView = class {
     if (this._props.state != this.state) {
       let prev = this._props;
       this._props = {};
-      for (let name2 in prev)
-        this._props[name2] = prev[name2];
+      for (let name in prev)
+        this._props[name] = prev[name];
       this._props.state = this.state;
     }
     return this._props;
@@ -52268,11 +52285,11 @@ var EditorView = class {
   */
   setProps(props) {
     let updated = {};
-    for (let name2 in this._props)
-      updated[name2] = this._props[name2];
+    for (let name in this._props)
+      updated[name] = this._props[name];
     updated.state = this.state;
-    for (let name2 in props)
-      updated[name2] = props[name2];
+    for (let name in props)
+      updated[name] = props[name];
     this.update(updated);
   }
   /**
@@ -52388,13 +52405,13 @@ var EditorView = class {
     }
   }
   updateDraggedNode(dragging, prev) {
-    let sel2 = dragging.node, found2 = -1;
-    if (sel2.from < this.state.doc.content.size && this.state.doc.nodeAt(sel2.from) == sel2.node) {
-      found2 = sel2.from;
+    let sel = dragging.node, found2 = -1;
+    if (sel.from < this.state.doc.content.size && this.state.doc.nodeAt(sel.from) == sel.node) {
+      found2 = sel.from;
     } else {
-      let movedPos = sel2.from + (this.state.doc.content.size - prev.doc.content.size);
+      let movedPos = sel.from + (this.state.doc.content.size - prev.doc.content.size);
       let moved = movedPos > 0 && movedPos < this.state.doc.content.size && this.state.doc.nodeAt(movedPos);
-      if (moved == sel2.node)
+      if (moved == sel.node)
         found2 = movedPos;
     }
     this.dragging = new Dragging(dragging.slice, dragging.move, found2 < 0 ? void 0 : NodeSelection.create(this.state.doc, found2));
@@ -52454,11 +52471,11 @@ var EditorView = class {
   get root() {
     let cached2 = this._root;
     if (cached2 == null)
-      for (let search2 = this.dom.parentNode; search2; search2 = search2.parentNode) {
-        if (search2.nodeType == 9 || search2.nodeType == 11 && search2.host) {
-          if (!search2.getSelection)
-            Object.getPrototypeOf(search2).getSelection = () => search2.ownerDocument.getSelection();
-          return this._root = search2;
+      for (let search = this.dom.parentNode; search; search = search.parentNode) {
+        if (search.nodeType == 9 || search.nodeType == 11 && search.host) {
+          if (!search.getSelection)
+            Object.getPrototypeOf(search).getSelection = () => search.ownerDocument.getSelection();
+          return this._root = search;
         }
       }
     return cached2 || document;
@@ -52609,10 +52626,10 @@ var EditorView = class {
   @internal
   */
   domSelectionRange() {
-    let sel2 = this.dom.isConnected !== false && this.domSelection();
-    if (!sel2)
+    let sel = this.dom.isConnected !== false && this.domSelection();
+    if (!sel)
       return { focusNode: null, focusOffset: 0, anchorNode: null, anchorOffset: 0 };
-    return safari && this.root.nodeType === 11 && deepActiveElement(this.dom.ownerDocument) == this.dom && safariShadowSelectionRange(this, sel2) || sel2;
+    return safari && this.root.nodeType === 11 && deepActiveElement(this.dom.ownerDocument) == this.dom && safariShadowSelectionRange(this, sel) || sel;
   }
   /**
   @internal
@@ -52790,21 +52807,21 @@ for (code in base) if (!shift.hasOwnProperty(code)) shift[code] = base[code];
 var code;
 function keyName(event) {
   var ignoreKey = mac5 && event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey || ie3 && event.shiftKey && event.key && event.key.length == 1 || event.key == "Unidentified";
-  var name2 = !ignoreKey && event.key || (event.shiftKey ? shift : base)[event.keyCode] || event.key || "Unidentified";
-  if (name2 == "Esc") name2 = "Escape";
-  if (name2 == "Del") name2 = "Delete";
-  if (name2 == "Left") name2 = "ArrowLeft";
-  if (name2 == "Up") name2 = "ArrowUp";
-  if (name2 == "Right") name2 = "ArrowRight";
-  if (name2 == "Down") name2 = "ArrowDown";
-  return name2;
+  var name = !ignoreKey && event.key || (event.shiftKey ? shift : base)[event.keyCode] || event.key || "Unidentified";
+  if (name == "Esc") name = "Escape";
+  if (name == "Del") name = "Delete";
+  if (name == "Left") name = "ArrowLeft";
+  if (name == "Up") name = "ArrowUp";
+  if (name == "Right") name = "ArrowRight";
+  if (name == "Down") name = "ArrowDown";
+  return name;
 }
 
 // node_modules/prosemirror-keymap/dist/index.js
 var mac6 = typeof navigator != "undefined" && /Mac|iP(hone|[oa]d)/.test(navigator.platform);
 var windows2 = typeof navigator != "undefined" && /Win/.test(navigator.platform);
-function normalizeKeyName(name2) {
-  let parts = name2.split(/-(?!$)/), result = parts[parts.length - 1];
+function normalizeKeyName(name) {
+  let parts = name.split(/-(?!$)/), result = parts[parts.length - 1];
   if (result == "Space")
     result = " ";
   let alt, ctrl, shift3, meta3;
@@ -52842,16 +52859,16 @@ function normalize(map4) {
     copy3[normalizeKeyName(prop)] = map4[prop];
   return copy3;
 }
-function modifiers(name2, event, shift3 = true) {
+function modifiers(name, event, shift3 = true) {
   if (event.altKey)
-    name2 = "Alt-" + name2;
+    name = "Alt-" + name;
   if (event.ctrlKey)
-    name2 = "Ctrl-" + name2;
+    name = "Ctrl-" + name;
   if (event.metaKey)
-    name2 = "Meta-" + name2;
+    name = "Meta-" + name;
   if (shift3 && event.shiftKey)
-    name2 = "Shift-" + name2;
-  return name2;
+    name = "Shift-" + name;
+  return name;
 }
 function keymap(bindings) {
   return new Plugin({ props: { handleKeyDown: keydownHandler(bindings) } });
@@ -52859,17 +52876,17 @@ function keymap(bindings) {
 function keydownHandler(bindings) {
   let map4 = normalize(bindings);
   return function(view, event) {
-    let name2 = keyName(event), baseName, direct = map4[modifiers(name2, event)];
+    let name = keyName(event), baseName, direct = map4[modifiers(name, event)];
     if (direct && direct(view.state, view.dispatch, view))
       return true;
-    if (name2.length == 1 && name2 != " ") {
+    if (name.length == 1 && name != " ") {
       if (event.shiftKey) {
-        let noShift = map4[modifiers(name2, event, false)];
+        let noShift = map4[modifiers(name, event, false)];
         if (noShift && noShift(view.state, view.dispatch, view))
           return true;
       }
       if ((event.altKey || event.metaKey || event.ctrlKey) && // Ctrl-Alt may be used for AltGr on Windows
-      !(windows2 && event.ctrlKey && event.altKey) && (baseName = base[event.keyCode]) && baseName != name2) {
+      !(windows2 && event.ctrlKey && event.altKey) && (baseName = base[event.keyCode]) && baseName != name) {
         let fromCode = map4[modifiers(baseName, event)];
         if (fromCode && fromCode(view.state, view.dispatch, view))
           return true;
@@ -53200,10 +53217,10 @@ var Branch = class _Branch {
     for (let i2 = rebasedCount; i2 < newUntil; i2++)
       newMaps.push(new Item(mapping.maps[i2]));
     let items = this.items.slice(0, start).append(newMaps).append(rebasedItems);
-    let branch2 = new _Branch(items, eventCount);
-    if (branch2.emptyItemCount() > max_empty_items)
-      branch2 = branch2.compress(this.items.length - rebasedItems.length);
-    return branch2;
+    let branch = new _Branch(items, eventCount);
+    if (branch.emptyItemCount() > max_empty_items)
+      branch = branch.compress(this.items.length - rebasedItems.length);
+    return branch;
   }
   emptyItemCount() {
     let count = 0;
@@ -53470,13 +53487,13 @@ var CommandManager = class CommandManager2 {
     const { view } = editor;
     const { tr: tr2 } = state;
     const props = this.buildProps(tr2);
-    return Object.fromEntries(Object.entries(rawCommands).map(([name2, command3]) => {
+    return Object.fromEntries(Object.entries(rawCommands).map(([name, command3]) => {
       const method = (...args2) => {
         const callback = command3(...args2)(props);
         if (!tr2.getMeta("preventDispatch") && !this.hasCustomState) view.dispatch(tr2);
         return callback;
       };
-      return [name2, method];
+      return [name, method];
     }));
   }
   get chain() {
@@ -53496,14 +53513,14 @@ var CommandManager = class CommandManager2 {
       return callbacks.every((callback) => callback === true);
     };
     const chain = {
-      ...Object.fromEntries(Object.entries(rawCommands).map(([name2, command3]) => {
+      ...Object.fromEntries(Object.entries(rawCommands).map(([name, command3]) => {
         const chainedCommand = (...args2) => {
           const props = this.buildProps(tr2, shouldDispatch);
           const callback = command3(...args2)(props);
           callbacks.push(callback);
           return chain;
         };
-        return [name2, chainedCommand];
+        return [name, chainedCommand];
       })),
       run: run4
     };
@@ -53530,8 +53547,8 @@ var CommandManager = class CommandManager2 {
     const tr2 = startTr || state.tr;
     const props = this.buildProps(tr2, dispatch);
     return {
-      ...Object.fromEntries(Object.entries(rawCommands).map(([name2, command3]) => {
-        return [name2, (...args2) => command3(...args2)({
+      ...Object.fromEntries(Object.entries(rawCommands).map(([name, command3]) => {
+        return [name, (...args2) => command3(...args2)({
           ...props,
           dispatch: void 0
         })];
@@ -53569,8 +53586,8 @@ var CommandManager = class CommandManager2 {
       chain: () => this.createChain(tr2, shouldDispatch),
       can: () => this.createCan(tr2),
       get commands() {
-        return Object.fromEntries(Object.entries(rawCommands).map(([name2, command3]) => {
-          return [name2, (...args2) => command3(...args2)(props)];
+        return Object.fromEntries(Object.entries(rawCommands).map(([name, command3]) => {
+          return [name, (...args2) => command3(...args2)(props)];
         }));
       }
     };
@@ -53732,10 +53749,10 @@ function isMarkInSet(marks, type, attributes = {}) {
 function getMarkRange($pos, type, attributes) {
   if (!$pos || !type) return;
   let start = $pos.parent.childAfter($pos.parentOffset);
-  if (!start.node || !start.node.marks.some((mark3) => mark3.type === type)) start = $pos.parent.childBefore($pos.parentOffset);
-  if (!start.node || !start.node.marks.some((mark3) => mark3.type === type)) return;
+  if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) start = $pos.parent.childBefore($pos.parentOffset);
+  if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) return;
   if (!attributes) {
-    const firstMark = start.node.marks.find((mark3) => mark3.type === type);
+    const firstMark = start.node.marks.find((mark2) => mark2.type === type);
     if (firstMark) attributes = firstMark.attrs;
   }
   if (!findMarkInSet([...start.node.marks], type, attributes)) return;
@@ -54117,8 +54134,8 @@ var joinTextblockForward$1 = () => ({ state, dispatch }) => {
 function isMacOS() {
   return typeof navigator !== "undefined" ? /Mac/.test(navigator.platform) : false;
 }
-function normalizeKeyName2(name2) {
-  const parts = name2.split(/-(?!$)/);
+function normalizeKeyName2(name) {
+  const parts = name.split(/-(?!$)/);
   let result = parts[parts.length - 1];
   if (result === "Space") result = " ";
   let alt;
@@ -54142,8 +54159,8 @@ function normalizeKeyName2(name2) {
   if (shift3) result = `Shift-${result}`;
   return result;
 }
-var keyboardShortcut = (name2) => ({ editor, view, tr: tr2, dispatch }) => {
-  const keys3 = normalizeKeyName2(name2).split(/-(?!$)/);
+var keyboardShortcut = (name) => ({ editor, view, tr: tr2, dispatch }) => {
+  const keys3 = normalizeKeyName2(name).split(/-(?!$)/);
   const key = keys3.find((item) => ![
     "Alt",
     "Ctrl",
@@ -54204,9 +54221,9 @@ var liftListItem$1 = (typeOrName) => ({ state, dispatch }) => {
 var newlineInCode$1 = () => ({ state, dispatch }) => {
   return newlineInCode(state, dispatch);
 };
-function getSchemaTypeNameByName(name2, schema2) {
-  if (schema2.nodes[name2]) return "node";
-  if (schema2.marks[name2]) return "mark";
+function getSchemaTypeNameByName(name, schema2) {
+  if (schema2.nodes[name]) return "node";
+  if (schema2.marks[name]) return "mark";
   return null;
 }
 function deleteProps(obj, propOrProps) {
@@ -54230,10 +54247,10 @@ var resetAttributes = (typeOrName, attributes) => ({ tr: tr2, state, dispatch })
         canReset = true;
         if (dispatch) tr2.setNodeMarkup(pos, void 0, deleteProps(node2.attrs, attributes));
       }
-      if (markType && node2.marks.length) node2.marks.forEach((mark3) => {
-        if (markType === mark3.type) {
+      if (markType && node2.marks.length) node2.marks.forEach((mark2) => {
+        if (markType === mark2.type) {
           canReset = true;
-          if (dispatch) tr2.addMark(pos, pos + node2.nodeSize, markType.create(deleteProps(mark3.attrs, attributes)));
+          if (dispatch) tr2.addMark(pos, pos + node2.nodeSize, markType.create(deleteProps(mark2.attrs, attributes)));
         }
       });
     });
@@ -54302,9 +54319,9 @@ function getMarkAttributes(state, typeOrName) {
   } else state.doc.nodesBetween(from4, to, (node2) => {
     marks.push(...node2.marks);
   });
-  const mark3 = marks.find((markItem) => markItem.type.name === type.name);
-  if (!mark3) return {};
-  return { ...mark3.attrs };
+  const mark2 = marks.find((markItem) => markItem.type.name === type.name);
+  if (!mark2) return {};
+  return { ...mark2.attrs };
 }
 function combineTransactionSteps(oldDoc, transactions) {
   const transform2 = new Transform(oldDoc);
@@ -54384,13 +54401,13 @@ function getSchemaAttributes(attributes, schema2) {
   }
   return [...Object.values(schema2.nodes), ...Object.values(schema2.marks)].flatMap((type) => {
     var _type$spec$attrs;
-    return Object.entries((_type$spec$attrs = type.spec.attrs) !== null && _type$spec$attrs !== void 0 ? _type$spec$attrs : {}).map(([name2, spec]) => {
+    return Object.entries((_type$spec$attrs = type.spec.attrs) !== null && _type$spec$attrs !== void 0 ? _type$spec$attrs : {}).map(([name, spec]) => {
       var _attributesByType$get2;
-      const local = (_attributesByType$get2 = attributesByType.get(type.name)) === null || _attributesByType$get2 === void 0 ? void 0 : _attributesByType$get2.get(name2);
+      const local = (_attributesByType$get2 = attributesByType.get(type.name)) === null || _attributesByType$get2 === void 0 ? void 0 : _attributesByType$get2.get(name);
       const hasDefault = Object.hasOwn(spec, "default");
       return {
         type: type.name,
-        name: name2,
+        name,
         attribute: {
           rendered: true,
           renderHTML: null,
@@ -54429,34 +54446,34 @@ var markSchemaFields = {
   code: "boolean"
 };
 function structuralFields(spec, fields, path) {
-  return Object.fromEntries(Object.entries(fields).flatMap(([name2, expected]) => {
-    const value = spec[name2];
+  return Object.fromEntries(Object.entries(fields).flatMap(([name, expected]) => {
+    const value = spec[name];
     if (value === void 0) return [];
-    if (!(typeof expected === "string" ? typeof value === expected : typeof value === "string" && expected.includes(value))) throw new RangeError(`Invalid schemaSpec field '${path}.${name2}'`);
-    return [[name2, value]];
+    if (!(typeof expected === "string" ? typeof value === expected : typeof value === "string" && expected.includes(value))) throw new RangeError(`Invalid schemaSpec field '${path}.${name}'`);
+    return [[name, value]];
   }));
 }
-function mergeType(name2, local, external, fields) {
+function mergeType(name, local, external, fields) {
   return {
     ...Object.fromEntries(Object.entries(local).filter(([key]) => key !== "attrs" && !Object.hasOwn(fields, key))),
-    ...structuralFields(external, fields, name2),
+    ...structuralFields(external, fields, name),
     attrs: external.attrs
   };
 }
 function checkTypes(local, external, kind) {
-  for (const name2 of Object.keys(external)) if (!Object.hasOwn(local, name2)) throw new RangeError(`schemaSpec requires a local ${kind} extension named '${name2}'`);
-  for (const name2 of Object.keys(local)) if (!Object.hasOwn(external, name2)) throw new RangeError(`Local ${kind} extension '${name2}' is not in schemaSpec`);
+  for (const name of Object.keys(external)) if (!Object.hasOwn(local, name)) throw new RangeError(`schemaSpec requires a local ${kind} extension named '${name}'`);
+  for (const name of Object.keys(local)) if (!Object.hasOwn(external, name)) throw new RangeError(`Local ${kind} extension '${name}' is not in schemaSpec`);
 }
 function mergeSchemaSpec(local, external) {
   checkTypes(local.nodes, external.nodes, "node");
   checkTypes(local.marks, external.marks, "mark");
   let nodes = external.spec.nodes;
   let marks = external.spec.marks;
-  external.spec.nodes.forEach((name2, spec) => {
-    nodes = nodes.update(name2, mergeType(name2, local.nodes[name2], spec, nodeSchemaFields));
+  external.spec.nodes.forEach((name, spec) => {
+    nodes = nodes.update(name, mergeType(name, local.nodes[name], spec, nodeSchemaFields));
   });
-  external.spec.marks.forEach((name2, spec) => {
-    marks = marks.update(name2, mergeType(name2, local.marks[name2], spec, markSchemaFields));
+  external.spec.marks.forEach((name, spec) => {
+    marks = marks.update(name, mergeType(name, local.marks[name], spec, markSchemaFields));
   });
   return {
     topNode: external.topNodeType.name,
@@ -54507,10 +54524,10 @@ function getAttributesFromExtensions(extensions) {
       else if (globalAttribute.types === "marks") resolvedTypes = markExtensionTypes;
       else resolvedTypes = [];
       resolvedTypes.forEach((type) => {
-        Object.entries(globalAttribute.attributes).forEach(([name2, attribute]) => {
+        Object.entries(globalAttribute.attributes).forEach(([name, attribute]) => {
           extensionAttributes.push({
             type,
-            name: name2,
+            name,
             attribute: {
               ...defaultAttribute,
               ...attribute
@@ -54528,7 +54545,7 @@ function getAttributesFromExtensions(extensions) {
     });
     if (!addAttributes) return;
     const attributes = addAttributes();
-    Object.entries(attributes).forEach(([name2, attribute]) => {
+    Object.entries(attributes).forEach(([name, attribute]) => {
       const mergedAttr = {
         ...defaultAttribute,
         ...attribute
@@ -54537,7 +54554,7 @@ function getAttributesFromExtensions(extensions) {
       if ((mergedAttr === null || mergedAttr === void 0 ? void 0 : mergedAttr.isRequired) && (mergedAttr === null || mergedAttr === void 0 ? void 0 : mergedAttr.default) === void 0) delete mergedAttr.default;
       extensionAttributes.push({
         type: extension.name,
-        name: name2,
+        name,
         attribute: mergedAttr
       });
     });
@@ -54762,9 +54779,9 @@ function getSchemaSpecByResolvedExtensions(extensions, editor, allAttributes = g
       const parseHTML = callOrReturn(getExtensionField(extension, "parseHTML", context2));
       if (parseHTML) schema2.parseDOM = parseHTML.map((parseRule) => injectExtensionAttributesToParseRule(parseRule, extensionAttributes));
       const renderHTML = getExtensionField(extension, "renderHTML", context2);
-      if (renderHTML) schema2.toDOM = (mark3) => renderHTML({
-        mark: mark3,
-        HTMLAttributes: getRenderedAttributes(mark3, extensionAttributes)
+      if (renderHTML) schema2.toDOM = (mark2) => renderHTML({
+        mark: mark2,
+        HTMLAttributes: getRenderedAttributes(mark2, extensionAttributes)
       });
       return [extension.name, schema2];
     }))
@@ -54822,7 +54839,7 @@ function getTextBetween(startNode, range, options) {
   return text2;
 }
 function getTextSerializersFromSchema(schema2) {
-  return Object.fromEntries(Object.entries(schema2.nodes).filter(([, node2]) => node2.spec.toText).map(([name2, node2]) => [name2, node2.spec.toText]));
+  return Object.fromEntries(Object.entries(schema2.nodes).filter(([, node2]) => node2.spec.toText).map(([name, node2]) => [name, node2.spec.toText]));
 }
 function getNodeAttributes(state, typeOrName) {
   const type = getNodeType(typeOrName, state.schema);
@@ -54895,20 +54912,20 @@ function getChangedRanges(transform2) {
 }
 function getMarksBetween(from4, to, doc4) {
   const marks = [];
-  if (from4 === to) doc4.resolve(from4).marks().forEach((mark3) => {
-    const range = getMarkRange(doc4.resolve(from4), mark3.type);
+  if (from4 === to) doc4.resolve(from4).marks().forEach((mark2) => {
+    const range = getMarkRange(doc4.resolve(from4), mark2.type);
     if (!range) return;
     marks.push({
-      mark: mark3,
+      mark: mark2,
       ...range
     });
   });
   else doc4.nodesBetween(from4, to, (node2, pos) => {
     if (!node2 || (node2 === null || node2 === void 0 ? void 0 : node2.nodeSize) === void 0) return;
-    marks.push(...node2.marks.map((mark3) => ({
+    marks.push(...node2.marks.map((mark2) => ({
       from: pos,
       to: pos + node2.nodeSize,
-      mark: mark3
+      mark: mark2
     })));
   });
   return marks;
@@ -54931,13 +54948,13 @@ var getPreviousBlockSibling = ($pos) => {
   if (index === 0) return null;
   return $pos.node(parentDepth).child(index - 1);
 };
-function getSchemaTypeByName(name2, schema2) {
-  return schema2.nodes[name2] || schema2.marks[name2] || null;
+function getSchemaTypeByName(name, schema2) {
+  return schema2.nodes[name] || schema2.marks[name] || null;
 }
 function getSplittedAttributes(extensionAttributes, typeName, attributes) {
-  return Object.fromEntries(Object.entries(attributes).filter(([name2]) => {
+  return Object.fromEntries(Object.entries(attributes).filter(([name]) => {
     const extensionAttribute = extensionAttributes.find((item) => {
-      return item.type === typeName && item.name === name2;
+      return item.type === typeName && item.name === name;
     });
     if (!extensionAttribute) return false;
     return extensionAttribute.attribute.keepOnSplit;
@@ -54961,10 +54978,10 @@ var getTextContentFromNodes = ($from, maxMatch = 500) => {
 function isMarkActive(state, typeOrName, attributes = {}) {
   const { empty: empty2, ranges } = state.selection;
   const type = typeOrName ? getMarkType(typeOrName, state.schema) : null;
-  if (empty2) return !!(state.storedMarks || state.selection.$from.marks()).filter((mark3) => {
+  if (empty2) return !!(state.storedMarks || state.selection.$from.marks()).filter((mark2) => {
     if (!type) return true;
-    return type.name === mark3.type.name;
-  }).find((mark3) => objectIncludes(mark3.attrs, attributes, { strict: false }));
+    return type.name === mark2.type.name;
+  }).find((mark2) => objectIncludes(mark2.attrs, attributes, { strict: false }));
   let selectionRange = 0;
   const markRanges = [];
   ranges.forEach(({ $from, $to }) => {
@@ -54977,8 +54994,8 @@ function isMarkActive(state, typeOrName, attributes = {}) {
       const relativeTo = Math.min(to, pos + node2.nodeSize);
       const range = relativeTo - relativeFrom;
       selectionRange += range;
-      markRanges.push(...node2.marks.map((mark3) => ({
-        mark: mark3,
+      markRanges.push(...node2.marks.map((mark2) => ({
+        mark: mark2,
         from: relativeFrom,
         to: relativeTo
       })));
@@ -55018,9 +55035,9 @@ function isExtensionRulesEnabled(extension, enabled) {
   });
   return enabled;
 }
-function isList(name2, extensions) {
+function isList(name, extensions) {
   const { nodeExtensions } = splitExtensions(extensions);
-  const extension = nodeExtensions.find((item) => item.name === name2);
+  const extension = nodeExtensions.find((item) => item.name === name);
   if (!extension) return false;
   const group = callOrReturn(getExtensionField(extension, "group", {
     name: extension.name,
@@ -55059,12 +55076,12 @@ function isNodeSelection(value) {
 }
 function canSetMark(state, tr2, newMarkType) {
   const { selection } = tr2;
-  let cursor2 = null;
-  if (isTextSelection(selection)) cursor2 = selection.$cursor;
-  if (cursor2) {
+  let cursor = null;
+  if (isTextSelection(selection)) cursor = selection.$cursor;
+  if (cursor) {
     var _state$storedMarks;
-    const currentMarks = (_state$storedMarks = state.storedMarks) !== null && _state$storedMarks !== void 0 ? _state$storedMarks : cursor2.marks();
-    return cursor2.parent.type.allowsMarkType(newMarkType) && (!!newMarkType.isInSet(currentMarks) || !currentMarks.some((mark3) => mark3.type.excludes(newMarkType)));
+    const currentMarks = (_state$storedMarks = state.storedMarks) !== null && _state$storedMarks !== void 0 ? _state$storedMarks : cursor.marks();
+    return cursor.parent.type.allowsMarkType(newMarkType) && (!!newMarkType.isInSet(currentMarks) || !currentMarks.some((mark2) => mark2.type.excludes(newMarkType)));
   }
   const { ranges } = selection;
   return ranges.some(({ $from, $to }) => {
@@ -55098,9 +55115,9 @@ var setMark = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispatch }) =>
       state.doc.nodesBetween(from4, to, (node2, pos) => {
         const trimmedFrom = Math.max(pos, from4);
         const trimmedTo = Math.min(pos + node2.nodeSize, to);
-        if (node2.marks.find((mark3) => mark3.type === type)) node2.marks.forEach((mark3) => {
-          if (type === mark3.type) tr2.addMark(trimmedFrom, trimmedTo, type.create({
-            ...mark3.attrs,
+        if (node2.marks.find((mark2) => mark2.type === type)) node2.marks.forEach((mark2) => {
+          if (type === mark2.type) tr2.addMark(trimmedFrom, trimmedTo, type.create({
+            ...mark2.attrs,
             ...attributes
           }));
         });
@@ -55190,7 +55207,7 @@ var sinkListItem$1 = (typeOrName) => ({ state, dispatch }) => {
 function ensureMarks(state, splittableMarks) {
   const marks = state.storedMarks || state.selection.$to.parentOffset && state.selection.$from.marks();
   if (marks) {
-    const filteredMarks = marks.filter((mark3) => splittableMarks === null || splittableMarks === void 0 ? void 0 : splittableMarks.includes(mark3.type.name));
+    const filteredMarks = marks.filter((mark2) => splittableMarks === null || splittableMarks === void 0 ? void 0 : splittableMarks.includes(mark2.type.name));
     state.tr.ensureMarks(filteredMarks);
   }
 }
@@ -55268,12 +55285,12 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispa
       wrap2 = wrap2.append(Fragment.from(type.createAndFill(null, nextType2) || void 0));
       const start = $from.before($from.depth - (depthBefore - 1));
       tr2.replace(start, $from.after(-depthAfter), new Slice(wrap2, 4 - depthBefore, 0));
-      let sel2 = -1;
+      let sel = -1;
       tr2.doc.nodesBetween(start, tr2.doc.content.size, (n, pos) => {
-        if (sel2 > -1) return false;
-        if (n.isTextblock && n.content.size === 0) sel2 = pos + 1;
+        if (sel > -1) return false;
+        if (n.isTextblock && n.content.size === 0) sel = pos + 1;
       });
-      if (sel2 > -1) tr2.setSelection(TextSelection.near(tr2.doc.resolve(sel2)));
+      if (sel > -1) tr2.setSelection(TextSelection.near(tr2.doc.resolve(sel)));
       tr2.scrollIntoView();
     }
     return true;
@@ -55309,7 +55326,7 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr: tr2, state, dispa
     tr2.split($from.pos, 2, types).scrollIntoView();
     if (splitsAtStartOfItem) tr2.setNodeMarkup(itemStart, void 0, newTypeAttributes);
     if (!marks || !dispatch) return true;
-    const filteredMarks = marks.filter((mark3) => splittableMarks.includes(mark3.type.name));
+    const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
     tr2.ensureMarks(filteredMarks);
   }
   return true;
@@ -55497,7 +55514,7 @@ var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) =>
   }).wrapInList(listType, attributes).command(() => joinListBackwards(tr2, listType)).command(() => joinListForwards(tr2, listType)).run();
   return chain().command(() => {
     const canWrapInList = can().wrapInList(listType, attributes);
-    const filteredMarks = marks.filter((mark3) => splittableMarks.includes(mark3.type.name));
+    const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
     tr2.ensureMarks(filteredMarks);
     if (canWrapInList) return true;
     return commands.clearNodes();
@@ -55569,7 +55586,7 @@ var unsetMark = (typeOrName, options = {}) => ({ tr: tr2, state, dispatch }) => 
   if (empty2 && extendEmptyMarkRange) {
     var _$from$marks$find;
     let { from: from4, to } = selection;
-    const range = getMarkRange($from, type, (_$from$marks$find = $from.marks().find((mark3) => mark3.type === type)) === null || _$from$marks$find === void 0 ? void 0 : _$from$marks$find.attrs);
+    const range = getMarkRange($from, type, (_$from$marks$find = $from.marks().find((mark2) => mark2.type === type)) === null || _$from$marks$find === void 0 ? void 0 : _$from$marks$find.attrs);
     if (range) {
       from4 = range.from;
       to = range.to;
@@ -55643,14 +55660,14 @@ var updateAttributes = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispa
             ...attributes
           });
         }
-        if (markType && node2.marks.length) node2.marks.forEach((mark3) => {
-          if (markType === mark3.type) {
+        if (markType && node2.marks.length) node2.marks.forEach((mark2) => {
+          if (markType === mark2.type) {
             canUpdate = true;
             if (dispatch) {
               const trimmedFrom2 = Math.max(pos, from4);
               const trimmedTo2 = Math.min(pos + node2.nodeSize, to);
               tr2.addMark(trimmedFrom2, trimmedTo2, markType.create({
-                ...mark3.attrs,
+                ...mark2.attrs,
                 ...attributes
               }));
             }
@@ -55663,9 +55680,9 @@ var updateAttributes = (typeOrName, attributes = {}) => ({ tr: tr2, state, dispa
         ...lastNode.attrs,
         ...attributes
       });
-      if (markType && lastNode.marks.length) lastNode.marks.forEach((mark3) => {
-        if (markType === mark3.type && dispatch) tr2.addMark(trimmedFrom, trimmedTo, markType.create({
-          ...mark3.attrs,
+      if (markType && lastNode.marks.length) lastNode.marks.forEach((mark2) => {
+        if (markType === mark2.type && dispatch) tr2.addMark(trimmedFrom, trimmedTo, markType.create({
+          ...mark2.attrs,
           ...attributes
         }));
       });
@@ -55902,10 +55919,10 @@ function mapDecorationSet(set2, mapping, doc4, widgetKeys) {
     if (typeof key === "string") widgetKeys.delete(key);
   } });
 }
-function mapDecorations(name2, previous, tr2) {
+function mapDecorations(name, previous, tr2) {
   var _previous$decorationS, _previous$widgetKeysB;
-  const previousSet = (_previous$decorationS = previous.decorationSetsByExtension[name2]) !== null && _previous$decorationS !== void 0 ? _previous$decorationS : DecorationSet.empty;
-  const widgetKeys = new Set((_previous$widgetKeysB = previous.widgetKeysByExtension[name2]) !== null && _previous$widgetKeysB !== void 0 ? _previous$widgetKeysB : []);
+  const previousSet = (_previous$decorationS = previous.decorationSetsByExtension[name]) !== null && _previous$decorationS !== void 0 ? _previous$decorationS : DecorationSet.empty;
+  const widgetKeys = new Set((_previous$widgetKeysB = previous.widgetKeysByExtension[name]) !== null && _previous$widgetKeysB !== void 0 ? _previous$widgetKeysB : []);
   return {
     set: mapDecorationSet(previousSet, tr2.mapping, tr2.doc, widgetKeys),
     widgetKeys
@@ -55920,21 +55937,21 @@ function unionWidgetKeys(widgetKeysByExtension) {
   for (const keys3 of Object.values(widgetKeysByExtension)) for (const key of keys3) merged.add(key);
   return merged;
 }
-function validateDecorationSpec(name2, spec) {
+function validateDecorationSpec(name, spec) {
   var _update;
   switch ((_update = spec.update) !== null && _update !== void 0 ? _update : "document") {
     case "document":
-      if (spec.createInRange) throw new Error(`[tiptap error]: Extension "${name2}" provides createInRange() but does not use the "changedRanges" decoration update strategy.`);
+      if (spec.createInRange) throw new Error(`[tiptap error]: Extension "${name}" provides createInRange() but does not use the "changedRanges" decoration update strategy.`);
       return;
     case "changedRanges":
-      if (!spec.createInRange) throw new Error(`[tiptap error]: Extension "${name2}" uses the "changedRanges" decoration update strategy but does not provide createInRange().`);
+      if (!spec.createInRange) throw new Error(`[tiptap error]: Extension "${name}" uses the "changedRanges" decoration update strategy but does not provide createInRange().`);
       return;
     case "manual":
-      if (spec.createInRange) throw new Error(`[tiptap error]: Extension "${name2}" uses the "manual" decoration update strategy, which is not compatible with createInRange(). createInRange() requires the "changedRanges" strategy.`);
-      if (spec.shouldUpdate) throw new Error(`[tiptap error]: Extension "${name2}" cannot combine the "manual" decoration update strategy with shouldUpdate().`);
+      if (spec.createInRange) throw new Error(`[tiptap error]: Extension "${name}" uses the "manual" decoration update strategy, which is not compatible with createInRange(). createInRange() requires the "changedRanges" strategy.`);
+      if (spec.shouldUpdate) throw new Error(`[tiptap error]: Extension "${name}" cannot combine the "manual" decoration update strategy with shouldUpdate().`);
       return;
     default:
-      throw new Error(`[tiptap error]: Extension "${name2}" uses an unknown decoration update strategy. Expected "document", "changedRanges", or "manual".`);
+      throw new Error(`[tiptap error]: Extension "${name}" uses an unknown decoration update strategy. Expected "document", "changedRanges", or "manual".`);
   }
 }
 function shouldRecomputeDecoration(spec, props, forced) {
@@ -55953,7 +55970,7 @@ var DecorationManager = class {
     };
     this.editor = options.editor;
     this.entries = this.resolveEntries(options.entries);
-    this.entries.forEach(({ name: name2, spec }) => validateDecorationSpec(name2, spec));
+    this.entries.forEach(({ name, spec }) => validateDecorationSpec(name, spec));
     this.plugin = this.entries.length > 0 ? this.createPlugin() : null;
     this.editor.on("beforeTransaction", this.handleBeforeTransaction);
   }
@@ -55983,10 +56000,10 @@ var DecorationManager = class {
   */
   resolveEntries(entries) {
     const resolved = [];
-    for (const { name: name2, addDecorations } of entries) {
+    for (const { name, addDecorations } of entries) {
       const spec = addDecorations();
       if (spec) resolved.push({
-        name: name2,
+        name,
         spec
       });
     }
@@ -56004,10 +56021,10 @@ var DecorationManager = class {
         init: (_config, state) => {
           const decorationSetsByExtension = {};
           const widgetKeysByExtension = {};
-          for (const { name: name2, spec } of entries) {
-            const { set: set2, widgetKeys } = this.buildFullSet(name2, spec, state);
-            decorationSetsByExtension[name2] = set2;
-            widgetKeysByExtension[name2] = widgetKeys;
+          for (const { name, spec } of entries) {
+            const { set: set2, widgetKeys } = this.buildFullSet(name, spec, state);
+            decorationSetsByExtension[name] = set2;
+            widgetKeysByExtension[name] = widgetKeys;
           }
           const managerState = {
             decorationSetsByExtension,
@@ -56026,27 +56043,27 @@ var DecorationManager = class {
           const widgetKeysByExtension = {};
           const recomputedNames = /* @__PURE__ */ new Set();
           runInDecorationApplyScope(editor, () => {
-            for (const { name: name2, spec } of entries) {
-              const forced = forceAll || forceName === name2;
+            for (const { name, spec } of entries) {
+              const forced = forceAll || forceName === name;
               if (!shouldRecomputeDecoration(spec, {
                 editor,
                 tr: tr2,
                 oldState,
                 newState
               }, forced)) {
-                const result = mapDecorations(name2, previous, tr2);
-                decorationSetsByExtension[name2] = result.set;
-                widgetKeysByExtension[name2] = result.widgetKeys;
+                const result = mapDecorations(name, previous, tr2);
+                decorationSetsByExtension[name] = result.set;
+                widgetKeysByExtension[name] = result.widgetKeys;
               } else if (spec.update === "changedRanges" && tr2.docChanged && !forced) {
-                const result = this.applyChangedRangesRecompute(name2, spec, previous, tr2, newState);
-                decorationSetsByExtension[name2] = result.set;
-                widgetKeysByExtension[name2] = result.widgetKeys;
-                recomputedNames.add(name2);
+                const result = this.applyChangedRangesRecompute(name, spec, previous, tr2, newState);
+                decorationSetsByExtension[name] = result.set;
+                widgetKeysByExtension[name] = result.widgetKeys;
+                recomputedNames.add(name);
               } else {
-                const { set: set2, widgetKeys } = this.buildFullSet(name2, spec, newState);
-                decorationSetsByExtension[name2] = set2;
-                widgetKeysByExtension[name2] = widgetKeys;
-                recomputedNames.add(name2);
+                const { set: set2, widgetKeys } = this.buildFullSet(name, spec, newState);
+                decorationSetsByExtension[name] = set2;
+                widgetKeysByExtension[name] = widgetKeys;
+                recomputedNames.add(name);
               }
             }
           });
@@ -56080,10 +56097,10 @@ var DecorationManager = class {
   * @param newState The new editor state
   * @returns The updated decoration set and widget keys
   */
-  applyChangedRangesRecompute(name2, spec, previous, tr2, newState) {
+  applyChangedRangesRecompute(name, spec, previous, tr2, newState) {
     const resolution = getRebuildRanges(tr2, newState.doc);
-    if (resolution.type === "full") return this.buildFullSet(name2, spec, newState);
-    return this.rebuildRanges(name2, spec, previous, tr2, newState, resolution.ranges);
+    if (resolution.type === "full") return this.buildFullSet(name, spec, newState);
+    return this.rebuildRanges(name, spec, previous, tr2, newState, resolution.ranges);
   }
   /**
   * Rebuilds decorations for the changed block ranges: maps the previous set
@@ -56097,10 +56114,10 @@ var DecorationManager = class {
   * @param ranges The block ranges to rebuild.
   * @returns The updated decoration set and widget keys.
   */
-  rebuildRanges(name2, spec, previous, tr2, newState, ranges) {
+  rebuildRanges(name, spec, previous, tr2, newState, ranges) {
     var _previous$decorationS, _previous$widgetKeysB;
-    const previousSet = (_previous$decorationS = previous.decorationSetsByExtension[name2]) !== null && _previous$decorationS !== void 0 ? _previous$decorationS : DecorationSet.empty;
-    const widgetKeys = new Set((_previous$widgetKeysB = previous.widgetKeysByExtension[name2]) !== null && _previous$widgetKeysB !== void 0 ? _previous$widgetKeysB : []);
+    const previousSet = (_previous$decorationS = previous.decorationSetsByExtension[name]) !== null && _previous$decorationS !== void 0 ? _previous$decorationS : DecorationSet.empty;
+    const widgetKeys = new Set((_previous$widgetKeysB = previous.widgetKeysByExtension[name]) !== null && _previous$widgetKeysB !== void 0 ? _previous$widgetKeysB : []);
     let set2 = mapDecorationSet(previousSet, tr2.mapping, tr2.doc, widgetKeys);
     const docSize = newState.doc.content.size;
     for (const { from: from4, to } of ranges) {
@@ -56116,7 +56133,7 @@ var DecorationManager = class {
       }
       set2 = set2.remove(stale);
       const { decorations: pmDecorations, widgetKeys: addedKeys } = decorationsToPMDecorations(filterOutOfRangeDecorations({
-        decorations: this.runCreate(name2, "createInRange", () => spec.createInRange({
+        decorations: this.runCreate(name, "createInRange", () => spec.createInRange({
           editor: this.editor,
           state: newState,
           view: this.mountedView,
@@ -56126,9 +56143,9 @@ var DecorationManager = class {
         from: from4,
         to,
         docSize,
-        extensionName: name2,
+        extensionName: name,
         warnedExtensions: this.warnedOutOfRangeExtensions
-      }), name2);
+      }), name);
       set2 = set2.add(newState.doc, pmDecorations);
       for (const key of addedKeys) widgetKeys.add(key);
     }
@@ -56144,13 +56161,13 @@ var DecorationManager = class {
   * @param state The editor state
   * @returns The decoration set and widget keys
   */
-  buildFullSet(name2, spec, state) {
-    const decorations = this.runCreate(name2, "create", () => spec.create({
+  buildFullSet(name, spec, state) {
+    const decorations = this.runCreate(name, "create", () => spec.create({
       editor: this.editor,
       state,
       view: this.mountedView
     }));
-    return buildDecorationSet(state.doc, decorations, name2);
+    return buildDecorationSet(state.doc, decorations, name);
   }
   /**
   * Runs a decoration callback and swallows anything it throws. These run inside
@@ -56160,11 +56177,11 @@ var DecorationManager = class {
   * @param create The callback to run.
   * @returns The decorations, or an empty array if the callback threw.
   */
-  runCreate(name2, method, create7) {
+  runCreate(name, method, create7) {
     try {
       return create7();
     } catch (error62) {
-      console.error(`[tiptap error]: Extension "${name2}" threw in \`addDecorations().${method}()\`. Its decorations were dropped for this update.`, error62);
+      console.error(`[tiptap error]: Extension "${name}" threw in \`addDecorations().${method}()\`. Its decorations were dropped for this update.`, error62);
       return [];
     }
   }
@@ -56178,7 +56195,7 @@ var DecorationManager = class {
     const nextWarningKeys = new Set(duplicateKeys.map(({ key }) => key));
     for (const { key, extensions } of duplicateKeys) {
       if (this.warnedWidgetKeys.has(key)) continue;
-      const names = Array.from(extensions).map((name2) => `"${name2}"`).join(", ");
+      const names = Array.from(extensions).map((name) => `"${name}"`).join(", ");
       console.warn(`[tiptap warn]: Duplicate widget decoration key "${key}" in extension${extensions.size === 1 ? "" : "s"} ${names}. Widget decoration keys must be globally unique, otherwise ProseMirror misplaces the widget DOM. Use a stable, unique key (e.g. \`comment-\${id}\`).`);
     }
     this.warnedWidgetKeys = nextWarningKeys;
@@ -56275,7 +56292,7 @@ function readQuotedSegment(input2, index) {
   const closingQuote = input2.indexOf(input2[index], index + 1);
   return { nextIndex: skipToWhitespace(input2, closingQuote === -1 ? index : closingQuote + 1) };
 }
-function readKeyValue(input2, name2, index, allowWhitespace) {
+function readKeyValue(input2, name, index, allowWhitespace) {
   let valueStart = allowWhitespace ? skipWhitespace(input2, index) : index;
   if (input2[valueStart] !== "=") return;
   valueStart = allowWhitespace ? skipWhitespace(input2, valueStart + 1) : valueStart + 1;
@@ -56286,7 +56303,7 @@ function readKeyValue(input2, name2, index, allowWhitespace) {
   return {
     token: {
       type: "keyValue",
-      name: name2,
+      name,
       value: input2.slice(valueStart + 1, valueEnd)
     },
     nextIndex: skipToWhitespace(input2, valueEnd + 1)
@@ -56295,14 +56312,14 @@ function readKeyValue(input2, name2, index, allowWhitespace) {
 function readNamedAttribute(input2, index, syntax) {
   const isPandoc = syntax === "pandoc";
   const nameEnd = readName(input2, index + 1, isPandoc);
-  const name2 = input2.slice(index, nameEnd);
-  const keyValue = readKeyValue(input2, name2, nameEnd, isPandoc);
+  const name = input2.slice(index, nameEnd);
+  const keyValue = readKeyValue(input2, name, nameEnd, isPandoc);
   if (keyValue) return keyValue;
   const isStandalone = nameEnd === input2.length || isWhitespace(input2[nameEnd]);
   return {
     token: isPandoc && isStandalone ? {
       type: "boolean",
-      name: name2
+      name
     } : void 0,
     nextIndex: syntax === "shortcode" ? skipToWhitespace(input2, nameEnd) : nameEnd
   };
@@ -56519,9 +56536,9 @@ function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
     const from4 = tr2.mapping.map(pos);
     const to = tr2.mapping.map(pos) + node2.nodeSize;
     let foundMark = null;
-    node2.marks.forEach((mark3) => {
-      if (mark3 !== thisMark) return false;
-      foundMark = mark3;
+    node2.marks.forEach((mark2) => {
+      if (mark2 !== thisMark) return false;
+      foundMark = mark2;
     });
     if (!foundMark) return;
     let needsUpdate = false;
@@ -56635,7 +56652,7 @@ function run$1(config2) {
   const { view } = editor;
   if (view.composing) return false;
   const $from = view.state.doc.resolve(from4);
-  if ($from.parent.type.spec.code || !!((_ref = $from.nodeBefore || $from.nodeAfter) === null || _ref === void 0 ? void 0 : _ref.marks.find((mark3) => mark3.type.spec.code))) return false;
+  if ($from.parent.type.spec.code || !!((_ref = $from.nodeBefore || $from.nodeAfter) === null || _ref === void 0 ? void 0 : _ref.marks.find((mark2) => mark2.type.spec.code))) return false;
   const textBefore = getTextContentFromNodes($from) + text2;
   for (const rule of rules2) {
     const match2 = inputRuleMatcherHandler(textBefore, rule.find);
@@ -56784,13 +56801,13 @@ var Mark2 = class Mark3 extends Extendable {
     const resolvedConfig = typeof config2 === "function" ? config2() : config2;
     return new Mark3(resolvedConfig);
   }
-  static handleExit({ editor, mark: mark3 }) {
+  static handleExit({ editor, mark: mark2 }) {
     const { tr: tr2 } = editor.state;
     const currentPos = editor.state.selection.$from;
     if (currentPos.pos === currentPos.end()) {
       const currentMarks = currentPos.marks();
-      if (!!!currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark3.name)) return false;
-      const removeMark2 = currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark3.name);
+      if (!!!currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark2.name)) return false;
+      const removeMark2 = currentMarks.find((m) => (m === null || m === void 0 ? void 0 : m.type.name) === mark2.name);
       if (removeMark2) tr2.removeStoredMark(removeMark2);
       tr2.insertText(" ", currentPos.pos);
       editor.view.dispatch(tr2);
@@ -57224,17 +57241,17 @@ var ExtensionManager = class {
         type: getMarkType(extension.name, this.schema)
       });
       if (!addMarkView) return [];
-      const markView = (mark3, view, inline2) => {
-        const HTMLAttributes = getRenderedAttributes(mark3, extensionAttributes);
+      const markView = (mark2, view, inline2) => {
+        const HTMLAttributes = getRenderedAttributes(mark2, extensionAttributes);
         return addMarkView()({
-          mark: mark3,
+          mark: mark2,
           view,
           inline: inline2,
           editor,
           extension,
           HTMLAttributes,
           updateAttributes: (attrs) => {
-            updateMarkViewAttributes(mark3, editor, attrs);
+            updateMarkViewAttributes(mark2, editor, attrs);
           }
         });
       };
@@ -57403,8 +57420,8 @@ var Delete = Extension.create({
           const newEnd = mapping.slice(index).map(step.to);
           const oldStart = mapping.invert().map(newStart, -1);
           const oldEnd = mapping.invert().map(newEnd);
-          const foundBeforeMark = newStart > 0 ? (_nextTransaction$doc$ = nextTransaction.doc.nodeAt(newStart - 1)) === null || _nextTransaction$doc$ === void 0 ? void 0 : _nextTransaction$doc$.marks.some((mark3) => mark3.eq(step.mark)) : false;
-          const foundAfterMark = (_nextTransaction$doc$2 = nextTransaction.doc.nodeAt(newEnd)) === null || _nextTransaction$doc$2 === void 0 ? void 0 : _nextTransaction$doc$2.marks.some((mark3) => mark3.eq(step.mark));
+          const foundBeforeMark = newStart > 0 ? (_nextTransaction$doc$ = nextTransaction.doc.nodeAt(newStart - 1)) === null || _nextTransaction$doc$ === void 0 ? void 0 : _nextTransaction$doc$.marks.some((mark2) => mark2.eq(step.mark)) : false;
+          const foundAfterMark = (_nextTransaction$doc$2 = nextTransaction.doc.nodeAt(newEnd)) === null || _nextTransaction$doc$2 === void 0 ? void 0 : _nextTransaction$doc$2.marks.some((mark2) => mark2.eq(step.mark));
           this.editor.emit("delete", {
             type: "mark",
             mark: step.mark,
@@ -57709,7 +57726,7 @@ function wrappingInputRule(config2) {
         const { splittableMarks } = config2.editor.extensionManager;
         const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
         if (marks) {
-          const filteredMarks = marks.filter((mark3) => splittableMarks.includes(mark3.type.name));
+          const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
           tr2.ensureMarks(filteredMarks);
         }
       }
@@ -58302,11 +58319,11 @@ var ObservableV2 = class {
    * @param {NAME} name
    * @param {EVENTS[NAME]} f
    */
-  on(name2, f2) {
+  on(name, f2) {
     setIfUndefined(
       this._observers,
       /** @type {string} */
-      name2,
+      name,
       create2
     ).add(f2);
     return f2;
@@ -58316,17 +58333,17 @@ var ObservableV2 = class {
    * @param {NAME} name
    * @param {EVENTS[NAME]} f
    */
-  once(name2, f2) {
+  once(name, f2) {
     const _f = (...args2) => {
       this.off(
-        name2,
+        name,
         /** @type {any} */
         _f
       );
       f2(...args2);
     };
     this.on(
-      name2,
+      name,
       /** @type {any} */
       _f
     );
@@ -58336,12 +58353,12 @@ var ObservableV2 = class {
    * @param {NAME} name
    * @param {EVENTS[NAME]} f
    */
-  off(name2, f2) {
-    const observers = this._observers.get(name2);
+  off(name, f2) {
+    const observers = this._observers.get(name);
     if (observers !== void 0) {
       observers.delete(f2);
       if (observers.size === 0) {
-        this._observers.delete(name2);
+        this._observers.delete(name);
       }
     }
   }
@@ -58355,8 +58372,8 @@ var ObservableV2 = class {
    * @param {NAME} name The event name.
    * @param {Parameters<EVENTS[NAME]>} args The arguments that are applied to the event listener.
    */
-  emit(name2, args2) {
-    return from2((this._observers.get(name2) || create()).values()).forEach((f2) => f2(...args2));
+  emit(name, args2) {
+    return from2((this._observers.get(name) || create()).values()).forEach((f2) => f2(...args2));
   }
   destroy() {
     this._observers = create();
@@ -59260,9 +59277,9 @@ var computeParams = () => {
   }
   return params;
 };
-var hasParam = (name2) => computeParams().has(name2);
-var getVariable = (name2) => isNode ? undefinedToNull(process.env[name2.toUpperCase().replaceAll("-", "_")]) : undefinedToNull(varStorage.getItem(name2));
-var hasConf = (name2) => hasParam("--" + name2) || getVariable(name2) !== null;
+var hasParam = (name) => computeParams().has(name);
+var getVariable = (name) => isNode ? undefinedToNull(process.env[name.toUpperCase().replaceAll("-", "_")]) : undefinedToNull(varStorage.getItem(name));
+var hasConf = (name) => hasParam("--" + name) || getVariable(name) !== null;
 var production = hasConf("production");
 var forceColor = isNode && isOneOf(process.env.FORCE_COLOR, ["true", "1", "2"]);
 var supportsColor = forceColor || !hasParam("--no-colors") && // @todo deprecate --no-colors
@@ -60529,11 +60546,11 @@ var Doc2 = class _Doc extends ObservableV2 {
    *
    * @public
    */
-  get(name2, TypeConstructor = (
+  get(name, TypeConstructor = (
     /** @type {any} */
     AbstractType
   )) {
-    const type = setIfUndefined(this.share, name2, () => {
+    const type = setIfUndefined(this.share, name, () => {
       const t = new TypeConstructor();
       t._integrate(this, null);
       return t;
@@ -60556,14 +60573,14 @@ var Doc2 = class _Doc extends ObservableV2 {
           n.parent = t;
         }
         t._length = type._length;
-        this.share.set(name2, t);
+        this.share.set(name, t);
         t._integrate(this, null);
         return (
           /** @type {InstanceType<Type>} */
           t
         );
       } else {
-        throw new Error(`Type with the name ${name2} has already been defined with a different constructor`);
+        throw new Error(`Type with the name ${name} has already been defined with a different constructor`);
       }
     }
     return (
@@ -60578,10 +60595,10 @@ var Doc2 = class _Doc extends ObservableV2 {
    *
    * @public
    */
-  getArray(name2 = "") {
+  getArray(name = "") {
     return (
       /** @type {YArray<T>} */
-      this.get(name2, YArray)
+      this.get(name, YArray)
     );
   }
   /**
@@ -60590,8 +60607,8 @@ var Doc2 = class _Doc extends ObservableV2 {
    *
    * @public
    */
-  getText(name2 = "") {
-    return this.get(name2, YText);
+  getText(name = "") {
+    return this.get(name, YText);
   }
   /**
    * @template T
@@ -60600,10 +60617,10 @@ var Doc2 = class _Doc extends ObservableV2 {
    *
    * @public
    */
-  getMap(name2 = "") {
+  getMap(name = "") {
     return (
       /** @type {YMap<T>} */
-      this.get(name2, YMap)
+      this.get(name, YMap)
     );
   }
   /**
@@ -60612,10 +60629,10 @@ var Doc2 = class _Doc extends ObservableV2 {
    *
    * @public
    */
-  getXmlElement(name2 = "") {
+  getXmlElement(name = "") {
     return (
       /** @type {YXmlElement<{[key:string]:string}>} */
-      this.get(name2, YXmlElement)
+      this.get(name, YXmlElement)
     );
   }
   /**
@@ -60624,8 +60641,8 @@ var Doc2 = class _Doc extends ObservableV2 {
    *
    * @public
    */
-  getXmlFragment(name2 = "") {
-    return this.get(name2, YXmlFragment);
+  getXmlFragment(name = "") {
+    return this.get(name, YXmlFragment);
   }
   /**
    * Converts the entire document into a js object, recursively traversing each yjs type
@@ -64645,9 +64662,9 @@ var YXmlFragment = class _YXmlFragment extends AbstractType {
    *
    * @public
    */
-  querySelector(query2) {
-    query2 = query2.toUpperCase();
-    const iterator = new YXmlTreeWalker(this, (element2) => element2.nodeName && element2.nodeName.toUpperCase() === query2);
+  querySelector(query) {
+    query = query.toUpperCase();
+    const iterator = new YXmlTreeWalker(this, (element2) => element2.nodeName && element2.nodeName.toUpperCase() === query);
     const next2 = iterator.next();
     if (next2.done) {
       return null;
@@ -64666,9 +64683,9 @@ var YXmlFragment = class _YXmlFragment extends AbstractType {
    *
    * @public
    */
-  querySelectorAll(query2) {
-    query2 = query2.toUpperCase();
-    return from2(new YXmlTreeWalker(this, (element2) => element2.nodeName && element2.nodeName.toUpperCase() === query2));
+  querySelectorAll(query) {
+    query = query.toUpperCase();
+    return from2(new YXmlTreeWalker(this, (element2) => element2.nodeName && element2.nodeName.toUpperCase() === query));
   }
   /**
    * Creates YXmlEvent and calls observers.
@@ -66857,10 +66874,10 @@ var foldDigest = (digest2) => {
 var hashOfJSON = (json2) => toBase64(foldDigest(digest(encodeAny(json2))));
 var marksToAttributes = (marks, meta3) => {
   const pattrs = {};
-  marks.forEach((mark3) => {
-    if (mark3.type.name !== "ychange") {
-      const isOverlapping = setIfUndefined(meta3.isOMark, mark3.type, () => !mark3.type.excludes(mark3.type));
-      pattrs[isOverlapping ? `${mark3.type.name}--${hashOfJSON(mark3.toJSON())}` : mark3.type.name] = mark3.attrs;
+  marks.forEach((mark2) => {
+    if (mark2.type.name !== "ychange") {
+      const isOverlapping = setIfUndefined(meta3.isOMark, mark2.type, () => !mark2.type.excludes(mark2.type));
+      pattrs[isOverlapping ? `${mark2.type.name}--${hashOfJSON(mark2.toJSON())}` : mark2.type.name] = mark2.attrs;
     }
   });
   return pattrs;
@@ -66921,7 +66938,7 @@ var equalYTextPText = (ytext, ptexts) => {
     var _d$attributes;
     return d.insert === ptexts[i2].text && keys2(d.attributes || {}).length === ptexts[i2].marks.length && Object.entries((_d$attributes = d.attributes) !== null && _d$attributes !== void 0 ? _d$attributes : {}).every(([yattrname, attr]) => {
       const markname = yattr2markname(yattrname);
-      const pmark = ptexts[i2].marks.find((mark3) => mark3.type.name === markname);
+      const pmark = ptexts[i2].marks.find((mark2) => mark2.type.name === markname);
       if (!pmark) return false;
       return equalAttrs2(attr, pmark.attrs);
     });
@@ -67495,9 +67512,9 @@ function getHighlightNodes(result) {
 function registered(aliasOrLanguage) {
   return Boolean(core_default.getLanguage(aliasOrLanguage));
 }
-function getDecorations({ doc: doc4, name: name2, lowlight, defaultLanguage }) {
+function getDecorations({ doc: doc4, name, lowlight, defaultLanguage }) {
   const decorations = [];
-  findChildren(doc4, (node2) => node2.type.name === name2).forEach((block) => {
+  findChildren(doc4, (node2) => node2.type.name === name).forEach((block) => {
     var _lowlight$registered;
     let from4 = block.pos + 1;
     const language = block.node.attrs.language || defaultLanguage;
@@ -67516,7 +67533,7 @@ function getDecorations({ doc: doc4, name: name2, lowlight, defaultLanguage }) {
 function isFunction2(param) {
   return typeof param === "function";
 }
-function LowlightPlugin({ name: name2, lowlight, defaultLanguage }) {
+function LowlightPlugin({ name, lowlight, defaultLanguage }) {
   if (![
     "highlight",
     "highlightAuto",
@@ -67527,22 +67544,22 @@ function LowlightPlugin({ name: name2, lowlight, defaultLanguage }) {
     state: {
       init: (_2, { doc: doc4 }) => getDecorations({
         doc: doc4,
-        name: name2,
+        name,
         lowlight,
         defaultLanguage
       }),
       apply: (transaction, decorationSet, oldState, newState) => {
         const oldNodeName = oldState.selection.$head.parent.type.name;
         const newNodeName = newState.selection.$head.parent.type.name;
-        const oldNodes = findChildren(oldState.doc, (node2) => node2.type.name === name2);
-        const newNodes = findChildren(newState.doc, (node2) => node2.type.name === name2);
-        if (transaction.docChanged && ([oldNodeName, newNodeName].includes(name2) || newNodes.length !== oldNodes.length || transaction.steps.some((step) => {
+        const oldNodes = findChildren(oldState.doc, (node2) => node2.type.name === name);
+        const newNodes = findChildren(newState.doc, (node2) => node2.type.name === name);
+        if (transaction.docChanged && ([oldNodeName, newNodeName].includes(name) || newNodes.length !== oldNodes.length || transaction.steps.some((step) => {
           return step.from !== void 0 && step.to !== void 0 && oldNodes.some((node2) => {
             return node2.pos >= step.from && node2.pos + node2.node.nodeSize <= step.to;
           });
         }))) return getDecorations({
           doc: transaction.doc,
-          name: name2,
+          name,
           lowlight,
           defaultLanguage
         });
@@ -68007,7 +68024,7 @@ var computePosition = async (reference, floating, config2) => {
       continue;
     }
     const {
-      name: name2,
+      name,
       fn
     } = currentMiddleware;
     const {
@@ -68031,8 +68048,8 @@ var computePosition = async (reference, floating, config2) => {
     });
     x2 = nextX != null ? nextX : x2;
     y2 = nextY != null ? nextY : y2;
-    middlewareData[name2] = {
-      ...middlewareData[name2],
+    middlewareData[name] = {
+      ...middlewareData[name],
       ...data
     };
     if (reset2 && resetCount < MAX_RESET_COUNT) {
@@ -69110,9 +69127,9 @@ function createSuggestionProps({ pluginKey, decorationTag, decorationClass, deco
     * Setup decorator on the currently active suggestion.
     */
     decorations(state) {
-      const { active, range, decorationId, query: query2 } = pluginKey.getState(state);
+      const { active, range, decorationId, query } = pluginKey.getState(state);
       if (!active) return null;
-      const isEmpty3 = !(query2 === null || query2 === void 0 ? void 0 : query2.length);
+      const isEmpty3 = !(query === null || query === void 0 ? void 0 : query.length);
       const classNames = [decorationClass];
       if (isEmpty3) classNames.push(decorationEmptyClass);
       return DecorationSet.create(state.doc, [Decoration.inline(range.from, range.to, {
@@ -69147,7 +69164,7 @@ function createSuggestionState({ editor, char, effectiveAllowSpaces, allowToIncl
     */
     apply(transaction, prev, _oldState, state) {
       const { isEditable } = editor;
-      const { composing: composing2 } = editor.view;
+      const { composing } = editor.view;
       const { selection } = transaction;
       const { empty: empty2, from: from4 } = selection;
       const next2 = { ...prev };
@@ -69164,13 +69181,13 @@ function createSuggestionState({ editor, char, effectiveAllowSpaces, allowToIncl
         next2.dismissedRange = prev.active ? { ...prev.range } : prev.dismissedRange;
         return next2;
       }
-      next2.composing = composing2;
+      next2.composing = composing;
       if (transaction.docChanged && next2.dismissedRange !== null) next2.dismissedRange = {
         from: transaction.mapping.map(next2.dismissedRange.from),
         to: transaction.mapping.map(next2.dismissedRange.to)
       };
       if (isEditable && (empty2 || editor.view.composing)) {
-        if ((from4 < prev.range.from || from4 > prev.range.to) && !composing2 && !prev.composing) next2.active = false;
+        if ((from4 < prev.range.from || from4 > prev.range.to) && !composing && !prev.composing) next2.active = false;
         const match2 = findSuggestionMatch2({
           char,
           allowSpaces: effectiveAllowSpaces,
@@ -69251,7 +69268,7 @@ function createSuggestionAsyncRequestManager({ editor, items }) {
     clearDebounceTimer();
     abortController = null;
   };
-  const fetch2 = async (query2, debounce) => {
+  const fetch2 = async (query, debounce) => {
     abort();
     abortController = new AbortController();
     const controller = abortController;
@@ -69260,7 +69277,7 @@ function createSuggestionAsyncRequestManager({ editor, items }) {
     try {
       const result = await items({
         editor,
-        query: query2,
+        query,
         signal: controller.signal
       });
       if (abortController !== controller || controller.signal.aborted) return { status: "aborted" };
@@ -69979,8 +69996,8 @@ function tableNodeTypes(schema2) {
   let result = schema2.cached.tableNodeTypes;
   if (!result) {
     result = schema2.cached.tableNodeTypes = {};
-    for (const name2 in schema2.nodes) {
-      const type = schema2.nodes[name2], role = type.spec.tableRole;
+    for (const name in schema2.nodes) {
+      const type = schema2.nodes[name], role = type.spec.tableRole;
       if (role) result[role] = type;
     }
   }
@@ -70004,12 +70021,12 @@ function isInTable(state) {
   return false;
 }
 function selectionCell(state) {
-  const sel2 = state.selection;
-  if ("$anchorCell" in sel2 && sel2.$anchorCell) return sel2.$anchorCell.pos > sel2.$headCell.pos ? sel2.$anchorCell : sel2.$headCell;
-  else if ("node" in sel2 && sel2.node && sel2.node.type.spec.tableRole == "cell") return sel2.$anchor;
-  const $cell = cellAround(sel2.$head) || cellNear(sel2.$head);
+  const sel = state.selection;
+  if ("$anchorCell" in sel && sel.$anchorCell) return sel.$anchorCell.pos > sel.$headCell.pos ? sel.$anchorCell : sel.$headCell;
+  else if ("node" in sel && sel.node && sel.node.type.spec.tableRole == "cell") return sel.$anchor;
+  const $cell = cellAround(sel.$head) || cellNear(sel.$head);
   if ($cell) return $cell;
-  throw new RangeError(`No cell found around position ${sel2.head}`);
+  throw new RangeError(`No cell found around position ${sel.head}`);
 }
 function cellNear($pos) {
   for (let after = $pos.nodeAfter, pos = $pos.pos; after; after = after.firstChild, pos++) {
@@ -70143,8 +70160,8 @@ var CellSelection = class CellSelection2 extends Selection {
       const { $from, $to } = ranges[i2], mapping = tr2.mapping.slice(mapFrom);
       tr2.replace(mapping.map($from.pos), mapping.map($to.pos), i2 ? Slice.empty : content);
     }
-    const sel2 = Selection.findFrom(tr2.doc.resolve(tr2.mapping.slice(mapFrom).map(this.to)), -1);
-    if (sel2) tr2.setSelection(sel2);
+    const sel = Selection.findFrom(tr2.doc.resolve(tr2.mapping.slice(mapFrom).map(this.to)), -1);
+    if (sel) tr2.setSelection(sel);
   }
   replaceWith(tr2, node2) {
     this.replace(tr2, new Slice(Fragment.from(node2), 0, 0));
@@ -70280,23 +70297,23 @@ function isTextSelectionAcrossCells({ $from, $to }) {
   return fromCellBoundaryNode !== toCellBoundaryNode && $to.parentOffset === 0;
 }
 function normalizeSelection(state, tr2, allowTableNodeSelection) {
-  const sel2 = (tr2 || state).selection;
+  const sel = (tr2 || state).selection;
   const doc4 = (tr2 || state).doc;
   let normalize2;
   let role;
-  if (sel2 instanceof NodeSelection && (role = sel2.node.type.spec.tableRole)) {
-    if (role == "cell" || role == "header_cell") normalize2 = CellSelection.create(doc4, sel2.from);
+  if (sel instanceof NodeSelection && (role = sel.node.type.spec.tableRole)) {
+    if (role == "cell" || role == "header_cell") normalize2 = CellSelection.create(doc4, sel.from);
     else if (role == "row") {
-      const $cell = doc4.resolve(sel2.from + 1);
+      const $cell = doc4.resolve(sel.from + 1);
       normalize2 = CellSelection.rowSelection($cell, $cell);
     } else if (!allowTableNodeSelection) {
-      const map4 = TableMap.get(sel2.node);
-      const start = sel2.from + 1;
+      const map4 = TableMap.get(sel.node);
+      const start = sel.from + 1;
       const lastCell = start + map4.map[map4.width * map4.height - 1];
       normalize2 = CellSelection.create(doc4, start + 1, lastCell);
     }
-  } else if (sel2 instanceof TextSelection && isCellBoundarySelection(sel2)) normalize2 = TextSelection.create(doc4, sel2.from);
-  else if (sel2 instanceof TextSelection && isTextSelectionAcrossCells(sel2)) normalize2 = TextSelection.create(doc4, sel2.$from.start(), sel2.$from.end());
+  } else if (sel instanceof TextSelection && isCellBoundarySelection(sel)) normalize2 = TextSelection.create(doc4, sel.from);
+  else if (sel instanceof TextSelection && isTextSelectionAcrossCells(sel)) normalize2 = TextSelection.create(doc4, sel.$from.start(), sel.$from.end());
   if (normalize2) (tr2 || (tr2 = state.tr)).setSelection(normalize2);
   return tr2;
 }
@@ -70384,13 +70401,13 @@ function fixTable(state, table, tablePos, tr2) {
   return tr2.setMeta(fixTablesKey, { fixTables: true });
 }
 function selectedRect(state) {
-  const sel2 = state.selection;
+  const sel = state.selection;
   const $pos = selectionCell(state);
   const table = $pos.node(-1);
   const tableStart = $pos.start(-1);
   const map4 = TableMap.get(table);
   return {
-    ...sel2 instanceof CellSelection ? map4.rectBetween(sel2.$anchorCell.pos - tableStart, sel2.$headCell.pos - tableStart) : map4.findCell($pos.pos - tableStart),
+    ...sel instanceof CellSelection ? map4.rectBetween(sel.$anchorCell.pos - tableStart, sel.$headCell.pos - tableStart) : map4.findCell($pos.pos - tableStart),
     tableStart,
     map: map4,
     table
@@ -70576,8 +70593,8 @@ function cellsOverlapRectangle({ width, height, map: map4 }, rect) {
   return false;
 }
 function mergeCells(state, dispatch) {
-  const sel2 = state.selection;
-  if (!(sel2 instanceof CellSelection) || sel2.$anchorCell.pos == sel2.$headCell.pos) return false;
+  const sel = state.selection;
+  if (!(sel instanceof CellSelection) || sel.$anchorCell.pos == sel.$headCell.pos) return false;
   const rect = selectedRect(state), { map: map4 } = rect;
   if (cellsOverlapRectangle(map4, rect)) return false;
   if (dispatch) {
@@ -70623,18 +70640,18 @@ function splitCell(state, dispatch) {
 }
 function splitCellWithType(getCellType) {
   return (state, dispatch) => {
-    const sel2 = state.selection;
+    const sel = state.selection;
     let cellNode;
     let cellPos;
-    if (!(sel2 instanceof CellSelection)) {
+    if (!(sel instanceof CellSelection)) {
       var _cellAround;
-      cellNode = cellWrapping(sel2.$from);
+      cellNode = cellWrapping(sel.$from);
       if (!cellNode) return false;
-      cellPos = (_cellAround = cellAround(sel2.$from)) === null || _cellAround === void 0 ? void 0 : _cellAround.pos;
+      cellPos = (_cellAround = cellAround(sel.$from)) === null || _cellAround === void 0 ? void 0 : _cellAround.pos;
     } else {
-      if (sel2.$anchorCell.pos != sel2.$headCell.pos) return false;
-      cellNode = sel2.$anchorCell.nodeAfter;
-      cellPos = sel2.$anchorCell.pos;
+      if (sel.$anchorCell.pos != sel.$headCell.pos) return false;
+      cellNode = sel.$anchorCell.nodeAfter;
+      cellPos = sel.$anchorCell.pos;
     }
     if (cellNode == null || cellPos == null) return false;
     if (cellNode.attrs.colspan == 1 && cellNode.attrs.rowspan == 1) return false;
@@ -70673,28 +70690,28 @@ function splitCellWithType(getCellType) {
         row: rect.top,
         col: rect.left
       }), attrs[0]);
-      if (sel2 instanceof CellSelection) tr2.setSelection(new CellSelection(tr2.doc.resolve(sel2.$anchorCell.pos), lastCell ? tr2.doc.resolve(lastCell) : void 0));
+      if (sel instanceof CellSelection) tr2.setSelection(new CellSelection(tr2.doc.resolve(sel.$anchorCell.pos), lastCell ? tr2.doc.resolve(lastCell) : void 0));
       dispatch(tr2);
     }
     return true;
   };
 }
-function setCellAttr(name2, value) {
+function setCellAttr(name, value) {
   return function(state, dispatch) {
     if (!isInTable(state)) return false;
     const $cell = selectionCell(state);
-    if ($cell.nodeAfter.attrs[name2] === value) return false;
+    if ($cell.nodeAfter.attrs[name] === value) return false;
     if (dispatch) {
       const tr2 = state.tr;
       if (state.selection instanceof CellSelection) state.selection.forEachCell((node2, pos) => {
-        if (node2.attrs[name2] !== value) tr2.setNodeMarkup(pos, null, {
+        if (node2.attrs[name] !== value) tr2.setNodeMarkup(pos, null, {
           ...node2.attrs,
-          [name2]: value
+          [name]: value
         });
       });
       else tr2.setNodeMarkup($cell.pos, null, {
         ...$cell.nodeAfter.attrs,
-        [name2]: value
+        [name]: value
       });
       dispatch(tr2);
     }
@@ -70817,12 +70834,12 @@ function deleteTable(state, dispatch) {
   return false;
 }
 function deleteCellSelection(state, dispatch) {
-  const sel2 = state.selection;
-  if (!(sel2 instanceof CellSelection)) return false;
+  const sel = state.selection;
+  if (!(sel instanceof CellSelection)) return false;
   if (dispatch) {
     const tr2 = state.tr;
     const baseContent = tableNodeTypes(state.schema).cell.createAndFill().content;
-    sel2.forEachCell((cell, pos) => {
+    sel.forEachCell((cell, pos) => {
       if (!cell.content.eq(baseContent)) tr2.replace(tr2.mapping.map(pos + 1), tr2.mapping.map(pos + cell.nodeSize - 1), new Slice(baseContent, 0, 0));
     });
     if (tr2.docChanged) dispatch(tr2);
@@ -71037,12 +71054,12 @@ function maybeSetSelection(state, dispatch, selection) {
 function arrow2(axis, dir) {
   return (state, dispatch, view) => {
     if (!view) return false;
-    const sel2 = state.selection;
-    if (sel2 instanceof CellSelection) return maybeSetSelection(state, dispatch, Selection.near(sel2.$headCell, dir));
-    if (axis != "horiz" && !sel2.empty) return false;
+    const sel = state.selection;
+    if (sel instanceof CellSelection) return maybeSetSelection(state, dispatch, Selection.near(sel.$headCell, dir));
+    if (axis != "horiz" && !sel.empty) return false;
     const end = atEndOfCell(view, axis, dir);
     if (end == null) return false;
-    if (axis == "horiz") return maybeSetSelection(state, dispatch, Selection.near(state.doc.resolve(sel2.head + dir), dir));
+    if (axis == "horiz") return maybeSetSelection(state, dispatch, Selection.near(state.doc.resolve(sel.head + dir), dir));
     else {
       const $cell = state.doc.resolve(end);
       const $next = nextCell($cell, axis, dir);
@@ -71057,9 +71074,9 @@ function arrow2(axis, dir) {
 function shiftArrow(axis, dir) {
   return (state, dispatch, view) => {
     if (!view) return false;
-    const sel2 = state.selection;
+    const sel = state.selection;
     let cellSel;
-    if (sel2 instanceof CellSelection) cellSel = sel2;
+    if (sel instanceof CellSelection) cellSel = sel;
     else {
       const end = atEndOfCell(view, axis, dir);
       if (end == null) return false;
@@ -71079,16 +71096,16 @@ function handleTripleClick2(view, pos) {
 function handlePaste(view, _2, slice2) {
   if (!isInTable(view.state)) return false;
   let cells = pastedCells(slice2);
-  const sel2 = view.state.selection;
-  if (sel2 instanceof CellSelection) {
+  const sel = view.state.selection;
+  if (sel instanceof CellSelection) {
     if (!cells) cells = {
       width: 1,
       height: 1,
       rows: [Fragment.from(fitSlice(tableNodeTypes(view.state.schema).cell, slice2))]
     };
-    const table = sel2.$anchorCell.node(-1);
-    const start = sel2.$anchorCell.start(-1);
-    const rect = TableMap.get(table).rectBetween(sel2.$anchorCell.pos - start, sel2.$headCell.pos - start);
+    const table = sel.$anchorCell.node(-1);
+    const start = sel.$anchorCell.start(-1);
+    const rect = TableMap.get(table).rectBetween(sel.$anchorCell.pos - start, sel.$headCell.pos - start);
     cells = clipCells(cells, rect.right - rect.left, rect.bottom - rect.top);
     insertCells(view.state, view.dispatch, start, rect, cells);
     return true;
@@ -71114,13 +71131,13 @@ function handleMouseDown$1(view, startEvent) {
   } else if (!startDOMCell) return;
   function setCellSelection($anchor$1, event) {
     let $head = cellUnderMouse(view, event);
-    const starting2 = tableEditingKey.getState(view.state) == null;
-    if (!$head || !inSameTable($anchor$1, $head)) if (starting2) $head = $anchor$1;
+    const starting = tableEditingKey.getState(view.state) == null;
+    if (!$head || !inSameTable($anchor$1, $head)) if (starting) $head = $anchor$1;
     else return;
     const selection = new CellSelection($anchor$1, $head);
-    if (starting2 || !view.state.selection.eq(selection)) {
+    if (starting || !view.state.selection.eq(selection)) {
       const tr2 = view.state.tr.setSelection(selection);
-      if (starting2) tr2.setMeta(tableEditingKey, $anchor$1.pos);
+      if (starting) tr2.setMeta(tableEditingKey, $anchor$1.pos);
       view.dispatch(tr2);
     }
   }
@@ -71531,10 +71548,10 @@ function fillEmptyCellContent(cellType) {
   if (!filled) throw new Error(`[tiptap error]: "${cellType.name}" has no default content to backfill.`);
   return filled.content;
 }
-function omitDefaultSpanAttribute(attributes, renderedAttributes, name2) {
-  if (!(name2 in renderedAttributes)) return;
-  const value = renderedAttributes[name2];
-  if (value === 1 || value === "1" || value === null || value === void 0) delete attributes[name2];
+function omitDefaultSpanAttribute(attributes, renderedAttributes, name) {
+  if (!(name in renderedAttributes)) return;
+  const value = renderedAttributes[name];
+  if (value === 1 || value === "1" || value === null || value === void 0) delete attributes[name];
 }
 var TableCell = Node4.create({
   name: "tableCell",
@@ -72102,8 +72119,8 @@ var Table = Node4.create({
         if (mergeCells(state, dispatch)) return true;
         return splitCell(state, dispatch);
       },
-      setCellAttribute: (name2, value) => ({ state, dispatch }) => {
-        return setCellAttr(name2, value)(state, dispatch);
+      setCellAttribute: (name, value) => ({ state, dispatch }) => {
+        return setCellAttr(name, value)(state, dispatch);
       },
       goToNextCell: () => ({ state, dispatch }) => {
         return goToNextCell(1)(state, dispatch);
@@ -72578,22 +72595,22 @@ var getNextListDepth = (typeOrName, state) => {
   const [, depth] = getNodeAtPosition(state, typeOrName, listItemPos.$pos.pos + 4);
   return depth;
 };
-var hasListBefore = (editorState, name2, parentListTypes) => {
+var hasListBefore = (editorState, name, parentListTypes) => {
   const { $anchor } = editorState.selection;
   const previousNodePos = Math.max(0, $anchor.pos - 2);
   const previousNode = editorState.doc.resolve(previousNodePos).node();
   if (!previousNode || !parentListTypes.includes(previousNode.type.name)) return false;
   return true;
 };
-var handleBackspace = (editor, name2, parentListTypes) => {
+var handleBackspace = (editor, name, parentListTypes) => {
   if (editor.commands.undoInputRule()) return true;
   if (editor.state.selection.from !== editor.state.selection.to) return false;
-  if (!isNodeActive(editor.state, name2) && hasListBefore(editor.state, name2, parentListTypes)) {
+  if (!isNodeActive(editor.state, name) && hasListBefore(editor.state, name, parentListTypes)) {
     const { $anchor } = editor.state.selection;
     const $listPos = editor.state.doc.resolve($anchor.before() - 1);
     const listDescendants = [];
     $listPos.node().descendants((node2, pos) => {
-      if (node2.type.name === name2) listDescendants.push({
+      if (node2.type.name === name) listDescendants.push({
         node: node2,
         pos
       });
@@ -72606,12 +72623,12 @@ var handleBackspace = (editor, name2, parentListTypes) => {
       to: $anchor.end() + 1
     }, $lastItemPos.end()).joinForward().run();
   }
-  if (!isNodeActive(editor.state, name2)) return false;
+  if (!isNodeActive(editor.state, name)) return false;
   if (!isAtStartOfNode(editor.state)) return false;
   const { $from } = editor.state.selection;
   const itemDepth = $from.depth - 1;
-  if ($from.node(itemDepth).type !== editor.schema.nodes[name2] || $from.index(itemDepth) !== 0) return false;
-  return editor.chain().liftListItem(name2).run();
+  if ($from.node(itemDepth).type !== editor.schema.nodes[name] || $from.index(itemDepth) !== 0) return false;
+  return editor.chain().liftListItem(name).run();
 };
 var nextListIsDeeper = (typeOrName, state) => {
   const listDepth = getNextListDepth(typeOrName, state);
@@ -72627,28 +72644,28 @@ var nextListIsHigher = (typeOrName, state) => {
   if (listDepth < listItemPos.depth) return true;
   return false;
 };
-var handleDelete = (editor, name2) => {
-  if (!isNodeActive(editor.state, name2)) return false;
-  if (!isAtEndOfNode(editor.state, name2)) return false;
+var handleDelete = (editor, name) => {
+  if (!isNodeActive(editor.state, name)) return false;
+  if (!isAtEndOfNode(editor.state, name)) return false;
   const { selection } = editor.state;
   const { $from, $to } = selection;
   if (!selection.empty && $from.sameParent($to)) return false;
-  if (nextListIsDeeper(name2, editor.state)) return editor.chain().focus(editor.state.selection.from + 4).lift(name2).joinBackward().run();
-  if (nextListIsHigher(name2, editor.state)) return editor.chain().joinForward().joinBackward().run();
+  if (nextListIsDeeper(name, editor.state)) return editor.chain().focus(editor.state.selection.from + 4).lift(name).joinBackward().run();
+  if (nextListIsHigher(name, editor.state)) return editor.chain().joinForward().joinBackward().run();
   return editor.commands.joinItemForward();
 };
-var handleTab = (editor, name2, parentListTypes) => {
+var handleTab = (editor, name, parentListTypes) => {
   const { state } = editor;
   const { selection } = state;
   if (!selection.empty) return false;
   const { $from } = selection;
   if ($from.parentOffset !== 0) return false;
   if (!$from.parent.isTextblock) return false;
-  if (isNodeActive(state, name2)) return false;
+  if (isNodeActive(state, name)) return false;
   const previous = getPreviousBlockSibling($from);
   if (!previous || !parentListTypes.includes(previous.type.name)) return false;
   const lastItem = previous.lastChild;
-  if (!lastItem || lastItem.type.name !== name2) return false;
+  if (!lastItem || lastItem.type.name !== name) return false;
   const block = $from.parent;
   if (!lastItem.canReplace(lastItem.childCount, lastItem.childCount, Fragment.from(block))) return false;
   const blockStart = $from.before();
@@ -73593,7 +73610,7 @@ var Bold = Mark2.create({
       },
       {
         style: "font-weight=400",
-        clearMark: (mark3) => mark3.type.name === this.name
+        clearMark: (mark2) => mark2.type.name === this.name
       },
       {
         style: "font-weight",
@@ -73800,7 +73817,7 @@ var HardBreak = Node4.create({
         const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
         return chain().insertContent({ type: this.name }).command(({ tr: tr2, dispatch }) => {
           if (dispatch && marks && keepMarks) {
-            const filteredMarks = marks.filter((mark3) => splittableMarks.includes(mark3.type.name));
+            const filteredMarks = marks.filter((mark2) => splittableMarks.includes(mark2.type.name));
             tr2.ensureMarks(filteredMarks);
           }
           return true;
@@ -73973,7 +73990,7 @@ var Italic = Mark2.create({
       },
       {
         style: "font-style=normal",
-        clearMark: (mark3) => mark3.type.name === this.name
+        clearMark: (mark2) => mark2.type.name === this.name
       },
       { style: "font-style=italic" }
     ];
@@ -74048,11 +74065,11 @@ var emoji3 = "emoji";
 var scheme = "scheme";
 var slashscheme = "slashscheme";
 var whitespace = "whitespace";
-function registerGroup(name2, groups) {
-  if (!(name2 in groups)) {
-    groups[name2] = [];
+function registerGroup(name, groups) {
+  if (!(name in groups)) {
+    groups[name] = [];
   }
-  return groups[name2];
+  return groups[name];
 }
 function addToGroups(t, flags, groups) {
   if (flags[numeric]) {
@@ -74551,7 +74568,7 @@ function run$12(start, str2) {
   const iterable = stringToArray(str2.replace(/[A-Z]/g, (c) => c.toLowerCase()));
   const charCount = iterable.length;
   const tokens = [];
-  let cursor2 = 0;
+  let cursor = 0;
   let charCursor = 0;
   while (charCursor < charCount) {
     let state = start;
@@ -74571,20 +74588,20 @@ function run$12(start, str2) {
         charsSinceAccepts++;
       }
       tokenLength += iterable[charCursor].length;
-      cursor2 += iterable[charCursor].length;
+      cursor += iterable[charCursor].length;
       charCursor++;
     }
-    cursor2 -= sinceAccepts;
+    cursor -= sinceAccepts;
     charCursor -= charsSinceAccepts;
     tokenLength -= sinceAccepts;
     tokens.push({
       t: latestAccepting.t,
       // token type/name
-      v: str2.slice(cursor2 - tokenLength, cursor2),
+      v: str2.slice(cursor - tokenLength, cursor),
       // string value
-      s: cursor2 - tokenLength,
+      s: cursor - tokenLength,
       // start index
-      e: cursor2
+      e: cursor
       // end index (excluding)
     });
   }
@@ -75084,11 +75101,11 @@ function init$1({
 }
 function run2(start, input2, tokens) {
   let len = tokens.length;
-  let cursor2 = 0;
+  let cursor = 0;
   let multis = [];
   let textTokens = [];
   const dead = [];
-  while (cursor2 < len) {
+  while (cursor < len) {
     let state = start;
     let secondState = null;
     let nextState = null;
@@ -75096,13 +75113,13 @@ function run2(start, input2, tokens) {
     let latestAccepting = null;
     let sinceAccepts = -1;
     let visited = [];
-    while (cursor2 < len && !(secondState = state.go(tokens[cursor2].t))) {
-      textTokens.push(tokens[cursor2++]);
+    while (cursor < len && !(secondState = state.go(tokens[cursor].t))) {
+      textTokens.push(tokens[cursor++]);
     }
-    while (cursor2 < len && (nextState = secondState || state.go(tokens[cursor2].t))) {
+    while (cursor < len && (nextState = secondState || state.go(tokens[cursor].t))) {
       secondState = null;
       state = nextState;
-      cursor2++;
+      cursor++;
       multiLength++;
       if (state.accepts()) {
         sinceAccepts = 0;
@@ -75113,29 +75130,29 @@ function run2(start, input2, tokens) {
           sinceAccepts++;
         }
         visited.push(state);
-        if (dead[cursor2] && dead[cursor2].has(state)) {
+        if (dead[cursor] && dead[cursor].has(state)) {
           break;
         }
       }
     }
-    for (let k = 0, pos = cursor2 - visited.length + 1; k < visited.length; k++, pos++) {
+    for (let k = 0, pos = cursor - visited.length + 1; k < visited.length; k++, pos++) {
       (dead[pos] || (dead[pos] = /* @__PURE__ */ new Set())).add(visited[k]);
     }
     if (sinceAccepts < 0) {
-      cursor2 -= multiLength;
-      if (cursor2 < len) {
-        textTokens.push(tokens[cursor2]);
-        cursor2++;
+      cursor -= multiLength;
+      if (cursor < len) {
+        textTokens.push(tokens[cursor]);
+        cursor++;
       }
     } else {
       if (textTokens.length > 0) {
         multis.push(initMultiToken(Text, input2, textTokens));
         textTokens = [];
       }
-      cursor2 -= sinceAccepts;
+      cursor -= sinceAccepts;
       multiLength -= sinceAccepts;
       const Multi = latestAccepting.t;
-      const subtokens = tokens.slice(cursor2 - multiLength, cursor2);
+      const subtokens = tokens.slice(cursor - multiLength, cursor);
       multis.push(initMultiToken(Multi, input2, subtokens));
     }
   }
@@ -75914,17 +75931,17 @@ var DropCursorView = class {
     this.width = (_a3 = options.width) !== null && _a3 !== void 0 ? _a3 : 1;
     this.color = options.color === false ? void 0 : options.color || "black";
     this.class = options.class;
-    this.handlers = ["dragover", "dragend", "drop", "dragleave"].map((name2) => {
+    this.handlers = ["dragover", "dragend", "drop", "dragleave"].map((name) => {
       let handler = (e) => {
-        this[name2](e);
+        this[name](e);
       };
-      editorView.dom.addEventListener(name2, handler);
-      return { name: name2, handler };
+      editorView.dom.addEventListener(name, handler);
+      return { name, handler };
     });
   }
   destroy() {
     this.setCursor(null);
-    this.handlers.forEach(({ name: name2, handler }) => this.editorView.dom.removeEventListener(name2, handler));
+    this.handlers.forEach(({ name, handler }) => this.editorView.dom.removeEventListener(name, handler));
   }
   update(editorView, prevState) {
     if (this.cursorPos != null && prevState.doc != editorView.state.doc) {
@@ -76205,9 +76222,9 @@ var handleKeyDown2 = keydownHandler({
 function arrow3(axis, dir) {
   const dirStr = axis == "vert" ? dir > 0 ? "down" : "up" : dir > 0 ? "right" : "left";
   return function(state, dispatch, view) {
-    let sel2 = state.selection;
-    let $start = dir > 0 ? sel2.$to : sel2.$from, mustMove = sel2.empty;
-    if (sel2 instanceof TextSelection) {
+    let sel = state.selection;
+    let $start = dir > 0 ? sel.$to : sel.$from, mustMove = sel.empty;
+    if (sel instanceof TextSelection) {
       if (!view.endOfTextblock(dirStr) || $start.depth == 0)
         return false;
       mustMove = false;
@@ -77337,6 +77354,24 @@ var asPriority = (v2) => PRIORITIES.includes(v2) ? v2 : "none";
 var asColor = (v2) => COLORS.includes(v2) ? v2 : "gray";
 var asDueDate = (v2) => typeof v2 === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v2) ? v2 : null;
 var unique = (xs) => [...new Set(xs)];
+var alikeValue = (a3, b) => Object.is(a3, b) || Array.isArray(a3) && Array.isArray(b) && a3.length === b.length && a3.every((x2, i2) => Object.is(x2, b[i2]));
+var alike = (a3, b) => {
+  const ka = Object.keys(a3), kb = Object.keys(b);
+  return ka.length === kb.length && ka.every((k) => alikeValue(a3[k], b[k]));
+};
+var sameList = (a3, b) => a3.length === b.length && a3.every((x2, i2) => Object.is(x2, b[i2]));
+function kept(make) {
+  let before = [];
+  return ui.computed(() => {
+    const was = new Map(before.map((x2) => [x2.id, x2]));
+    const next2 = make().map((x2) => {
+      const had = was.get(x2.id);
+      return had && alike(had, x2) ? had : x2;
+    });
+    before = sameList(before, next2) ? before : next2;
+    return before;
+  });
+}
 var Flux = class {
   /** id names the connection. storePrefix keeps its copy apart from the first one's. */
   constructor(id2 = "default", storePrefix = "") {
@@ -77363,37 +77398,114 @@ var Flux = class {
   }
   id;
   storePrefix;
-  state = "unconfigured";
-  message = "";
-  client = null;
-  me = null;
-  workspace = null;
-  members = [];
-  replica;
+  /**
+   * What renders read of the connection and its copy of the workspace,
+   * tracked: each change renders again what read it. Values are replaced
+   * whole (the queue too), and the copy's items are tracked one by one.
+   */
+  live = ui.store(
+    {
+      state: "unconfigured",
+      message: "",
+      client: null,
+      me: null,
+      workspace: null,
+      members: [],
+      replica: { scope: "", version: -1, items: {} },
+      queue: [],
+      dropped: [],
+      syncedAt: null,
+      configured: ""
+    },
+    { shallow: true }
+  );
+  get state() {
+    return this.live.state;
+  }
+  set state(v2) {
+    this.live.state = v2;
+  }
+  get message() {
+    return this.live.message;
+  }
+  set message(v2) {
+    this.live.message = v2;
+  }
+  get client() {
+    return this.live.client;
+  }
+  set client(v2) {
+    this.live.client = v2;
+  }
+  get me() {
+    return this.live.me;
+  }
+  set me(v2) {
+    this.live.me = v2;
+  }
+  get workspace() {
+    return this.live.workspace;
+  }
+  set workspace(v2) {
+    this.live.workspace = v2;
+  }
+  get members() {
+    return this.live.members;
+  }
+  set members(v2) {
+    this.live.members = v2;
+  }
+  get replica() {
+    return this.live.replica;
+  }
+  set replica(r) {
+    r.items = ui.store(r.items, { shallow: true });
+    this.live.replica = r;
+  }
+  /** The changes made while Flux couldn't be reached, oldest first, and those it didn't take. */
+  get queue() {
+    return this.live.queue;
+  }
+  set queue(v2) {
+    this.live.queue = v2;
+  }
+  get dropped() {
+    return this.live.dropped;
+  }
+  set dropped(v2) {
+    this.live.dropped = v2;
+  }
+  /** When the copy last caught up with Flux. */
+  get syncedAt() {
+    return this.live.syncedAt;
+  }
+  set syncedAt(v2) {
+    this.live.syncedAt = v2;
+  }
+  get configured() {
+    return this.live.configured;
+  }
+  set configured(v2) {
+    this.live.configured = v2;
+  }
   /** The copy on disk, and what of it changed since it was last written. */
   disk;
   dirty = /* @__PURE__ */ new Set();
   cleared = false;
   loaded;
-  /** The changes made while Flux couldn't be reached, oldest first, and those it didn't take. */
-  queue = [];
-  dropped = [];
   /** The synced items the queue's changes show over, by id; undefined where the item is new. */
   shadow = /* @__PURE__ */ new Map();
   sending = false;
-  /** When the copy last caught up with Flux. */
-  syncedAt = null;
   stopFollow = null;
   pullSoon = null;
   ready = Promise.resolve();
   generation = 0;
-  configured = "";
   device = "";
   /** Told after what the copy has changes. */
   onChange = () => {
   };
-  storeKey(name2) {
-    return this.storePrefix ? `${this.storePrefix}:${name2}` : name2;
+  storeKey(name) {
+    return this.storePrefix ? `${this.storePrefix}:${name}` : name;
   }
   get baseUrl() {
     return this.client?.baseUrl ?? "";
@@ -77461,7 +77573,7 @@ ${token}`;
     this.cleared = false;
     void this.disk.write([], [], true).catch(() => {
     });
-    for (const name2 of ["copy", "members", "me"]) storage2.delete(this.storeKey(name2));
+    for (const name of ["copy", "members", "me"]) storage2.delete(this.storeKey(name));
     this.onChange();
   }
   stop() {
@@ -77733,7 +77845,7 @@ ${token}`;
     }
     this.overlay(this.build(change));
     const seq = (this.queue[this.queue.length - 1]?.seq ?? 0) + 1;
-    this.queue.push({ seq, label, change });
+    this.queue = [...this.queue, { seq, label, change }];
     storage2.set(this.storeKey("queue"), this.queue);
     this.onChange();
   }
@@ -77878,35 +77990,123 @@ ${token}`;
     if (!this.client) throw new FluxNotReadyError(this.message || "Flux isn't set up.");
     return this.client;
   }
+  // ---- What's derived of the copy ----
+  // Tracked and kept: made again only as what it's made of changes, the
+  // same objects where they're as they were, so that what renders one
+  // renders again only as it changes, and a component given it is used
+  // again (ui.tracked).
+  /** The copy's items by type, made again as any changes: cheap, it makes nothing. */
+  byType = ui.computed(() => {
+    const out = /* @__PURE__ */ new Map();
+    for (const it2 of Object.values(this.replica.items)) {
+      const type = asString(it2.body.type);
+      const list2 = out.get(type);
+      if (list2) list2.push(it2);
+      else out.set(type, [it2]);
+    }
+    return out;
+  });
+  types = /* @__PURE__ */ new Map();
+  /** The copy's items of a type, the same list while they're the same. */
   ofType(type) {
-    return Object.values(this.replica.items).filter((i2) => i2.body.type === type);
+    let c = this.types.get(type);
+    if (!c) this.types.set(type, c = ui.computed(() => this.byType.value.get(type) ?? [], { equals: sameList }));
+    return c.value;
   }
   // ---- Reading ----
   projects() {
+    return this.projectList.value;
+  }
+  projectList = kept(() => {
     const links = storage2.get("projectLinks") ?? {};
     return this.ofType("project").map((it2) => {
-      const mark3 = isObject4(it2.body.mark) ? it2.body.mark : {};
+      const mark2 = isObject4(it2.body.mark) ? it2.body.mark : {};
       return {
         id: it2.id,
         key: asString(it2.body.key) || "PRJ",
         name: asString(it2.body.name) || "Untitled",
-        emoji: mark3.type === "emoji" ? asString(mark3.value) || null : null,
-        icon: mark3.type === "icon" ? asString(mark3.value) || null : null,
-        color: asColor(mark3.color),
+        emoji: mark2.type === "emoji" ? asString(mark2.value) || null : null,
+        icon: mark2.type === "icon" ? asString(mark2.value) || null : null,
+        color: asColor(mark2.color),
         position: asNumber(it2.body.position),
         swarmProjectId: links[it2.id] ?? null
       };
     }).sort((a3, b) => a3.position - b.position || a3.name.localeCompare(b.name));
-  }
+  });
   labels() {
-    return this.ofType("label").map((it2) => ({ id: it2.id, name: asString(it2.body.name), color: asColor(it2.body.color) })).sort((a3, b) => a3.name.localeCompare(b.name));
+    return this.labelList.value;
   }
+  labelList = kept(
+    () => this.ofType("label").map((it2) => ({ id: it2.id, name: asString(it2.body.name), color: asColor(it2.body.color) })).sort((a3, b) => a3.name.localeCompare(b.name))
+  );
   memberList() {
     return this.members;
   }
   issues() {
-    const keys3 = new Map(this.projects().map((p) => [p.id, p.key]));
+    return this.issueList.value;
+  }
+  issueList = kept(() => {
     const items = this.ofType("issue");
+    return items.map(this.issueMaker(items));
+  });
+  issueById = ui.computed(() => new Map(this.issues().map((i2) => [i2.id, i2])));
+  /** Each issue asked for, by id: told only as that issue changes. */
+  oneIssue = /* @__PURE__ */ new Map();
+  /** Each issue asked for by a key or an id, as findIssue resolves it. */
+  foundIssue = /* @__PURE__ */ new Map();
+  /** Each issue's sub-issues, by number; its comments, oldest first; its whole. */
+  subsOf = /* @__PURE__ */ new Map();
+  commentsOf = /* @__PURE__ */ new Map();
+  details = /* @__PURE__ */ new Map();
+  issuesByParent = ui.computed(() => {
+    const out = /* @__PURE__ */ new Map();
+    for (const i2 of this.issues()) {
+      if (!i2.parentId) continue;
+      const list2 = out.get(i2.parentId);
+      if (list2) list2.push(i2);
+      else out.set(i2.parentId, [i2]);
+    }
+    for (const list2 of out.values()) list2.sort((a3, b) => a3.number - b.number);
+    return out;
+  });
+  /** Comments by issue, oldest first, each made once for its item and the mentions' handles. */
+  commentsByIssue = ui.computed(() => {
+    const opts = { baseUrl: this.baseUrl, members: this.mentionTargets() };
+    const out = /* @__PURE__ */ new Map();
+    const items = [...this.ofType("comment")].sort((a3, b) => a3.createdAt.localeCompare(b.createdAt));
+    for (const c of items) {
+      let made3 = this.commentMade.get(c);
+      if (!made3 || made3.opts.members !== opts.members || made3.opts.baseUrl !== opts.baseUrl) {
+        made3 = {
+          opts,
+          comment: {
+            id: c.id,
+            authorId: asString(c.body.authorId) || null,
+            html: asString(c.body.body),
+            markdown: htmlToMarkdown(asString(c.body.body), opts),
+            agent: parseCommentAgent(c.body.agent),
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt
+          }
+        };
+        this.commentMade.set(c, made3);
+      }
+      const issueId = asString(c.body.issueId);
+      const list2 = out.get(issueId);
+      if (list2) list2.push(made3.comment);
+      else out.set(issueId, [made3.comment]);
+    }
+    return out;
+  });
+  commentMade = /* @__PURE__ */ new WeakMap();
+  /**
+   * Makes Issues of the copy's items, items its issues: what each needs
+   * from the rest (its project's key, its sub-issues, its threads) looked
+   * up once. The page renders an issue on each key typed, so it builds
+   * only the issues it shows, not the workspace's.
+   */
+  issueMaker(items) {
+    const keys3 = new Map(this.projects().map((p) => [p.id, p.key]));
     const children = /* @__PURE__ */ new Map();
     for (const it2 of items) {
       const parent = asString(it2.body.parentId);
@@ -77917,7 +78117,7 @@ ${token}`;
       children.set(parent, c);
     }
     const threads = this.threadsByIssue();
-    return items.map((it2) => {
+    return (it2) => {
       const number4 = asNumber(it2.body.number);
       return {
         id: it2.id,
@@ -77940,20 +78140,29 @@ ${token}`;
         subIssueCount: children.get(it2.id)?.total ?? 0,
         subIssueDoneCount: children.get(it2.id)?.done ?? 0
       };
-    });
+    };
   }
   issue(id2) {
-    return this.issues().find((i2) => i2.id === id2) ?? null;
+    let c = this.oneIssue.get(id2);
+    if (!c) this.oneIssue.set(id2, c = ui.computed(() => this.issueById.value.get(id2) ?? null));
+    return c.value;
   }
   /** An issue by its key (old project keys too) or ID. */
   findIssue(ref) {
-    const all2 = this.issues();
-    const byId = all2.find((i2) => i2.id === ref);
-    if (byId) return byId;
-    const key = parseIssueKey(ref);
-    if (!key) return null;
-    const project = this.findProject(key.projectKey);
-    return project ? all2.find((i2) => i2.projectId === project.id && i2.number === key.number) ?? null : null;
+    let c = this.foundIssue.get(ref);
+    if (!c) {
+      c = ui.computed(() => {
+        const byId = this.issueById.value.get(ref);
+        if (byId) return byId;
+        const key = parseIssueKey(ref);
+        if (!key) return null;
+        const project = this.findProject(key.projectKey);
+        if (!project) return null;
+        return this.issues().find((i2) => i2.projectId === project.id && i2.number === key.number) ?? null;
+      });
+      this.foundIssue.set(ref, c);
+    }
+    return c.value;
   }
   requireIssue(ref) {
     const i2 = this.findIssue(ref);
@@ -77980,35 +78189,46 @@ ${token}`;
   projectUrl(project) {
     return `${this.baseUrl}/p/${project.key}`;
   }
+  /** The projects and members a mention names, the same list while they're the same. */
   mentionTargets() {
-    return [...this.projects().map((p) => ({ id: `project:${p.id}`, username: p.key, name: p.name })), ...this.members];
+    return this.mentionList.value;
   }
+  mentionList = ui.computed(
+    () => [...this.projects().map((p) => ({ id: `project:${p.id}`, username: p.key, name: p.name })), ...this.members],
+    { equals: (a3, b) => a3.length === b.length && a3.every((x2, i2) => x2.id === b[i2].id && x2.username === b[i2].username && x2.name === b[i2].name) }
+  );
   comments(issueId) {
-    const opts = { baseUrl: this.baseUrl, members: this.mentionTargets() };
-    return this.ofType("comment").filter((c) => c.body.issueId === issueId).sort((a3, b) => a3.createdAt.localeCompare(b.createdAt)).map((c) => ({
-      id: c.id,
-      authorId: asString(c.body.authorId) || null,
-      html: asString(c.body.body),
-      markdown: htmlToMarkdown(asString(c.body.body), opts),
-      agent: parseCommentAgent(c.body.agent),
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt
-    }));
+    let c = this.commentsOf.get(issueId);
+    if (!c) this.commentsOf.set(issueId, c = ui.computed(() => this.commentsByIssue.value.get(issueId) ?? [], { equals: sameList }));
+    return c.value;
   }
   detail(id2) {
-    const issue2 = this.issue(id2);
-    if (!issue2) throw new FluxNotFoundError(`No Flux issue with id ${id2}.`);
-    const html = asString(this.replica.items[id2].body.description);
-    const all2 = this.issues();
-    return {
-      issue: issue2,
-      url: this.issueUrl(issue2),
-      descriptionHtml: html,
-      descriptionMarkdown: htmlToMarkdown(html, { baseUrl: this.baseUrl, members: this.mentionTargets() }),
-      comments: this.comments(id2),
-      parent: issue2.parentId ? all2.find((i2) => i2.id === issue2.parentId) ?? null : null,
-      subIssues: all2.filter((i2) => i2.parentId === id2).sort((a3, b) => a3.number - b.number)
-    };
+    let c = this.details.get(id2);
+    if (!c) {
+      c = ui.computed(
+        () => {
+          const issue2 = this.issue(id2);
+          if (!issue2) return null;
+          const html = asString(this.replica.items[id2]?.body.description);
+          let subs = this.subsOf.get(id2);
+          if (!subs) this.subsOf.set(id2, subs = ui.computed(() => this.issuesByParent.value.get(id2) ?? [], { equals: sameList }));
+          return {
+            issue: issue2,
+            url: this.issueUrl(issue2),
+            descriptionHtml: html,
+            descriptionMarkdown: htmlToMarkdown(html, { baseUrl: this.baseUrl, members: this.mentionTargets() }),
+            comments: this.comments(id2),
+            parent: issue2.parentId ? this.issue(issue2.parentId) : null,
+            subIssues: subs.value
+          };
+        },
+        { equals: (a3, b) => a3 === null || b === null ? a3 === b : alike(a3, b) }
+      );
+      this.details.set(id2, c);
+    }
+    const d = c.value;
+    if (!d) throw new FluxNotFoundError(`No Flux issue with id ${id2}.`);
+    return d;
   }
   // ---- Writing ----
   /**
@@ -78069,7 +78289,7 @@ ${token}`;
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
     this.online();
-    const description = input2.descriptionHtml !== void 0 ? input2.descriptionHtml : input2.descriptionMarkdown?.trim() ? markdownToHtml(await liftDataImages(input2.descriptionMarkdown, (bytes, type, name2) => this.uploadImage(bytes, type, name2, "issue_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() }) : "";
+    const description = input2.descriptionHtml !== void 0 ? input2.descriptionHtml : input2.descriptionMarkdown?.trim() ? markdownToHtml(await liftDataImages(input2.descriptionMarkdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image")), { baseUrl: this.baseUrl, members: this.mentionTargets() }) : "";
     const assignees = unique(input2.assigneeIds ?? []);
     const issueId = crypto.randomUUID();
     await this.transact(() => {
@@ -78149,7 +78369,7 @@ ${token}`;
    */
   async replaceDescription(id2, markdown) {
     this.item(id2, "issue");
-    if (this.state === "ready") markdown = await liftDataImages(markdown, (bytes, type, name2) => this.uploadImage(bytes, type, name2, "issue_image"));
+    if (this.state === "ready") markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
     const issue2 = this.issue(id2);
     await this.change(issue2 ? `Description of ${issue2.key}` : "A description", { type: "description", id: id2, markdown });
   }
@@ -78157,13 +78377,13 @@ ${token}`;
   async writeDescription(id2, markdown) {
     const client = this.requireClient();
     this.item(id2, "issue");
-    markdown = await liftDataImages(markdown, (bytes, type, name2) => this.uploadImage(bytes, type, name2, "issue_image"));
+    markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
     const parsed = parseDescription(markdownToHtml(markdown, { baseUrl: this.baseUrl, members: this.mentionTargets() }));
     const path = `/sync/docs/${encodeURIComponent(id2)}?workspaceId=${encodeURIComponent(client.workspaceId ?? "")}`;
-    let seeded2 = null;
+    let seeded = null;
     for (let attempt = 1; attempt <= 10; attempt++) {
       try {
-        seeded2 = await client.request(
+        seeded = await client.request(
           external_exports.object({ created: external_exports.boolean(), update: external_exports.string() }),
           path,
           { method: "PUT", body: { update: base643(descriptionState(parsed.doc)) } }
@@ -78177,11 +78397,11 @@ ${token}`;
         throw e;
       }
     }
-    if (seeded2 && !seeded2.created) {
+    if (seeded && !seeded.created) {
       const url2 = new URL(client.baseUrl + path);
       url2.protocol = url2.protocol === "https:" ? "wss:" : "ws:";
       const { accept: _2, ...headers } = client.headers();
-      await writeLiveDescription({ url: url2.href, headers }, fromBase64(seeded2.update), parsed.doc);
+      await writeLiveDescription({ url: url2.href, headers }, fromBase64(seeded.update), parsed.doc);
     }
     await this.transact(() => {
       const it2 = this.item(id2, "issue");
@@ -78196,7 +78416,7 @@ ${token}`;
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
     const commentId = crypto.randomUUID();
-    const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name2) => this.uploadImage(bytes, type, name2, "comment_image")) : markdown;
+    const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
     const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
     const issue2 = this.item(issueId, "issue");
     await this.change(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me2.id, body: html, ...agent2 ? { agent: agent2 } : {} } });
@@ -78248,7 +78468,7 @@ ${token}`;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
     const it2 = this.item(id2, "comment");
     if (asString(it2.body.authorId) !== me2.id) throw new Error("You can edit your own comments.");
-    const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name2) => this.uploadImage(bytes, type, name2, "comment_image")) : markdown;
+    const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
     const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
     await this.change(`Edit to a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id: id2, html });
   }
@@ -78260,15 +78480,15 @@ ${token}`;
     await this.change(`Deleting a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentDelete", id: id2 });
   }
   /** A label of name, in the color fewest labels use when none is given. */
-  async createLabel(name2, color) {
-    const existing = this.findLabel(name2);
+  async createLabel(name, color) {
+    const existing = this.findLabel(name);
     if (existing) return existing;
-    if (name2.includes(",")) throw new Error("A label's name can't have a comma in it.");
+    if (name.includes(",")) throw new Error("A label's name can't have a comma in it.");
     const used = new Map(COLORS.map((c) => [c, 0]));
     for (const l of this.labels()) used.set(l.color, (used.get(l.color) ?? 0) + 1);
     const pick2 = color ?? [...used.entries()].sort((a3, b) => a3[1] - b[1])[0][0];
     const id2 = crypto.randomUUID();
-    await this.change(`Label “${name2.trim()}”`, { type: "label", id: id2, body: { type: "label", name: name2.trim(), color: pick2 } });
+    await this.change(`Label “${name.trim()}”`, { type: "label", id: id2, body: { type: "label", name: name.trim(), color: pick2 } });
     return this.labels().find((l) => l.id === id2);
   }
   // ---- Projects ----
@@ -78290,15 +78510,15 @@ ${token}`;
    * 1, and after the others. It shows at once, and waits for Flux.
    */
   async createProject(input2) {
-    const name2 = input2.name.trim().slice(0, PROJECT_NAME_MAX);
-    if (!name2) throw new Error("Give the project a name.");
+    const name = input2.name.trim().slice(0, PROJECT_NAME_MAX);
+    if (!name) throw new Error("Give the project a name.");
     const typed = normalizeProjectKey(input2.key ?? "");
     const problem = typed ? this.keyProblem(typed) : null;
     if (problem) throw new Error(`${problem}.`);
-    const key = uniqueProjectKey(this.keyed(), typed || input2.keyFrom || name2);
+    const key = uniqueProjectKey(this.keyed(), typed || input2.keyFrom || name);
     const id2 = crypto.randomUUID();
-    const body = { type: "project", key, aliases: [], name: name2, mark: input2.mark ?? { type: "icon", value: "folder", color: "gray" }, nextNumber: 1, position: this.projects().length };
-    await this.change(`Project “${name2}”`, { type: "project", id: id2, body });
+    const body = { type: "project", key, aliases: [], name, mark: input2.mark ?? { type: "icon", value: "folder", color: "gray" }, nextNumber: 1, position: this.projects().length };
+    await this.change(`Project “${name}”`, { type: "project", id: id2, body });
     return this.projects().find((p) => p.id === id2);
   }
   /** Changes a project's name, key or mark; a key it leaves stays among its aliases, as Flux keeps it. */
@@ -78307,9 +78527,9 @@ ${token}`;
     if (!project) throw new FluxNotFoundError("The project was deleted in Flux.");
     const next2 = {};
     if (patch.name !== void 0) {
-      const name2 = patch.name.trim().slice(0, PROJECT_NAME_MAX);
-      if (!name2) throw new Error("A project needs a name.");
-      if (name2 !== project.name) next2.name = name2;
+      const name = patch.name.trim().slice(0, PROJECT_NAME_MAX);
+      if (!name) throw new Error("A project needs a name.");
+      if (name !== project.name) next2.name = name;
     }
     if (patch.key !== void 0) {
       const key = normalizeProjectKey(patch.key);
@@ -78396,15 +78616,15 @@ ${token}`;
     this.onChange();
   }
   /** Links a Flux project to a Swarm project, whose threads it's the default of; null unlinks it. */
-  link(projectId, swarmProject2) {
+  link(projectId, swarmProject) {
     const links = storage2.get("projectLinks") ?? {};
-    if (swarmProject2) links[projectId] = swarmProject2;
+    if (swarmProject) links[projectId] = swarmProject;
     else delete links[projectId];
     storage2.set("projectLinks", links);
     this.onChange();
   }
-  projectOfSwarm(swarmProject2) {
-    return this.projects().find((p) => p.swarmProjectId === swarmProject2) ?? null;
+  projectOfSwarm(swarmProject) {
+    return this.projects().find((p) => p.swarmProjectId === swarmProject) ?? null;
   }
   connection() {
     return {
@@ -78421,8 +78641,8 @@ ${token}`;
     };
   }
   /** Uploads a picture and returns the URL Markdown should use. */
-  async uploadImage(bytes, type, name2, entity) {
-    const up = await this.requireClient().upload({ name: name2, type, bytes }, entity);
+  async uploadImage(bytes, type, name, entity) {
+    const up = await this.requireClient().upload({ name, type, bytes }, entity);
     return up.url.startsWith("/") ? this.baseUrl + up.url : up.url;
   }
 };
@@ -78497,12 +78717,23 @@ function parseExtras(value) {
 }
 var Hub = class {
   main = new Flux("default");
-  extras = /* @__PURE__ */ new Map();
-  activeId = storage3.get("activeConnection") || "default";
+  /** The other Fluxes, and the one in use: tracked, as each Flux's copy is. */
+  extras = ui2.store(/* @__PURE__ */ new Map(), { shallow: true });
+  activeState = ui2.state(storage3.get("activeConnection") || "default");
+  get activeId() {
+    return this.activeState.value;
+  }
+  set activeId(id2) {
+    this.activeState.value = id2;
+  }
+  /** Told after a Flux changed, for what isn't a render: the badges, the sidebar. */
   onChange = () => {
   };
   constructor() {
-    this.main.onChange = () => this.onChange();
+    this.main.onChange = () => this.changed();
+  }
+  changed() {
+    this.onChange();
   }
   /** The connection commands and the page use. */
   get active() {
@@ -78516,20 +78747,20 @@ var Hub = class {
     return [this.main, ...this.extras.values()];
   }
   /** A connection by id, workspace name, slug, or a bit of its URL. The active one when unnamed. */
-  get(name2) {
-    if (!name2?.trim()) return this.active;
-    const needle = name2.trim().toLowerCase();
+  get(name) {
+    if (!name?.trim()) return this.active;
+    const needle = name.trim().toLowerCase();
     const found2 = this.all().find((flux2) => {
       const workspace = flux2.workspace;
       return flux2.id.toLowerCase() === needle || workspace?.name.toLowerCase() === needle || workspace?.slug.toLowerCase() === needle || flux2.baseUrl.toLowerCase().includes(needle);
     });
-    if (!found2) throw new FluxNotFoundError(`No Flux connection ${name2}.`);
+    if (!found2) throw new FluxNotFoundError(`No Flux connection ${name}.`);
     return found2;
   }
   use(id2) {
     this.activeId = id2;
     storage3.set("activeConnection", id2);
-    this.onChange();
+    this.changed();
   }
   /** The Fluxes set up, the first one's first. */
   connected() {
@@ -78599,7 +78830,7 @@ var Hub = class {
       let flux2 = this.extras.get(item.id);
       if (!flux2) {
         flux2 = new Flux(item.id, `conn:${item.id}`);
-        flux2.onChange = () => this.onChange();
+        flux2.onChange = () => this.changed();
         this.extras.set(item.id, flux2);
       }
       flux2.configure(item.url, item.token);
@@ -78614,7 +78845,7 @@ var Hub = class {
 var hub = new Hub();
 
 // src/pictures.ts
-var got = /* @__PURE__ */ new Map();
+var got = ui3.store(/* @__PURE__ */ new Map());
 function pictureBytes(src) {
   if (!src) return null;
   const flux2 = hub.active;
@@ -78632,7 +78863,7 @@ function pictureBytes(src) {
   read.then(
     (bytes) => void got.set(key, bytes),
     () => void got.set(key, "failed")
-  ).finally(() => ui.update());
+  );
   return null;
 }
 function imageOf(src) {
@@ -78643,39 +78874,39 @@ function imageOf(src) {
 }
 
 // src/confirm.tsx
-import { ui as ui2 } from "swarm";
+import { ui as ui4 } from "swarm";
 import { jsx, jsxs } from "swarm/jsx-runtime";
-var asking = null;
+var asking = ui4.state(null);
 function confirm(title, text2, action, run4) {
-  asking = { title, text: text2, action, run: run4 };
-  ui2.showOverlay("flux-confirm");
+  asking.value = { title, text: text2, action, run: run4 };
+  ui4.showOverlay("flux-confirm");
 }
 function close2() {
   closeConfirm();
-  ui2.hideOverlay("flux-confirm");
+  ui4.hideOverlay("flux-confirm");
 }
 function closeConfirm() {
-  asking = null;
+  asking.value = null;
 }
 function Confirm() {
-  const a3 = asking;
+  const a3 = asking.value;
   if (!a3) return null;
   const go = () => {
     close2();
-    void Promise.resolve(a3.run()).catch((e) => ui2.toast(e instanceof Error ? e.message : String(e)));
+    void Promise.resolve(a3.run()).catch((e) => ui4.toast(e instanceof Error ? e.message : String(e)));
   };
-  return /* @__PURE__ */ jsxs(ui2.box, { style: { width: 400, gap: 8, padding: 20 }, children: [
-    /* @__PURE__ */ jsx(ui2.text, { style: { fontSize: 16, fontWeight: 600 }, children: a3.title }),
-    /* @__PURE__ */ jsx(ui2.text, { style: { color: "text2" }, children: a3.text }),
-    /* @__PURE__ */ jsxs(ui2.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end", marginTop: 12 }, children: [
-      /* @__PURE__ */ jsx(ui2.button, { kind: "secondary", onClick: close2, children: "Cancel" }),
-      /* @__PURE__ */ jsx(ui2.button, { kind: "danger", onClick: go, children: a3.action })
+  return /* @__PURE__ */ jsxs(ui4.box, { style: { width: 400, gap: 8, padding: 20 }, children: [
+    /* @__PURE__ */ jsx(ui4.text, { style: { fontSize: 16, fontWeight: 600 }, children: a3.title }),
+    /* @__PURE__ */ jsx(ui4.text, { style: { color: "text2" }, children: a3.text }),
+    /* @__PURE__ */ jsxs(ui4.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end", marginTop: 12 }, children: [
+      /* @__PURE__ */ jsx(ui4.button, { kind: "secondary", onClick: close2, children: "Cancel" }),
+      /* @__PURE__ */ jsx(ui4.button, { kind: "danger", onClick: go, children: a3.action })
     ] })
   ] });
 }
 
 // src/palette.tsx
-import { ui as ui3 } from "swarm";
+import { ui as ui5 } from "swarm";
 
 // src/dates.ts
 function startOfDay(date5) {
@@ -78739,8 +78970,8 @@ function upcomingMonthDay(now, month, day, year) {
   if (year === void 0 && date5.getTime() < today.getTime()) date5 = new Date(today.getFullYear() + 1, month, day);
   return date5;
 }
-function parseDue(query2, now = /* @__PURE__ */ new Date()) {
-  const raw = query2.trim().toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ");
+function parseDue(query, now = /* @__PURE__ */ new Date()) {
+  const raw = query.trim().toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ");
   if (!raw) return null;
   const today = startOfDay(now);
   if (raw === "today") return today;
@@ -78871,8 +79102,8 @@ var NUCLEO = /* @__PURE__ */ new Set([
   "wrench-screwdriver",
   "yoga"
 ]);
-function asIcon(name2) {
-  return name2 && NUCLEO.has(name2) ? name2 : null;
+function asIcon(name) {
+  return name && NUCLEO.has(name) ? name : null;
 }
 var EXTRA = {
   "alarm-clock": '<path d="M16.5,4.25c-.192,0-.384-.073-.53-.22l-2-2c-.293-.293-.293-.768,0-1.061s.768-.293,1.061,0l2,2c.293,.293,.293,.768,0,1.061-.146,.146-.338,.22-.53,.22Z" fill="currentColor" data-color="color-2"></path><path d="M1.5,4.25c-.192,0-.384-.073-.53-.22-.293-.293-.293-.768,0-1.061L2.97,.97c.293-.293,.768-.293,1.061,0s.293,.768,0,1.061l-2,2c-.146,.146-.338,.22-.53,.22Z" fill="currentColor" data-color="color-2"></path><path d="M14.447,13.386c.969-1.201,1.553-2.726,1.553-4.386,0-3.86-3.14-7-7-7S2,5.14,2,9c0,1.66,.584,3.185,1.553,4.386l-1.333,1.333c-.293,.293-.293,.768,0,1.061,.146,.146,.338,.22,.53,.22s.384-.073,.53-.22l1.333-1.333c1.201,.969,2.726,1.553,4.387,1.553s3.185-.583,4.387-1.553l1.333,1.333c.146,.146,.338,.22,.53,.22s.384-.073,.53-.22c.293-.293,.293-.768,0-1.061l-1.333-1.333Zm-2.064-2.234c-.143,.225-.386,.347-.633,.347-.138,0-.277-.038-.402-.117l-2.75-1.75c-.216-.138-.347-.376-.347-.633v-3.25c0-.414,.336-.75,.75-.75s.75,.336,.75,.75v2.838l2.403,1.529c.349,.223,.452,.686,.23,1.036Z" fill="currentColor"></path>',
@@ -79093,25 +79324,23 @@ var TITLES = {
   due: "Set due date…",
   parent: "Set parent issue…"
 };
-var open3 = null;
-var search = "";
-var sel = 0;
+var st2 = ui5.store({ open: null, search: "", sel: 0 });
 function openPalette(kind, ids, apply3) {
   if (ids.length === 0) return;
-  open3 = { kind, ids, apply: apply3 };
-  search = "";
-  sel = 0;
-  ui3.showOverlay("flux-palette");
+  st2.open = { kind, ids, apply: apply3 };
+  st2.search = "";
+  st2.sel = 0;
+  ui5.showOverlay("flux-palette");
 }
 function close3() {
   closePalette();
-  ui3.hideOverlay("flux-palette");
+  ui5.hideOverlay("flux-palette");
 }
 function closePalette() {
-  open3 = null;
+  st2.open = null;
 }
 function rows(issues) {
-  const o = open3;
+  const o = st2.open;
   const flux2 = hub.active;
   const each = (patch) => {
     for (const issue2 of issues) void o.apply(issue2.id, patch(issue2));
@@ -79133,14 +79362,14 @@ function rows(issues) {
     }
     case "label": {
       const out = flux2.labels().map((l) => ({ key: l.id, label: l.name, mark: labelMark(l.color), on: all2((i2) => i2.labelIds.includes(l.id)), run: () => toggle((i2) => i2.labelIds, l.id, "labelIds") }));
-      const name2 = search.trim();
-      if (name2 && !flux2.labels().some((l) => l.name.toLowerCase() === name2.toLowerCase())) {
+      const name = st2.search.trim();
+      if (name && !flux2.labels().some((l) => l.name.toLowerCase() === name.toLowerCase())) {
         out.push({
           key: "create",
-          label: `Create “${name2}”`,
+          label: `Create “${name}”`,
           mark: { icon: "plus" },
           on: false,
-          run: () => void flux2.createLabel(name2).then((label) => each((i2) => ({ labelIds: [.../* @__PURE__ */ new Set([...i2.labelIds, label.id])] })), (e) => ui3.toast(`Couldn't create the label: ${e instanceof Error ? e.message : String(e)}`))
+          run: () => void flux2.createLabel(name).then((label) => each((i2) => ({ labelIds: [.../* @__PURE__ */ new Set([...i2.labelIds, label.id])] })), (e) => ui5.toast(`Couldn't create the label: ${e instanceof Error ? e.message : String(e)}`))
         });
       }
       return out;
@@ -79148,7 +79377,7 @@ function rows(issues) {
     case "project":
       return flux2.projects().map((p) => ({ key: p.id, label: p.name, detail: p.key, mark: navMark(p), on: all2((i2) => i2.projectId === p.id), run: () => each(() => ({ projectId: p.id })) }));
     case "due": {
-      const typed = parseDue(search);
+      const typed = parseDue(st2.search);
       const day = typed ? isoDay(typed) : null;
       return [
         ...typed && day ? [{ key: "typed", label: `Due ${dueLabel(day)}`, detail: dueHint(typed), mark: { icon: "calendar" }, on: all2((i2) => i2.dueDate === day), run: () => each(() => ({ dueDate: day })) }] : [],
@@ -79166,20 +79395,20 @@ function rows(issues) {
   }
 }
 function Palette() {
-  const o = open3;
+  const o = st2.open;
   if (!o) return null;
   const flux2 = hub.active;
   const issues = o.ids.map((id2) => flux2.issue(id2)).filter((i2) => !!i2);
   if (issues.length === 0) return null;
   const filtered = () => {
-    const needle2 = search.trim().toLowerCase();
+    const needle2 = st2.search.trim().toLowerCase();
     return rows(issues).filter((r) => r.key === "create" || r.key === "typed" || !needle2 || r.label.toLowerCase().includes(needle2) || (r.detail ?? "").toLowerCase().includes(needle2)).slice(0, 50);
   };
-  const needle = search.trim().toLowerCase();
+  const needle = st2.search.trim().toLowerCase();
   const found2 = filtered();
-  sel = Math.min(Math.max(sel, 0), Math.max(found2.length - 1, 0));
+  st2.sel = Math.min(Math.max(st2.sel, 0), Math.max(found2.length - 1, 0));
   const choose = (n) => {
-    if (open3 !== o) return;
+    if (st2.open !== o) return;
     const now = filtered();
     const row = now[Math.min(n, now.length - 1)];
     if (!row) return;
@@ -79189,37 +79418,37 @@ function Palette() {
   const keys3 = ["ArrowUp", "ArrowDown", "Enter", ...needle ? [] : ["1", "2", "3", "4", "5", "6", "7", "8", "9"]];
   const subject = issues.length === 1 ? `${issues[0].key} ${issues[0].title}` : `${issues.length} issues`;
   return /* @__PURE__ */ jsxs2(
-    ui3.box,
+    ui5.box,
     {
       keys: keys3,
       onKeyDown: (k) => {
-        if (k.key === "ArrowUp") sel = (sel - 1 + found2.length) % Math.max(found2.length, 1);
-        else if (k.key === "ArrowDown") sel = (sel + 1) % Math.max(found2.length, 1);
-        else if (k.key === "Enter") choose(sel);
+        if (k.key === "ArrowUp") st2.sel = (st2.sel - 1 + found2.length) % Math.max(found2.length, 1);
+        else if (k.key === "ArrowDown") st2.sel = (st2.sel + 1) % Math.max(found2.length, 1);
+        else if (k.key === "Enter") choose(st2.sel);
         else if (/^[1-9]$/.test(k.key)) choose(Number(k.key) - 1);
       },
       style: { width: 480, maxHeight: 460, padding: 8, gap: 4 },
       children: [
-        /* @__PURE__ */ jsx2(ui3.box, { style: { gap: 2, padding: "s2 s3" }, children: /* @__PURE__ */ jsx2(ui3.text, { style: { fontSize: "small", color: "text3" }, maxLines: 1, children: subject }) }),
-        /* @__PURE__ */ jsx2(ui3.field, { autoFocus: true, value: search, placeholder: TITLES[o.kind], onChange: (value) => {
-          search = value;
-          sel = 0;
+        /* @__PURE__ */ jsx2(ui5.box, { style: { gap: 2, padding: "s2 s3" }, children: /* @__PURE__ */ jsx2(ui5.text, { style: { fontSize: "small", color: "text3" }, maxLines: 1, children: subject }) }),
+        /* @__PURE__ */ jsx2(ui5.field, { autoFocus: true, value: st2.search, placeholder: TITLES[o.kind], onChange: (value) => {
+          st2.search = value;
+          st2.sel = 0;
         }, onSubmit: (value) => {
-          if (value !== search) {
-            search = value;
-            sel = 0;
+          if (value !== st2.search) {
+            st2.search = value;
+            st2.sel = 0;
           }
-          choose(sel);
+          choose(st2.sel);
         }, style: { fontSize: 15, backgroundColor: "transparent", boxShadow: "none", padding: "s2 s3" } }, "palette-" + o.kind),
-        /* @__PURE__ */ jsx2(ui3.box, { style: { height: 1, backgroundColor: "divider", marginLeft: -8, marginRight: -8 } }),
-        /* @__PURE__ */ jsxs2(ui3.scroll, { style: { maxHeight: 380 }, children: [
-          found2.length === 0 ? /* @__PURE__ */ jsx2(ui3.text, { style: { padding: "s4", color: "text3" }, children: "Nothing matches." }) : null,
-          found2.map((r, n) => /* @__PURE__ */ jsxs2(ui3.pressable, { label: r.label, role: "option", checked: n === sel, onClick: () => choose(n), style: { flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 10, paddingRight: 10, borderRadius: "control", backgroundColor: n === sel ? "hover" : "transparent", hover: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx2(ui5.box, { style: { height: 1, backgroundColor: "divider", marginLeft: -8, marginRight: -8 } }),
+        /* @__PURE__ */ jsxs2(ui5.scroll, { style: { maxHeight: 380 }, children: [
+          found2.length === 0 ? /* @__PURE__ */ jsx2(ui5.text, { style: { padding: "s4", color: "text3" }, children: "Nothing matches." }) : null,
+          found2.map((r, n) => /* @__PURE__ */ jsxs2(ui5.pressable, { label: r.label, role: "option", checked: n === st2.sel, onClick: () => choose(n), style: { flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 10, paddingRight: 10, borderRadius: "control", backgroundColor: n === st2.sel ? "hover" : "transparent", hover: { backgroundColor: "hover" } }, children: [
             mark(r.mark),
-            /* @__PURE__ */ jsx2(ui3.text, { style: { flex: 1, minWidth: 0, fontSize: 14 }, maxLines: 1, children: r.label }),
-            r.detail ? /* @__PURE__ */ jsx2(ui3.text, { style: { fontSize: "small", color: "text3" }, children: r.detail }) : null,
-            r.on ? /* @__PURE__ */ jsx2(ui3.icon, { icon: "check", style: { width: 14, height: 14, color: "accent" } }) : null,
-            !needle && n < 9 ? /* @__PURE__ */ jsx2(ui3.text, { style: { fontSize: 12, color: "text3", width: 12, textAlign: "right" }, children: String(n + 1) }) : null
+            /* @__PURE__ */ jsx2(ui5.text, { style: { flex: 1, minWidth: 0, fontSize: 14 }, maxLines: 1, children: r.label }),
+            r.detail ? /* @__PURE__ */ jsx2(ui5.text, { style: { fontSize: "small", color: "text3" }, children: r.detail }) : null,
+            r.on ? /* @__PURE__ */ jsx2(ui5.icon, { icon: "check", style: { width: 14, height: 14, color: "accent" } }) : null,
+            !needle && n < 9 ? /* @__PURE__ */ jsx2(ui5.text, { style: { fontSize: 12, color: "text3", width: 12, textAlign: "right" }, children: String(n + 1) }) : null
           ] }, r.key))
         ] })
       ]
@@ -79228,12 +79457,12 @@ function Palette() {
 }
 function mark(m) {
   const box = { width: 16, height: 16, flexShrink: 0 };
-  if (typeof m.mark === "string" || m.mark instanceof Uint8Array) return /* @__PURE__ */ jsx2(ui3.image, { src: m.mark, alt: "", style: typeof m.initial === "string" ? { ...box, borderRadius: 4, overflow: "hidden", objectFit: "cover" } : box });
+  if (typeof m.mark === "string" || m.mark instanceof Uint8Array) return /* @__PURE__ */ jsx2(ui5.image, { src: m.mark, alt: "", style: typeof m.initial === "string" ? { ...box, borderRadius: 4, overflow: "hidden", objectFit: "cover" } : box });
   if (typeof m.initial === "string") {
-    return /* @__PURE__ */ jsx2(ui3.box, { style: { ...box, borderRadius: 4, backgroundColor: m.tint, alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ jsx2(ui3.text, { style: { color: "white", fontSize: 10, fontWeight: 700 }, children: m.initial }) });
+    return /* @__PURE__ */ jsx2(ui5.box, { style: { ...box, borderRadius: 4, backgroundColor: m.tint, alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ jsx2(ui5.text, { style: { color: "white", fontSize: 10, fontWeight: 700 }, children: m.initial }) });
   }
-  if (typeof m.icon === "string") return /* @__PURE__ */ jsx2(ui3.icon, { icon: m.icon, style: { ...box, color: "text2" } });
-  return /* @__PURE__ */ jsx2(ui3.box, { style: box });
+  if (typeof m.icon === "string") return /* @__PURE__ */ jsx2(ui5.icon, { icon: m.icon, style: { ...box, color: "text2" } });
+  return /* @__PURE__ */ jsx2(ui5.box, { style: box });
 }
 
 // src/cli.ts
@@ -79248,20 +79477,20 @@ var SVG = {
 var TINT = {
   claude: { light: "#D97757", dark: "#D97757" }
 };
-function markOf(provider2) {
-  const p = provider2.toLowerCase();
+function markOf(provider) {
+  const p = provider.toLowerCase();
   if (p.startsWith("claude")) return "claude";
   if (p.startsWith("cursor")) return "cursor";
   if (p.startsWith("grok")) return "grok";
   return null;
 }
 var icons = /* @__PURE__ */ new Map();
-function agentLogo(provider2) {
-  const mark3 = markOf(provider2);
-  if (!mark3) return {};
-  let icon = icons.get(mark3);
-  if (!icon) icons.set(mark3, icon = "data:image/svg+xml;base64," + new TextEncoder().encode(SVG[mark3]).toBase64());
-  return TINT[mark3] ? { icon, tint: TINT[mark3] } : { icon };
+function agentLogo(provider) {
+  const mark2 = markOf(provider);
+  if (!mark2) return {};
+  let icon = icons.get(mark2);
+  if (!icon) icons.set(mark2, icon = "data:image/svg+xml;base64," + new TextEncoder().encode(SVG[mark2]).toBase64());
+  return TINT[mark2] ? { icon, tint: TINT[mark2] } : { icon };
 }
 
 // src/markdown.ts
@@ -79290,7 +79519,7 @@ function issueFacts(detail2, lookup) {
   const { issue: issue2 } = detail2;
   const project = lookup.projects.find((item) => item.id === issue2.projectId);
   const assignees = issue2.assigneeIds.map((id2) => memberName(lookup, id2));
-  const labels = issue2.labelIds.map((id2) => lookup.labels.find((label) => label.id === id2)?.name).filter((name2) => Boolean(name2));
+  const labels = issue2.labelIds.map((id2) => lookup.labels.find((label) => label.id === id2)?.name).filter((name) => Boolean(name));
   return [
     `- Status: ${STATUS_LABELS[issue2.status]}`,
     `- Priority: ${PRIORITY_LABELS[issue2.priority]}`,
@@ -79382,13 +79611,13 @@ function attachedImages(markdown, baseUrl, max3 = MAX_START_IMAGES) {
 function startPrompt(detail2, baseUrl) {
   const { issue: issue2 } = detail2;
   const lines = [`Work on Flux issue ${issue2.key}: ${issue2.title}`];
-  let imageIds3 = [];
+  let imageIds2 = [];
   if (detail2.descriptionMarkdown) {
     const description = attachedImages(
       clip(detail2.descriptionMarkdown, 6e3),
       baseUrl
     );
-    imageIds3 = description.ids;
+    imageIds2 = description.ids;
     lines.push("", description.markdown);
   }
   const more = [
@@ -79401,7 +79630,7 @@ function startPrompt(detail2, baseUrl) {
       `The issue also has ${more.join(" and ")}; read them with \`swarm flux show ${issue2.key}\`.`
     );
   }
-  return { prompt: lines.join("\n"), imageIds: imageIds3 };
+  return { prompt: lines.join("\n"), imageIds: imageIds2 };
 }
 function threadInstructions(issueKey) {
   return [
@@ -79432,12 +79661,12 @@ function parse3(argv, spec) {
   const values = {};
   const positionals = [];
   const byName = /* @__PURE__ */ new Map();
-  for (const [name2, s] of Object.entries(spec)) {
-    byName.set(`--${name2}`, name2);
-    if (s.short) byName.set(`-${s.short}`, name2);
-    for (const a3 of s.aliases ?? []) byName.set(`--${a3}`, name2);
-    if (s.type === "list") values[name2] = [];
-    if (s.type === "boolean") values[name2] = false;
+  for (const [name, s] of Object.entries(spec)) {
+    byName.set(`--${name}`, name);
+    if (s.short) byName.set(`-${s.short}`, name);
+    for (const a3 of s.aliases ?? []) byName.set(`--${a3}`, name);
+    if (s.type === "list") values[name] = [];
+    if (s.type === "boolean") values[name] = false;
   }
   for (let i2 = 0; i2 < argv.length; i2++) {
     const arg = argv[i2];
@@ -79450,17 +79679,17 @@ function parse3(argv, spec) {
       continue;
     }
     let [flag, inline2] = arg.includes("=") ? [arg.slice(0, arg.indexOf("=")), arg.slice(arg.indexOf("=") + 1)] : [arg, void 0];
-    const name2 = byName.get(flag);
-    if (!name2) throw new CliError(`unknown option ${flag}`, "Run swarm flux help for the commands and their options.");
-    const s = spec[name2];
+    const name = byName.get(flag);
+    if (!name) throw new CliError(`unknown option ${flag}`, "Run swarm flux help for the commands and their options.");
+    const s = spec[name];
     if (s.type === "boolean") {
-      values[name2] = inline2 === void 0 ? true : inline2 !== "false";
+      values[name] = inline2 === void 0 ? true : inline2 !== "false";
       continue;
     }
     const value = inline2 ?? argv[++i2];
     if (value === void 0) throw new CliError(`${flag} takes a value`);
-    if (s.type === "list") values[name2].push(...value.split(",").map((v2) => v2.trim()).filter(Boolean));
-    else values[name2] = value;
+    if (s.type === "list") values[name].push(...value.split(",").map((v2) => v2.trim()).filter(Boolean));
+    else values[name] = value;
   }
   return { values, positionals };
 }
@@ -79529,14 +79758,14 @@ function registerCli(resolve) {
     }
   });
   const json2 = (io, v2) => io.print(JSON.stringify(v2, null, 2));
-  const guarded = (name2, fn) => {
-    command2(name2, async (args2, io) => {
+  const guarded = (name, fn) => {
+    command2(name, async (args2, io) => {
       try {
         const taken = takeFlux(args2);
         picked = taken.name;
         args2 = taken.args;
         const ctx = await context(io);
-        if (name2 !== "status") await flux2.whenReady();
+        if (name !== "status") await flux2.whenReady();
         return await fn(args2, io, ctx);
       } catch (e) {
         if (e instanceof CliError) {
@@ -79556,21 +79785,21 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
   };
   function takeFlux(args2) {
     const rest = [];
-    let name2;
+    let name;
     for (let i2 = 0; i2 < args2.length; i2++) {
       const arg = args2[i2];
       if (arg === "--flux" || arg === "--connection") {
-        name2 = args2[++i2];
-        if (!name2) throw new CliError("--flux takes the connection's name");
+        name = args2[++i2];
+        if (!name) throw new CliError("--flux takes the connection's name");
         continue;
       }
       if (arg.startsWith("--flux=")) {
-        name2 = arg.slice("--flux=".length);
+        name = arg.slice("--flux=".length);
         continue;
       }
       rest.push(arg);
     }
-    return { name: name2, args: rest };
+    return { name, args: rest };
   }
   const lookup = () => ({ baseUrl: flux2.baseUrl, members: flux2.memberList(), labels: flux2.labels(), projects: flux2.projects() });
   const issueFromArg = (ref, ctx) => {
@@ -79795,8 +80024,8 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
     const issues = flux2.issues();
     io.print(
       projects.map((p) => {
-        const open5 = issues.filter((i2) => i2.projectId === p.id && !CLOSED_STATUSES.has(i2.status)).length;
-        return `${pad(p.key, 6)} ${pad(p.name, 28)} ${pad(`${open5} open`, 9)} ${p.swarmProjectId ? `→ ${p.swarmProjectId}` : ""}`.trimEnd();
+        const open3 = issues.filter((i2) => i2.projectId === p.id && !CLOSED_STATUSES.has(i2.status)).length;
+        return `${pad(p.key, 6)} ${pad(p.name, 28)} ${pad(`${open3} open`, 9)} ${p.swarmProjectId ? `→ ${p.swarmProjectId}` : ""}`.trimEnd();
       }).join("\n") || "No projects."
     );
   });
@@ -79808,21 +80037,21 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
       flux2.link(p.id, null);
       return io.print(`Unlinked ${p.key}.`);
     }
-    const swarmProject2 = str(o.project) ?? ctx.project;
-    if (!swarmProject2) throw new CliError("which Swarm project?", "Run this from a thread of the project, or pass --project ID.");
-    flux2.link(p.id, swarmProject2);
-    io.print(`Linked ${p.key} to ${swarmProject2}.`);
+    const swarmProject = str(o.project) ?? ctx.project;
+    if (!swarmProject) throw new CliError("which Swarm project?", "Run this from a thread of the project, or pass --project ID.");
+    flux2.link(p.id, swarmProject);
+    io.print(`Linked ${p.key} to ${swarmProject}.`);
   });
   guarded("labels", async (args2, io) => {
     const { values: o, positionals } = parse3(args2, { color: { type: "string" }, json: { type: "boolean" } });
     if (positionals[0] === "create" || positionals[0] === "new" || positionals[0] === "add") {
-      const name2 = positionals.slice(1).join(" ").trim();
-      if (!name2) throw new CliError("label name is empty");
-      if (name2.includes(",")) throw new CliError(`label name "${name2}" has a comma`, "--label splits on commas, so it couldn't name this label.");
+      const name = positionals.slice(1).join(" ").trim();
+      if (!name) throw new CliError("label name is empty");
+      if (name.includes(",")) throw new CliError(`label name "${name}" has a comma`, "--label splits on commas, so it couldn't name this label.");
       const color = str(o.color);
       if (color && !COLORS.includes(color)) throw new CliError(`unknown color "${color}"`, `Use one of: ${COLORS.join(", ")}.`);
-      const existing = flux2.findLabel(name2);
-      const label = existing ?? await flux2.createLabel(name2, color);
+      const existing = flux2.findLabel(name);
+      const label = existing ?? await flux2.createLabel(name, color);
       if (o.json) return json2(io, { label, created: !existing });
       return io.print(existing ? `Label ${label.name} already exists (${label.color}).` : `Created label ${label.name} (${label.color}).`);
     }
@@ -79842,20 +80071,20 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
 }
 
 // src/edit.tsx
-import swarm2, { call as call2, ui as ui7 } from "swarm";
+import swarm2, { call as call2, ui as ui9 } from "swarm";
 
 // src/view.tsx
-import { ui as ui5 } from "swarm";
+import { ui as ui7 } from "swarm";
 
 // src/due.tsx
-import { ui as ui4 } from "swarm";
+import { ui as ui6 } from "swarm";
 import { jsx as jsx3 } from "swarm/jsx-runtime";
 function dueItems(current, set2) {
   return [
-    ...dueChoices().map((choice) => /* @__PURE__ */ jsx3(ui4.item, { icon: "calendar", detail: choice.hint, checked: current === choice.value, onClick: () => set2(choice.value), children: choice.label }, "due-" + choice.label)),
-    /* @__PURE__ */ jsx3(ui4.calendar, { label: "Custom…", value: current ?? null, onChange: (day) => set2(day) }, "due-custom"),
-    current ? /* @__PURE__ */ jsx3(ui4.separator, {}, "due-sep") : null,
-    current ? /* @__PURE__ */ jsx3(ui4.item, { icon: "x", onClick: () => set2(null), children: "No due date" }, "due-clear") : null
+    ...dueChoices().map((choice) => /* @__PURE__ */ jsx3(ui6.item, { icon: "calendar", detail: choice.hint, checked: current === choice.value, onClick: () => set2(choice.value), children: choice.label }, "due-" + choice.label)),
+    /* @__PURE__ */ jsx3(ui6.calendar, { label: "Custom…", value: current ?? null, onChange: (day) => set2(day) }, "due-custom"),
+    current ? /* @__PURE__ */ jsx3(ui6.separator, {}, "due-sep") : null,
+    current ? /* @__PURE__ */ jsx3(ui6.item, { icon: "x", onClick: () => set2(null), children: "No due date" }, "due-clear") : null
   ];
 }
 
@@ -79884,7 +80113,7 @@ var STATUS_COLOR = {
 function StatusIcon({ status, size: size3 = 14 }) {
   const c = STATUS_COLOR[status];
   return /* @__PURE__ */ jsx4(
-    ui5.canvas,
+    ui7.canvas,
     {
       label: STATUS_LABELS[status],
       width: 14,
@@ -79917,10 +80146,10 @@ function StatusIcon({ status, size: size3 = 14 }) {
   );
 }
 function PriorityIcon({ priority, size: size3 = 14 }) {
-  if (priority === "none") return /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 14, color: "text2", width: size3, textAlign: "center" }, children: "–" });
+  if (priority === "none") return /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 14, color: "text2", width: size3, textAlign: "center" }, children: "–" });
   const level = { urgent: 4, high: 3, medium: 2, low: 1 }[priority];
   return /* @__PURE__ */ jsx4(
-    ui5.canvas,
+    ui7.canvas,
     {
       label: PRIORITY_LABELS[priority],
       width: 14,
@@ -79942,19 +80171,19 @@ function Avatar({ member: member2, size: size3 = 18 }) {
   if (!member2) return /* @__PURE__ */ jsx4(Unassigned, { size: size3 });
   const bytes = pictureBytes(member2.avatarUrl);
   const box = { width: size3, height: size3, borderRadius: size3 >= 28 ? 6 : 4, flexShrink: 0, overflow: "hidden", alignItems: "center", justifyContent: "center" };
-  if (bytes) return /* @__PURE__ */ jsx4(ui5.image, { src: bytes, alt: "", tooltip: member2.name, style: { ...box, objectFit: "cover" } });
-  return /* @__PURE__ */ jsx4(ui5.box, { label: member2.name, style: { ...box, backgroundColor: colorOf[member2.avatarColor] }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { color: "white", fontSize: Math.max(9, Math.round(size3 * 0.55)), fontWeight: 600 }, children: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() }) });
+  if (bytes) return /* @__PURE__ */ jsx4(ui7.image, { src: bytes, alt: "", tooltip: member2.name, style: { ...box, objectFit: "cover" } });
+  return /* @__PURE__ */ jsx4(ui7.box, { label: member2.name, style: { ...box, backgroundColor: colorOf[member2.avatarColor] }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { color: "white", fontSize: Math.max(9, Math.round(size3 * 0.55)), fontWeight: 600 }, children: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() }) });
 }
 function AgentAvatar({ agent: said, size: size3 = 20 }) {
   const agent2 = said.icon ? said : { ...said, ...agentLogo(said.provider) };
   const box = { width: size3, height: size3, borderRadius: 4, flexShrink: 0, alignItems: "center", justifyContent: "center", backgroundColor: "color-mix(in srgb, text 8%, transparent)" };
-  const mark3 = Math.round(size3 * 0.7);
+  const mark2 = Math.round(size3 * 0.7);
   const light = agentMark(agent2, "light");
   const dark = agentMark(agent2, "dark");
-  return /* @__PURE__ */ jsx4(ui5.box, { label: agent2.name, tooltip: agent2.name, style: box, children: light && dark ? [
-    /* @__PURE__ */ jsx4(ui5.image, { src: light, alt: "", style: { width: mark3, height: mark3, dark: { display: "none" } } }, "light"),
-    /* @__PURE__ */ jsx4(ui5.image, { src: dark, alt: "", style: { width: mark3, height: mark3, display: "none", dark: { display: "flex" } } }, "dark")
-  ] : /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: Math.max(9, Math.round(size3 * 0.55)), fontWeight: 600 }, children: agent2.name.trim().slice(0, 1).toUpperCase() || "?" }) });
+  return /* @__PURE__ */ jsx4(ui7.box, { label: agent2.name, tooltip: agent2.name, style: box, children: light && dark ? [
+    /* @__PURE__ */ jsx4(ui7.image, { src: light, alt: "", style: { width: mark2, height: mark2, dark: { display: "none" } } }, "light"),
+    /* @__PURE__ */ jsx4(ui7.image, { src: dark, alt: "", style: { width: mark2, height: mark2, display: "none", dark: { display: "flex" } } }, "dark")
+  ] : /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: Math.max(9, Math.round(size3 * 0.55)), fontWeight: 600 }, children: agent2.name.trim().slice(0, 1).toUpperCase() || "?" }) });
 }
 var agentMarks = /* @__PURE__ */ new Map();
 function agentMark(agent2, theme) {
@@ -79974,7 +80203,7 @@ function agentMark(agent2, theme) {
   return bytes;
 }
 function Unassigned({ size: size3 = 18 }) {
-  return /* @__PURE__ */ jsx4(ui5.canvas, { width: 20, height: 20, label: "Unassigned", style: { width: size3, height: size3, flexShrink: 0 }, draw: (g) => {
+  return /* @__PURE__ */ jsx4(ui7.canvas, { width: 20, height: 20, label: "Unassigned", style: { width: size3, height: size3, flexShrink: 0 }, draw: (g) => {
     for (let i2 = 0; i2 < 24; i2++) {
       const t = i2 / 24 * 4;
       const side = Math.floor(t);
@@ -79988,18 +80217,18 @@ function Unassigned({ size: size3 = 18 }) {
   } });
 }
 function FluxMark({ size: size3 = 14, color = "text2" }) {
-  return /* @__PURE__ */ jsx4(ui5.icon, { icon: "icon.svg", style: { width: size3, height: size3, color, flexShrink: 0 } });
+  return /* @__PURE__ */ jsx4(ui7.icon, { icon: "icon.svg", style: { width: size3, height: size3, color, flexShrink: 0 } });
 }
 function ProjectMark({ project, size: size3 = 14 }) {
   if (!project) return /* @__PURE__ */ jsx4(FluxMark, { size: size3 });
   const box = { width: size3, height: size3, flexShrink: 0 };
   const emoji4 = emojiSrc(project.emoji);
-  if (emoji4) return /* @__PURE__ */ jsx4(ui5.image, { src: emoji4, alt: "", tooltip: project.name, style: box });
+  if (emoji4) return /* @__PURE__ */ jsx4(ui7.image, { src: emoji4, alt: "", tooltip: project.name, style: box });
   const icon = asIcon(project?.icon);
-  if (icon && project) return /* @__PURE__ */ jsx4(ui5.icon, { icon, style: { ...box, color: colorOf[project.color] } });
+  if (icon && project) return /* @__PURE__ */ jsx4(ui7.icon, { icon, style: { ...box, color: colorOf[project.color] } });
   const glyph = glyphBytes(project.icon, MARK_HEX[project.color]);
-  if (glyph) return /* @__PURE__ */ jsx4(ui5.image, { src: glyph, alt: "", tooltip: project.name, style: box });
-  return /* @__PURE__ */ jsx4(ui5.box, { style: { width: size3, height: size3, borderRadius: 3, backgroundColor: project ? colorOf[project.color] : "text3", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 700 }, children: (project?.key ?? "?").slice(0, 1) }) });
+  if (glyph) return /* @__PURE__ */ jsx4(ui7.image, { src: glyph, alt: "", tooltip: project.name, style: box });
+  return /* @__PURE__ */ jsx4(ui7.box, { style: { width: size3, height: size3, borderRadius: 3, backgroundColor: project ? colorOf[project.color] : "text3", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 700 }, children: (project?.key ?? "?").slice(0, 1) }) });
 }
 var RAISED_HOVER = "color-mix(in srgb, text 8%, raised)";
 var chip = {
@@ -80024,46 +80253,46 @@ function Properties({ issue: issue2, project, members: members2, labels, me: me2
   const assignees = members2.filter((m) => issue2.assigneeIds.includes(m.id));
   const chosen = labels.filter((l) => issue2.labelIds.includes(l.id));
   const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
-  return /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6 }, children: [
-    project && /* @__PURE__ */ jsxs3(ui5.box, { style: chip, label: "Project: " + project.name, children: [
+  return /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6 }, children: [
+    project && /* @__PURE__ */ jsxs3(ui7.box, { style: chip, label: "Project: " + project.name, children: [
       /* @__PURE__ */ jsx4(ProjectMark, { project }),
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: project.name })
+      /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: project.name })
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.menu, { label: "Status: " + STATUS_LABELS[issue2.status], style: chip, children: [
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: "Status: " + STATUS_LABELS[issue2.status], style: chip, children: [
       /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status }),
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: STATUS_LABELS[issue2.status] }),
-      () => STATUSES.map((s) => /* @__PURE__ */ jsx4(ui5.item, { ...statusMark(s), checked: issue2.status === s, onClick: () => edits.update({ status: s }), children: STATUS_LABELS[s] }, s))
+      /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: STATUS_LABELS[issue2.status] }),
+      () => STATUSES.map((s) => /* @__PURE__ */ jsx4(ui7.item, { ...statusMark(s), checked: issue2.status === s, onClick: () => edits.update({ status: s }), children: STATUS_LABELS[s] }, s))
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.menu, { label: "Priority: " + PRIORITY_LABELS[issue2.priority], tooltip: PRIORITY_LABELS[issue2.priority], style: issue2.priority === "none" ? square : chip, children: [
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: "Priority: " + PRIORITY_LABELS[issue2.priority], tooltip: PRIORITY_LABELS[issue2.priority], style: issue2.priority === "none" ? square : chip, children: [
       /* @__PURE__ */ jsx4(PriorityIcon, { priority: issue2.priority }),
-      issue2.priority !== "none" && /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: PRIORITY_LABELS[issue2.priority] }),
-      () => PRIORITIES.map((p) => /* @__PURE__ */ jsx4(ui5.item, { ...priorityMark(p), checked: issue2.priority === p, onClick: () => edits.update({ priority: p }), children: PRIORITY_LABELS[p] }, p))
+      issue2.priority !== "none" && /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: PRIORITY_LABELS[issue2.priority] }),
+      () => PRIORITIES.map((p) => /* @__PURE__ */ jsx4(ui7.item, { ...priorityMark(p), checked: issue2.priority === p, onClick: () => edits.update({ priority: p }), children: PRIORITY_LABELS[p] }, p))
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.menu, { label: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", tooltip: "Assignees", style: assignees.length === 1 ? square : chip, children: [
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", tooltip: "Assignees", style: assignees.length === 1 ? square : chip, children: [
       assignees.length === 0 ? /* @__PURE__ */ jsx4(Unassigned, { size: 16 }) : assignees.slice(0, 3).map((m) => /* @__PURE__ */ jsx4(Avatar, { member: m }, "av-" + m.id)),
-      assignees.length > 1 && /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: String(assignees.length) }),
+      assignees.length > 1 && /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: String(assignees.length) }),
       () => [
-        me2 && /* @__PURE__ */ jsx4(ui5.item, { icon: "user", onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, me2) }), children: issue2.assigneeIds.includes(me2) ? "Unassign me" : "Assign to me" }, "me"),
-        me2 && /* @__PURE__ */ jsx4(ui5.separator, {}, "sep"),
-        members2.map((m) => /* @__PURE__ */ jsx4(ui5.item, { ...memberMark(m), checked: issue2.assigneeIds.includes(m.id), detail: "@" + m.username, onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, m.id) }), children: m.name }, m.id))
+        me2 && /* @__PURE__ */ jsx4(ui7.item, { icon: "user", onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, me2) }), children: issue2.assigneeIds.includes(me2) ? "Unassign me" : "Assign to me" }, "me"),
+        me2 && /* @__PURE__ */ jsx4(ui7.separator, {}, "sep"),
+        members2.map((m) => /* @__PURE__ */ jsx4(ui7.item, { ...memberMark(m), checked: issue2.assigneeIds.includes(m.id), detail: "@" + m.username, onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, m.id) }), children: m.name }, m.id))
       ]
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.menu, { label: chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels", tooltip: "Labels", style: chosen.length ? chip : square, children: [
-      chosen.length === 0 && /* @__PURE__ */ jsx4(ui5.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-      chosen.map((l) => /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", gap: 5, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx4(ui5.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: colorOf[l.color] } }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: l.name })
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels", tooltip: "Labels", style: chosen.length ? chip : square, children: [
+      chosen.length === 0 && /* @__PURE__ */ jsx4(ui7.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+      chosen.map((l) => /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", gap: 5, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx4(ui7.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: colorOf[l.color] } }),
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: l.name })
       ] }, "lb-" + l.id)),
-      () => labels.length === 0 ? /* @__PURE__ */ jsx4(ui5.item, { disabled: true, children: "No labels yet" }, "none") : labels.map((l) => /* @__PURE__ */ jsx4(ui5.item, { ...labelMark(l.color), checked: issue2.labelIds.includes(l.id), onClick: () => edits.update({ labelIds: toggle(issue2.labelIds, l.id) }), children: l.name }, l.id))
+      () => labels.length === 0 ? /* @__PURE__ */ jsx4(ui7.item, { disabled: true, children: "No labels yet" }, "none") : labels.map((l) => /* @__PURE__ */ jsx4(ui7.item, { ...labelMark(l.color), checked: issue2.labelIds.includes(l.id), onClick: () => edits.update({ labelIds: toggle(issue2.labelIds, l.id) }), children: l.name }, l.id))
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.menu, { label: issue2.dueDate ? "Due " + dueLabel(issue2.dueDate) : "Due date", tooltip: "Due date", style: issue2.dueDate ? chip : square, children: [
-      /* @__PURE__ */ jsx4(ui5.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate && dayDelta(issue2.dueDate) < 0 ? "red" : "text2" } }),
-      issue2.dueDate && /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: dueLabel(issue2.dueDate) }),
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: issue2.dueDate ? "Due " + dueLabel(issue2.dueDate) : "Due date", tooltip: "Due date", style: issue2.dueDate ? chip : square, children: [
+      /* @__PURE__ */ jsx4(ui7.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate && dayDelta(issue2.dueDate) < 0 ? "red" : "text2" } }),
+      issue2.dueDate && /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: dueLabel(issue2.dueDate) }),
       () => dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate }))
     ] }),
-    start && /* @__PURE__ */ jsxs3(ui5.pressable, { label: "Start agent", onClick: start, style: chip, children: [
-      /* @__PURE__ */ jsx4(ui5.icon, { icon: "robot", style: { width: 14, height: 14, color: "text2" } }),
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: "Start agent" })
+    start && /* @__PURE__ */ jsxs3(ui7.pressable, { label: "Start agent", onClick: start, style: chip, children: [
+      /* @__PURE__ */ jsx4(ui7.icon, { icon: "robot", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: "Start agent" })
     ] })
   ] });
 }
@@ -80074,15 +80303,15 @@ function inlineText(text2, mention) {
   let at3 = 0;
   for (let m; m = re2.exec(text2); ) {
     if (m.index > at3) out.push(text2.slice(at3, m.index));
-    if (m[1] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontFamily: "mono", fontSize: "small", backgroundColor: "hover", borderRadius: 4 }, children: m[1] }));
-    else if (m[2] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.link, { href: m[3], children: m[2] }));
-    else if (m[4] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontWeight: 600 }, children: m[4] }));
-    else if (m[5] !== void 0) out.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontStyle: "italic" }, children: m[5] }));
+    if (m[1] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.text, { style: { fontFamily: "mono", fontSize: "small", backgroundColor: "hover", borderRadius: 4 }, children: m[1] }));
+    else if (m[2] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.link, { href: m[3], children: m[2] }));
+    else if (m[4] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.text, { style: { fontWeight: 600 }, children: m[4] }));
+    else if (m[5] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.text, { style: { fontStyle: "italic" }, children: m[5] }));
     else {
       const what = mention?.(m[6]);
       if (!what) out.push(m[0]);
-      else if (what.kind === "project") out.push(/* @__PURE__ */ jsx4(ui5.text, { style: mentionChip, onClick: what.open, children: m[0] }));
-      else out.push(/* @__PURE__ */ jsx4(ui5.text, { style: mentionChip, children: m[0] }));
+      else if (what.kind === "project") out.push(/* @__PURE__ */ jsx4(ui7.text, { style: mentionChip, onClick: what.open, children: m[0] }));
+      else out.push(/* @__PURE__ */ jsx4(ui7.text, { style: mentionChip, children: m[0] }));
     }
     at3 = m.index + m[0].length;
   }
@@ -80095,8 +80324,8 @@ function Markdown({ md, onTask, image, mention }) {
   const blocks = [];
   const picture = (key, src, alt) => {
     const got2 = image ? image(src) : src;
-    if (got2 === null) return /* @__PURE__ */ jsx4(ui5.box, { label: alt || "A picture", style: { height: 120, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } } }, key);
-    return /* @__PURE__ */ jsx4(ui5.image, { src: got2, alt: alt || "A picture", style: { maxWidth: "100%", borderRadius: "control", alignSelf: "flex-start" } }, key);
+    if (got2 === null) return /* @__PURE__ */ jsx4(ui7.box, { label: alt || "A picture", style: { height: 120, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } } }, key);
+    return /* @__PURE__ */ jsx4(ui7.image, { src: got2, alt: alt || "A picture", style: { maxWidth: "100%", borderRadius: "control", alignSelf: "flex-start" } }, key);
   };
   let task = 0;
   const lines = md.replace(/\r/g, "").split("\n");
@@ -80111,9 +80340,9 @@ function Markdown({ md, onTask, image, mention }) {
       const head = cells(l);
       const body = [];
       for (i2 += 2; i2 < lines.length && /^\s*\|.*\|\s*$/.test(lines[i2]); i2++) body.push(cells(lines[i2]));
-      const row = (r, n, header) => /* @__PURE__ */ jsx4(ui5.box, { style: { flexDirection: "row", borderTop: n === 0 ? "none" : "1px solid border", backgroundColor: header ? "hover" : "transparent" }, children: head.map((_2, c) => /* @__PURE__ */ jsx4(ui5.box, { style: { flex: 1, minWidth: 0, padding: "s3 s4", borderLeft: c === 0 ? "none" : "1px solid border" }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, fontWeight: header ? 600 : 400 }, children: inline2(r[c] ?? "") }) }, "c" + c)) }, "r" + n);
+      const row = (r, n, header) => /* @__PURE__ */ jsx4(ui7.box, { style: { flexDirection: "row", borderTop: n === 0 ? "none" : "1px solid border", backgroundColor: header ? "hover" : "transparent" }, children: head.map((_2, c) => /* @__PURE__ */ jsx4(ui7.box, { style: { flex: 1, minWidth: 0, padding: "s3 s4", borderLeft: c === 0 ? "none" : "1px solid border" }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { ...prose, fontWeight: header ? 600 : 400 }, children: inline2(r[c] ?? "") }) }, "c" + c)) }, "r" + n);
       blocks.push(
-        /* @__PURE__ */ jsxs3(ui5.box, { style: { borderRadius: "control", border: "1px solid border", overflow: "hidden" }, children: [
+        /* @__PURE__ */ jsxs3(ui7.box, { style: { borderRadius: "control", border: "1px solid border", overflow: "hidden" }, children: [
           row(head, 0, true),
           body.map((r, n) => row(r, n + 1, false))
         ] }, "table" + i2)
@@ -80121,7 +80350,7 @@ function Markdown({ md, onTask, image, mention }) {
       continue;
     }
     if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)) {
-      blocks.push(/* @__PURE__ */ jsx4(ui5.box, { style: { height: 1, backgroundColor: "border", marginTop: 8, marginBottom: 8 } }, "hr" + i2));
+      blocks.push(/* @__PURE__ */ jsx4(ui7.box, { style: { height: 1, backgroundColor: "border", marginTop: 8, marginBottom: 8 } }, "hr" + i2));
       i2++;
       continue;
     }
@@ -80130,13 +80359,13 @@ function Markdown({ md, onTask, image, mention }) {
       for (i2++; i2 < lines.length && !lines[i2].startsWith("```"); i2++) code2.push(lines[i2]);
       i2++;
       blocks.push(
-        /* @__PURE__ */ jsx4(ui5.scroll, { style: { maxHeight: 320, overflowX: "auto", padding: "s4 s5", borderRadius: "control", backgroundColor: "field", border: "1px solid border" }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { fontFamily: "mono", fontSize: "small", whiteSpace: "pre", userSelect: "text" }, children: code2.join("\n") }) }, "code" + i2)
+        /* @__PURE__ */ jsx4(ui7.scroll, { style: { maxHeight: 320, overflowX: "auto", padding: "s4 s5", borderRadius: "control", backgroundColor: "field", border: "1px solid border" }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { fontFamily: "mono", fontSize: "small", whiteSpace: "pre", userSelect: "text" }, children: code2.join("\n") }) }, "code" + i2)
       );
       continue;
     }
     const heading = /^(#{1,4})\s+(.*)$/.exec(l);
     if (heading) {
-      blocks.push(/* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: heading[1].length === 1 ? "title" : "prose", fontWeight: 600, marginTop: 6 }, children: inline2(heading[2]) }, "h" + i2));
+      blocks.push(/* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: heading[1].length === 1 ? "title" : "prose", fontWeight: 600, marginTop: 6 }, children: inline2(heading[2]) }, "h" + i2));
       i2++;
       continue;
     }
@@ -80156,9 +80385,9 @@ function Markdown({ md, onTask, image, mention }) {
           const n = task++;
           const done = t[1] !== " ";
           items.push(
-            /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", gap: 9, alignItems: "flex-start", paddingLeft: depth * 18 }, children: [
+            /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", gap: 9, alignItems: "flex-start", paddingLeft: depth * 18 }, children: [
               /* @__PURE__ */ jsx4(
-                ui5.pressable,
+                ui7.pressable,
                 {
                   role: "checkbox",
                   checked: done,
@@ -80177,30 +80406,30 @@ function Markdown({ md, onTask, image, mention }) {
                     checked: { backgroundColor: "accent", borderColor: "accent" },
                     hover: { borderColor: "text3" }
                   },
-                  children: done && /* @__PURE__ */ jsx4(ui5.icon, { icon: "check", style: { width: 10, height: 10, color: "accentText" } })
+                  children: done && /* @__PURE__ */ jsx4(ui7.icon, { icon: "check", style: { width: 10, height: 10, color: "accentText" } })
                 }
               ),
-              /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, flex: 1, ...done ? { color: "text3", textDecoration: "line-through" } : {} }, children: inline2(t[2]) })
+              /* @__PURE__ */ jsx4(ui7.text, { style: { ...prose, flex: 1, ...done ? { color: "text3", textDecoration: "line-through" } : {} }, children: inline2(t[2]) })
             ] }, "t" + n)
           );
         } else {
           const num = /^\s*(\d+)\.\s+/.exec(item);
           items.push(
-            /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", gap: 8, paddingLeft: depth * 18 }, children: [
-              /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, color: "text3", minWidth: 12 }, children: num ? num[1] + "." : "•" }),
-              /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, flex: 1 }, children: inline2(item.replace(/^\s*([-*+]|\d+\.)\s+/, "")) })
+            /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", gap: 8, paddingLeft: depth * 18 }, children: [
+              /* @__PURE__ */ jsx4(ui7.text, { style: { ...prose, color: "text3", minWidth: 12 }, children: num ? num[1] + "." : "•" }),
+              /* @__PURE__ */ jsx4(ui7.text, { style: { ...prose, flex: 1 }, children: inline2(item.replace(/^\s*([-*+]|\d+\.)\s+/, "")) })
             ] }, "li" + i2)
           );
         }
       }
-      blocks.push(/* @__PURE__ */ jsx4(ui5.box, { style: { gap: 2 }, children: items }, "list" + i2));
+      blocks.push(/* @__PURE__ */ jsx4(ui7.box, { style: { gap: 2 }, children: items }, "list" + i2));
       continue;
     }
     if (l.startsWith(">")) {
       const quote = [];
       for (; i2 < lines.length && lines[i2].startsWith(">"); i2++) quote.push(lines[i2].replace(/^>\s?/, ""));
       blocks.push(
-        /* @__PURE__ */ jsx4(ui5.box, { style: { borderLeft: "3px solid border", paddingLeft: 12 }, children: /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, color: "text2" }, children: inline2(quote.join(" ")) }) }, "q" + i2)
+        /* @__PURE__ */ jsx4(ui7.box, { style: { borderLeft: "3px solid border", paddingLeft: 12 }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { ...prose, color: "text2" }, children: inline2(quote.join(" ")) }) }, "q" + i2)
       );
       continue;
     }
@@ -80211,10 +80440,10 @@ function Markdown({ md, onTask, image, mention }) {
       pics.push(picture("pic" + i2 + "-" + pics.length, src, alt));
       return "";
     }).trim();
-    if (words) blocks.push(/* @__PURE__ */ jsx4(ui5.text, { style: prose, children: inline2(words) }, "p" + i2));
+    if (words) blocks.push(/* @__PURE__ */ jsx4(ui7.text, { style: prose, children: inline2(words) }, "p" + i2));
     blocks.push(...pics);
   }
-  return /* @__PURE__ */ jsx4(ui5.box, { style: { gap: 10 }, children: blocks });
+  return /* @__PURE__ */ jsx4(ui7.box, { style: { gap: 10 }, children: blocks });
 }
 function tickTask(md, n, done) {
   let seen = -1;
@@ -80223,7 +80452,7 @@ function tickTask(md, n, done) {
     return seen === n ? `${lead}[${done ? "x" : " "}]` : all2;
   });
 }
-function ago(iso, now = Date.now()) {
+function ago(iso, now = ui7.now()) {
   const s = Math.max(0, (now - Date.parse(iso)) / 1e3);
   if (s < 60) return "now";
   if (s < 3600) return Math.floor(s / 60) + "m";
@@ -80234,7 +80463,7 @@ function ago(iso, now = Date.now()) {
 function IssueRow({ issue: issue2, members: members2, right, onOpen }) {
   const who = members2.find((m) => issue2.assigneeIds[0] === m.id);
   return /* @__PURE__ */ jsxs3(
-    ui5.pressable,
+    ui7.pressable,
     {
       label: `${issue2.key} ${issue2.title}`,
       onClick: onOpen ?? (() => {
@@ -80242,8 +80471,8 @@ function IssueRow({ issue: issue2, members: members2, right, onOpen }) {
       style: { width: "100%", height: 36, gap: 8, paddingLeft: 6, paddingRight: 6, borderRadius: "control", flexDirection: "row", alignItems: "center", hover: { backgroundColor: "hover" }, cursor: onOpen ? "pointer" : "default" },
       children: [
         /* @__PURE__ */ jsx4(StatusIcon, { status: issue2.status, size: 14 }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 12, color: "text3", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", ...issue2.status === "complete" || issue2.status === "canceled" ? { color: "text3", textDecoration: "line-through" } : {} }, children: issue2.title }),
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 12, color: "text3", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", ...issue2.status === "complete" || issue2.status === "canceled" ? { color: "text3", textDecoration: "line-through" } : {} }, children: issue2.title }),
         who && /* @__PURE__ */ jsx4(Avatar, { member: who, size: 20 }),
         right
       ]
@@ -80254,34 +80483,34 @@ function IssueRow({ issue: issue2, members: members2, right, onOpen }) {
 function IssueView(props) {
   const { detail: d, members: members2 } = props;
   const issue2 = d.issue;
-  const name2 = (id2) => members2.find((m) => m.id === id2);
-  return /* @__PURE__ */ jsxs3(ui5.box, { style: { gap: 0 }, children: [
-    /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", alignItems: "center", gap: 6, height: 22 }, children: [
+  const name = (id2) => members2.find((m) => m.id === id2);
+  return /* @__PURE__ */ jsxs3(ui7.box, { style: { gap: 0 }, children: [
+    /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", alignItems: "center", gap: 6, height: 22 }, children: [
       /* @__PURE__ */ jsx4(ProjectMark, { project: props.project, size: 13 }),
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", color: "text2", letterSpacing: 0.2, userSelect: "text" }, children: issue2.key }),
-      /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", marginLeft: "auto", gap: 2, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx4(ui5.iconButton, { icon: "external", label: "Open in Flux", href: props.url, disabled: !props.url }),
-        props.detach && /* @__PURE__ */ jsx4(ui5.menu, { label: "", icon: "more", tooltip: "More of " + issue2.key, children: /* @__PURE__ */ jsx4(ui5.item, { icon: "x", onClick: props.detach, children: "Detach this thread" }) })
+      /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "small", color: "text2", letterSpacing: 0.2, userSelect: "text" }, children: issue2.key }),
+      /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", marginLeft: "auto", gap: 2, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx4(ui7.iconButton, { icon: "external", label: "Open in Flux", href: props.url, disabled: !props.url }),
+        props.detach && /* @__PURE__ */ jsx4(ui7.menu, { label: "", icon: "more", tooltip: "More of " + issue2.key, children: /* @__PURE__ */ jsx4(ui7.item, { icon: "x", onClick: props.detach, children: "Detach this thread" }) })
       ] })
     ] }),
-    /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "title", fontWeight: 600, lineHeight: 1.35, marginTop: 8, userSelect: "text" }, children: issue2.title }),
-    d.parent && /* @__PURE__ */ jsxs3(ui5.box, { style: { marginTop: 10, gap: 4 }, children: [
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", color: "text2" }, children: "Sub-issue of" }),
+    /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "title", fontWeight: 600, lineHeight: 1.35, marginTop: 8, userSelect: "text" }, children: issue2.title }),
+    d.parent && /* @__PURE__ */ jsxs3(ui7.box, { style: { marginTop: 10, gap: 4 }, children: [
+      /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "small", color: "text2" }, children: "Sub-issue of" }),
       /* @__PURE__ */ jsxs3(
-        ui5.pressable,
+        ui7.pressable,
         {
           label: `${d.parent.key} ${d.parent.title}`,
           onClick: () => props.open?.(d.parent),
           style: { flexDirection: "row", gap: 7, alignItems: "center", color: "text", hover: { color: "accent" } },
           children: [
             /* @__PURE__ */ jsx4(StatusIcon, { status: d.parent.status, size: 13 }),
-            /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", color: "currentColor" }, children: `${d.parent.key} ${d.parent.title}` })
+            /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "body", flex: 1, whiteSpace: "nowrap", textOverflow: "ellipsis", color: "currentColor" }, children: `${d.parent.key} ${d.parent.title}` })
           ]
         }
       ),
-      d.parent.subIssueCount > 0 && /* @__PURE__ */ jsx4(ui5.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs3(ui5.box, { label: `${d.parent.subIssueDoneCount} of ${d.parent.subIssueCount} sub-issues done`, style: { ...chip, height: 22, paddingLeft: 6, paddingRight: 7, gap: 5, cursor: "default", hover: {} }, children: [
+      d.parent.subIssueCount > 0 && /* @__PURE__ */ jsx4(ui7.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs3(ui7.box, { label: `${d.parent.subIssueDoneCount} of ${d.parent.subIssueCount} sub-issues done`, style: { ...chip, height: 22, paddingLeft: 6, paddingRight: 7, gap: 5, cursor: "default", hover: {} }, children: [
         /* @__PURE__ */ jsx4(
-          ui5.canvas,
+          ui7.canvas,
           {
             label: "Progress",
             width: 14,
@@ -80293,44 +80522,44 @@ function IssueView(props) {
             }
           }
         ),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small" }, children: `${d.parent.subIssueDoneCount}/${d.parent.subIssueCount}` })
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "small" }, children: `${d.parent.subIssueDoneCount}/${d.parent.subIssueCount}` })
       ] }) })
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.box, { style: { marginTop: 14, gap: 6 }, children: [
+    /* @__PURE__ */ jsxs3(ui7.box, { style: { marginTop: 14, gap: 6 }, children: [
       /* @__PURE__ */ jsx4(Properties, { issue: issue2, project: props.project, members: members2, labels: props.labels, me: props.me, edits: props.edits, start: props.start }),
-      props.working && /* @__PURE__ */ jsx4(ui5.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs3(ui5.box, { label: "An agent works on it", style: { ...chip, cursor: "default", border: "1px solid color-mix(in srgb, green 45%, transparent)", backgroundColor: "greenSoft", hover: {} }, children: [
-        /* @__PURE__ */ jsx4(ui5.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: "green", animation: { name: "pulse" } } }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: 13 }, children: "Working" })
+      props.working && /* @__PURE__ */ jsx4(ui7.box, { style: { flexDirection: "row" }, children: /* @__PURE__ */ jsxs3(ui7.box, { label: "An agent works on it", style: { ...chip, cursor: "default", border: "1px solid color-mix(in srgb, green 45%, transparent)", backgroundColor: "greenSoft", hover: {} }, children: [
+        /* @__PURE__ */ jsx4(ui7.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: "green", animation: { name: "pulse" } } }),
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: "Working" })
       ] }) })
     ] }),
-    /* @__PURE__ */ jsx4(ui5.box, { style: { marginTop: 20 }, children: props.description ?? (d.descriptionMarkdown.trim() ? /* @__PURE__ */ jsx4(Markdown, { md: d.descriptionMarkdown, onTask: props.onTask, image: props.image }) : /* @__PURE__ */ jsx4(ui5.text, { style: { ...prose, color: "text3" }, children: "No description." })) }),
-    d.subIssues.length > 0 && /* @__PURE__ */ jsxs3(ui5.box, { style: { marginTop: 22, gap: 2 }, children: [
-      /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }, children: [
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Sub-issues" }),
-        /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", color: "text3" }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` })
+    /* @__PURE__ */ jsx4(ui7.box, { style: { marginTop: 20 }, children: props.description ?? (d.descriptionMarkdown.trim() ? /* @__PURE__ */ jsx4(Markdown, { md: d.descriptionMarkdown, onTask: props.onTask, image: props.image }) : /* @__PURE__ */ jsx4(ui7.text, { style: { ...prose, color: "text3" }, children: "No description." })) }),
+    d.subIssues.length > 0 && /* @__PURE__ */ jsxs3(ui7.box, { style: { marginTop: 22, gap: 2 }, children: [
+      /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }, children: [
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Sub-issues" }),
+        /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "small", color: "text3" }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` })
       ] }),
       d.subIssues.map((s) => /* @__PURE__ */ jsx4(IssueRow, { issue: s, members: members2, onOpen: props.open ? () => props.open(s) : void 0 }, s.id))
     ] }),
-    /* @__PURE__ */ jsxs3(ui5.box, { style: { marginTop: 22, paddingTop: 16, borderTop: "1px solid divider", gap: 14 }, children: [
-      /* @__PURE__ */ jsx4(ui5.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Activity" }),
-      /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx4(Avatar, { member: name2(issue2.creatorId), size: 18 }),
-        /* @__PURE__ */ jsxs3(ui5.text, { style: { fontSize: "small", color: "text2" }, children: [
-          /* @__PURE__ */ jsx4(ui5.text, { style: { fontWeight: 600, color: "text" }, children: name2(issue2.creatorId)?.name ?? "Someone" }),
+    /* @__PURE__ */ jsxs3(ui7.box, { style: { marginTop: 22, paddingTop: 16, borderTop: "1px solid divider", gap: 14 }, children: [
+      /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: "small", fontWeight: 600 }, children: "Activity" }),
+      /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx4(Avatar, { member: name(issue2.creatorId), size: 18 }),
+        /* @__PURE__ */ jsxs3(ui7.text, { style: { fontSize: "small", color: "text2" }, children: [
+          /* @__PURE__ */ jsx4(ui7.text, { style: { fontWeight: 600, color: "text" }, children: name(issue2.creatorId)?.name ?? "Someone" }),
           " created the issue · " + ago(issue2.createdAt)
         ] })
       ] }),
       d.comments.map((c) => {
-        const who = name2(c.authorId);
-        return /* @__PURE__ */ jsxs3(ui5.box, { style: { gap: 6 }, children: [
-          /* @__PURE__ */ jsxs3(ui5.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+        const who = name(c.authorId);
+        return /* @__PURE__ */ jsxs3(ui7.box, { style: { gap: 6 }, children: [
+          /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
             c.agent ? /* @__PURE__ */ jsx4(AgentAvatar, { agent: c.agent, size: 18 }) : /* @__PURE__ */ jsx4(Avatar, { member: who }),
-            /* @__PURE__ */ jsxs3(ui5.text, { style: { fontSize: "small", color: "text2" }, children: [
-              /* @__PURE__ */ jsx4(ui5.text, { style: { fontWeight: 600, color: "text" }, children: c.agent ? c.agent.name : who?.name ?? "Someone" }),
+            /* @__PURE__ */ jsxs3(ui7.text, { style: { fontSize: "small", color: "text2" }, children: [
+              /* @__PURE__ */ jsx4(ui7.text, { style: { fontWeight: 600, color: "text" }, children: c.agent ? c.agent.name : who?.name ?? "Someone" }),
               (c.agent && who ? " for " + who.name : "") + " · " + ago(c.createdAt)
             ] })
           ] }),
-          /* @__PURE__ */ jsx4(ui5.box, { style: { paddingLeft: 26 }, children: /* @__PURE__ */ jsx4(Markdown, { md: c.markdown, image: props.image }) })
+          /* @__PURE__ */ jsx4(ui7.box, { style: { paddingLeft: 26 }, children: /* @__PURE__ */ jsx4(Markdown, { md: c.markdown, image: props.image }) })
         ] }, c.id);
       }),
       props.comment
@@ -80370,22 +80599,22 @@ function drawTray(g, c) {
 }
 function TrayArt() {
   const box = { width: 78, height: 80, flexShrink: 0 };
-  return /* @__PURE__ */ jsxs3(ui5.box, { style: box, children: [
-    /* @__PURE__ */ jsx4(ui5.canvas, { width: 78, height: 80, label: "", style: { ...box, dark: { display: "none" } }, draw: (g) => drawTray(g, COIN.light) }),
-    /* @__PURE__ */ jsx4(ui5.canvas, { width: 78, height: 80, label: "", style: { ...box, display: "none", dark: { display: "flex" } }, draw: (g) => drawTray(g, COIN.dark) })
+  return /* @__PURE__ */ jsxs3(ui7.box, { style: box, children: [
+    /* @__PURE__ */ jsx4(ui7.canvas, { width: 78, height: 80, label: "", style: { ...box, dark: { display: "none" } }, draw: (g) => drawTray(g, COIN.light) }),
+    /* @__PURE__ */ jsx4(ui7.canvas, { width: 78, height: 80, label: "", style: { ...box, display: "none", dark: { display: "flex" } }, draw: (g) => drawTray(g, COIN.dark) })
   ] });
 }
 function IssuesArt() {
   const box = { width: 80, height: 74, flexShrink: 0 };
-  return /* @__PURE__ */ jsxs3(ui5.box, { style: box, children: [
-    /* @__PURE__ */ jsx4(ui5.canvas, { width: 80, height: 74, label: "", style: { ...box, dark: { display: "none" } }, draw: (g) => drawCoins(g, COIN.light) }),
-    /* @__PURE__ */ jsx4(ui5.canvas, { width: 80, height: 74, label: "", style: { ...box, display: "none", dark: { display: "flex" } }, draw: (g) => drawCoins(g, COIN.dark) })
+  return /* @__PURE__ */ jsxs3(ui7.box, { style: box, children: [
+    /* @__PURE__ */ jsx4(ui7.canvas, { width: 80, height: 74, label: "", style: { ...box, dark: { display: "none" } }, draw: (g) => drawCoins(g, COIN.light) }),
+    /* @__PURE__ */ jsx4(ui7.canvas, { width: 80, height: 74, label: "", style: { ...box, display: "none", dark: { display: "flex" } }, draw: (g) => drawCoins(g, COIN.dark) })
   ] });
 }
 
 // src/drafts.ts
-import { ui as ui6 } from "swarm";
-var drafts = /* @__PURE__ */ new Map();
+import { ui as ui8 } from "swarm";
+var drafts = ui8.store(/* @__PURE__ */ new Map());
 var timers = /* @__PURE__ */ new Map();
 function drafted(key, server) {
   return drafts.has(key) ? drafts.get(key) : server;
@@ -80393,7 +80622,7 @@ function drafted(key, server) {
 function setDraft(key, markdown) {
   drafts.set(key, markdown);
 }
-function editDraft(key, markdown, save) {
+function editDraft(key, markdown, save, keep) {
   drafts.set(key, markdown);
   if (markdown.includes("flux-local:")) return;
   const pending = timers.get(key);
@@ -80403,9 +80632,9 @@ function editDraft(key, markdown, save) {
     const current = drafts.get(key);
     if (current === void 0 || current.includes("flux-local:")) return;
     void save(current).then(() => {
-      if (drafts.get(key) === current) drafts.delete(key);
+      if (drafts.get(key) === current && !keep?.()) drafts.delete(key);
     }, (error62) => {
-      ui6.toast(error62 instanceof Error ? error62.message : String(error62));
+      ui8.toast(error62 instanceof Error ? error62.message : String(error62));
     });
   }, 400));
 }
@@ -80414,11 +80643,9 @@ async function finishUpload(key, fileId, url2, save, keep = false) {
   if (current === void 0 || !current.includes("flux-local:" + fileId)) return;
   const next2 = current.replaceAll("flux-local:" + fileId, url2);
   drafts.set(key, next2);
-  ui6.update();
   if (next2.includes("flux-local:")) return;
   await save(next2);
   if (!keep && drafts.get(key) === next2) drafts.delete(key);
-  ui6.update();
 }
 function clearDraft(key) {
   drafts.delete(key);
@@ -80448,7 +80675,7 @@ function upload(flux2, key, file2, entity, save, keep = false) {
   const bytes = Uint8Array.fromBase64(file2.base64);
   void flux2.uploadImage(bytes, file2.type, file2.name, entity).then(
     (url2) => finishUpload(key, file2.id, url2, save, keep),
-    (error62) => ui7.toast(error62 instanceof Error ? error62.message : String(error62))
+    (error62) => ui9.toast(error62 instanceof Error ? error62.message : String(error62))
   );
 }
 function unkept(html) {
@@ -80462,11 +80689,11 @@ function unkept(html) {
 function DescriptionEditor({ flux: flux2, issue: issue2, markdown, html = "", image }) {
   const has2 = unkept(html);
   if (has2) {
-    return /* @__PURE__ */ jsxs4(ui7.box, { style: { gap: 14, minHeight: "50vh" }, children: [
-      /* @__PURE__ */ jsxs4(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
-        /* @__PURE__ */ jsx5(ui7.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
-        /* @__PURE__ */ jsx5(ui7.text, { style: { flex: 1, minWidth: 0, fontSize: "small", color: "text2" }, children: `This description has ${has2}, which Swarm can't edit without changing. Edit it in Flux.` }),
-        /* @__PURE__ */ jsx5(ui7.link, { label: "Edit in Flux", href: flux2.issueUrl(issue2), style: { fontSize: "small" } })
+    return /* @__PURE__ */ jsxs4(ui9.box, { style: { gap: 14, minHeight: "50vh" }, children: [
+      /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
+        /* @__PURE__ */ jsx5(ui9.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
+        /* @__PURE__ */ jsx5(ui9.text, { style: { flex: 1, minWidth: 0, fontSize: "small", color: "text2" }, children: `This description has ${has2}, which Swarm can't edit without changing. Edit it in Flux.` }),
+        /* @__PURE__ */ jsx5(ui9.link, { label: "Edit in Flux", href: flux2.issueUrl(issue2), style: { fontSize: "small" } })
       ] }),
       /* @__PURE__ */ jsx5(Markdown, { md: markdown, image })
     ] });
@@ -80474,7 +80701,7 @@ function DescriptionEditor({ flux: flux2, issue: issue2, markdown, html = "", im
   const key = `desc:${flux2.id}:${issue2.id}`;
   const save = (md) => flux2.replaceDescription(issue2.id, md);
   return /* @__PURE__ */ jsx5(
-    ui7.editor,
+    ui9.editor,
     {
       value: drafted(key, markdown),
       placeholder: "Add description…",
@@ -80497,17 +80724,16 @@ function CommentEditor({ flux: flux2, issue: issue2, image }) {
     if (!text2) return;
     void flux2.addComment(issue2.id, text2).then(() => {
       clearDraft(key);
-      ui7.update();
-    }, (error62) => ui7.toast(error62 instanceof Error ? error62.message : String(error62)));
+    }, (error62) => ui9.toast(error62 instanceof Error ? error62.message : String(error62)));
   };
   const keep = async (markdown) => {
     setDraft(key, markdown);
   };
-  return /* @__PURE__ */ jsxs4(ui7.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start" }, children: [
-    /* @__PURE__ */ jsx5(ui7.box, { style: { marginTop: 8, flexShrink: 0 }, children: /* @__PURE__ */ jsx5(Avatar, { member: me2, size: 20 }) }),
-    /* @__PURE__ */ jsxs4(ui7.box, { style: { flex: 1, minWidth: 0, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
-      /* @__PURE__ */ jsx5(ui7.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx5(
-        ui7.editor,
+  return /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start" }, children: [
+    /* @__PURE__ */ jsx5(ui9.box, { style: { marginTop: 8, flexShrink: 0 }, children: /* @__PURE__ */ jsx5(Avatar, { member: me2, size: 20 }) }),
+    /* @__PURE__ */ jsxs4(ui9.box, { style: { flex: 1, minWidth: 0, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
+      /* @__PURE__ */ jsx5(ui9.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx5(
+        ui9.editor,
         {
           value,
           placeholder: "Leave a comment…",
@@ -80521,26 +80747,28 @@ function CommentEditor({ flux: flux2, issue: issue2, image }) {
         },
         key
       ) }),
-      /* @__PURE__ */ jsx5(ui7.box, { style: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 8, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: /* @__PURE__ */ jsx5(ui7.button, { size: "sm", kind: "secondary", label: "Comment", disabled: !value.trim(), onClick: send, children: "Comment  ⌘↵" }) })
+      /* @__PURE__ */ jsx5(ui9.box, { style: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 8, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: /* @__PURE__ */ jsx5(ui9.button, { size: "sm", kind: "secondary", label: "Comment", disabled: !value.trim(), onClick: send, children: "Comment  ⌘↵" }) })
     ] })
   ] });
 }
-var provider = "";
-var model = "";
-var effort = "";
-var approval = "";
-var branch = "";
-var prompt = "";
-var seeded = "";
-var imageIds2 = [];
-var starting = null;
-var busy = false;
-var swarmProject = "";
-var swarmProjects = null;
+var st3 = ui9.store({
+  provider: "",
+  model: "",
+  effort: "",
+  approval: "",
+  branch: "",
+  prompt: "",
+  seeded: "",
+  imageIds: [],
+  starting: null,
+  busy: false,
+  swarmProject: "",
+  swarmProjects: null
+});
 function warmStart() {
   void call2("Projects", {}).then(
     (list2) => {
-      swarmProjects = list2.map((p) => ({ id: p.id, name: p.name }));
+      st3.swarmProjects = list2.map((p) => ({ id: p.id, name: p.name }));
     },
     () => {
     }
@@ -80549,77 +80777,77 @@ function warmStart() {
 function knownProject(flux2, issue2) {
   const linked = flux2.projects().find((project) => project.id === issue2.projectId);
   if (linked?.swarmProjectId) return linked.swarmProjectId;
-  const name2 = linked?.name.trim().toLowerCase();
-  const match2 = name2 ? swarmProjects?.find((project) => project.name.trim().toLowerCase() === name2) : void 0;
-  return match2?.id ?? (swarmProjects?.length === 1 ? swarmProjects[0].id : "");
+  const name = linked?.name.trim().toLowerCase();
+  const match2 = name ? st3.swarmProjects?.find((project) => project.name.trim().toLowerCase() === name) : void 0;
+  return match2?.id ?? (st3.swarmProjects?.length === 1 ? st3.swarmProjects[0].id : "");
 }
 function startAgent(issueId) {
-  starting = issueId;
-  seeded = "";
-  ui7.showOverlay("flux-start");
+  st3.starting = issueId;
+  st3.seeded = "";
+  ui9.showOverlay("flux-start");
 }
 function closeStart() {
   forgetStart();
-  ui7.hideOverlay("flux-start");
+  ui9.hideOverlay("flux-start");
 }
 function forgetStart() {
-  starting = null;
+  st3.starting = null;
 }
 function StartAgentDialog({ flux: flux2 }) {
-  const issue2 = starting ? flux2.issue(starting) : void 0;
+  const issue2 = st3.starting ? flux2.issue(st3.starting) : void 0;
   if (!issue2) return null;
   return /* @__PURE__ */ jsx5(StartAgent, { flux: flux2, issue: issue2 });
 }
 function StartAgent({ flux: flux2, issue: issue2 }) {
-  if (seeded !== issue2.id) {
-    seeded = issue2.id;
+  if (st3.seeded !== issue2.id) {
+    st3.seeded = issue2.id;
     const start = startPrompt(flux2.detail(issue2.id), flux2.baseUrl);
-    prompt = start.prompt;
-    imageIds2 = start.imageIds;
-    swarmProject = knownProject(flux2, issue2);
+    st3.prompt = start.prompt;
+    st3.imageIds = start.imageIds;
+    st3.swarmProject = knownProject(flux2, issue2);
     void loadProjects(flux2, issue2);
   }
   const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
-  const shown = swarmProjects?.find((p) => p.id === swarmProject)?.name ?? (swarmProjects ? "Choose a project" : "…");
+  const shown = st3.swarmProjects?.find((p) => p.id === st3.swarmProject)?.name ?? (st3.swarmProjects ? "Choose a project" : "…");
   const moves = issue2.status === "backlog" || issue2.status === "todo";
-  const images = imageIds2.length;
-  return /* @__PURE__ */ jsxs4(ui7.box, { label: `Start an agent on ${issue2.key}`, style: { position: "relative", gap: 14, padding: 20 }, children: [
-    /* @__PURE__ */ jsx5(ui7.iconButton, { icon: "x", label: "Close", style: { position: "absolute", top: 14, right: 14, width: 28, height: 28 }, onClick: closeStart }),
-    /* @__PURE__ */ jsxs4(ui7.box, { style: { gap: 6 }, children: [
-      /* @__PURE__ */ jsxs4(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }, children: [
+  const images = st3.imageIds.length;
+  return /* @__PURE__ */ jsxs4(ui9.box, { label: `Start an agent on ${issue2.key}`, style: { position: "relative", gap: 14, padding: 20 }, children: [
+    /* @__PURE__ */ jsx5(ui9.iconButton, { icon: "x", label: "Close", style: { position: "absolute", top: 14, right: 14, width: 28, height: 28 }, onClick: closeStart }),
+    /* @__PURE__ */ jsxs4(ui9.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }, children: [
         /* @__PURE__ */ jsx5(StatusIcon, { status: issue2.status, size: 16 }),
-        /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }, maxLines: 1, children: issue2.title.trim() || "Untitled" })
+        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }, maxLines: 1, children: issue2.title.trim() || "Untitled" })
       ] }),
-      /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 14, color: "text2" }, children: `The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}` })
+      /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 14, color: "text2" }, children: `The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}` })
     ] }),
-    /* @__PURE__ */ jsxs4(ui7.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }, children: [
-      /* @__PURE__ */ jsxs4(ui7.menu, { label: `Swarm project: ${shown}`, tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
-        /* @__PURE__ */ jsx5(ui7.icon, { icon: "folder", style: { width: 14, height: 14, color: "currentColor" } }),
-        /* @__PURE__ */ jsx5(ui7.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
-        /* @__PURE__ */ jsx5(ui7.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
-        (swarmProjects ?? []).map((p) => /* @__PURE__ */ jsx5(ui7.item, { checked: p.id === swarmProject, onClick: () => {
-          swarmProject = p.id;
+    /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }, children: [
+      /* @__PURE__ */ jsxs4(ui9.menu, { label: `Swarm project: ${shown}`, tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+        /* @__PURE__ */ jsx5(ui9.icon, { icon: "folder", style: { width: 14, height: 14, color: "currentColor" } }),
+        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
+        /* @__PURE__ */ jsx5(ui9.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+        (st3.swarmProjects ?? []).map((p) => /* @__PURE__ */ jsx5(ui9.item, { checked: p.id === st3.swarmProject, onClick: () => {
+          st3.swarmProject = p.id;
         }, children: p.name }, p.id))
       ] }),
-      ui7.agentPicker({ provider, value: model, effort, onChange: (value) => {
-        provider = value.provider;
-        model = value.model;
-        effort = value.effort ?? "";
+      ui9.agentPicker({ provider: st3.provider, value: st3.model, effort: st3.effort, onChange: (value) => {
+        st3.provider = value.provider;
+        st3.model = value.model;
+        st3.effort = value.effort ?? "";
       } }),
-      ui7.modePicker({ provider, value: approval, onChange: (value) => {
-        approval = value;
+      ui9.modePicker({ provider: st3.provider, value: st3.approval, onChange: (value) => {
+        st3.approval = value;
       } }),
-      ui7.branchPicker({ value: branch, onChange: (value) => {
-        branch = value;
+      ui9.branchPicker({ value: st3.branch, onChange: (value) => {
+        st3.branch = value;
       } })
     ] }),
-    /* @__PURE__ */ jsx5(ui7.field, { value: prompt, multiline: true, autoFocus: true, placeholder: "What should the agent do?", keys: ["Mod+Enter"], onKeyDown: () => void run3(flux2, issue2), onChange: (value) => {
-      prompt = value;
+    /* @__PURE__ */ jsx5(ui9.field, { value: st3.prompt, multiline: true, autoFocus: true, placeholder: "What should the agent do?", keys: ["Mod+Enter"], onKeyDown: () => void run3(flux2, issue2), onChange: (value) => {
+      st3.prompt = value;
     }, style: { minHeight: 160, maxHeight: "46vh", fontSize: 14 } }, "agent-prompt-" + issue2.id),
-    /* @__PURE__ */ jsxs4(ui7.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }, children: [
-      /* @__PURE__ */ jsx5(ui7.button, { kind: "ghost", size: "sm", onClick: closeStart, children: "Cancel" }),
-      /* @__PURE__ */ jsx5(ui7.button, { kind: "primary", size: "sm", icon: "bot", disabled: busy || !prompt.trim(), tooltip: "⌘ Enter", onClick: () => void run3(flux2, issue2), children: busy ? "Starting…" : "Start" })
+    /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }, children: [
+      /* @__PURE__ */ jsx5(ui9.button, { kind: "ghost", size: "sm", onClick: closeStart, children: "Cancel" }),
+      /* @__PURE__ */ jsx5(ui9.button, { kind: "primary", size: "sm", icon: "bot", disabled: st3.busy || !st3.prompt.trim(), tooltip: "⌘ Enter", onClick: () => void run3(flux2, issue2), children: st3.busy ? "Starting…" : "Start" })
     ] })
   ] });
 }
@@ -80630,20 +80858,18 @@ async function loadProjects(flux2, issue2) {
   } catch {
   }
   const found2 = await projectFor(flux2, issue2) ?? "";
-  if (seeded !== issue2.id) return;
-  swarmProjects = projects;
-  if (!swarmProject) swarmProject = found2;
-  ui7.update();
+  if (st3.seeded !== issue2.id) return;
+  st3.swarmProjects = projects;
+  if (!st3.swarmProject) st3.swarmProject = found2;
 }
 async function run3(flux2, issue2) {
-  if (busy || !prompt.trim()) return;
-  busy = true;
-  ui7.update();
+  if (st3.busy || !st3.prompt.trim()) return;
+  st3.busy = true;
   try {
-    const project = swarmProject || await projectFor(flux2, issue2);
+    const project = st3.swarmProject || await projectFor(flux2, issue2);
     const pictures = [];
     const placed = /* @__PURE__ */ new Map();
-    for (const [i2, id2] of imageIds2.entries()) {
+    for (const [i2, id2] of st3.imageIds.entries()) {
       try {
         const asset = await flux2.requireClient().asset(id2);
         const type = asset.contentType.split(";")[0].trim().toLowerCase();
@@ -80653,40 +80879,39 @@ async function run3(flux2, issue2) {
       } catch {
       }
     }
-    const failed2 = imageIds2.length - pictures.length;
-    const text2 = prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num) => {
+    const failed2 = st3.imageIds.length - pictures.length;
+    const text2 = st3.prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num) => {
       const at3 = placed.get(Number(num));
       return at3 ? `[Image #${at3}]` : whole;
     });
     const spawned = await swarm2.threads.spawn({
       project,
-      provider: provider || void 0,
-      model: model || void 0,
-      effort: effort || void 0,
-      approval: approval || void 0,
+      provider: st3.provider || void 0,
+      model: st3.model || void 0,
+      effort: st3.effort || void 0,
+      approval: st3.approval || void 0,
       worktree: true,
-      branch: branch || void 0,
+      branch: st3.branch || void 0,
       title: `${issue2.key} · ${issue2.title}`,
       prompt: text2,
       images: pictures,
       metadata: { issueId: issue2.id, issueKey: issue2.key, connectionId: flux2.id }
     });
-    if (failed2) ui7.toast(failed2 === imageIds2.length ? `${issue2.key}'s images weren't attached.` : `${failed2} of ${issue2.key}'s images weren't attached.`);
+    if (failed2) ui9.toast(failed2 === st3.imageIds.length ? `${issue2.key}'s images weren't attached.` : `${failed2} of ${issue2.key}'s images weren't attached.`);
     try {
       await flux2.attach(issue2.id, spawned.id, true);
       const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
-      if (fluxProject && !fluxProject.swarmProjectId && project && swarmProjects?.some((p) => p.id === project)) flux2.link(fluxProject.id, project);
+      if (fluxProject && !fluxProject.swarmProjectId && project && st3.swarmProjects?.some((p) => p.id === project)) flux2.link(fluxProject.id, project);
     } catch (e) {
-      ui7.toast(`The agent started, but ${issue2.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
+      ui9.toast(`The agent started, but ${issue2.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
     }
     closeStart();
-    ui7.openThread(spawned.id);
-    ui7.toast(`Agent started on ${issue2.key}.`);
+    ui9.openThread(spawned.id);
+    ui9.toast(`Agent started on ${issue2.key}.`);
   } catch (error62) {
-    ui7.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui9.toast(error62 instanceof Error ? error62.message : String(error62));
   } finally {
-    busy = false;
-    ui7.update();
+    st3.busy = false;
   }
 }
 async function projectFor(flux2, issue2) {
@@ -80694,8 +80919,8 @@ async function projectFor(flux2, issue2) {
   if (linked?.swarmProjectId) return linked.swarmProjectId;
   try {
     const projects = await call2("Projects", {});
-    const name2 = linked?.name.trim().toLowerCase();
-    const match2 = name2 ? projects.find((project) => project.name.trim().toLowerCase() === name2) : void 0;
+    const name = linked?.name.trim().toLowerCase();
+    const match2 = name ? projects.find((project) => project.name.trim().toLowerCase() === name) : void 0;
     return match2?.id ?? (projects.length === 1 ? projects[0].id : void 0);
   } catch {
     return void 0;
@@ -80789,44 +81014,44 @@ function base644(bytes) {
 }
 
 // src/skeleton.tsx
-import { ui as ui8 } from "swarm";
+import { ui as ui10 } from "swarm";
 import { jsx as jsx6, jsxs as jsxs5 } from "swarm/jsx-runtime";
 var BONE = { borderRadius: 4, backgroundColor: "hover", animation: { name: "shimmer" }, flexShrink: 0 };
 function Bone({ width, height = 10, round: round2 = false, style }) {
-  return /* @__PURE__ */ jsx6(ui8.box, { style: { ...BONE, width, height, ...round2 ? { borderRadius: "full" } : null, ...style } });
+  return /* @__PURE__ */ jsx6(ui10.box, { style: { ...BONE, width, height, ...round2 ? { borderRadius: "full" } : null, ...style } });
 }
 var TITLES2 = ["78%", "56%", "88%", "64%", "72%", "48%"];
 function CardBones({ n = 0 }) {
-  return /* @__PURE__ */ jsxs5(ui8.box, { style: { width: "100%", flexDirection: "row", gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }, children: [
-    /* @__PURE__ */ jsxs5(ui8.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-      /* @__PURE__ */ jsx6(ui8.box, { style: { flexDirection: "row", alignItems: "center", height: 16 }, children: /* @__PURE__ */ jsx6(Bone, { width: 52, height: 8 }) }),
-      /* @__PURE__ */ jsxs5(ui8.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 20, marginTop: 4 }, children: [
+  return /* @__PURE__ */ jsxs5(ui10.box, { style: { width: "100%", flexDirection: "row", gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }, children: [
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+      /* @__PURE__ */ jsx6(ui10.box, { style: { flexDirection: "row", alignItems: "center", height: 16 }, children: /* @__PURE__ */ jsx6(Bone, { width: 52, height: 8 }) }),
+      /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 20, marginTop: 4 }, children: [
         /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
         /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 12 })
       ] }),
-      /* @__PURE__ */ jsxs5(ui8.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 22, marginTop: 8 }, children: [
+      /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 22, marginTop: 8 }, children: [
         /* @__PURE__ */ jsx6(Bone, { width: 22, height: 20 }),
         n % 3 !== 1 ? /* @__PURE__ */ jsx6(Bone, { width: 56, height: 20 }) : null,
         n % 2 === 0 ? /* @__PURE__ */ jsx6(Bone, { width: 44, height: 20 }) : null
       ] }),
-      /* @__PURE__ */ jsx6(ui8.box, { style: { flexDirection: "row", alignItems: "center", height: 16, marginTop: 8 }, children: /* @__PURE__ */ jsx6(Bone, { width: 72, height: 8 }) })
+      /* @__PURE__ */ jsx6(ui10.box, { style: { flexDirection: "row", alignItems: "center", height: 16, marginTop: 8 }, children: /* @__PURE__ */ jsx6(Bone, { width: 72, height: 8 }) })
     ] }),
-    /* @__PURE__ */ jsx6(ui8.box, { style: { flexShrink: 0, alignItems: "flex-end" }, children: /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true }) })
+    /* @__PURE__ */ jsx6(ui10.box, { style: { flexShrink: 0, alignItems: "flex-end" }, children: /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true }) })
   ] });
 }
 function RowBones({ n = 0 }) {
-  return /* @__PURE__ */ jsxs5(ui8.box, { style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, paddingLeft: 8, paddingRight: 8 }, children: [
-    /* @__PURE__ */ jsx6(ui8.box, { style: { width: 16 } }),
+  return /* @__PURE__ */ jsxs5(ui10.box, { style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, paddingLeft: 8, paddingRight: 8 }, children: [
+    /* @__PURE__ */ jsx6(ui10.box, { style: { width: 16 } }),
     /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14 }),
     /* @__PURE__ */ jsx6(Bone, { width: 48, height: 8 }),
     /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
-    /* @__PURE__ */ jsx6(ui8.box, { style: { flex: 1, minWidth: 0 }, children: /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 10 }) }),
+    /* @__PURE__ */ jsx6(ui10.box, { style: { flex: 1, minWidth: 0 }, children: /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 10 }) }),
     /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true })
   ] });
 }
 function BoardBones({ edge }) {
-  return /* @__PURE__ */ jsx6(ui8.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, flexDirection: "row", gap: 20, overflow: "hidden", alignItems: "stretch", paddingLeft: edge, paddingRight: edge, paddingTop: 16, paddingBottom: 32, media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20 } }] }, children: [5, 3, 4, 2].map((cards, column) => /* @__PURE__ */ jsxs5(ui8.box, { style: { width: 346, flexShrink: 0, height: "100%", overflow: "hidden", gap: 6, padding: 8, borderRadius: 14, backgroundColor: "color-mix(in srgb, text 4%, bg)" }, children: [
-    /* @__PURE__ */ jsxs5(ui8.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, flexShrink: 0, paddingLeft: 8, paddingRight: 8 }, children: [
+  return /* @__PURE__ */ jsx6(ui10.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, flexDirection: "row", gap: 20, overflow: "hidden", alignItems: "stretch", paddingLeft: edge, paddingRight: edge, paddingTop: 16, paddingBottom: 32, media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20 } }] }, children: [5, 3, 4, 2].map((cards, column) => /* @__PURE__ */ jsxs5(ui10.box, { style: { width: 346, flexShrink: 0, height: "100%", overflow: "hidden", gap: 6, padding: 8, borderRadius: 14, backgroundColor: "color-mix(in srgb, text 4%, bg)" }, children: [
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, flexShrink: 0, paddingLeft: 8, paddingRight: 8 }, children: [
       /* @__PURE__ */ jsx6(Bone, { width: 16, height: 16, round: true }),
       /* @__PURE__ */ jsx6(Bone, { width: [72, 88, 64, 96][column], height: 12 }),
       /* @__PURE__ */ jsx6(Bone, { width: 12, height: 12 })
@@ -80835,8 +81060,8 @@ function BoardBones({ edge }) {
   ] }, "col" + column)) });
 }
 function ListBones({ edge }) {
-  return /* @__PURE__ */ jsxs5(ui8.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, overflow: "hidden", paddingLeft: edge, paddingRight: edge, paddingTop: 12 }, children: [
-    /* @__PURE__ */ jsxs5(ui8.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, borderRadius: "control", backgroundColor: "hover", marginBottom: 4 }, children: [
+  return /* @__PURE__ */ jsxs5(ui10.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, overflow: "hidden", paddingLeft: edge, paddingRight: edge, paddingTop: 12 }, children: [
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, borderRadius: "control", backgroundColor: "hover", marginBottom: 4 }, children: [
       /* @__PURE__ */ jsx6(Bone, { width: 12, height: 12 }),
       /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
       /* @__PURE__ */ jsx6(Bone, { width: 80, height: 10 })
@@ -80845,18 +81070,18 @@ function ListBones({ edge }) {
   ] });
 }
 function IssueBones() {
-  return /* @__PURE__ */ jsx6(ui8.box, { label: "Loading the issue…", style: { flex: 1, minHeight: 0, overflow: "hidden" }, children: /* @__PURE__ */ jsxs5(ui8.box, { style: { flexDirection: "row", gap: 40, width: "100%", maxWidth: 928, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }] }, children: [
-    /* @__PURE__ */ jsxs5(ui8.box, { style: { flex: 1, minWidth: 0, gap: 14 }, children: [
+  return /* @__PURE__ */ jsx6(ui10.box, { label: "Loading the issue…", style: { flex: 1, minHeight: 0, overflow: "hidden" }, children: /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 40, width: "100%", maxWidth: 928, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }] }, children: [
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, gap: 14 }, children: [
       /* @__PURE__ */ jsx6(Bone, { width: "66%", height: 28, style: { borderRadius: 6 } }),
       /* @__PURE__ */ jsx6(Bone, { width: "34%", height: 12 }),
-      /* @__PURE__ */ jsxs5(ui8.box, { style: { gap: 10, marginTop: 24 }, children: [
+      /* @__PURE__ */ jsxs5(ui10.box, { style: { gap: 10, marginTop: 24 }, children: [
         /* @__PURE__ */ jsx6(Bone, { width: "100%", height: 10 }),
         /* @__PURE__ */ jsx6(Bone, { width: "94%", height: 10 }),
         /* @__PURE__ */ jsx6(Bone, { width: "82%", height: 10 }),
         /* @__PURE__ */ jsx6(Bone, { width: "58%", height: 10 })
       ] })
     ] }),
-    /* @__PURE__ */ jsx6(ui8.box, { style: { display: "none", width: 240, gap: 14, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: [64, 80, 56, 72, 48].map((w2, n) => /* @__PURE__ */ jsxs5(ui8.box, { style: { flexDirection: "row", gap: 10, alignItems: "center" }, children: [
+    /* @__PURE__ */ jsx6(ui10.box, { style: { display: "none", width: 240, gap: 14, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: [64, 80, 56, 72, 48].map((w2, n) => /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 10, alignItems: "center" }, children: [
       /* @__PURE__ */ jsx6(Bone, { width: 72, height: 8 }),
       /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
       /* @__PURE__ */ jsx6(Bone, { width: w2, height: 10 })
@@ -80865,98 +81090,96 @@ function IssueBones() {
 }
 
 // src/page.tsx
-import { storage as storage4, ui as ui11 } from "swarm";
+import { storage as storage4, ui as ui14 } from "swarm";
 
 // src/connect.tsx
-import { ui as ui9 } from "swarm";
+import { ui as ui11 } from "swarm";
 import { jsx as jsx7, jsxs as jsxs6 } from "swarm/jsx-runtime";
-var forms = /* @__PURE__ */ new Map();
+var forms = ui11.store(/* @__PURE__ */ new Map());
 function formOf(key, url2) {
-  let form = forms.get(key);
-  if (!form) forms.set(key, form = { url: url2, token: "", busy: false, error: "" });
-  return form;
+  if (!forms.has(key)) forms.set(key, { url: url2, token: "", busy: false, error: "" });
+  return forms.get(key);
 }
-function ConnectForm({ name: name2, target, url: url2 = "", done, cancel }) {
-  const form = formOf(name2, url2);
-  const go = () => void connect(name2, form, target, done);
+function ConnectForm({ name, target, url: url2 = "", done, cancel }) {
+  const form = formOf(name, url2);
+  const go = () => void connect(name, form, target, done);
   const tokens = /^https?:\/\/[^/\s]+/.exec(form.url.trim())?.[0];
-  return /* @__PURE__ */ jsxs6(ui9.box, { style: { gap: 14 }, children: [
-    /* @__PURE__ */ jsxs6(ui9.box, { style: { gap: 6 }, children: [
-      /* @__PURE__ */ jsx7(ui9.text, { style: { fontWeight: 500 }, children: "Flux URL" }),
-      /* @__PURE__ */ jsx7(ui9.field, { value: form.url, placeholder: "https://flux.example.com", onChange: (value) => {
+  return /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 14 }, children: [
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsx7(ui11.text, { style: { fontWeight: 500 }, children: "Flux URL" }),
+      /* @__PURE__ */ jsx7(ui11.field, { value: form.url, placeholder: "https://flux.example.com", onChange: (value) => {
         form.url = value;
         form.error = "";
-      }, onSubmit: go }, name2 + "-url")
+      }, onSubmit: go }, name + "-url")
     ] }),
-    /* @__PURE__ */ jsxs6(ui9.box, { style: { gap: 6 }, children: [
-      /* @__PURE__ */ jsx7(ui9.text, { style: { fontWeight: 500 }, children: "API token" }),
-      /* @__PURE__ */ jsx7(ui9.field, { secret: true, value: form.token, placeholder: "flux_…", onChange: (value) => {
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsx7(ui11.text, { style: { fontWeight: 500 }, children: "API token" }),
+      /* @__PURE__ */ jsx7(ui11.field, { secret: true, value: form.token, placeholder: "flux_…", onChange: (value) => {
         form.token = value;
         form.error = "";
-      }, onSubmit: go, style: { fontFamily: "mono" } }, name2 + "-token"),
-      /* @__PURE__ */ jsxs6(ui9.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx7(ui9.text, { style: { fontSize: "small", color: "text3" }, children: "Make one in Flux, under" }),
-        tokens ? /* @__PURE__ */ jsx7(ui9.link, { label: "Settings, API tokens.", href: `${tokens}/settings/tokens`, style: { fontSize: "small" } }) : /* @__PURE__ */ jsx7(ui9.text, { style: { fontSize: "small", color: "text3" }, children: "Settings, API tokens." })
+      }, onSubmit: go, style: { fontFamily: "mono" } }, name + "-token"),
+      /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text3" }, children: "Make one in Flux, under" }),
+        tokens ? /* @__PURE__ */ jsx7(ui11.link, { label: "Settings, API tokens.", href: `${tokens}/settings/tokens`, style: { fontSize: "small" } }) : /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text3" }, children: "Settings, API tokens." })
       ] })
     ] }),
-    form.error ? /* @__PURE__ */ jsxs6(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx7(ui9.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx7(ui9.text, { style: { flex: 1, minWidth: 0 }, children: form.error })
+    form.error ? /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx7(ui11.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx7(ui11.text, { style: { flex: 1, minWidth: 0 }, children: form.error })
     ] }) : null,
-    /* @__PURE__ */ jsxs6(ui9.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
-      cancel ? /* @__PURE__ */ jsx7(ui9.button, { kind: "ghost", onClick: () => {
-        forms.delete(name2);
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
+      cancel ? /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
+        forms.delete(name);
         cancel();
       }, children: "Cancel" }) : null,
-      /* @__PURE__ */ jsx7(ui9.button, { kind: "primary", disabled: form.busy, onClick: go, children: form.busy ? "Connecting…" : "Connect" })
+      /* @__PURE__ */ jsx7(ui11.button, { kind: "primary", disabled: form.busy, onClick: go, children: form.busy ? "Connecting…" : "Connect" })
     ] })
   ] });
 }
-async function connect(name2, form, target, done) {
+async function connect(name, form, target, done) {
   const url2 = form.url.trim();
   const token = form.token.trim();
   if (form.busy) return;
   if (!url2 || !token) {
     form.error = !url2 ? "Give Flux's URL: the address you open Flux at." : "Give an API token: make one in Flux, under Settings, API tokens.";
-    ui9.update();
     return;
   }
   form.busy = true;
   form.error = "";
-  ui9.update();
   try {
     const found2 = await checkFlux(url2, token);
     const twin = hub.connected().find((flux2) => flux2.id !== target && flux2.baseUrl === found2.baseUrl && flux2.workspace?.id === found2.workspace.id);
     if (twin) throw new Error(`${found2.workspace.name} at ${found2.baseUrl} is connected already: change its token there.`);
     hub.save(target, url2, token);
-    forms.delete(name2);
-    ui9.toast(`Connected to ${found2.workspace.name} as ${found2.account}.`);
+    forms.delete(name);
+    ui11.toast(`Connected to ${found2.workspace.name} as ${found2.account}.`);
     done?.();
   } catch (e) {
     form.error = describe3(e);
   } finally {
     form.busy = false;
-    ui9.update();
   }
 }
 
 // src/threads.ts
-var known = /* @__PURE__ */ new Map();
+import { ui as ui12 } from "swarm";
+var known = ui12.state(/* @__PURE__ */ new Map());
 function threadInfo(id2) {
-  return known.get(id2);
+  return known.value.get(id2);
 }
 function setThreads(list2) {
   const next2 = new Map(list2.map((t) => [t.id, { title: t.title, working: t.status === "running" }]));
-  const same = next2.size === known.size && [...next2].every(([id2, t]) => {
-    const had = known.get(id2);
-    return had && had.title === t.title && had.working === t.working;
+  const had = known.peek();
+  const same = next2.size === had.size && [...next2].every(([id2, t]) => {
+    const was = had.get(id2);
+    return was && was.title === t.title && was.working === t.working;
   });
-  known = next2;
+  if (!same) known.value = next2;
   return !same;
 }
 
 // src/projects.tsx
-import { ui as ui10 } from "swarm";
+import { ui as ui13 } from "swarm";
 
 // src/gallery.ts
 var GALLERY = [
@@ -81149,33 +81372,29 @@ var GALLERY_COLORS = COLORS.map((id2) => ({ id: id2, name: COLOR_NAMES[id2], col
 // src/projects.tsx
 import { jsx as jsx8, jsxs as jsxs7 } from "swarm/jsx-runtime";
 var DEFAULT_MARK = { type: "icon", value: "folder", color: "gray" };
-var open4 = null;
-var name = "";
-var keyDraft = "";
-var mark2 = DEFAULT_MARK;
-var busy2 = false;
+var st4 = ui13.store({ open: null, name: "", keyDraft: "", mark: DEFAULT_MARK, busy: false });
 function openNewProject() {
-  open4 = { id: null, follow: true };
-  name = "";
-  keyDraft = "";
-  mark2 = DEFAULT_MARK;
-  busy2 = false;
-  ui10.showOverlay("flux-project");
+  st4.open = { id: null, follow: true };
+  st4.name = "";
+  st4.keyDraft = "";
+  st4.mark = DEFAULT_MARK;
+  st4.busy = false;
+  ui13.showOverlay("flux-project");
 }
 function openProjectSettings(project, follow = false) {
-  open4 = { id: project.id, follow };
-  name = project.name;
-  keyDraft = project.key;
-  mark2 = markOf2(project);
-  busy2 = false;
-  ui10.showOverlay("flux-project");
+  st4.open = { id: project.id, follow };
+  st4.name = project.name;
+  st4.keyDraft = project.key;
+  st4.mark = markOf2(project);
+  st4.busy = false;
+  ui13.showOverlay("flux-project");
 }
 function close4() {
   closeProject();
-  ui10.hideOverlay("flux-project");
+  ui13.hideOverlay("flux-project");
 }
 function closeProject() {
-  open4 = null;
+  st4.open = null;
 }
 function markOf2(project) {
   if (project.emoji) return { type: "emoji", value: project.emoji };
@@ -81193,7 +81412,7 @@ function fromPicked(m) {
 }
 function MarkPicker({ value, label, size: size3 = 28, bordered = false, onChange }) {
   return /* @__PURE__ */ jsx8(
-    ui10.iconPicker,
+    ui13.iconPicker,
     {
       label,
       value: asPicked(value),
@@ -81219,9 +81438,9 @@ function projectAt(flux2, key) {
 }
 function projectMenuItems(project) {
   return [
-    /* @__PURE__ */ jsx8(ui10.separator, {}, "projects-sep"),
-    /* @__PURE__ */ jsx8(ui10.item, { icon: "plus", onClick: openNewProject, children: "New project…" }, "new-project"),
-    project ? /* @__PURE__ */ jsx8(ui10.item, { icon: "settings", onClick: () => openProjectSettings(project, true), children: "Project settings…" }, "project-settings") : null
+    /* @__PURE__ */ jsx8(ui13.separator, {}, "projects-sep"),
+    /* @__PURE__ */ jsx8(ui13.item, { icon: "plus", onClick: openNewProject, children: "New project…" }, "new-project"),
+    project ? /* @__PURE__ */ jsx8(ui13.item, { icon: "settings", onClick: () => openProjectSettings(project, true), children: "Project settings…" }, "project-settings") : null
   ];
 }
 function confirmDelete(flux2, project, after) {
@@ -81230,58 +81449,58 @@ function confirmDelete(flux2, project, after) {
   confirm(`Delete ${project.name}?`, `${issues} This can't be undone.`, "Delete", async () => {
     await flux2.deleteProject(project.id);
     after?.();
-    ui10.toast(`Deleted ${project.name}.`);
+    ui13.toast(`Deleted ${project.name}.`);
   });
 }
 async function duplicateProject(flux2, project) {
   try {
     const copy3 = await flux2.createProject({ name: `${project.name} copy`.slice(0, 60), keyFrom: project.key, mark: markOf2(project) ?? void 0 });
-    ui10.navTo("flux", `p/${copy3.key}`);
+    ui13.navTo("flux", `p/${copy3.key}`);
   } catch (e) {
-    ui10.toast(`Couldn't duplicate ${project.name}: ${e instanceof Error ? e.message : String(e)}`);
+    ui13.toast(`Couldn't duplicate ${project.name}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 function moveProject(flux2, project, to) {
-  void flux2.moveProject(project.id, to).catch((e) => ui10.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
+  void flux2.moveProject(project.id, to).catch((e) => ui13.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
 }
 function setMark2(flux2, project, next2) {
-  void flux2.updateProject(project.id, { mark: next2 }).catch((e) => ui10.toast(`Couldn't change ${project.name}'s icon: ${e instanceof Error ? e.message : String(e)}`));
+  void flux2.updateProject(project.id, { mark: next2 }).catch((e) => ui13.toast(`Couldn't change ${project.name}'s icon: ${e instanceof Error ? e.message : String(e)}`));
 }
 function ProjectDialog({ flux: flux2 }) {
-  const o = open4;
+  const o = st4.open;
   if (!o) return null;
   const projects = flux2.projects();
   const editing2 = o.id ? projects.find((p) => p.id === o.id) : void 0;
   if (o.id && !editing2) return null;
-  const keyed2 = flux2.keyed();
-  const derived2 = name.trim() ? uniqueProjectKey(keyed2, name, o.id ?? void 0) : "";
-  const key = keyDraft || derived2;
-  const problem = keyDraft ? flux2.keyProblem(keyDraft, o.id ?? void 0) : null;
-  const ready = !!name.trim() && !problem && !busy2 && (!editing2 || key.length >= 2);
+  const keyed = flux2.keyed();
+  const derived2 = st4.name.trim() ? uniqueProjectKey(keyed, st4.name, o.id ?? void 0) : "";
+  const key = st4.keyDraft || derived2;
+  const problem = st4.keyDraft ? flux2.keyProblem(st4.keyDraft, o.id ?? void 0) : null;
+  const ready = !!st4.name.trim() && !problem && !st4.busy && (!editing2 || key.length >= 2);
   const changes = editing2 && key !== editing2.key;
   const hint = !key ? "" : changes ? `Issues become ${key}-1, ${key}-2, …; ${editing2.key}-1 still finds its issue` : `Issues numbered ${key}-1, ${key}-2, …`;
-  const old = editing2 ? keyed2.find((p) => p.id === editing2.id)?.aliases ?? [] : [];
+  const old = editing2 ? keyed.find((p) => p.id === editing2.id)?.aliases ?? [] : [];
   return /* @__PURE__ */ jsxs7(
-    ui10.box,
+    ui13.box,
     {
       label: editing2 ? `Settings of ${editing2.name}` : "New project",
       keys: ["Mod+Enter"],
       onKeyDown: () => void submit(flux2),
       style: { gap: 0 },
       children: [
-        /* @__PURE__ */ jsx8(ui10.box, { style: { gap: 4, paddingLeft: 20, paddingRight: 20, paddingTop: 16 }, children: /* @__PURE__ */ jsx8(ui10.text, { style: { fontSize: 12, fontWeight: 500, color: "text3" }, children: editing2 ? "Project settings" : "New project" }) }),
-        /* @__PURE__ */ jsxs7(ui10.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 18 }, children: [
-          /* @__PURE__ */ jsx8(MarkPicker, { label: "Project icon", value: mark2, size: 36, bordered: true, onChange: (next2) => {
-            mark2 = next2;
+        /* @__PURE__ */ jsx8(ui13.box, { style: { gap: 4, paddingLeft: 20, paddingRight: 20, paddingTop: 16 }, children: /* @__PURE__ */ jsx8(ui13.text, { style: { fontSize: 12, fontWeight: 500, color: "text3" }, children: editing2 ? "Project settings" : "New project" }) }),
+        /* @__PURE__ */ jsxs7(ui13.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 18 }, children: [
+          /* @__PURE__ */ jsx8(MarkPicker, { label: "Project icon", value: st4.mark, size: 36, bordered: true, onChange: (next2) => {
+            st4.mark = next2;
           } }),
           /* @__PURE__ */ jsx8(
-            ui10.field,
+            ui13.field,
             {
               autoFocus: true,
-              value: name,
+              value: st4.name,
               placeholder: "Project name",
               onChange: (value) => {
-                name = value.slice(0, PROJECT_NAME_MAX);
+                st4.name = value.slice(0, PROJECT_NAME_MAX);
               },
               onSubmit: () => void submit(flux2),
               style: { flex: 1, minWidth: 0, fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }
@@ -81289,23 +81508,23 @@ function ProjectDialog({ flux: flux2 }) {
             "project-name-" + (o.id ?? "new")
           )
         ] }),
-        /* @__PURE__ */ jsx8(ui10.box, { style: { height: 1, backgroundColor: "divider" } }),
-        /* @__PURE__ */ jsxs7(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
+        /* @__PURE__ */ jsx8(ui13.box, { style: { height: 1, backgroundColor: "divider" } }),
+        /* @__PURE__ */ jsxs7(ui13.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
           /* @__PURE__ */ jsxs7(
-            ui10.box,
+            ui13.box,
             {
               label: "Project key",
               tooltip: old.length ? `Old ${old.length === 1 ? "key" : "keys"}, which still find ${editing2.name}'s issues: ${old.join(", ")}` : void 0,
               style: { flexDirection: "row", gap: 4, alignItems: "center", height: 28, flexShrink: 0, paddingLeft: 7, paddingRight: 6, borderRadius: "control", backgroundColor: "field", border: problem ? "1px solid red" : "1px solid border", boxShadow: problem ? "0 0 0 3px redSoft" : "none", transition: { duration: 120, colors: true } },
               children: [
-                /* @__PURE__ */ jsx8(ui10.text, { style: { width: 10, fontFamily: "mono", fontSize: 12, color: "text3", textAlign: "center" }, children: "#" }),
+                /* @__PURE__ */ jsx8(ui13.text, { style: { width: 10, fontFamily: "mono", fontSize: 12, color: "text3", textAlign: "center" }, children: "#" }),
                 /* @__PURE__ */ jsx8(
-                  ui10.field,
+                  ui13.field,
                   {
                     value: key,
                     placeholder: "KEY",
                     onChange: (value) => {
-                      keyDraft = normalizeProjectKey(value);
+                      st4.keyDraft = normalizeProjectKey(value);
                     },
                     onSubmit: () => void submit(flux2),
                     style: { width: 52, fontFamily: "mono", fontSize: 12, letterSpacing: 0.5, backgroundColor: "transparent", boxShadow: "none", padding: 0 }
@@ -81315,47 +81534,45 @@ function ProjectDialog({ flux: flux2 }) {
               ]
             }
           ),
-          /* @__PURE__ */ jsx8(ui10.text, { style: { flex: 1, minWidth: 0, fontSize: 12, color: problem ? "red" : "text2" }, maxLines: 1, tooltip: problem ?? hint, children: problem ?? hint }),
-          editing2 ? /* @__PURE__ */ jsx8(ui10.button, { kind: "ghost", size: "sm", onClick: () => {
+          /* @__PURE__ */ jsx8(ui13.text, { style: { flex: 1, minWidth: 0, fontSize: 12, color: problem ? "red" : "text2" }, maxLines: 1, tooltip: problem ?? hint, children: problem ?? hint }),
+          editing2 ? /* @__PURE__ */ jsx8(ui13.button, { kind: "ghost", size: "sm", onClick: () => {
             close4();
-            confirmDelete(flux2, editing2, o.follow ? () => ui10.navTo("flux", "") : void 0);
+            confirmDelete(flux2, editing2, o.follow ? () => ui13.navTo("flux", "") : void 0);
           }, style: { color: "red" }, children: "Delete…" }) : null,
-          /* @__PURE__ */ jsx8(ui10.button, { kind: "primary", disabled: !ready, onClick: () => void submit(flux2), children: `${busy2 ? editing2 ? "Saving…" : "Creating…" : editing2 ? "Save" : "Create"}  ⌘↵` })
+          /* @__PURE__ */ jsx8(ui13.button, { kind: "primary", disabled: !ready, onClick: () => void submit(flux2), children: `${st4.busy ? editing2 ? "Saving…" : "Creating…" : editing2 ? "Save" : "Create"}  ⌘↵` })
         ] })
       ]
     }
   );
 }
 async function submit(flux2) {
-  const o = open4;
-  if (!o || busy2) return;
-  if (!name.trim()) {
-    ui10.toast("Give the project a name.");
+  const o = st4.open;
+  if (!o || st4.busy) return;
+  if (!st4.name.trim()) {
+    ui13.toast("Give the project a name.");
     return;
   }
-  busy2 = true;
-  ui10.update();
+  st4.busy = true;
   try {
     if (o.id) {
       const before = flux2.projects().find((p) => p.id === o.id);
       if (!before) return close4();
       const was = markOf2(before);
-      const marked = mark2 && JSON.stringify(mark2) !== JSON.stringify(was) ? mark2 : void 0;
-      const project = await flux2.updateProject(o.id, { name, key: keyDraft || before.key, mark: marked });
+      const marked = st4.mark && JSON.stringify(st4.mark) !== JSON.stringify(was) ? st4.mark : void 0;
+      const project = await flux2.updateProject(o.id, { name: st4.name, key: st4.keyDraft || before.key, mark: marked });
       close4();
-      if (o.follow && project.key !== before.key) ui10.navTo("flux", `p/${project.key}`);
-      ui10.toast(project.key !== before.key ? `${project.name} is ${project.key} now. ${before.key}-… still finds its issues.` : `Saved ${project.name}.`);
+      if (o.follow && project.key !== before.key) ui13.navTo("flux", `p/${project.key}`);
+      ui13.toast(project.key !== before.key ? `${project.name} is ${project.key} now. ${before.key}-… still finds its issues.` : `Saved ${project.name}.`);
     } else {
-      const project = await flux2.createProject({ name, key: keyDraft || void 0, mark: mark2 ?? DEFAULT_MARK });
+      const project = await flux2.createProject({ name: st4.name, key: st4.keyDraft || void 0, mark: st4.mark ?? DEFAULT_MARK });
       close4();
-      ui10.navTo("flux", `p/${project.key}`);
-      ui10.toast(`Created ${project.name}.`);
+      ui13.navTo("flux", `p/${project.key}`);
+      ui13.toast(`Created ${project.name}.`);
     }
   } catch (e) {
-    ui10.toast(e instanceof Error ? e.message : String(e));
+    ui13.toast(e instanceof Error ? e.message : String(e));
   } finally {
-    busy2 = false;
-    ui10.update();
+    st4.busy = false;
   }
 }
 function keyNote(flux2, project) {
@@ -81435,8 +81652,8 @@ function matchesScope(issue2, scope, me2) {
   if (scope === "active") return issue2.status === "progress" || issue2.status === "review";
   return true;
 }
-function matchesQuery(issue2, query2) {
-  const needle = query2.trim().toLowerCase();
+function matchesQuery(issue2, query) {
+  const needle = query.trim().toLowerCase();
   if (!needle) return true;
   return issue2.key.toLowerCase().includes(needle) || issue2.title.toLowerCase().includes(needle);
 }
@@ -81534,16 +81751,16 @@ function patchForMove(issue2, from4, target) {
     case "assignee": {
       const source = from4.kind === "assignee" ? from4.memberId : null;
       if (source === target.memberId) return null;
-      const kept = issue2.assigneeIds.filter((id2) => id2 !== source);
+      const kept2 = issue2.assigneeIds.filter((id2) => id2 !== source);
       if (target.memberId === null) return { assigneeIds: [] };
-      return { assigneeIds: [target.memberId, ...kept.filter((id2) => id2 !== target.memberId)] };
+      return { assigneeIds: [target.memberId, ...kept2.filter((id2) => id2 !== target.memberId)] };
     }
     case "label": {
       const source = from4.kind === "label" ? from4.labelId : null;
       if (source === target.labelId) return null;
-      const kept = issue2.labelIds.filter((id2) => id2 !== source);
+      const kept2 = issue2.labelIds.filter((id2) => id2 !== source);
       if (target.labelId === null) return { labelIds: [] };
-      return { labelIds: [target.labelId, ...kept.filter((id2) => id2 !== target.labelId)] };
+      return { labelIds: [target.labelId, ...kept2.filter((id2) => id2 !== target.labelId)] };
     }
     case "project":
       return issue2.projectId === target.projectId ? null : { projectId: target.projectId };
@@ -81580,27 +81797,35 @@ function scopeOf(path) {
 
 // src/page.tsx
 import { Fragment as Fragment2, jsx as jsx9, jsxs as jsxs8 } from "swarm/jsx-runtime";
-var query = "";
-var selected = /* @__PURE__ */ new Set();
-var cursor = "";
-var displayOpen = false;
-var keyed = false;
+var st5 = ui14.store({
+  query: "",
+  selected: /* @__PURE__ */ new Set(),
+  cursor: "",
+  displayOpen: false,
+  keyed: false,
+  filterFocus: 0,
+  creating: false,
+  createMore: false,
+  draftTitle: "",
+  draftBody: "",
+  draftStatus: "todo",
+  draftPriority: "none",
+  draftAssignees: [],
+  draftLabels: [],
+  draftProject: "",
+  draftDue: null,
+  draftParent: null,
+  editingComment: "",
+  commentBody: "",
+  searching: false,
+  shownPath: "",
+  retryFailed: false,
+  editingTitle: "",
+  subsOpen: true,
+  composing: null
+});
 var anchor2 = "";
-var filterFocus = 0;
 var lastPatch = null;
-var creating = false;
-var createMore = false;
-var draftTitle = "";
-var draftBody = "";
-var draftStatus = "todo";
-var draftPriority = "none";
-var draftAssignees = [];
-var draftLabels = [];
-var draftProject = "";
-var draftDue = null;
-var draftParent = null;
-var editingComment = "";
-var commentBody = "";
 var PAGE_KEYS = [
   "j",
   "k",
@@ -81658,23 +81883,23 @@ function setDisplay(next2) {
   storage4.set("display", next2);
 }
 function openIssue(key) {
-  ui11.navTo("flux", `issues/${encodeURIComponent(key)}`);
+  ui14.navTo("flux", `issues/${encodeURIComponent(key)}`);
 }
 function openList(path) {
-  ui11.navTo("flux", path);
+  ui14.navTo("flux", path);
 }
 function navItems(flux2) {
-  const open5 = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status));
+  const open3 = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status));
   const count = (n) => n ? String(n) : void 0;
   return [
-    { id: "all", title: "All projects", icon: "flux:mark", path: "", section: "Projects", badge: count(open5.length) },
+    { id: "all", title: "All projects", icon: "flux:mark", path: "", section: "Projects", badge: count(open3.length) },
     ...flux2.projects().map((project) => ({
       id: "p-" + project.id,
       title: project.name,
       ...navMark(project),
       path: `p/${project.key}`,
       section: "Projects",
-      badge: count(open5.filter((issue2) => issue2.projectId === project.id).length),
+      badge: count(open3.filter((issue2) => issue2.projectId === project.id).length),
       movable: true
     }))
   ];
@@ -81683,8 +81908,8 @@ function syncNav(flux2) {
   const me2 = flux2.me?.id;
   const mine = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status) && me2 && issue2.assigneeIds.includes(me2)).length;
   try {
-    ui11.navItems("flux", navItems(flux2));
-    ui11.navBadge("flux", { text: mine ? String(mine) : "" });
+    ui14.navItems("flux", navItems(flux2));
+    ui14.navBadge("flux", { text: mine ? String(mine) : "" });
   } catch {
   }
 }
@@ -81699,7 +81924,7 @@ function parsePath(path) {
 }
 function FluxPage({ path, slot, item, section, image }) {
   const flux2 = hub.active;
-  if (!slot) shownPath = path;
+  if (!slot) st5.shownPath = path;
   if (slot === "section") return section === "Projects" ? /* @__PURE__ */ jsx9(NewProjectButton, {}) : null;
   if (slot === "item") return /* @__PURE__ */ jsx9(SidebarProjectMenu, { flux: flux2, project: flux2.projects().find((p) => "p-" + p.id === item) });
   const route = parsePath(path);
@@ -81718,9 +81943,9 @@ function FluxPage({ path, slot, item, section, image }) {
   if (connection.state === "connecting" && connection.issueCount === 0 && route.kind === "list") {
     const options = displayOf();
     const project = projectAt(flux2, route.project);
-    return /* @__PURE__ */ jsxs8(ui11.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: [
+    return /* @__PURE__ */ jsxs8(ui14.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: [
       options.layout === "list" ? /* @__PURE__ */ jsx9(ListBones, { edge: EDGE }) : /* @__PURE__ */ jsx9(BoardBones, { edge: EDGE }),
-      displayOpen ? displayPanel(options, !!project) : null
+      st5.displayOpen ? displayPanel(options, !!project) : null
     ] });
   }
   if (route.kind === "issue") return /* @__PURE__ */ jsx9(IssuePage, { flux: flux2, issueKey: route.key, image });
@@ -81739,7 +81964,7 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
     if (!options.showSubIssues && issue2.parentId) return false;
     if (!options.showClosed && CLOSED_STATUSES.has(issue2.status)) return false;
     if (!matchesScope(issue2, scope, me2)) return false;
-    return matchesQuery(issue2, query);
+    return matchesQuery(issue2, st5.query);
   });
   const groups = buildGroups({ issues, grouping, ordering: options.ordering, showEmptyGroups: options.showEmptyGroups, showClosed: options.showClosed, members: members2, labels, projects, me: me2 });
   const flat = groups.flatMap((group) => group.issues);
@@ -81747,7 +81972,7 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
   shownGroups = groups;
   const connection = flux2.connection();
   return /* @__PURE__ */ jsxs8(
-    ui11.box,
+    ui14.box,
     {
       style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 },
       keys: PAGE_KEYS,
@@ -81755,8 +81980,8 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
       children: [
         /* @__PURE__ */ jsx9(SyncBars, { flux: flux2 }),
         flat.length === 0 ? /* @__PURE__ */ jsx9(Empty, { flux: flux2, scope, inProject: !!project, onCreate: () => openCreate(flux2, project?.id) }) : options.layout === "list" ? /* @__PURE__ */ jsx9(IssueList, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }) : /* @__PURE__ */ jsx9(Board, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }),
-        selected.size > 0 ? /* @__PURE__ */ jsx9(SelectionBar, { flux: flux2 }) : null,
-        displayOpen ? displayPanel(options, !!project) : null
+        st5.selected.size > 0 ? /* @__PURE__ */ jsx9(SelectionBar, { flux: flux2 }) : null,
+        st5.displayOpen ? displayPanel(options, !!project) : null
       ]
     }
   );
@@ -81768,20 +81993,20 @@ function offline(message, copy3 = true) {
 }
 function since(iso) {
   if (!iso) return "a while ago";
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 6e4));
+  const minutes = Math.max(0, Math.round((ui14.now() - new Date(iso).getTime()) / 6e4));
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.round(minutes / 60);
   return hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
 }
-var retryFailedAt = 0;
 function retryNow(flux2) {
   flux2.reconnect();
   setTimeout(() => {
     if (flux2.connection().state === "offline") {
-      retryFailedAt = Date.now();
-      ui11.update();
-      setTimeout(() => ui11.update(), 4100);
+      st5.retryFailed = true;
+      setTimeout(() => {
+        st5.retryFailed = false;
+      }, 4e3);
     }
   }, 2e3);
 }
@@ -81791,108 +82016,106 @@ function SyncBars({ flux: flux2 }) {
   const away = (c.state === "offline" || c.state === "connecting" && c.issueCount > 0) && c.issueCount > 0;
   const bar2 = { flexDirection: "row", gap: 8, alignItems: "center", minHeight: 32, paddingLeft: EDGE, paddingRight: EDGE - 6, paddingTop: 4, paddingBottom: 4, borderBottom: "1px solid border", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 14 } }] };
   const barButton = { height: 24, paddingLeft: 6, paddingRight: 6, justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text", hover: { backgroundColor: "hover" } };
-  const failed2 = Date.now() - retryFailedAt < 4e3;
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 0, flexShrink: 0 }, children: [
-    away ? /* @__PURE__ */ jsxs8(ui11.box, { label: "Offline", style: bar2, children: [
-      /* @__PURE__ */ jsx9(ui11.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "amber", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, minWidth: 0, flexDirection: "row" }, children: /* @__PURE__ */ jsxs8(ui11.text, { style: { fontSize: 12, minWidth: 0, color: "text2" }, maxLines: 1, tooltip: c.message || void 0, children: [
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontWeight: 500, color: "text" }, children: "Offline" }),
+  const failed2 = st5.retryFailed;
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 0, flexShrink: 0 }, children: [
+    away ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Offline", style: bar2, children: [
+      /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "amber", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row" }, children: /* @__PURE__ */ jsxs8(ui14.text, { style: { fontSize: 12, minWidth: 0, color: "text2" }, maxLines: 1, tooltip: c.message || void 0, children: [
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontWeight: 500, color: "text" }, children: "Offline" }),
         ` · Can't reach ${host}, so this is the copy synced ${since(c.syncedAt)}. Changes you make are sent when it's back.`
       ] }) }),
-      c.queued ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: `${c.queued} waiting to send` }) : null,
-      /* @__PURE__ */ jsx9(ui11.pressable, { label: "Retry now", disabled: c.state === "connecting", onClick: () => retryNow(flux2), style: { ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: c.state === "connecting" ? "Retrying…" : failed2 ? "Still can't reach it" : "Retry now" }) })
-    ] }) : c.state === "error" && c.message ? /* @__PURE__ */ jsxs8(ui11.box, { label: "Flux couldn't sync", style: bar2, children: [
-      /* @__PURE__ */ jsx9(ui11.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "red", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2", flex: 1, minWidth: 0 }, maxLines: 1, tooltip: c.message, children: c.message }),
-      /* @__PURE__ */ jsx9(ui11.pressable, { label: "Try again", onClick: () => flux2.reconnect(), style: barButton, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Try again" }) })
+      c.queued ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: `${c.queued} waiting to send` }) : null,
+      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Retry now", disabled: c.state === "connecting", onClick: () => retryNow(flux2), style: { ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: c.state === "connecting" ? "Retrying…" : failed2 ? "Still can't reach it" : "Retry now" }) })
+    ] }) : c.state === "error" && c.message ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Flux couldn't sync", style: bar2, children: [
+      /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flex: 1, minWidth: 0 }, maxLines: 1, tooltip: c.message, children: c.message }),
+      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Try again", onClick: () => flux2.reconnect(), style: barButton, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Try again" }) })
     ] }) : null,
-    c.dropped.length ? /* @__PURE__ */ jsxs8(ui11.box, { style: { ...bar2, alignItems: "flex-start", paddingTop: 8, paddingBottom: 8, backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx9(ui11.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 1 } }),
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500 }, children: c.dropped.length === 1 ? "A change made offline wasn't sent" : `${c.dropped.length} changes made offline weren't sent` }),
-        c.dropped.slice(-5).map((d) => /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: `${d.label}: ${d.reason}` }, d.id))
+    c.dropped.length ? /* @__PURE__ */ jsxs8(ui14.box, { style: { ...bar2, alignItems: "flex-start", paddingTop: 8, paddingBottom: 8, backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx9(ui14.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 1 } }),
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500 }, children: c.dropped.length === 1 ? "A change made offline wasn't sent" : `${c.dropped.length} changes made offline weren't sent` }),
+        c.dropped.slice(-5).map((d) => /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: `${d.label}: ${d.reason}` }, d.id))
       ] }),
-      /* @__PURE__ */ jsx9(ui11.pressable, { label: "Dismiss", onClick: () => flux2.dismissDropped(), style: barButton, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Dismiss" }) })
+      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Dismiss", onClick: () => flux2.dismissDropped(), style: barButton, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Dismiss" }) })
     ] }) : null
   ] });
 }
-var shownPath = "";
 function NewProjectButton() {
-  return /* @__PURE__ */ jsx9(ui11.pressable, { label: "New project", tooltip: "New project", onClick: openNewProject, style: { width: 20, height: 20, marginTop: -4, marginBottom: -4, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text3", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "plus", style: { width: 13, height: 13, color: "currentColor" } }) });
+  return /* @__PURE__ */ jsx9(ui14.pressable, { label: "New project", tooltip: "New project", onClick: openNewProject, style: { width: 20, height: 20, marginTop: -4, marginBottom: -4, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text3", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "plus", style: { width: 13, height: 13, color: "currentColor" } }) });
 }
 function SidebarProjectMenu({ flux: flux2, project }) {
   if (!project) return null;
-  const route = parsePath(shownPath);
+  const route = parsePath(st5.shownPath);
   const here = route.kind === "list" && route.project === project.key;
-  return /* @__PURE__ */ jsx9(ui11.menu, { context: true, label: `${project.name} actions`, children: () => [
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "plus", onClick: () => openCreate(flux2, project.id), children: "New issue" }, "new"),
-    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep1"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "pencil", onClick: () => openProjectSettings(project, here), children: "Edit" }, "edit"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "external", onClick: () => {
-      ui11.copy(flux2.projectUrl(project));
-      ui11.toast(`Copied ${project.name}'s link.`);
+  return /* @__PURE__ */ jsx9(ui14.menu, { context: true, label: `${project.name} actions`, children: () => [
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: () => openCreate(flux2, project.id), children: "New issue" }, "new"),
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep1"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "pencil", onClick: () => openProjectSettings(project, here), children: "Edit" }, "edit"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "external", onClick: () => {
+      ui14.copy(flux2.projectUrl(project));
+      ui14.toast(`Copied ${project.name}'s link.`);
     }, children: "Copy link" }, "link"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => void duplicateProject(flux2, project), children: "Duplicate" }, "dup"),
-    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep2"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project, here ? () => openList("") : void 0), children: "Delete" }, "del")
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => void duplicateProject(flux2, project), children: "Duplicate" }, "dup"),
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep2"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project, here ? () => openList("") : void 0), children: "Delete" }, "del")
   ] });
 }
 function HeadTitle() {
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { ...bar, gap: 8, paddingLeft: EDGE, media: [{ minWidth: 768, style: { paddingLeft: 20 } }] }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { ...bar, gap: 8, paddingLeft: EDGE, media: [{ minWidth: 768, style: { paddingLeft: 20 } }] }, children: [
     /* @__PURE__ */ jsx9(FluxMark, { size: 16, color: "text" }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 600 }, children: "Flux" })
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 600 }, children: "Flux" })
   ] });
 }
 function BarEnd({ onCreate }) {
   return /* @__PURE__ */ jsx9(Fragment2, { children: [
-    /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(ui11.button, { kind: "primary", size: "sm", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) }, "new"),
-    /* @__PURE__ */ jsx9(ui11.box, { style: { flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui11.pressable, { label: "New issue", tooltip: "New issue (C)", onClick: onCreate, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", backgroundColor: "accent", transition: { duration: 120, colors: true }, hover: { backgroundColor: "color-mix(in srgb, text 12%, accent)" } }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "plus", style: { width: 14, height: 14, color: "accentText" } }) }) }, "new-narrow")
+    /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", size: "sm", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) }, "new"),
+    /* @__PURE__ */ jsx9(ui14.box, { style: { flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui14.pressable, { label: "New issue", tooltip: "New issue (C)", onClick: onCreate, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", backgroundColor: "accent", transition: { duration: 120, colors: true }, hover: { backgroundColor: "color-mix(in srgb, text 12%, accent)" } }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "plus", style: { width: 14, height: 14, color: "accentText" } }) }) }, "new-narrow")
   ] });
 }
-var searching = false;
 function Toolbar({ flux: flux2, project, scope, options }) {
   const projects = flux2.projects();
-  const narrowSearch = searching || query !== "";
-  const filter = (wide) => /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field", ...wide ? { flex: 1, minWidth: 0 } : { width: 208, flexShrink: 0 }, focus: { borderColor: "borderStrong" } }, children: [
-    /* @__PURE__ */ jsx9(ui11.icon, { icon: "search", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
-    /* @__PURE__ */ jsx9(ui11.field, { autoFocus: filterFocus > 0 || wide && searching, value: query, placeholder: "Filter issues", onChange: (value) => {
-      query = value;
-    }, style: { flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" } }, "flux-filter-" + (wide ? "n" : "w") + filterFocus)
+  const narrowSearch = st5.searching || st5.query !== "";
+  const filter = (wide) => /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field", ...wide ? { flex: 1, minWidth: 0 } : { width: 208, flexShrink: 0 }, focus: { borderColor: "borderStrong" } }, children: [
+    /* @__PURE__ */ jsx9(ui14.icon, { icon: "search", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
+    /* @__PURE__ */ jsx9(ui14.field, { autoFocus: st5.filterFocus > 0 || wide && st5.searching, value: st5.query, placeholder: "Filter issues", onChange: (value) => {
+      st5.query = value;
+    }, style: { flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" } }, "flux-filter-" + (wide ? "n" : "w") + st5.filterFocus)
   ] });
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: bar, keys: BAR_KEYS, onKeyDown: (key) => onListKey(flux2, key, shownFlat, shownGroups, options), children: [
-    narrowSearch ? /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: bar, keys: BAR_KEYS, onKeyDown: (key) => onListKey(flux2, key, shownFlat, shownGroups, options), children: [
+    narrowSearch ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: [
       filter(true),
-      /* @__PURE__ */ jsx9(ui11.pressable, { label: "Cancel", onClick: () => {
-        query = "";
-        searching = false;
-      }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14 }, children: "Cancel" }) })
+      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Cancel", onClick: () => {
+        st5.query = "";
+        st5.searching = false;
+      }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14 }, children: "Cancel" }) })
     ] }) : null,
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
         project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx9(FluxMark, { size: 16 }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "icon.svg", checked: !project, badge: String(flux2.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(""), children: "All projects" }),
-        projects.map((item) => /* @__PURE__ */ jsx9(ui11.item, { ...navMark(item), checked: item.key === project?.key, badge: String(flux2.issues().filter((i2) => i2.projectId === item.id && !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(`p/${item.key}`), children: item.name }, item.id)),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "icon.svg", checked: !project, badge: String(flux2.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(""), children: "All projects" }),
+        projects.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(item), checked: item.key === project?.key, badge: String(flux2.issues().filter((i2) => i2.projectId === item.id && !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(`p/${item.key}`), children: item.name }, item.id)),
         projectMenuItems(project)
       ] }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] } }),
-      /* @__PURE__ */ jsx9(ui11.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui11.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage4.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui11.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
-        SCOPES.map((item) => /* @__PURE__ */ jsx9(ui11.item, { checked: scope === item, onClick: () => storage4.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
+      /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] } }),
+      /* @__PURE__ */ jsx9(ui14.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage4.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui14.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+        SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.item, { checked: scope === item, onClick: () => storage4.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
       ] }) }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, minWidth: 8 } }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
-      /* @__PURE__ */ jsx9(ui11.pressable, { label: "Filter issues", tooltip: "Filter issues (/)", onClick: () => {
-        searching = true;
-      }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "search", style: { width: 14, height: 14, color: "currentColor" } }) }),
-      /* @__PURE__ */ jsxs8(ui11.pressable, { label: "Display", role: "button", tooltip: "Display options (⇧V)", checked: displayOpen, onClick: () => {
-        displayOpen = !displayOpen;
-      }, style: { position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }, children: [
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "sliders", style: { width: 14, height: 14, color: "currentColor" } }),
-        customized(options) ? /* @__PURE__ */ jsx9(ui11.box, { style: { position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minWidth: 8 } }),
+      /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
+      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Filter issues", tooltip: "Filter issues (/)", onClick: () => {
+        st5.searching = true;
+      }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "search", style: { width: 14, height: 14, color: "currentColor" } }) }),
+      /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Display", role: "button", tooltip: "Display options (⇧V)", checked: st5.displayOpen, onClick: () => {
+        st5.displayOpen = !st5.displayOpen;
+      }, style: { position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: st5.displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }, children: [
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "sliders", style: { width: 14, height: 14, color: "currentColor" } }),
+        customized(options) ? /* @__PURE__ */ jsx9(ui14.box, { style: { position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
       ] }),
       /* @__PURE__ */ jsx9(BarEnd, { onCreate: () => openCreate(flux2, project?.id) })
     ] })
@@ -81916,48 +82139,48 @@ function displayPanel(options, singleProject) {
     if (properties.length > 0) set2({ properties });
   };
   const close5 = () => {
-    displayOpen = false;
+    st5.displayOpen = false;
   };
   const picked = (on3) => ({ borderRadius: "control", border: on3 ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on3 ? "press" : "transparent", color: on3 ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "press" : "hover", color: "text" } });
   return [
-    /* @__PURE__ */ jsx9(ui11.pressable, { label: "Close display options", onClick: close5, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
-    /* @__PURE__ */ jsxs8(ui11.box, { label: "Display options", style: { position: "absolute", top: 44, right: 16, width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs8(ui11.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
+    /* @__PURE__ */ jsx9(ui14.pressable, { label: "Close display options", onClick: close5, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
+    /* @__PURE__ */ jsxs8(ui14.box, { label: "Display options", style: { position: "absolute", top: 44, right: 16, width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs8(ui14.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
       ] }, "layout-" + layout)) }),
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 2, paddingLeft: 4, paddingRight: 4, paddingTop: 8 }, children: [
-        /* @__PURE__ */ jsx9(DisplayRow, { label: "Grouping", value: GROUPING_LABELS[options.grouping], children: GROUPINGS.filter((grouping) => (grouping !== "project" || !singleProject) && (grouping !== "none" || options.layout === "list")).map((grouping) => /* @__PURE__ */ jsx9(ui11.item, { checked: options.grouping === grouping, onClick: () => set2({ grouping }), children: GROUPING_LABELS[grouping] }, "group-" + grouping)) }),
-        /* @__PURE__ */ jsx9(DisplayRow, { label: "Ordering", value: ORDERING_LABELS[options.ordering], children: ORDERINGS.map((ordering) => /* @__PURE__ */ jsx9(ui11.item, { checked: options.ordering === ordering, onClick: () => set2({ ordering }), children: ORDERING_LABELS[ordering] }, "order-" + ordering)) })
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 2, paddingLeft: 4, paddingRight: 4, paddingTop: 8 }, children: [
+        /* @__PURE__ */ jsx9(DisplayRow, { label: "Grouping", value: GROUPING_LABELS[options.grouping], children: GROUPINGS.filter((grouping) => (grouping !== "project" || !singleProject) && (grouping !== "none" || options.layout === "list")).map((grouping) => /* @__PURE__ */ jsx9(ui14.item, { checked: options.grouping === grouping, onClick: () => set2({ grouping }), children: GROUPING_LABELS[grouping] }, "group-" + grouping)) }),
+        /* @__PURE__ */ jsx9(DisplayRow, { label: "Ordering", value: ORDERING_LABELS[options.ordering], children: ORDERINGS.map((ordering) => /* @__PURE__ */ jsx9(ui14.item, { checked: options.ordering === ordering, onClick: () => set2({ ordering }), children: ORDERING_LABELS[ordering] }, "order-" + ordering)) })
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 6, paddingLeft: 4, paddingRight: 4, paddingTop: 12 }, children: [
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: "text2" }, children: "Display properties" }),
-        /* @__PURE__ */ jsx9(ui11.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4 }, children: PROPERTIES.map((property) => {
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 6, paddingLeft: 4, paddingRight: 4, paddingTop: 12 }, children: [
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "text2" }, children: "Display properties" }),
+        /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4 }, children: PROPERTIES.map((property) => {
           const on3 = options.properties.includes(property);
-          return /* @__PURE__ */ jsx9(ui11.pressable, { label: PROPERTY_LABELS[property], role: "checkbox", checked: on3, onClick: () => toggle(property), style: { ...picked(on3), height: 22, paddingLeft: 6, paddingRight: 6, justifyContent: "center" }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: PROPERTY_LABELS[property] }) }, "prop-" + property);
+          return /* @__PURE__ */ jsx9(ui14.pressable, { label: PROPERTY_LABELS[property], role: "checkbox", checked: on3, onClick: () => toggle(property), style: { ...picked(on3), height: 22, paddingLeft: 6, paddingRight: 6, justifyContent: "center" }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: PROPERTY_LABELS[property] }) }, "prop-" + property);
         }) })
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { paddingTop: 12 }, children: [
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { paddingTop: 12 }, children: [
         /* @__PURE__ */ jsx9(DisplaySwitch, { label: "Show completed issues", on: options.showClosed, set: (on3) => set2({ showClosed: on3 }) }),
         /* @__PURE__ */ jsx9(DisplaySwitch, { label: "Show empty groups", on: options.showEmptyGroups, set: (on3) => set2({ showEmptyGroups: on3 }) }),
         /* @__PURE__ */ jsx9(DisplaySwitch, { label: "Show sub-issues", on: options.showSubIssues, set: (on3) => set2({ showSubIssues: on3 }) })
       ] }),
-      customized(options) ? /* @__PURE__ */ jsx9(ui11.pressable, { label: "Reset to default", onClick: () => setDisplay({ ...DEFAULT_DISPLAY, layout: options.layout }), style: { marginTop: 4, height: 30, paddingLeft: 4, justifyContent: "center", borderRadius: "control", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "currentColor" }, children: "Reset to default" }) }) : null
+      customized(options) ? /* @__PURE__ */ jsx9(ui14.pressable, { label: "Reset to default", onClick: () => setDisplay({ ...DEFAULT_DISPLAY, layout: options.layout }), style: { marginTop: 4, height: 30, paddingLeft: 4, justifyContent: "center", borderRadius: "control", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, children: "Reset to default" }) }) : null
     ] }, "display-panel")
   ];
 }
 function DisplaySwitch({ label, on: on3, set: set2 }) {
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32, paddingLeft: 4, paddingRight: 4 }, children: [
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
-    /* @__PURE__ */ jsx9(ui11.toggle, { tooltip: label, checked: on3, onChange: set2 })
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32, paddingLeft: 4, paddingRight: 4 }, children: [
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
+    /* @__PURE__ */ jsx9(ui14.toggle, { tooltip: label, checked: on3, onChange: set2 })
   ] });
 }
 function DisplayRow({ label, value, children }) {
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32 }, children: [
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
-    /* @__PURE__ */ jsxs8(ui11.menu, { label: `${label}: ${value}`, style: { ...ghostChip, height: 26, paddingLeft: 6, paddingRight: 6, gap: 4 }, children: [
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500 }, children: value }),
-      /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32 }, children: [
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
+    /* @__PURE__ */ jsxs8(ui14.menu, { label: `${label}: ${value}`, style: { ...ghostChip, height: 26, paddingLeft: 6, paddingRight: 6, gap: 4 }, children: [
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: value }),
+      /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
       children
     ] })
   ] });
@@ -81966,25 +82189,25 @@ function Board({ flux: flux2, groups, options, showProject, scrollKey }) {
   const manual = options.ordering === "manual";
   const hint = (group) => manual ? void 0 : `${group.title}
 Board ordered by ${ORDERING_LABELS[options.ordering]}`;
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, minWidth: 0, width: "100%", flexDirection: "row", gap: 20, overflowX: "auto", overflowY: "hidden", alignItems: "stretch", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 16, paddingBottom: 32, scrollSnapType: "x mandatory", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20, scrollSnapType: "none" } }] }, children: groups.map((group) => /* @__PURE__ */ jsxs8(ui11.box, { label: group.title, style: { width: 346, flexShrink: 0, minHeight: 0, height: "100%", gap: 6, padding: 8, borderRadius: 14, backgroundColor: COLUMN_BG, boxShadow: "inset 0 0 0 1px transparent", transition: { duration: 200, colors: true }, dragOver: { boxShadow: "inset 0 0 0 1px color-mix(in srgb, text 10%, transparent)" } }, onDrop: (event) => dropOn(flux2, group, event, options), dropHint: hint(group), children: [
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6, flexShrink: 0 }, children: [
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, minWidth: 0, width: "100%", flexDirection: "row", gap: 20, overflowX: "auto", overflowY: "hidden", alignItems: "stretch", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 16, paddingBottom: 32, scrollSnapType: "x mandatory", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20, scrollSnapType: "none" } }] }, children: groups.map((group) => /* @__PURE__ */ jsxs8(ui14.box, { label: group.title, style: { width: 346, flexShrink: 0, minHeight: 0, height: "100%", gap: 6, padding: 8, borderRadius: 14, backgroundColor: COLUMN_BG, boxShadow: "inset 0 0 0 1px transparent", transition: { duration: 200, colors: true }, dragOver: { boxShadow: "inset 0 0 0 1px color-mix(in srgb, text 10%, transparent)" } }, onDrop: (event) => dropOn(flux2, group, event, options), dropHint: hint(group), children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6, flexShrink: 0 }, children: [
       /* @__PURE__ */ jsx9(GroupMark, { group, flux: flux2, size: 16 }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2" }, children: String(group.issues.length) }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, void 0, group.key) })
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: String(group.issues.length) }),
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, void 0, group.key) })
     ] }),
     /* @__PURE__ */ jsx9(
-      ui11.list,
+      ui14.list,
       {
         count: group.issues.length,
         rowHeight: 40,
         rowKey: (n) => group.issues[n].id,
-        row: (n) => /* @__PURE__ */ jsx9(ui11.box, { style: { width: "100%", paddingBottom: n < group.issues.length - 1 ? 6 : 0 }, children: /* @__PURE__ */ jsx9(Card, { flux: flux2, issue: group.issues[n], group, index: n, options, showProject }) }),
+        row: (n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: "100%", paddingBottom: n < group.issues.length - 1 ? 6 : 0 }, children: /* @__PURE__ */ jsx9(Card, { flux: flux2, issue: group.issues[n], group, index: n, options, showProject }) }),
         style: { flex: 1, minHeight: 0 },
-        placeholder: /* @__PURE__ */ jsx9(ui11.box, { style: { width: "100%", paddingBottom: 6 }, children: /* @__PURE__ */ jsx9(CardBones, {}) }),
+        placeholder: /* @__PURE__ */ jsx9(ui14.box, { style: { width: "100%", paddingBottom: 6 }, children: /* @__PURE__ */ jsx9(CardBones, {}) }),
         dropGap: manual,
-        reveal: keyed && group.issues.some((issue2) => issue2.id === cursor) ? cursor : void 0,
+        reveal: st5.keyed && group.issues.some((issue2) => issue2.id === st5.cursor) ? st5.cursor : void 0,
         onDrop: manual ? (event) => dropAt(flux2, group, group.issues, event, options) : void 0
       },
       `cards-${scrollKey}-${group.id}`
@@ -82013,30 +82236,30 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
   const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
   const assignees = flux2.memberList().filter((member2) => issue2.assigneeIds.includes(member2.id));
   const marks = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
-  const on3 = selected.has(issue2.id);
+  const on3 = st5.selected.has(issue2.id);
   const fields = shows(options, "priority") || shows(options, "dueDate") && !!issue2.dueDate || issue2.subIssueCount > 0 || shows(options, "labels") && marks.length > 0 || shows(options, "agents") && issue2.threadIds.length > 0;
   return /* @__PURE__ */ jsxs8(
-    ui11.box,
+    ui14.box,
     {
       label: issue2.title,
       drag: { id: issue2.id, index },
       onClick: (event) => clickIssue(issue2, event),
-      style: { ...CARD, ...on3 ? CARD_ON : null, ...keyed && cursor === issue2.id ? { border: "1px solid accent" } : null },
+      style: { ...CARD, ...on3 ? CARD_ON : null, ...st5.keyed && st5.cursor === issue2.id ? { border: "1px solid accent" } : null },
       children: [
         /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: issue2 }),
-        /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-          shows(options, "id") || parent || project ? /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 16 }, children: [
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+          shows(options, "id") || parent || project ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 16 }, children: [
             project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }) : null,
             /* @__PURE__ */ jsx9(KeyLine, { issue: issue2, parent: parent ?? void 0, showKey: shows(options, "id") })
           ] }) : null,
-          /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: shows(options, "id") || parent || project ? 4 : 0 }, children: [
+          /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: shows(options, "id") || parent || project ? 4 : 0 }, children: [
             shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 4, backgroundColor: "transparent" }, children: [
               /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status, size: 14 }),
               () => pickerItems(flux2, issue2, "status")
             ] }) : null,
-            /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text2" : "text" }, maxLines: 2, children: issue2.title })
+            /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text2" : "text" }, maxLines: 2, children: issue2.title })
           ] }),
-          fields ? /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
+          fields ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
             shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }, children: [
               /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority, size: 12 }),
               () => pickerItems(flux2, issue2, "priority")
@@ -82052,13 +82275,13 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
             ] }, item.id)) : null,
             shows(options, "agents") && issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx9(AgentChip, { issue: issue2 }) : null
           ] }) : null,
-          shows(options, "created") ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
+          shows(options, "created") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
         ] }),
-        /* @__PURE__ */ jsxs8(ui11.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
           shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
             assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 20, ring: "overlay" }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
             () => pickerItems(flux2, issue2, "assignees")
-          ] }) : /* @__PURE__ */ jsx9(ui11.box, {}),
+          ] }) : /* @__PURE__ */ jsx9(ui14.box, {}),
           issue2.threadIds.length === 0 && !CLOSED_STATUSES.has(issue2.status) ? /* @__PURE__ */ jsx9(StartAgentButton, { issue: issue2, bordered: true }) : null
         ] })
       ]
@@ -82070,38 +82293,38 @@ function pickerItems(flux2, issue2, kind) {
   const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
   switch (kind) {
     case "status":
-      return STATUSES.map((status) => /* @__PURE__ */ jsx9(ui11.item, { ...statusMark(status), checked: issue2.status === status, onClick: () => set2({ status }), children: STATUS_LABELS[status] }, status));
+      return STATUSES.map((status) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(status), checked: issue2.status === status, onClick: () => set2({ status }), children: STATUS_LABELS[status] }, status));
     case "priority":
-      return [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((priority) => /* @__PURE__ */ jsx9(ui11.item, { ...priorityMark(priority), checked: issue2.priority === priority, onClick: () => set2({ priority }), children: PRIORITY_LABELS[priority] }, priority));
+      return [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((priority) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(priority), checked: issue2.priority === priority, onClick: () => set2({ priority }), children: PRIORITY_LABELS[priority] }, priority));
     case "due":
       return dueItems(issue2.dueDate, (dueDate) => set2({ dueDate }));
     case "labels":
       return [
-        ...flux2.labels().map((label) => /* @__PURE__ */ jsx9(ui11.item, { ...labelMark(label.color), checked: issue2.labelIds.includes(label.id), onClick: () => set2({ labelIds: toggle(issue2.labelIds, label.id) }), children: label.name }, label.id)),
-        flux2.labels().length ? /* @__PURE__ */ jsx9(ui11.separator, {}, "sep") : null,
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "plus", onClick: () => openPalette("label", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "New label…" }, "new")
+        ...flux2.labels().map((label) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(label.color), checked: issue2.labelIds.includes(label.id), onClick: () => set2({ labelIds: toggle(issue2.labelIds, label.id) }), children: label.name }, label.id)),
+        flux2.labels().length ? /* @__PURE__ */ jsx9(ui14.separator, {}, "sep") : null,
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: () => openPalette("label", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "New label…" }, "new")
       ];
     case "assignees": {
       const me2 = flux2.me?.id;
-      return [...flux2.memberList()].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx9(ui11.item, { ...memberMark(member2), detail: "@" + member2.username, checked: issue2.assigneeIds.includes(member2.id), onClick: () => set2({ assigneeIds: toggle(issue2.assigneeIds, member2.id) }), children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id));
+      return [...flux2.memberList()].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(member2), detail: "@" + member2.username, checked: issue2.assigneeIds.includes(member2.id), onClick: () => set2({ assigneeIds: toggle(issue2.assigneeIds, member2.id) }), children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id));
     }
   }
 }
 function Picker({ label, style, children }) {
-  return /* @__PURE__ */ jsx9(ui11.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
+  return /* @__PURE__ */ jsx9(ui14.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
 }
 var field = { flexDirection: "row", gap: 4, alignItems: "center", justifyContent: "center", height: 22, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: 4, border: "1px solid border" };
 function KeyLine({ issue: issue2, parent, showKey }) {
   if (!showKey && !parent) return null;
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minWidth: 0 }, children: [
-    parent ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: parent.key }) : null,
-    parent && showKey ? /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }) : null,
-    showKey ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: issue2.key }) : null
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minWidth: 0 }, children: [
+    parent ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: parent.key }) : null,
+    parent && showKey ? /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }) : null,
+    showKey ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: issue2.key }) : null
   ] });
 }
 function AvatarStack({ members: members2, size: size3, ring = "bg" }) {
   const overlap = Math.round(size3 * 0.3);
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => /* @__PURE__ */ jsx9(ui11.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: "full", boxShadow: n === 0 ? "none" : `0 0 0 1.5px ${ring}`, flexShrink: 0 }, children: /* @__PURE__ */ jsx9(Avatar, { member: member2, size: size3 }) }, member2.id)) });
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: "full", boxShadow: n === 0 ? "none" : `0 0 0 1.5px ${ring}`, flexShrink: 0 }, children: /* @__PURE__ */ jsx9(Avatar, { member: member2, size: size3 }) }, member2.id)) });
 }
 function dueTone(date5) {
   const delta = dayDelta(date5);
@@ -82111,26 +82334,26 @@ function dueTone(date5) {
 function dueContent(date5) {
   const tone = dueTone(date5);
   return [
-    /* @__PURE__ */ jsx9(ui11.icon, { icon: "calendar", style: { width: 12, height: 12, color: tone } }, "icon"),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: tone }, children: dueLabel(date5) }, "text")
+    /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 12, height: 12, color: tone } }, "icon"),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: tone }, children: dueLabel(date5) }, "text")
   ];
 }
 function SubIssueChip({ done, total }) {
   const color = done >= total ? "green" : "text2";
-  return /* @__PURE__ */ jsxs8(ui11.box, { label: `${done} of ${total} sub-issues done`, style: field, children: [
-    /* @__PURE__ */ jsx9(ui11.canvas, { width: 14, height: 14, label: "", style: { width: 14, height: 14, flexShrink: 0 }, draw: (g) => {
+  return /* @__PURE__ */ jsxs8(ui14.box, { label: `${done} of ${total} sub-issues done`, style: field, children: [
+    /* @__PURE__ */ jsx9(ui14.canvas, { width: 14, height: 14, label: "", style: { width: 14, height: 14, flexShrink: 0 }, draw: (g) => {
       g.circle(7, 7, 5, { stroke: "borderStrong", lineWidth: 2 });
       if (done > 0) g.arc(7, 7, 5, -90, -90 + 360 * Math.min(done, total) / total, { stroke: color, lineWidth: 2 });
     } }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color }, children: `${done}/${total}` })
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color }, children: `${done}/${total}` })
   ] });
 }
 function AgentChip({ issue: issue2 }) {
-  const busy3 = issue2.threadIds.some((id2) => threadInfo(id2)?.working);
+  const busy = issue2.threadIds.some((id2) => threadInfo(id2)?.working);
   const count = issue2.threadIds.length;
-  return /* @__PURE__ */ jsxs8(ui11.box, { label: busy3 ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy3 ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
-    /* @__PURE__ */ jsx9(ui11.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy3 ? "green" : "text3", ...busy3 ? { animation: { name: "pulse" } } : {} } }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500, color: busy3 ? "text" : "text2" }, children: busy3 ? "Working" : count === 1 ? "Agent" : `${count} agents` })
+  return /* @__PURE__ */ jsxs8(ui14.box, { label: busy ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
+    /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy ? "green" : "text3", ...busy ? { animation: { name: "pulse" } } : {} } }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: busy ? "text" : "text2" }, children: busy ? "Working" : count === 1 ? "Agent" : `${count} agents` })
   ] });
 }
 function createdOn(iso) {
@@ -82144,7 +82367,7 @@ function monthDay(iso) {
   return `${months[date5.getUTCMonth()]} ${date5.getUTCDate()}`;
 }
 function ago2(iso) {
-  const minutes = (Date.now() - new Date(iso).getTime()) / 6e4;
+  const minutes = (ui14.now() - new Date(iso).getTime()) / 6e4;
   if (!Number.isFinite(minutes) || minutes < 1) return "now";
   if (minutes < 60) return `${Math.round(minutes)}m`;
   const hours = minutes / 60;
@@ -82167,7 +82390,7 @@ function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
   }
   const keyWidth = 8 * Math.max(5, ...groups.flatMap((group) => group.issues.map((issue2) => issue2.key.length))) + 4;
   return /* @__PURE__ */ jsx9(
-    ui11.list,
+    ui14.list,
     {
       count: rows2.length,
       rowHeight: 40,
@@ -82179,13 +82402,13 @@ function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
       row: (n) => {
         const row = rows2[n];
         if ("issue" in row) return /* @__PURE__ */ jsx9(ListRow, { flux: flux2, issue: row.issue, group: row.group, index: row.index, options, showProject, keyWidth });
-        if ("empty" in row) return /* @__PURE__ */ jsx9(ui11.box, { style: { width: "100%", height: 32 }, onDrop: (event) => dropOn(flux2, row.group, event, options) });
+        if ("empty" in row) return /* @__PURE__ */ jsx9(ui14.box, { style: { width: "100%", height: 32 }, onDrop: (event) => dropOn(flux2, row.group, event, options) });
         return /* @__PURE__ */ jsx9(ListHeading, { flux: flux2, group: row.group, options, first: n === 0 });
       },
       style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, paddingLeft: EDGE - 4, paddingRight: EDGE - 4, paddingTop: 12, paddingBottom: 32 },
       placeholder: /* @__PURE__ */ jsx9(RowBones, {}),
       dropGap: options.ordering === "manual",
-      reveal: keyed ? cursor : void 0,
+      reveal: st5.keyed ? st5.cursor : void 0,
       onDrop: options.ordering === "manual" ? (event) => listDrop(flux2, rows2, event, options) : void 0
     },
     "issue-list-" + scrollKey
@@ -82213,15 +82436,15 @@ function foldGroup(group) {
   storage4.set("folded", [...folded]);
 }
 function ListHeading({ flux: flux2, group, options, first: first2 }) {
-  const open5 = !foldedGroup(group);
-  return /* @__PURE__ */ jsx9(ui11.box, { label: group.title, onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", paddingTop: first2 ? 0 : 12, paddingBottom: 4, backgroundColor: "bg" }, children: /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", alignItems: "center", height: 32, paddingRight: 4, borderRadius: 6, backgroundColor: HEADING_BG }, children: [
-    /* @__PURE__ */ jsxs8(ui11.pressable, { label: `${open5 ? "Fold" : "Unfold"} ${group.title}`, role: "button", checked: open5, onClick: () => foldGroup(group), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 8, borderRadius: 6, hover: { backgroundColor: "hover" } }, children: [
-      /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: open5 ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
+  const open3 = !foldedGroup(group);
+  return /* @__PURE__ */ jsx9(ui14.box, { label: group.title, onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", paddingTop: first2 ? 0 : 12, paddingBottom: 4, backgroundColor: "bg" }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", height: 32, paddingRight: 4, borderRadius: 6, backgroundColor: HEADING_BG }, children: [
+    /* @__PURE__ */ jsxs8(ui14.pressable, { label: `${open3 ? "Fold" : "Unfold"} ${group.title}`, role: "button", checked: open3, onClick: () => foldGroup(group), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 8, borderRadius: 6, hover: { backgroundColor: "hover" } }, children: [
+      /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: open3 ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
       /* @__PURE__ */ jsx9(GroupMark, { group, flux: flux2 }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0 }, maxLines: 1, children: group.title }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: String(group.issues.length) })
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0 }, maxLines: 1, children: group.title }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: String(group.issues.length) })
     ] }),
-    /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, void 0, group.key) })
+    /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, void 0, group.key) })
   ] }) });
 }
 var HEADING_BG = "color-mix(in srgb, text 5%, bg)";
@@ -82233,36 +82456,36 @@ function ListRow({ flux: flux2, issue: issue2, group, index, options, showProjec
   const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
   const assignees = flux2.memberList().filter((member2) => issue2.assigneeIds.includes(member2.id));
   const marks = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
-  const on3 = selected.has(issue2.id);
+  const on3 = st5.selected.has(issue2.id);
   const closed = CLOSED_STATUSES.has(issue2.status);
   const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
-  return /* @__PURE__ */ jsxs8(ui11.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on3 ? "selected" : keyed && cursor === issue2.id ? "hover" : "transparent", boxShadow: keyed && cursor === issue2.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "selected" : "hover" } }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on3 ? "selected" : st5.keyed && st5.cursor === issue2.id ? "hover" : "transparent", boxShadow: st5.keyed && st5.cursor === issue2.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "selected" : "hover" } }, children: [
     /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: issue2 }),
-    /* @__PURE__ */ jsx9(ui11.box, { label: `Select ${issue2.key}`, onClick: (event) => event?.shift ? clickIssue(issue2, event) : toggleSelected(issue2.id, !on3), style: { width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on3 ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on3 ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on3 || selected.size > 0 || keyed && cursor === issue2.id ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }, children: on3 ? /* @__PURE__ */ jsx9(ui11.icon, { icon: "check", style: { width: 10, height: 10, color: "white" } }) : null }),
+    /* @__PURE__ */ jsx9(ui14.box, { label: `Select ${issue2.key}`, onClick: (event) => event?.shift ? clickIssue(issue2, event) : toggleSelected(issue2.id, !on3), style: { width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on3 ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on3 ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on3 || st5.selected.size > 0 || st5.keyed && st5.cursor === issue2.id ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }, children: on3 ? /* @__PURE__ */ jsx9(ui14.icon, { icon: "check", style: { width: 10, height: 10, color: "white" } }) : null }),
     shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: cell, children: [
       /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority, size: 14 }),
       () => pickerItems(flux2, issue2, "priority")
     ] }) : null,
-    shows(options, "id") ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2", width: keyWidth, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
+    shows(options, "id") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", width: keyWidth, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
     shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: cell, children: [
       /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status, size: 14 }),
       () => pickerItems(flux2, issue2, "status")
     ] }) : null,
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-      showProject ? /* @__PURE__ */ jsx9(ui11.box, { style: from3(SM), children: /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }) }) : null,
-      parent ? /* @__PURE__ */ jsxs8(ui11.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, alignItems: "center", flexShrink: 0 }, children: [
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2" }, children: parent.key }),
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } })
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+      showProject ? /* @__PURE__ */ jsx9(ui14.box, { style: from3(SM), children: /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }) }) : null,
+      parent ? /* @__PURE__ */ jsxs8(ui14.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, alignItems: "center", flexShrink: 0 }, children: [
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2" }, children: parent.key }),
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } })
       ] }) : null,
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0, flexShrink: 1, color: closed ? "text2" : "text" }, maxLines: 1, children: issue2.title }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0, flexShrink: 1, color: closed ? "text2" : "text" }, maxLines: 1, children: issue2.title }),
       issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null
     ] }),
-    shows(options, "agents") ? /* @__PURE__ */ jsx9(ui11.box, { style: { ...from3(SM), width: 24, justifyContent: "center", flexShrink: 0 }, children: issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx9(AgentChip, { issue: issue2 }) : closed ? null : /* @__PURE__ */ jsx9(StartAgentButton, { issue: issue2 }) }) : null,
-    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx9(ui11.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs8(Picker, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+    shows(options, "agents") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 24, justifyContent: "center", flexShrink: 0 }, children: issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx9(AgentChip, { issue: issue2 }) : closed ? null : /* @__PURE__ */ jsx9(StartAgentButton, { issue: issue2 }) }) : null,
+    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs8(Picker, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
       dueContent(issue2.dueDate),
       () => pickerItems(flux2, issue2, "due")
     ] }) }) : null,
-    shows(options, "labels") ? /* @__PURE__ */ jsx9(ui11.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs8(Picker, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+    shows(options, "labels") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs8(Picker, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
       tagContent(item),
       () => pickerItems(flux2, issue2, "labels")
     ] }, item.id)) }) : null,
@@ -82270,12 +82493,12 @@ function ListRow({ flux: flux2, issue: issue2, group, index, options, showProjec
       assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
       () => pickerItems(flux2, issue2, "assignees")
     ] }) : null,
-    shows(options, "created") ? /* @__PURE__ */ jsx9(ui11.text, { style: { ...from3(MD), fontSize: 12, color: "text2", width: 48, textAlign: "right", flexShrink: 0 }, tooltip: `Created ${new Date(issue2.createdAt).toLocaleString()}`, children: monthDay(issue2.createdAt) }) : null,
-    shows(options, "updated") ? /* @__PURE__ */ jsx9(ui11.text, { style: { ...from3(SM), fontSize: 12, color: "text2", width: 40, textAlign: "right", flexShrink: 0 }, tooltip: `Updated ${new Date(issue2.updatedAt).toLocaleString()}`, children: ago2(issue2.updatedAt) }) : null
+    shows(options, "created") ? /* @__PURE__ */ jsx9(ui14.text, { style: { ...from3(MD), fontSize: 12, color: "text2", width: 48, textAlign: "right", flexShrink: 0 }, tooltip: `Created ${new Date(issue2.createdAt).toLocaleString()}`, children: monthDay(issue2.createdAt) }) : null,
+    shows(options, "updated") ? /* @__PURE__ */ jsx9(ui14.text, { style: { ...from3(SM), fontSize: 12, color: "text2", width: 40, textAlign: "right", flexShrink: 0 }, tooltip: `Updated ${new Date(issue2.updatedAt).toLocaleString()}`, children: ago2(issue2.updatedAt) }) : null
   ] }, issue2.id);
 }
 function StartAgentButton({ issue: issue2, bordered = false }) {
-  return /* @__PURE__ */ jsx9(ui11.pressable, { label: `Start an agent on ${issue2.key}`, tooltip: "Start an agent on this issue", onClick: () => startAgent(issue2.id), style: { width: bordered ? 22 : 24, height: bordered ? 22 : 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: bordered ? 4 : 6, border: bordered ? "1px solid border" : "none", color: "text2", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "press", color: "text" } }, children: /* @__PURE__ */ jsx9(ui11.icon, { icon: "bot", style: { width: 14, height: 14, color: "currentColor" } }) });
+  return /* @__PURE__ */ jsx9(ui14.pressable, { label: `Start an agent on ${issue2.key}`, tooltip: "Start an agent on this issue", onClick: () => startAgent(issue2.id), style: { width: bordered ? 22 : 24, height: bordered ? 22 : 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: bordered ? 4 : 6, border: bordered ? "1px solid border" : "none", color: "text2", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "press", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "bot", style: { width: 14, height: 14, color: "currentColor" } }) });
 }
 function GroupMark({ group, flux: flux2, size: size3 = 14 }) {
   if (group.key.kind === "status") return /* @__PURE__ */ jsx9(StatusIcon, { status: group.key.status, size: size3 });
@@ -82283,12 +82506,12 @@ function GroupMark({ group, flux: flux2, size: size3 = 14 }) {
   const key = group.key;
   if (key.kind === "project") return /* @__PURE__ */ jsx9(ProjectMark, { project: flux2.projects().find((item) => item.id === key.projectId), size: size3 });
   if (key.kind === "assignee" && key.memberId) return /* @__PURE__ */ jsx9(Avatar, { member: flux2.memberList().find((item) => item.id === key.memberId), size: 16 });
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: "text3" } });
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: "text3" } });
 }
 function tagContent(label) {
   return [
-    /* @__PURE__ */ jsx9(ui11.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3", flexShrink: 0 } }, "dot"),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: label.name }, "name")
+    /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3", flexShrink: 0 } }, "dot"),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: label.name }, "name")
   ];
 }
 function dropOn(flux2, group, event, options) {
@@ -82323,7 +82546,7 @@ function askDelete(flux2, ids, done) {
   confirm(one ? "Delete this issue?" : `Delete ${ids.length} issues?`, "This cannot be undone.", "Delete", async () => {
     done();
     const failed2 = (await Promise.allSettled(ids.map((id2) => flux2.deleteIssue(id2)))).filter((r) => r.status === "rejected");
-    if (failed2.length) ui11.toast(one ? "Couldn't delete the issue." : `Couldn't delete ${failed2.length} of the issues.`);
+    if (failed2.length) ui14.toast(one ? "Couldn't delete the issue." : `Couldn't delete ${failed2.length} of the issues.`);
   });
 }
 function dragged(event) {
@@ -82352,63 +82575,63 @@ function apply2(flux2, id2, patch) {
 }
 function failed(what, error62) {
   const why = error62 instanceof Error ? error62.message : String(error62);
-  ui11.toast(why ? `${what}: ${why}` : `${what}.`);
+  ui14.toast(why ? `${what}: ${why}` : `${what}.`);
 }
 function duplicate(flux2, id2, then) {
   void flux2.duplicateIssue(id2).then((copy3) => then?.(copy3), (error62) => failed(`Couldn't duplicate ${flux2.issue(id2)?.key ?? "the issue"}`, error62));
 }
 function toggleSelected(id2, on3) {
-  const next2 = new Set(selected);
+  const next2 = new Set(st5.selected);
   if (on3) next2.add(id2);
   else next2.delete(id2);
-  selected = next2;
-  cursor = id2;
+  st5.selected = next2;
+  st5.cursor = id2;
   anchor2 = id2;
 }
 function openCard(issue2) {
-  cursor = issue2.id;
+  st5.cursor = issue2.id;
   openIssue(issue2.key);
 }
 var shownFlat = [];
 var shownGroups = [];
 function clickIssue(issue2, event) {
-  keyed = false;
+  st5.keyed = false;
   if (event?.shift && anchor2) {
     selectRange(shownFlat, anchor2, issue2.id);
     return;
   }
-  if (event?.mod || event?.shift || selected.size > 0) {
-    toggleSelected(issue2.id, !selected.has(issue2.id));
+  if (event?.mod || event?.shift || st5.selected.size > 0) {
+    toggleSelected(issue2.id, !st5.selected.has(issue2.id));
     return;
   }
   openCard(issue2);
 }
 function SelectionBar({ flux: flux2 }) {
-  const issues = flux2.issues().filter((issue2) => selected.has(issue2.id));
+  const issues = flux2.issues().filter((issue2) => st5.selected.has(issue2.id));
   const ids = issues.map((issue2) => issue2.id);
   const clear = () => {
-    selected = /* @__PURE__ */ new Set();
+    st5.selected = /* @__PURE__ */ new Set();
   };
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }, children: /* @__PURE__ */ jsxs8(ui11.box, { label: "Selected issues", style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }, children: [
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }, children: `${issues.length} selected` }),
-    /* @__PURE__ */ jsx9(ui11.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
-    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: [
-      /* @__PURE__ */ jsx9(ui11.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }, children: /* @__PURE__ */ jsxs8(ui14.box, { label: "Selected issues", style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }, children: [
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }, children: `${issues.length} selected` }),
+    /* @__PURE__ */ jsx9(ui14.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
+    /* @__PURE__ */ jsxs8(ui14.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: [
+      /* @__PURE__ */ jsx9(ui14.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
       () => [
         propertyMenus(flux2, issues, false),
-        /* @__PURE__ */ jsx9(ui11.separator, {}, "sep1"),
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }, "me"),
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => {
+        /* @__PURE__ */ jsx9(ui14.separator, {}, "sep1"),
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }, "me"),
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => {
           for (const issue2 of issues) duplicate(flux2, issue2.id);
         }, children: "Duplicate" }, "dup"),
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "external", onClick: () => ui11.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }, "link"),
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => ui11.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }, "id"),
-        /* @__PURE__ */ jsx9(ui11.separator, {}, "sep2"),
-        /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, ids, clear), children: "Delete" }, "del")
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "external", onClick: () => ui14.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }, "link"),
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => ui14.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }, "id"),
+        /* @__PURE__ */ jsx9(ui14.separator, {}, "sep2"),
+        /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, ids, clear), children: "Delete" }, "del")
       ]
     ] }),
-    /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER } } })
+    /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER } } })
   ] }) }, "selection-bar");
 }
 function assignToMe(flux2, issues) {
@@ -82424,43 +82647,43 @@ function propertyMenus(flux2, issues, shortcuts) {
   const toggled = (list2, id2, on3) => on3 ? list2.filter((item) => item !== id2) : list2.includes(id2) ? list2 : [...list2, id2];
   const projects = flux2.projects();
   return [
-    /* @__PURE__ */ jsx9(ui11.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: () => STATUSES.map((status) => /* @__PURE__ */ jsx9(ui11.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
-    /* @__PURE__ */ jsx9(ui11.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: () => PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx9(ui11.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
-    /* @__PURE__ */ jsx9(ui11.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
+    /* @__PURE__ */ jsx9(ui14.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: () => STATUSES.map((status) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
+    /* @__PURE__ */ jsx9(ui14.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: () => PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
+    /* @__PURE__ */ jsx9(ui14.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
       const on3 = all2((issue2) => issue2.assigneeIds.includes(member2.id));
-      return /* @__PURE__ */ jsx9(ui11.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
+      return /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
     }) }, "assignee"),
-    /* @__PURE__ */ jsx9(ui11.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: () => dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
-    /* @__PURE__ */ jsx9(ui11.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx9(ui11.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
+    /* @__PURE__ */ jsx9(ui14.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: () => dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
+    /* @__PURE__ */ jsx9(ui14.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx9(ui14.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
       const on3 = all2((issue2) => issue2.labelIds.includes(label.id));
-      return /* @__PURE__ */ jsx9(ui11.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
+      return /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
     }) }, "labels"),
-    projects.length >= 2 ? /* @__PURE__ */ jsx9(ui11.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx9(ui11.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
+    projects.length >= 2 ? /* @__PURE__ */ jsx9(ui14.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
   ];
 }
 function IssueContextMenu({ flux: flux2, issue: issue2 }) {
   const me2 = flux2.me?.id;
   const url2 = flux2.issueUrl(issue2);
-  return /* @__PURE__ */ jsx9(ui11.menu, { context: true, label: `${issue2.key} actions`, children: () => [
-    /* @__PURE__ */ jsx9(ui11.item, { shortcut: "Enter", onClick: () => openCard(issue2), children: "Open" }, "open"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "external", href: url2, disabled: !url2, children: "Open in Flux" }, "flux"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "bot", onClick: () => startAgent(issue2.id), children: "Start agent" }, "agent"),
-    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep0"),
-    /* @__PURE__ */ jsxs8(ui11.menu, { label: "Copy", icon: "copy", children: [
-      /* @__PURE__ */ jsx9(ui11.item, { onClick: () => ui11.copy(issue2.key), children: "Copy ID" }),
-      /* @__PURE__ */ jsx9(ui11.item, { shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui11.copy(url2), children: "Copy link" }),
-      /* @__PURE__ */ jsx9(ui11.item, { disabled: !issue2.title.trim(), onClick: () => ui11.copy(issue2.title), children: "Copy title" })
+  return /* @__PURE__ */ jsx9(ui14.menu, { context: true, label: `${issue2.key} actions`, children: () => [
+    /* @__PURE__ */ jsx9(ui14.item, { shortcut: "Enter", onClick: () => openCard(issue2), children: "Open" }, "open"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "external", href: url2, disabled: !url2, children: "Open in Flux" }, "flux"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "bot", onClick: () => startAgent(issue2.id), children: "Start agent" }, "agent"),
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep0"),
+    /* @__PURE__ */ jsxs8(ui14.menu, { label: "Copy", icon: "copy", children: [
+      /* @__PURE__ */ jsx9(ui14.item, { onClick: () => ui14.copy(issue2.key), children: "Copy ID" }),
+      /* @__PURE__ */ jsx9(ui14.item, { shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui14.copy(url2), children: "Copy link" }),
+      /* @__PURE__ */ jsx9(ui14.item, { disabled: !issue2.title.trim(), onClick: () => ui14.copy(issue2.title), children: "Copy title" })
     ] }, "copy"),
-    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep1"),
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep1"),
     propertyMenus(flux2, [issue2], true),
-    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep2"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "user", shortcut: "I", disabled: !me2 || issue2.assigneeIds.includes(me2), onClick: () => assignToMe(flux2, [issue2]), children: "Assign to me" }, "me"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id), children: "Duplicate" }, "duplicate"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }, "sub"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }, "parent"),
-    issue2.parentId ? /* @__PURE__ */ jsx9(ui11.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }, "unparent") : null,
-    /* @__PURE__ */ jsx9(ui11.separator, {}, "sep3"),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], () => selected.delete(issue2.id)), children: "Delete" }, "delete")
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep2"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "user", shortcut: "I", disabled: !me2 || issue2.assigneeIds.includes(me2), onClick: () => assignToMe(flux2, [issue2]), children: "Assign to me" }, "me"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id), children: "Duplicate" }, "duplicate"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }, "sub"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }, "parent"),
+    issue2.parentId ? /* @__PURE__ */ jsx9(ui14.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }, "unparent") : null,
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep3"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], () => st5.selected.delete(issue2.id)), children: "Delete" }, "delete")
   ] });
 }
 var ISSUE_KEYS = [
@@ -82501,11 +82724,11 @@ function onIssueKey(flux2, issue2, key) {
   if (key.mod && key.shift && k === "p") pick2("parent");
   else if (key.mod && key.shift && k === "o") composeSub(flux2, issue2);
   else if (key.mod && key.shift && key.key === ",") {
-    ui11.copy(flux2.issueUrl(issue2));
-    ui11.toast(`Copied ${issue2.key}'s link.`);
+    ui14.copy(flux2.issueUrl(issue2));
+    ui14.toast(`Copied ${issue2.key}'s link.`);
   } else if (key.mod && key.key === "Backspace") askDelete(flux2, [issue2.id], () => openList(""));
   else if (key.mod) return;
-  else if (k === "e" && editingTitle !== issue2.id) editingTitle = issue2.id;
+  else if (k === "e" && st5.editingTitle !== issue2.id) st5.editingTitle = issue2.id;
   else if (k === "s") pick2("status");
   else if (k === "p" && key.shift) pick2("project");
   else if (k === "p") pick2("priority");
@@ -82523,51 +82746,51 @@ function onIssueKey(flux2, issue2, key) {
   }
 }
 function targets(flux2, current) {
-  if (selected.size) return [...selected].map((id2) => flux2.issue(id2)).filter((issue2) => !!issue2);
+  if (st5.selected.size) return [...st5.selected].map((id2) => flux2.issue(id2)).filter((issue2) => !!issue2);
   return current ? [current] : [];
 }
 function onListKey(flux2, key, flat, groups, options) {
-  const index = Math.max(0, flat.findIndex((issue2) => issue2.id === cursor));
-  const current = flat.find((issue2) => issue2.id === cursor);
+  const index = Math.max(0, flat.findIndex((issue2) => issue2.id === st5.cursor));
+  const current = flat.find((issue2) => issue2.id === st5.cursor);
   const on3 = targets(flux2, current);
   const ids = on3.map((issue2) => issue2.id);
   const change = (patch) => {
     for (const issue2 of on3) apply2(flux2, issue2.id, patch(issue2));
   };
   const pick2 = (kind) => openPalette(kind, ids, (id2, patch) => apply2(flux2, id2, patch));
-  if (key.key === "Escape" && selected.size > 0) {
-    selected = /* @__PURE__ */ new Set();
+  if (key.key === "Escape" && st5.selected.size > 0) {
+    st5.selected = /* @__PURE__ */ new Set();
     return;
   }
   const move = (next2) => {
     const issue2 = flat[Math.max(0, Math.min(flat.length - 1, next2))];
     if (!issue2) return;
-    cursor = issue2.id;
-    keyed = true;
+    st5.cursor = issue2.id;
+    st5.keyed = true;
     if (key.shift) toggleSelected(issue2.id, true);
   };
   const k = key.key.toLowerCase();
   if (k === "j" || key.key === "ArrowDown") move(current ? index + 1 : 0);
   else if (k === "k" || key.key === "ArrowUp") move(current ? index - 1 : 0);
   else if (key.key === "ArrowRight" || key.key === "ArrowLeft") {
-    const at3 = groups.findIndex((group) => group.issues.some((issue2) => issue2.id === cursor));
+    const at3 = groups.findIndex((group) => group.issues.some((issue2) => issue2.id === st5.cursor));
     const next2 = groups[at3 + (key.key === "ArrowRight" ? 1 : -1)];
     if (next2?.issues[0]) {
-      cursor = next2.issues[0].id;
-      keyed = true;
+      st5.cursor = next2.issues[0].id;
+      st5.keyed = true;
     }
   } else if (key.key === "Enter" && current) openIssue(current.key);
-  else if (key.mod && k === "a") selected = new Set(flat.map((issue2) => issue2.id));
+  else if (key.mod && k === "a") st5.selected = new Set(flat.map((issue2) => issue2.id));
   else if (key.mod && key.key === "Backspace") {
     if (ids.length) askDelete(flux2, ids, () => {
-      selected = /* @__PURE__ */ new Set();
+      st5.selected = /* @__PURE__ */ new Set();
     });
   } else if (key.mod && k === "b") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
   else if (key.mod) return;
   else if (k === "c" && !key.shift) openCreate(flux2);
   else if (key.key === "/") {
-    filterFocus++;
-    searching = true;
+    st5.filterFocus++;
+    st5.searching = true;
   } else if (k === "s" && !key.shift) pick2("status");
   else if (k === "p" && !key.shift) pick2("priority");
   else if (k === "p" && key.shift) pick2("project");
@@ -82581,7 +82804,7 @@ function onListKey(flux2, key, flat, groups, options) {
   } else if (k === "d") for (const id2 of ids) duplicate(flux2, id2);
   else if (k === "x" && current) {
     if (key.shift && anchor2) selectRange(flat, anchor2, current.id);
-    else toggleSelected(current.id, !selected.has(current.id));
+    else toggleSelected(current.id, !st5.selected.has(current.id));
   } else if (key.key === "." && lastPatch) {
     const patch = lastPatch;
     change(() => patch);
@@ -82589,160 +82812,159 @@ function onListKey(flux2, key, flat, groups, options) {
     const priority = { "1": "urgent", "2": "high", "3": "medium", "4": "low", "0": "none" }[key.key];
     if (priority) change(() => ({ priority }));
   } else if (key.key === "Escape") {
-    displayOpen = false;
-    keyed = false;
-    if (selected.size) selected = /* @__PURE__ */ new Set();
-    else if (query) query = "";
+    st5.displayOpen = false;
+    st5.keyed = false;
+    if (st5.selected.size) st5.selected = /* @__PURE__ */ new Set();
+    else if (st5.query) st5.query = "";
   }
 }
 function selectRange(flat, from4, to) {
   const a3 = flat.findIndex((issue2) => issue2.id === from4);
   const b = flat.findIndex((issue2) => issue2.id === to);
   if (a3 < 0 || b < 0) return;
-  const next2 = new Set(selected);
+  const next2 = new Set(st5.selected);
   for (let i2 = Math.min(a3, b); i2 <= Math.max(a3, b); i2++) next2.add(flat[i2].id);
-  selected = next2;
-  cursor = to;
+  st5.selected = next2;
+  st5.cursor = to;
 }
 function Empty({ flux: flux2, scope, inProject, onCreate }) {
-  const filtered = query.trim() !== "";
+  const filtered = st5.query.trim() !== "";
   const title = filtered ? "No matching issues" : scope === "active" ? "Nothing in progress" : scope === "mine" ? "No issues assigned to you" : inProject ? "Add issues to the project" : "No issues yet";
-  const text2 = filtered ? `Nothing here matches “${query.trim()}”.` : scope === "active" ? "Issues show up here once someone starts them or hands them to an agent." : scope === "mine" ? "Issues assigned to you will show up here." : "Start building your project by creating an issue.";
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui11.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
+  const text2 = filtered ? `Nothing here matches “${st5.query.trim()}”.` : scope === "active" ? "Issues show up here once someone starts them or hands them to an agent." : scope === "mine" ? "Issues assigned to you will show up here." : "Start building your project by creating an issue.";
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
     filtered || scope === "active" ? /* @__PURE__ */ jsx9(TrayArt, {}) : /* @__PURE__ */ jsx9(IssuesArt, {}),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: title }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 384 }, children: text2 }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 8, marginTop: 24 }, children: [
-      filtered ? /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", onClick: () => {
-        query = "";
+    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: title }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 384 }, children: text2 }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, marginTop: 24 }, children: [
+      filtered ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => {
+        st5.query = "";
       }, children: "Clear filter" }) : null,
-      !filtered && scope !== "all" ? /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", onClick: () => storage4.set("scope", "all"), children: "Show all issues" }) : null,
-      !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx9(ui11.button, { kind: "primary", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) : null
+      !filtered && scope !== "all" ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => storage4.set("scope", "all"), children: "Show all issues" }) : null,
+      !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) : null
     ] })
   ] }, filtered ? "tray-q" : scope) });
 }
 function openCreate(flux2, projectId, key, parentId) {
-  const seeded2 = key ? draftForGroup(key) : {};
+  const seeded = key ? draftForGroup(key) : {};
   const me2 = flux2.me?.id;
-  creating = true;
-  const kept = (draftTitle.trim() || draftBody.trim()) && draftParent === (parentId ?? null);
-  if (kept) {
-    ui11.showOverlay("flux-new");
+  st5.creating = true;
+  const kept2 = (st5.draftTitle.trim() || st5.draftBody.trim()) && st5.draftParent === (parentId ?? null);
+  if (kept2) {
+    ui14.showOverlay("flux-new");
     return;
   }
-  draftTitle = "";
-  draftBody = "";
-  draftStatus = seeded2.status ?? "todo";
-  draftPriority = seeded2.priority ?? "none";
-  draftAssignees = seeded2.assigneeIds ?? (scopeNow() === "mine" && me2 ? [me2] : []);
-  draftLabels = seeded2.labelIds ?? [];
-  draftProject = seeded2.projectId ?? projectId ?? flux2.projects()[0]?.id ?? "";
-  draftDue = null;
-  draftParent = parentId ?? null;
-  ui11.showOverlay("flux-new");
+  st5.draftTitle = "";
+  st5.draftBody = "";
+  st5.draftStatus = seeded.status ?? "todo";
+  st5.draftPriority = seeded.priority ?? "none";
+  st5.draftAssignees = seeded.assigneeIds ?? (scopeNow() === "mine" && me2 ? [me2] : []);
+  st5.draftLabels = seeded.labelIds ?? [];
+  st5.draftProject = seeded.projectId ?? projectId ?? flux2.projects()[0]?.id ?? "";
+  st5.draftDue = null;
+  st5.draftParent = parentId ?? null;
+  ui14.showOverlay("flux-new");
 }
 function closeCreate() {
-  creating = false;
+  st5.creating = false;
 }
 function NewIssue({ flux: flux2 }) {
   const projects = flux2.projects();
-  const project = projects.find((item) => item.id === draftProject);
+  const project = projects.find((item) => item.id === st5.draftProject);
   const members2 = flux2.memberList();
   const me2 = flux2.me?.id;
-  const chosenPeople = members2.filter((member2) => draftAssignees.includes(member2.id));
+  const chosenPeople = members2.filter((member2) => st5.draftAssignees.includes(member2.id));
   const labels = flux2.labels();
-  const chosenLabels = labels.filter((label) => draftLabels.includes(label.id));
-  const parent = draftParent ? flux2.issue(draftParent) : void 0;
+  const chosenLabels = labels.filter((label) => st5.draftLabels.includes(label.id));
+  const parent = st5.draftParent ? flux2.issue(st5.draftParent) : void 0;
   const chip2 = { ...ghostChip, height: 28, border: "1px solid border", gap: 6 };
   const chipText = { fontSize: 12, fontWeight: 500, minWidth: 0 };
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsxs8(ui11.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsxs8(ui14.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
           /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }),
-          /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
-          projects.map((item) => /* @__PURE__ */ jsx9(ui11.item, { ...navMark(item), checked: item.id === draftProject, onClick: () => {
-            draftProject = item.id;
+          /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
+          projects.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(item), checked: item.id === st5.draftProject, onClick: () => {
+            st5.draftProject = item.id;
           }, children: item.name }, item.id))
         ] }),
-        parent ? /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }),
-          /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
+        parent ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }),
+          /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
         ] }) : null
       ] }),
-      /* @__PURE__ */ jsx9(ui11.field, { value: draftTitle, placeholder: "Issue title", onChange: (value) => {
-        draftTitle = value;
+      /* @__PURE__ */ jsx9(ui14.field, { value: st5.draftTitle, placeholder: "Issue title", onChange: (value) => {
+        st5.draftTitle = value;
       }, onSubmit: () => void submitNew(flux2), style: { fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 } }, "new-title"),
-      /* @__PURE__ */ jsx9(ui11.editor, { value: draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), onChange: (value) => {
-        draftBody = value;
+      /* @__PURE__ */ jsx9(ui14.editor, { value: st5.draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), onChange: (value) => {
+        st5.draftBody = value;
       }, onSubmit: () => void submitNew(flux2), style: { minHeight: 144 } }, "new-body")
     ] }),
-    /* @__PURE__ */ jsx9(ui11.box, { style: { height: 1, backgroundColor: "divider" } }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Status: ${STATUS_LABELS[draftStatus]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx9(StatusIcon, { status: draftStatus, size: 14 }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: chipText, children: STATUS_LABELS[draftStatus] }),
-        STATUSES.map((status) => /* @__PURE__ */ jsx9(ui11.item, { ...statusMark(status), checked: draftStatus === status, onClick: () => {
-          draftStatus = status;
+    /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider" } }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Status: ${STATUS_LABELS[st5.draftStatus]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx9(StatusIcon, { status: st5.draftStatus, size: 14 }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: chipText, children: STATUS_LABELS[st5.draftStatus] }),
+        STATUSES.map((status) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(status), checked: st5.draftStatus === status, onClick: () => {
+          st5.draftStatus = status;
         }, children: STATUS_LABELS[status] }, status))
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Priority: ${PRIORITY_LABELS[draftPriority]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx9(PriorityIcon, { priority: draftPriority, size: 14 }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { ...chipText, color: draftPriority === "none" ? "text2" : "text" }, children: draftPriority === "none" ? "Priority" : PRIORITY_LABELS[draftPriority] }),
-        PRIORITIES.map((priority) => /* @__PURE__ */ jsx9(ui11.item, { ...priorityMark(priority), checked: draftPriority === priority, onClick: () => {
-          draftPriority = priority;
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Priority: ${PRIORITY_LABELS[st5.draftPriority]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx9(PriorityIcon, { priority: st5.draftPriority, size: 14 }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: st5.draftPriority === "none" ? "text2" : "text" }, children: st5.draftPriority === "none" ? "Priority" : PRIORITY_LABELS[st5.draftPriority] }),
+        PRIORITIES.map((priority) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(priority), checked: st5.draftPriority === priority, onClick: () => {
+          st5.draftPriority = priority;
         }, children: PRIORITY_LABELS[priority] }, priority))
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
-        chosenPeople.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: chosenPeople, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx9(ui11.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }, maxLines: 1, children: chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee" }),
-        [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx9(ui11.item, { ...memberMark(member2), detail: "@" + member2.username, checked: draftAssignees.includes(member2.id), onClick: () => {
-          draftAssignees = draftAssignees.includes(member2.id) ? draftAssignees.filter((id2) => id2 !== member2.id) : [...draftAssignees, member2.id];
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+        chosenPeople.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: chosenPeople, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }, maxLines: 1, children: chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee" }),
+        [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(member2), detail: "@" + member2.username, checked: st5.draftAssignees.includes(member2.id), onClick: () => {
+          st5.draftAssignees = st5.draftAssignees.includes(member2.id) ? st5.draftAssignees.filter((id2) => id2 !== member2.id) : [...st5.draftAssignees, member2.id];
         }, children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id))
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
-        chosenLabels.length ? /* @__PURE__ */ jsx9(ui11.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx9(ui11.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx9(ui11.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { ...chipText, color: chosenLabels.length ? "text" : "text2" }, children: chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels" }),
-        labels.map((item) => /* @__PURE__ */ jsx9(ui11.item, { ...labelMark(item.color), checked: draftLabels.includes(item.id), onClick: () => {
-          draftLabels = draftLabels.includes(item.id) ? draftLabels.filter((id2) => id2 !== item.id) : [...draftLabels, item.id];
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
+        chosenLabels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: chosenLabels.length ? "text" : "text2" }, children: chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels" }),
+        labels.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(item.color), checked: st5.draftLabels.includes(item.id), onClick: () => {
+          st5.draftLabels = st5.draftLabels.includes(item.id) ? st5.draftLabels.filter((id2) => id2 !== item.id) : [...st5.draftLabels, item.id];
         }, children: item.name }, item.id)),
-        labels.length === 0 ? /* @__PURE__ */ jsx9(ui11.item, { disabled: true, children: "No labels" }) : null
+        labels.length === 0 ? /* @__PURE__ */ jsx9(ui14.item, { disabled: true, children: "No labels" }) : null
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: draftDue ? `Due ${dueLabel(draftDue)}` : "Due date", style: chip2, children: [
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "calendar", style: { width: 14, height: 14, color: draftDue ? dueTone(draftDue) : "text2" } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { ...chipText, color: draftDue ? "text" : "text2" }, children: draftDue ? dueLabel(draftDue) : "Due date" }),
-        dueItems(draftDue, (value) => {
-          draftDue = value;
-          ui11.update();
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: st5.draftDue ? `Due ${dueLabel(st5.draftDue)}` : "Due date", style: chip2, children: [
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 14, height: 14, color: st5.draftDue ? dueTone(st5.draftDue) : "text2" } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: st5.draftDue ? "text" : "text2" }, children: st5.draftDue ? dueLabel(st5.draftDue) : "Due date" }),
+        dueItems(st5.draftDue, (value) => {
+          st5.draftDue = value;
         })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
-      /* @__PURE__ */ jsx9(ui11.toggle, { label: "Create more", checked: createMore, onChange: (checked) => {
-        createMore = checked;
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
+      /* @__PURE__ */ jsx9(ui14.toggle, { label: "Create more", checked: st5.createMore, onChange: (checked) => {
+        st5.createMore = checked;
       } }),
-      /* @__PURE__ */ jsx9(ui11.button, { kind: "primary", disabled: !draftTitle.trim(), onClick: () => void submitNew(flux2), children: "Create  ⌘↵" })
+      /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", disabled: !st5.draftTitle.trim(), onClick: () => void submitNew(flux2), children: "Create  ⌘↵" })
     ] })
   ] });
 }
 async function submitNew(flux2) {
-  const title = draftTitle.trim();
-  if (!title || !draftProject) {
-    ui11.toast(title ? "Pick a project." : "Give the issue a title.");
+  const title = st5.draftTitle.trim();
+  if (!title || !st5.draftProject) {
+    ui14.toast(title ? "Pick a project." : "Give the issue a title.");
     return;
   }
   try {
-    const issue2 = await flux2.createIssue({ projectId: draftProject, title, descriptionMarkdown: draftBody, status: draftStatus, priority: draftPriority, assigneeIds: draftAssignees, labelIds: draftLabels, parentId: draftParent, dueDate: draftDue });
-    ui11.toast(`Created ${issue2.key} · ${issue2.title}`, { action: "Open", href: `swarm://plugin/flux/issues/${encodeURIComponent(issue2.key)}` });
-    draftTitle = "";
-    draftBody = "";
-    draftDue = null;
-    if (!createMore) {
-      creating = false;
-      ui11.hideOverlay("flux-new");
+    const issue2 = await flux2.createIssue({ projectId: st5.draftProject, title, descriptionMarkdown: st5.draftBody, status: st5.draftStatus, priority: st5.draftPriority, assigneeIds: st5.draftAssignees, labelIds: st5.draftLabels, parentId: st5.draftParent, dueDate: st5.draftDue });
+    ui14.toast(`Created ${issue2.key} · ${issue2.title}`, { action: "Open", href: `swarm://plugin/flux/issues/${encodeURIComponent(issue2.key)}` });
+    st5.draftTitle = "";
+    st5.draftBody = "";
+    st5.draftDue = null;
+    if (!st5.createMore) {
+      st5.creating = false;
+      ui14.hideOverlay("flux-new");
     }
   } catch (error62) {
-    ui11.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui14.toast(error62 instanceof Error ? error62.message : String(error62));
   }
 }
 var shownIds = /* @__PURE__ */ new Map();
@@ -82761,13 +82983,13 @@ function IssuePage({ flux: flux2, issueKey, image }) {
     const connection = flux2.connection();
     const waiting = connection.state !== "ready";
     if (waiting && !connection.message) return /* @__PURE__ */ jsx9(IssueBones, {});
-    return /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minHeight: 0 }, children: [
+    return /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minHeight: 0 }, children: [
       /* @__PURE__ */ jsx9(SyncBars, { flux: flux2 }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui11.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
         /* @__PURE__ */ jsx9(TrayArt, {}),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: waiting ? `Can't load ${issueKey} yet` : `No issue ${issueKey}` }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center" }, children: waiting ? connection.message ? offline(connection.message, false) : "Syncing with Flux." : "It was deleted, or moved to another project." }),
-        /* @__PURE__ */ jsx9(ui11.box, { style: { flexDirection: "row", marginTop: 24 }, children: /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", onClick: () => openList(""), children: "Back to the board" }) })
+        /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: waiting ? `Can't load ${issueKey} yet` : `No issue ${issueKey}` }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center" }, children: waiting ? connection.message ? offline(connection.message, false) : "Syncing with Flux." : "It was deleted, or moved to another project." }),
+        /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", marginTop: 24 }, children: /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => openList(""), children: "Back to the board" }) })
       ] }) })
     ] });
   }
@@ -82776,12 +82998,12 @@ function IssuePage({ flux: flux2, issueKey, image }) {
   const members2 = flux2.memberList();
   const titleKey = `title:${flux2.id}:${issue2.id}`;
   const edits = { update: (patch) => apply2(flux2, issue2.id, patch) };
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, keys: ISSUE_KEYS, onKeyDown: (key) => onIssueKey(flux2, issue2, key), children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, keys: ISSUE_KEYS, onKeyDown: (key) => onIssueKey(flux2, issue2, key), children: [
     /* @__PURE__ */ jsx9(SyncBars, { flux: flux2 }),
-    /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, minHeight: 0, overflowY: "auto" }, children: /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", alignItems: "flex-start", width: "100%", maxWidth: 672, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }, { minWidth: 900, style: { maxWidth: 928 } }] }, children: [
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-        editingTitle === issue2.id && (titleBefore?.id === issue2.id || (titleBefore = { id: issue2.id, title: issue2.title })) ? /* @__PURE__ */ jsx9(
-          ui11.field,
+    /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minHeight: 0, overflowY: "auto" }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "flex-start", width: "100%", maxWidth: 672, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }, { minWidth: 900, style: { maxWidth: 928 } }] }, children: [
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+        st5.editingTitle === issue2.id && (titleBefore?.id === issue2.id || (titleBefore = { id: issue2.id, title: issue2.title })) ? /* @__PURE__ */ jsx9(
+          ui14.field,
           {
             multiline: true,
             value: drafted(titleKey, issue2.title),
@@ -82793,30 +83015,35 @@ function IssuePage({ flux: flux2, issueKey, image }) {
               if (key.key === "Escape") {
                 clearDraft(titleKey);
                 void saveTitle(flux2, issue2, before);
-              } else void saveTitle(flux2, issue2, drafted(titleKey, issue2.title));
-              editingTitle = "";
+              } else {
+                const typed = drafted(titleKey, issue2.title);
+                void saveTitle(flux2, issue2, typed).then(() => {
+                  if (st5.editingTitle !== issue2.id && drafted(titleKey, typed) === typed) clearDraft(titleKey);
+                }, (error62) => ui14.toast(error62 instanceof Error ? error62.message : String(error62)));
+              }
+              st5.editingTitle = "";
               titleBefore = null;
             },
-            onChange: (value) => editDraft(titleKey, value.replace(/\n/g, " "), (next2) => saveTitle(flux2, issue2, next2)),
+            onChange: (value) => editDraft(titleKey, value.replace(/\n/g, " "), (next2) => saveTitle(flux2, issue2, next2), () => st5.editingTitle === issue2.id),
             style: { ...titleStyle, minHeight: 0, padding: 0, backgroundColor: "transparent", boxShadow: "none" }
           },
           titleKey
-        ) : /* @__PURE__ */ jsx9(ui11.pressable, { label: "Title", tooltip: "Edit the title (E)", onClick: () => {
-          editingTitle = issue2.id;
-        }, style: { cursor: "text" }, children: /* @__PURE__ */ jsx9(ui11.text, { style: titleStyle, children: drafted(titleKey, issue2.title).trim() || "Untitled" }) }),
+        ) : /* @__PURE__ */ jsx9(ui14.pressable, { label: "Title", tooltip: "Edit the title (E)", onClick: () => {
+          st5.editingTitle = issue2.id;
+        }, style: { cursor: "text" }, children: /* @__PURE__ */ jsx9(ui14.text, { style: titleStyle, children: drafted(titleKey, issue2.title).trim() || "Untitled" }) }),
         detail2.parent ? /* @__PURE__ */ jsx9(ParentLine, { parent: detail2.parent }) : null,
-        /* @__PURE__ */ jsx9(ui11.box, { style: { marginTop: 16, media: [{ minWidth: 900, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(Properties, { issue: issue2, project, members: members2, labels: flux2.labels(), me: flux2.me?.id, edits, start: () => startAgent(issue2.id) }) }),
-        /* @__PURE__ */ jsx9(ui11.box, { style: { marginTop: 24 }, children: /* @__PURE__ */ jsx9(DescriptionEditor, { flux: flux2, issue: issue2, markdown: detail2.descriptionMarkdown, html: detail2.descriptionHtml, image }) }),
+        /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 16, media: [{ minWidth: 900, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(Properties, { issue: issue2, project, members: members2, labels: flux2.labels(), me: flux2.me?.id, edits, start: () => startAgent(issue2.id) }) }),
+        /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 24 }, children: /* @__PURE__ */ jsx9(DescriptionEditor, { flux: flux2, issue: issue2, markdown: detail2.descriptionMarkdown, html: detail2.descriptionHtml, image }) }),
         /* @__PURE__ */ jsx9(SubIssues, { flux: flux2, issue: issue2, subs: detail2.subIssues }),
-        /* @__PURE__ */ jsx9(ui11.box, { style: { height: 1, backgroundColor: "divider", marginTop: 32 } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500, marginTop: 24 }, children: "Activity" }),
-        /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 20, marginTop: 20 }, children: [
+        /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider", marginTop: 32 } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, marginTop: 24 }, children: "Activity" }),
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 20, marginTop: 20 }, children: [
           /* @__PURE__ */ jsx9(ActivityRow, { member: members2.find((member2) => member2.id === issue2.creatorId), when: issue2.createdAt, text: "created the issue" }),
           detail2.comments.map((comment) => /* @__PURE__ */ jsx9(Comment, { flux: flux2, comment, members: members2, image }, comment.id)),
           /* @__PURE__ */ jsx9(CommentEditor, { flux: flux2, issue: issue2, image })
         ] })
       ] }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { display: "none", position: "sticky", top: 0, width: 240, flexShrink: 0, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(PropertyRail, { flux: flux2, issue: issue2, project, members: members2 }) })
+      /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", position: "sticky", top: 0, width: 240, flexShrink: 0, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(PropertyRail, { flux: flux2, issue: issue2, project, members: members2 }) })
     ] }) })
   ] });
 }
@@ -82824,38 +83051,36 @@ function IssueHead({ flux: flux2, issueKey }) {
   const issue2 = flux2.findIssue(issueKey) ?? flux2.issue(shownIds.get(issueKey) ?? "") ?? void 0;
   const project = issue2 ? flux2.projects().find((item) => item.id === issue2.projectId) : void 0;
   const back = () => openList(project ? `p/${project.key}` : "");
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: bar, keys: issue2 ? ISSUE_KEYS : void 0, onKeyDown: issue2 ? (key) => onIssueKey(flux2, issue2, key) : void 0, children: [
-    /* @__PURE__ */ jsxs8(ui11.pressable, { label: `Back to ${project?.name ?? "All projects"}`, tooltip: `Back to ${project?.name ?? "All projects"}`, onClick: back, style: { ...ghostChip, minWidth: 0, flexShrink: 1, color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: bar, keys: issue2 ? ISSUE_KEYS : void 0, onKeyDown: issue2 ? (key) => onIssueKey(flux2, issue2, key) : void 0, children: [
+    /* @__PURE__ */ jsxs8(ui14.pressable, { label: `Back to ${project?.name ?? "All projects"}`, tooltip: `Back to ${project?.name ?? "All projects"}`, onClick: back, style: { ...ghostChip, minWidth: 0, flexShrink: 1, color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
       project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx9(FluxMark, { size: 16 }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, minWidth: 0, color: "currentColor" }, maxLines: 1, children: project?.name ?? "All projects" })
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0, color: "currentColor" }, maxLines: 1, children: project?.name ?? "All projects" })
     ] }),
-    /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text3", flexShrink: 0 } }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2", flexShrink: 0, paddingLeft: 2 }, children: issueKey }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2 ? issue2.title.trim() || "Untitled" : "" }),
-    issue2 ? /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: 28, height: 28 } }) : null,
+    /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text3", flexShrink: 0 } }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0, paddingLeft: 2 }, children: issueKey }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2 ? issue2.title.trim() || "Untitled" : "" }),
+    issue2 ? /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: 28, height: 28 } }) : null,
     issue2 ? /* @__PURE__ */ jsx9(IssueMenu, { flux: flux2, issue: issue2, onDelete: back }) : null,
     /* @__PURE__ */ jsx9(BarEnd, { onCreate: () => openCreate(flux2, issue2?.projectId ?? project?.id) })
   ] });
 }
 var titleBefore = null;
 var titleStyle = { fontSize: 30, lineHeight: "38px", fontWeight: 600, letterSpacing: -0.4, media: [{ maxWidth: 699, style: { fontSize: 24, lineHeight: "30px" } }] };
-var editingTitle = "";
 async function saveTitle(flux2, issue2, value) {
   const next2 = value.trim();
   const now = flux2.issue(issue2.id)?.title ?? issue2.title;
   if (next2 && next2 !== now) await flux2.updateIssue(issue2.id, { title: next2 });
 }
 function ParentLine({ parent }) {
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }, children: [
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue of" }),
-    /* @__PURE__ */ jsxs8(ui11.pressable, { label: `${parent.key} ${parent.title}`, onClick: () => openIssue(parent.key), style: { flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexShrink: 1 }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }, children: [
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue of" }),
+    /* @__PURE__ */ jsxs8(ui14.pressable, { label: `${parent.key} ${parent.title}`, onClick: () => openIssue(parent.key), style: { flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexShrink: 1 }, children: [
       /* @__PURE__ */ jsx9(StatusIcon, { status: parent.status, size: 14 }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, minWidth: 0 }, maxLines: 1, children: `${parent.key} ${parent.title.trim() || "Untitled"}` })
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, minWidth: 0 }, maxLines: 1, children: `${parent.key} ${parent.title.trim() || "Untitled"}` })
     ] }),
     parent.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: parent.subIssueDoneCount, total: parent.subIssueCount }) : null
   ] });
 }
-var subsOpen = true;
 var SUB_ORDERINGS = ["created", "priority", "status"];
 var SUB_PROPERTIES = ["id", "priority", "assignee", "labels"];
 var SUB_ORDERING_LABELS = { created: "Created", priority: "Priority", status: "Status" };
@@ -82873,19 +83098,18 @@ function orderSubs(subs, ordering) {
   if (ordering === "status") out.sort((a3, b) => STATUSES.indexOf(a3.status) - STATUSES.indexOf(b.status) || created(a3, b));
   return out;
 }
-var composing = null;
 var filing = Promise.resolve();
 function composeSub(flux2, parent) {
-  subsOpen = true;
-  if (composing?.parent === parent.id) return;
+  st5.subsOpen = true;
+  if (st5.composing?.parent === parent.id) return;
   const me2 = flux2.me?.id;
   const siblings = flux2.issues().filter((i2) => i2.parentId === parent.id);
   const same = (ids) => ids.length === parent.assigneeIds.length && ids.every((id2) => parent.assigneeIds.includes(id2));
   const inherit = parent.assigneeIds.length > 0 && (!!me2 && parent.assigneeIds.includes(me2) || siblings.length > 0 && siblings.every((s) => same(s.assigneeIds)));
-  composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
+  st5.composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
 }
 function fileSub(flux2, parent, title) {
-  const c = composing;
+  const c = st5.composing;
   const trimmed = title.trim();
   if (!c || !trimmed) return false;
   const input2 = { projectId: parent.projectId, parentId: parent.id, title: trimmed, status: c.status, priority: c.priority, assigneeIds: c.assigneeIds, labelIds: c.labelIds };
@@ -82897,35 +83121,35 @@ function SubIssues({ flux: flux2, issue: issue2, subs }) {
   const display = subDisplay();
   const ordered = orderSubs(subs, display.ordering);
   const done = subs.filter((sub) => CLOSED_STATUSES.has(sub.status)).length;
-  const open5 = composing?.parent === issue2.id;
+  const open3 = st5.composing?.parent === issue2.id;
   const setDisplay2 = (patch) => storage4.set("subDisplay", { ...display, ...patch });
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { marginTop: 32, gap: 0 }, children: [
-    subs.length > 0 ? /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
-      /* @__PURE__ */ jsxs8(ui11.pressable, { label: "Sub-issues", checked: subsOpen, onClick: () => {
-        subsOpen = !subsOpen;
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { marginTop: 32, gap: 0 }, children: [
+    subs.length > 0 ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
+      /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Sub-issues", checked: st5.subsOpen, onClick: () => {
+        st5.subsOpen = !st5.subsOpen;
       }, style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500 }, children: "Sub-issues" }),
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: st5.subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: "Sub-issues" }),
         /* @__PURE__ */ jsx9(SubIssueChip, { done, total: subs.length })
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: "Sub-issue display options", tooltip: "Display options", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "sliders", style: { width: 16, height: 16, color: "currentColor" } }),
-        /* @__PURE__ */ jsx9(ui11.heading, { children: "Ordering" }),
-        SUB_ORDERINGS.map((o) => /* @__PURE__ */ jsx9(ui11.item, { checked: display.ordering === o, onClick: () => setDisplay2({ ordering: o }), children: SUB_ORDERING_LABELS[o] }, "o-" + o)),
-        /* @__PURE__ */ jsx9(ui11.separator, {}),
-        /* @__PURE__ */ jsx9(ui11.heading, { children: "Display properties" }),
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: "Sub-issue display options", tooltip: "Display options", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "sliders", style: { width: 16, height: 16, color: "currentColor" } }),
+        /* @__PURE__ */ jsx9(ui14.heading, { children: "Ordering" }),
+        SUB_ORDERINGS.map((o) => /* @__PURE__ */ jsx9(ui14.item, { checked: display.ordering === o, onClick: () => setDisplay2({ ordering: o }), children: SUB_ORDERING_LABELS[o] }, "o-" + o)),
+        /* @__PURE__ */ jsx9(ui14.separator, {}),
+        /* @__PURE__ */ jsx9(ui14.heading, { children: "Display properties" }),
         SUB_PROPERTIES.map((p) => {
           const on3 = display.properties.includes(p);
-          return /* @__PURE__ */ jsx9(ui11.item, { checked: on3, onClick: () => setDisplay2({ properties: on3 ? display.properties.filter((x2) => x2 !== p) : SUB_PROPERTIES.filter((x2) => x2 === p || display.properties.includes(x2)) }), children: SUB_PROPERTY_LABELS[p] }, "p-" + p);
+          return /* @__PURE__ */ jsx9(ui14.item, { checked: on3, onClick: () => setDisplay2({ properties: on3 ? display.properties.filter((x2) => x2 !== p) : SUB_PROPERTIES.filter((x2) => x2 === p || display.properties.includes(x2)) }), children: SUB_PROPERTY_LABELS[p] }, "p-" + p);
         })
       ] }),
-      /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "plus", label: "Add sub-issue", tooltip: "Add sub-issue (⌘⇧O)", style: { width: 28, height: 28 }, onClick: () => composeSub(flux2, issue2) })
-    ] }) : !open5 ? /* @__PURE__ */ jsxs8(ui11.pressable, { label: "Add sub-issues", onClick: () => composeSub(flux2, issue2), style: { flexDirection: "row", gap: 8, alignItems: "center", alignSelf: "flex-start", height: 32, paddingLeft: 6, paddingRight: 8, borderRadius: "control", color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
-      /* @__PURE__ */ jsx9(ui11.icon, { icon: "plus", style: { width: 14, height: 14, color: "currentColor" } }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "currentColor" }, children: "Add sub-issues" })
+      /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: "Add sub-issue", tooltip: "Add sub-issue (⌘⇧O)", style: { width: 28, height: 28 }, onClick: () => composeSub(flux2, issue2) })
+    ] }) : !open3 ? /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Add sub-issues", onClick: () => composeSub(flux2, issue2), style: { flexDirection: "row", gap: 8, alignItems: "center", alignSelf: "flex-start", height: 32, paddingLeft: 6, paddingRight: 8, borderRadius: "control", color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
+      /* @__PURE__ */ jsx9(ui14.icon, { icon: "plus", style: { width: 14, height: 14, color: "currentColor" } }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, children: "Add sub-issues" })
     ] }) : null,
-    subsOpen && subs.length > 0 ? /* @__PURE__ */ jsx9(ui11.box, { style: { marginTop: 4 }, children: ordered.map((sub) => /* @__PURE__ */ jsx9(SubRow, { flux: flux2, sub, members: members2, properties: display.properties }, sub.id)) }) : null,
-    open5 ? /* @__PURE__ */ jsx9(SubComposer, { flux: flux2, parent: issue2 }) : null
+    st5.subsOpen && subs.length > 0 ? /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 4 }, children: ordered.map((sub) => /* @__PURE__ */ jsx9(SubRow, { flux: flux2, sub, members: members2, properties: display.properties }, sub.id)) }) : null,
+    open3 ? /* @__PURE__ */ jsx9(SubComposer, { flux: flux2, parent: issue2 }) : null
   ] });
 }
 function SubRow({ flux: flux2, sub, members: members2, properties }) {
@@ -82934,16 +83158,16 @@ function SubRow({ flux: flux2, sub, members: members2, properties }) {
   const who = members2.filter((member2) => sub.assigneeIds.includes(member2.id));
   const labels = flux2.labels().filter((l) => sub.labelIds.includes(l.id)).slice(0, 2);
   const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
-  return /* @__PURE__ */ jsxs8(ui11.box, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
     /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: sub }),
     /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[sub.status]}`, style: cell, children: [
       /* @__PURE__ */ jsx9(StatusIcon, { status: sub.status, size: 14 }),
       pickerItems(flux2, sub, "status")
     ] }),
-    shown("id") ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: sub.key }) : null,
+    shown("id") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: sub.key }) : null,
     shown("priority") && sub.priority !== "none" ? /* @__PURE__ */ jsx9(PriorityIcon, { priority: sub.priority, size: 14 }) : null,
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
-    shown("labels") && labels.length ? /* @__PURE__ */ jsx9(ui11.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx9(ui11.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
+    shown("labels") && labels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx9(ui14.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
     shown("assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
       who.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: who, size: 20 }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
       pickerItems(flux2, sub, "assignees")
@@ -82951,11 +83175,11 @@ function SubRow({ flux: flux2, sub, members: members2, properties }) {
   ] });
 }
 function SubComposer({ flux: flux2, parent }) {
-  const c = composing;
+  const c = st5.composing;
   const members2 = flux2.memberList();
   const me2 = flux2.me?.id;
   const close5 = () => {
-    composing = null;
+    st5.composing = null;
   };
   const submit2 = (andClose) => {
     if (!fileSub(flux2, parent, c.title)) return;
@@ -82966,10 +83190,10 @@ function SubComposer({ flux: flux2, parent }) {
   const who = members2.filter((m) => c.assigneeIds.includes(m.id));
   const chosen = flux2.labels().filter((l) => c.labelIds.includes(l.id));
   const chip2 = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, maxWidth: 224, minWidth: 0, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, border: "1px solid border", backgroundColor: "overlay", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } };
-  const chipText = (text2, muted) => /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: text2 });
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs8(ui11.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close5, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
+  const chipText = (text2, muted) => /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: text2 });
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs8(ui14.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close5, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
     /* @__PURE__ */ jsx9(
-      ui11.field,
+      ui14.field,
       {
         multiline: true,
         autoFocus: true,
@@ -82991,122 +83215,122 @@ function SubComposer({ flux: flux2, parent }) {
       },
       "sub-title-" + parent.id
     ),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 4 }, children: [
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Status: ${STATUS_LABELS[c.status]}`, style: chip2, children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Status: ${STATUS_LABELS[c.status]}`, style: chip2, children: [
         /* @__PURE__ */ jsx9(StatusIcon, { status: c.status, size: 14 }),
         chipText(STATUS_LABELS[c.status], false),
-        STATUSES.map((st2) => /* @__PURE__ */ jsx9(ui11.item, { ...statusMark(st2), checked: c.status === st2, onClick: () => {
-          c.status = st2;
-        }, children: STATUS_LABELS[st2] }, st2))
+        STATUSES.map((st7) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(st7), checked: c.status === st7, onClick: () => {
+          c.status = st7;
+        }, children: STATUS_LABELS[st7] }, st7))
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: `Priority: ${PRIORITY_LABELS[c.priority]}`, style: chip2, children: [
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Priority: ${PRIORITY_LABELS[c.priority]}`, style: chip2, children: [
         /* @__PURE__ */ jsx9(PriorityIcon, { priority: c.priority, size: 14 }),
         chipText(c.priority === "none" ? "Priority" : PRIORITY_LABELS[c.priority], c.priority === "none"),
-        [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => /* @__PURE__ */ jsx9(ui11.item, { ...priorityMark(p), checked: c.priority === p, onClick: () => {
+        [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(p), checked: c.priority === p, onClick: () => {
           c.priority = p;
         }, children: PRIORITY_LABELS[p] }, p))
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
-        who.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: who, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx9(ui11.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+        who.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: who, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
         chipText(who.length ? who.map((m) => m.name).join(", ") : "Assignee", who.length === 0),
-        () => [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((m) => /* @__PURE__ */ jsx9(ui11.item, { ...memberMark(m), detail: "@" + m.username, checked: c.assigneeIds.includes(m.id), onClick: () => {
+        () => [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((m) => /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(m), detail: "@" + m.username, checked: c.assigneeIds.includes(m.id), onClick: () => {
           c.assigneeIds = toggle(c.assigneeIds, m.id);
         }, children: m.id === me2 ? `${m.name} (you)` : m.name }, m.id))
       ] }),
-      /* @__PURE__ */ jsxs8(ui11.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
-        chosen.length ? /* @__PURE__ */ jsx9(ui11.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx9(ui11.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx9(ui11.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
+        chosen.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
         chipText(chosen.length ? `${chosen.length} ${chosen.length === 1 ? "label" : "labels"}` : "Labels", chosen.length === 0),
-        () => flux2.labels().map((l) => /* @__PURE__ */ jsx9(ui11.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
+        () => flux2.labels().map((l) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
           c.labelIds = toggle(c.labelIds, l.id);
         }, children: l.name }, l.id))
       ] }),
-      /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui11.button, { kind: "ghost", size: "sm", onClick: close5, children: "Cancel" }),
-      /* @__PURE__ */ jsx9(ui11.button, { kind: "primary", size: "sm", disabled: !c.title.trim(), tooltip: "⌘ Enter to submit and draft a similar issue\n⌘ ⇧ Enter to submit issue", onClick: () => submit2(false), children: "Create" })
+      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx9(ui14.button, { kind: "ghost", size: "sm", onClick: close5, children: "Cancel" }),
+      /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", size: "sm", disabled: !c.title.trim(), tooltip: "⌘ Enter to submit and draft a similar issue\n⌘ ⇧ Enter to submit issue", onClick: () => submit2(false), children: "Create" })
     ] })
   ] }) });
 }
 function IssueMenu({ flux: flux2, issue: issue2, onDelete }) {
   const projects = flux2.projects();
   const url2 = flux2.issueUrl(issue2);
-  return /* @__PURE__ */ jsxs8(ui11.menu, { label: "", icon: "more", tooltip: "Issue actions", children: [
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui11.copy(url2), children: "Copy link" }),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "copy", onClick: () => ui11.copy(issue2.key), children: "Copy ID" }),
-    projects.length >= 2 ? /* @__PURE__ */ jsx9(ui11.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx9(ui11.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
-    /* @__PURE__ */ jsx9(ui11.separator, {}),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
-    issue2.parentId ? /* @__PURE__ */ jsx9(ui11.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
-    /* @__PURE__ */ jsx9(ui11.separator, {}),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], onDelete), children: "Delete" })
+  return /* @__PURE__ */ jsxs8(ui14.menu, { label: "", icon: "more", tooltip: "Issue actions", children: [
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui14.copy(url2), children: "Copy link" }),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => ui14.copy(issue2.key), children: "Copy ID" }),
+    projects.length >= 2 ? /* @__PURE__ */ jsx9(ui14.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
+    /* @__PURE__ */ jsx9(ui14.separator, {}),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
+    issue2.parentId ? /* @__PURE__ */ jsx9(ui14.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
+    /* @__PURE__ */ jsx9(ui14.separator, {}),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], onDelete), children: "Delete" })
   ] });
 }
 function mentionOf(flux2) {
-  return (name2) => {
-    const lower = name2.toLowerCase();
+  return (name) => {
+    const lower = name.toLowerCase();
     if (flux2.memberList().some((m) => m.username.toLowerCase() === lower)) return { kind: "member" };
     const project = flux2.projects().find((p) => p.key.toLowerCase() === lower);
     return project ? { kind: "project", open: () => openList(`p/${project.key}`) } : null;
   };
 }
 function When({ iso, prefix = " · " }) {
-  return /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, tooltip: new Date(iso).toLocaleString(), children: prefix + ago2(iso) });
+  return /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, tooltip: new Date(iso).toLocaleString(), children: prefix + ago2(iso) });
 }
 function Comment({ flux: flux2, comment, members: members2, image }) {
   const author = members2.find((member2) => member2.id === comment.authorId);
   const mine = comment.authorId === flux2.me?.id && !comment.agent;
-  const editing2 = editingComment === comment.id;
+  const editing2 = st5.editingComment === comment.id;
   const edited = new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1e3;
   const agent2 = comment.agent;
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start", hover: { backgroundColor: "transparent" } }, children: [
-    agent2 ? /* @__PURE__ */ jsx9(ui11.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx9(AgentAvatar, { agent: agent2, size: 20 }) }) : /* @__PURE__ */ jsx9(ui11.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx9(Avatar, { member: author, size: 20 }) }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
-      /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minHeight: 24 }, children: [
-        /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", flexWrap: "wrap" }, children: [
-          agent2?.threadId ? /* @__PURE__ */ jsx9(ui11.pressable, { label: agent2.name, tooltip: "Open the agent's thread", onClick: () => ui11.openThread(agent2.threadId), style: { hover: { textDecoration: "underline" } }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2.name }) }) : /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2?.name ?? author?.name ?? "Someone" }),
-          agent2 ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2" }, children: ` for ${author?.name ?? "someone"}` }) : null,
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start", hover: { backgroundColor: "transparent" } }, children: [
+    agent2 ? /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx9(AgentAvatar, { agent: agent2, size: 20 }) }) : /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx9(Avatar, { member: author, size: 20 }) }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
+      /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minHeight: 24 }, children: [
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", flexWrap: "wrap" }, children: [
+          agent2?.threadId ? /* @__PURE__ */ jsx9(ui14.pressable, { label: agent2.name, tooltip: "Open the agent's thread", onClick: () => ui14.openThread(agent2.threadId), style: { hover: { textDecoration: "underline" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2.name }) }) : /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2?.name ?? author?.name ?? "Someone" }),
+          agent2 ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: ` for ${author?.name ?? "someone"}` }) : null,
           /* @__PURE__ */ jsx9(When, { iso: comment.createdAt }),
-          edited ? /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2" }, tooltip: `Edited ${new Date(comment.updatedAt).toLocaleString()}`, children: " · Edited" }) : null
+          edited ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, tooltip: `Edited ${new Date(comment.updatedAt).toLocaleString()}`, children: " · Edited" }) : null
         ] }),
-        mine && !editing2 ? /* @__PURE__ */ jsxs8(ui11.menu, { label: "Comment actions", tooltip: "Comment actions", style: { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "hover", color: "text" }, checked: { opacity: 1, backgroundColor: "press" } }, children: [
-          /* @__PURE__ */ jsx9(ui11.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
-          /* @__PURE__ */ jsx9(ui11.item, { icon: "pencil", onClick: () => {
-            editingComment = comment.id;
-            commentBody = comment.markdown;
+        mine && !editing2 ? /* @__PURE__ */ jsxs8(ui14.menu, { label: "Comment actions", tooltip: "Comment actions", style: { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "hover", color: "text" }, checked: { opacity: 1, backgroundColor: "press" } }, children: [
+          /* @__PURE__ */ jsx9(ui14.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
+          /* @__PURE__ */ jsx9(ui14.item, { icon: "pencil", onClick: () => {
+            st5.editingComment = comment.id;
+            st5.commentBody = comment.markdown;
           }, children: "Edit" }),
-          /* @__PURE__ */ jsx9(ui11.separator, {}),
-          /* @__PURE__ */ jsx9(ui11.item, { icon: "trash", danger: true, onClick: () => confirm("Delete this comment?", "This cannot be undone.", "Delete", () => flux2.deleteComment(comment.id)), children: "Delete" })
+          /* @__PURE__ */ jsx9(ui14.separator, {}),
+          /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, onClick: () => confirm("Delete this comment?", "This cannot be undone.", "Delete", () => flux2.deleteComment(comment.id)), children: "Delete" })
         ] }) : null
       ] }),
-      editing2 ? /* @__PURE__ */ jsxs8(ui11.box, { label: "Edit comment", keys: ["Escape"], onKeyDown: () => {
-        editingComment = "";
+      editing2 ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Edit comment", keys: ["Escape"], onKeyDown: () => {
+        st5.editingComment = "";
       }, style: { marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }, children: [
-        /* @__PURE__ */ jsx9(ui11.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx9(ui11.editor, { value: commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), onChange: (value) => {
-          commentBody = value;
+        /* @__PURE__ */ jsx9(ui14.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx9(ui14.editor, { value: st5.commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), onChange: (value) => {
+          st5.commentBody = value;
         }, onSubmit: () => saveComment(flux2, comment.id), style: { padding: 0 } }, "edit-" + comment.id) }),
-        /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }, children: [
-          /* @__PURE__ */ jsx9(ui11.button, { size: "sm", kind: "ghost", onClick: () => {
-            editingComment = "";
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }, children: [
+          /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: "ghost", onClick: () => {
+            st5.editingComment = "";
           }, children: "Cancel" }),
-          /* @__PURE__ */ jsx9(ui11.button, { size: "sm", kind: "primary", disabled: !commentBody.trim(), onClick: () => saveComment(flux2, comment.id), children: "Save" })
+          /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: "primary", disabled: !st5.commentBody.trim(), onClick: () => saveComment(flux2, comment.id), children: "Save" })
         ] })
       ] }) : /* @__PURE__ */ jsx9(Markdown, { md: comment.markdown, image, mention: mentionOf(flux2) })
     ] })
   ] });
 }
 function saveComment(flux2, id2) {
-  const body = commentBody.trim();
+  const body = st5.commentBody.trim();
   if (!body) return;
-  editingComment = "";
-  void flux2.updateComment(id2, body).catch((error62) => ui11.toast(error62 instanceof Error ? error62.message : String(error62)));
+  st5.editingComment = "";
+  void flux2.updateComment(id2, body).catch((error62) => ui14.toast(error62 instanceof Error ? error62.message : String(error62)));
 }
 function ActivityRow({ member: member2, when, text: text2 }) {
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", minHeight: 24 }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", minHeight: 24 }, children: [
     /* @__PURE__ */ jsx9(Avatar, { member: member2, size: 20 }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", minWidth: 0 }, children: [
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, fontWeight: 500 }, children: member2?.name ?? "Someone" }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2" }, children: ` ${text2}` }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", minWidth: 0 }, children: [
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: member2?.name ?? "Someone" }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: ` ${text2}` }),
       /* @__PURE__ */ jsx9(When, { iso: when })
     ] })
   ] });
@@ -83118,53 +83342,53 @@ function PropertyRail({ flux: flux2, issue: issue2, project, members: members2 }
   const edits = { update: (patch) => apply2(flux2, issue2.id, patch) };
   const labelItems = () => pickerItems(flux2, issue2, "labels");
   const another = issue2.threadIds.length > 0;
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 2 }, children: [
-      /* @__PURE__ */ jsx9(ui11.text, { style: railHeading, children: "Properties" }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: () => flux2.projects().map((item) => /* @__PURE__ */ jsx9(ui11.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx9(ui14.text, { style: railHeading, children: "Properties" }),
+      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: () => flux2.projects().map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
       /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status }), label: "Status", value: STATUS_LABELS[issue2.status], menu: "Status: " + STATUS_LABELS[issue2.status], children: () => pickerItems(flux2, issue2, "status") }),
       /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority }), label: "Priority", value: issue2.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue2.priority], muted: issue2.priority === "none", menu: "Priority: " + PRIORITY_LABELS[issue2.priority], children: () => pickerItems(flux2, issue2, "priority") }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx9(ui11.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: () => pickerItems(flux2, issue2, "assignees") }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(ui11.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: () => dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate })) })
+      /* @__PURE__ */ jsx9(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: () => pickerItems(flux2, issue2, "assignees") }),
+      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: () => dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate })) })
     ] }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 2 }, children: [
-      /* @__PURE__ */ jsx9(ui11.text, { style: railHeading, children: "Labels" }),
-      labels.length === 0 ? /* @__PURE__ */ jsxs8(ui11.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx9(ui11.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx9(ui14.text, { style: railHeading, children: "Labels" }),
+      labels.length === 0 ? /* @__PURE__ */ jsxs8(ui14.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
         labelItems
-      ] }) : /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
-        labels.map((item) => /* @__PURE__ */ jsxs8(ui11.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
-          /* @__PURE__ */ jsx9(ui11.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
-          /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
+      ] }) : /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
+        labels.map((item) => /* @__PURE__ */ jsxs8(ui14.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+          /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
+          /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
           labelItems
         ] }, item.id)),
-        /* @__PURE__ */ jsx9(ui11.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
+        /* @__PURE__ */ jsx9(ui14.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { gap: 4 }, children: [
-      /* @__PURE__ */ jsx9(ui11.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 4 }, children: [
+      /* @__PURE__ */ jsx9(ui14.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
       issue2.threadIds.map((id2) => {
         const thread = threadInfo(id2);
-        return /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxs8(ui11.pressable, { label: thread?.title || "Archived thread", onClick: () => ui11.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-            /* @__PURE__ */ jsx9(ui11.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx9(ui11.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
-            /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: thread ? thread.title || "Untitled thread" : "Archived thread" })
+        return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsxs8(ui14.pressable, { label: thread?.title || "Archived thread", onClick: () => ui14.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
+            /* @__PURE__ */ jsx9(ui14.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
+            /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: thread ? thread.title || "Untitled thread" : "Archived thread" })
           ] }),
-          /* @__PURE__ */ jsx9(ui11.iconButton, { icon: "x", label: "Detach thread", onClick: () => {
+          /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "x", label: "Detach thread", onClick: () => {
             flux2.detach(issue2.id, id2);
-            ui11.toast(`Detached from ${issue2.key}.`);
+            ui14.toast(`Detached from ${issue2.key}.`);
           } })
         ] }, id2);
       }),
-      /* @__PURE__ */ jsx9(ui11.button, { size: "sm", kind: another ? "secondary" : "primary", icon: "bot", onClick: () => startAgent(issue2.id), style: { marginTop: 4, width: "100%" }, children: another ? "Start another agent" : "Start agent" })
+      /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: another ? "secondary" : "primary", icon: "bot", onClick: () => startAgent(issue2.id), style: { marginTop: 4, width: "100%" }, children: another ? "Start another agent" : "Start agent" })
     ] })
   ] });
 }
 function RailRow({ icon, value, menu, muted, children }) {
-  return /* @__PURE__ */ jsxs8(ui11.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
     icon,
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: value }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: value }),
     children
   ] });
 }
@@ -83178,8 +83402,8 @@ function workspaceInitial(flux2) {
 function WorkspaceMark({ flux: flux2, size: size3 }) {
   const box = { width: size3, height: size3, flexShrink: 0, borderRadius: Math.round(size3 / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" };
   const logo = flux2 === hub.active ? pictureBytes(flux2.workspace?.imageUrl) : null;
-  if (logo) return /* @__PURE__ */ jsx9(ui11.image, { src: logo, alt: "", style: { ...box, objectFit: "cover" } });
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { ...box, backgroundColor: colorOf[workspaceColor(flux2)] }, children: /* @__PURE__ */ jsx9(ui11.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 600 }, children: workspaceInitial(flux2) }) });
+  if (logo) return /* @__PURE__ */ jsx9(ui14.image, { src: logo, alt: "", style: { ...box, objectFit: "cover" } });
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { ...box, backgroundColor: colorOf[workspaceColor(flux2)] }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 600 }, children: workspaceInitial(flux2) }) });
 }
 function workspaceMark(flux2) {
   const logo = flux2 === hub.active ? pictureBytes(flux2.workspace?.imageUrl) : null;
@@ -83188,50 +83412,50 @@ function workspaceMark(flux2) {
 function WorkspaceSwitcher() {
   const list2 = hub.connected();
   const active = hub.active;
-  const name2 = active.workspace?.name || active.baseUrl || "Flux";
+  const name = active.workspace?.name || active.baseUrl || "Flux";
   const ready = active.connection().state === "ready";
-  return /* @__PURE__ */ jsxs8(ui11.menu, { label: `Workspace: ${name2}${ready ? "" : " (offline)"}`, tooltip: ready ? `Workspace: ${name2}` : `${name2} can't be reached`, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 24, minWidth: 0, maxWidth: "100%", paddingLeft: 4, paddingRight: 4, borderRadius: "control", color: "text2", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.menu, { label: `Workspace: ${name}${ready ? "" : " (offline)"}`, tooltip: ready ? `Workspace: ${name}` : `${name} can't be reached`, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 24, minWidth: 0, maxWidth: "100%", paddingLeft: 4, paddingRight: 4, borderRadius: "control", color: "text2", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
     /* @__PURE__ */ jsx9(WorkspaceMark, { flux: active, size: 16 }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 13, minWidth: 0, color: "currentColor" }, maxLines: 1, children: name2 }),
-    ready ? null : /* @__PURE__ */ jsx9(ui11.box, { style: { width: 6, height: 6, flexShrink: 0, borderRadius: "full", backgroundColor: "amber" } }),
-    /* @__PURE__ */ jsx9(ui11.icon, { icon: "chevron-down", style: { width: 12, height: 12, flexShrink: 0, color: "text3" } }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, minWidth: 0, color: "currentColor" }, maxLines: 1, children: name }),
+    ready ? null : /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, flexShrink: 0, borderRadius: "full", backgroundColor: "amber" } }),
+    /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, flexShrink: 0, color: "text3" } }),
     list2.map((item) => {
       const connection = item.connection();
       const title = connection.workspace?.name || connection.baseUrl || item.url || "Not connected";
-      return /* @__PURE__ */ jsx9(ui11.item, { ...workspaceMark(item), checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
+      return /* @__PURE__ */ jsx9(ui14.item, { ...workspaceMark(item), checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
     }),
-    /* @__PURE__ */ jsx9(ui11.separator, {}),
-    /* @__PURE__ */ jsx9(ui11.item, { icon: "settings", href: SETTINGS, children: "Flux settings…" })
+    /* @__PURE__ */ jsx9(ui14.separator, {}),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "settings", href: SETTINGS, children: "Flux settings…" })
   ] });
 }
 var SETTINGS = "swarm://settings/flux/flux";
 function CantLoad({ flux: flux2 }) {
   const connection = flux2.connection();
-  return /* @__PURE__ */ jsxs8(ui11.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: [
+  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: [
     /* @__PURE__ */ jsx9(IssuesArt, {}),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux" }),
-    /* @__PURE__ */ jsx9(ui11.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }, selectable: true, children: connection.state === "offline" ? offline(connection.message, false) : connection.message }),
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }, children: [
-      /* @__PURE__ */ jsx9(ui11.button, { kind: "secondary", onClick: () => void flux2.resync().catch(() => {
+    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux" }),
+    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }, selectable: true, children: connection.state === "offline" ? offline(connection.message, false) : connection.message }),
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }, children: [
+      /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => void flux2.resync().catch(() => {
       }), children: "Try again" }),
-      /* @__PURE__ */ jsx9(ui11.link, { label: "Flux settings", href: SETTINGS })
+      /* @__PURE__ */ jsx9(ui14.link, { label: "Flux settings", href: SETTINGS })
     ] })
   ] });
 }
 function Setup({ flux: flux2 }) {
   const connection = flux2.connection();
   const refused = connection.state === "unauthorized";
-  return /* @__PURE__ */ jsx9(ui11.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui11.box, { style: { width: "100%", maxWidth: 420, gap: 20 }, children: [
-    /* @__PURE__ */ jsxs8(ui11.box, { style: { alignItems: "center", gap: 10 }, children: [
-      /* @__PURE__ */ jsx9(ui11.box, { style: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx9(FluxMark, { size: 24, color: "text" }) }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { fontSize: 18, fontWeight: 600 }, children: "Connect Flux" }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { color: "text2", textAlign: "center" }, children: "See your issues here, start a thread from one, and keep its status in step as the thread works on it." })
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { width: "100%", maxWidth: 420, gap: 20 }, children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { style: { alignItems: "center", gap: 10 }, children: [
+      /* @__PURE__ */ jsx9(ui14.box, { style: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx9(FluxMark, { size: 24, color: "text" }) }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 18, fontWeight: 600 }, children: "Connect Flux" }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { color: "text2", textAlign: "center" }, children: "See your issues here, start a thread from one, and keep its status in step as the thread works on it." })
     ] }),
-    refused ? /* @__PURE__ */ jsxs8(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx9(ui11.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx9(ui11.text, { style: { color: "text", flex: 1 }, children: connection.message || "Flux didn't take that token: make another." })
+    refused ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx9(ui14.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx9(ui14.text, { style: { color: "text", flex: 1 }, children: connection.message || "Flux didn't take that token: make another." })
     ] }) : null,
-    /* @__PURE__ */ jsx9(ui11.box, { style: { padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx9(ConnectForm, { name: "setup", target: refused ? flux2.id : null, url: flux2.url }) })
+    /* @__PURE__ */ jsx9(ui14.box, { style: { padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx9(ConnectForm, { name: "setup", target: refused ? flux2.id : null, url: flux2.url }) })
   ] }) });
 }
 function unstarted(flux2, projectId) {
@@ -83240,32 +83464,29 @@ function unstarted(flux2, projectId) {
 }
 
 // src/settings.tsx
-import { call as call4, ui as ui12 } from "swarm";
+import { call as call4, ui as ui15 } from "swarm";
 import { jsx as jsx10, jsxs as jsxs9 } from "swarm/jsx-runtime";
-var editing = /* @__PURE__ */ new Set();
-var adding = false;
-var swarmProjects2 = null;
-var reading = false;
+var editing = ui15.store(/* @__PURE__ */ new Set());
+var st6 = ui15.store({ adding: false, swarmProjects: null, reading: false });
 function refreshProjects() {
-  if (reading) return;
-  reading = true;
+  if (st6.reading) return;
+  st6.reading = true;
   call4("Projects", {}).then((projects) => {
-    swarmProjects2 = projects.map((project) => ({ id: project.id, name: project.name }));
+    st6.swarmProjects = projects.map((project) => ({ id: project.id, name: project.name }));
   }).catch(() => {
-    swarmProjects2 = [];
+    st6.swarmProjects = [];
   }).finally(() => {
-    reading = false;
-    ui12.update();
+    st6.reading = false;
   });
 }
 var card = { gap: 14, padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" };
 function FluxSettings() {
   const list2 = hub.connected();
   if (list2.length === 0) {
-    return /* @__PURE__ */ jsxs9(ui12.box, { style: { gap: 16, maxWidth: 640 }, children: [
-      /* @__PURE__ */ jsx10(ui12.text, { style: { color: "text2" }, children: "Flux issues in Swarm: agents read and update them with swarm flux, and a thread started on an issue keeps it current." }),
-      /* @__PURE__ */ jsxs9(ui12.box, { style: card, children: [
-        /* @__PURE__ */ jsx10(ui12.text, { style: { fontWeight: 600 }, children: "Connect Flux" }),
+    return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 16, maxWidth: 640 }, children: [
+      /* @__PURE__ */ jsx10(ui15.text, { style: { color: "text2" }, children: "Flux issues in Swarm: agents read and update them with swarm flux, and a thread started on an issue keeps it current." }),
+      /* @__PURE__ */ jsxs9(ui15.box, { style: card, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 600 }, children: "Connect Flux" }),
         /* @__PURE__ */ jsx10(ConnectForm, { name: "first", target: null })
       ] })
     ] });
@@ -83273,18 +83494,18 @@ function FluxSettings() {
   const active = hub.active;
   const several = list2.length > 1;
   const connection = active.connection();
-  return /* @__PURE__ */ jsxs9(ui12.box, { style: { gap: 24, maxWidth: 640 }, children: [
-    /* @__PURE__ */ jsxs9(ui12.box, { style: { gap: 12 }, children: [
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 24, maxWidth: 640 }, children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 12 }, children: [
       list2.map((flux2) => /* @__PURE__ */ jsx10(ConnectionCard, { flux: flux2, active: several ? flux2.id === active.id : null }, flux2.id)),
-      adding ? /* @__PURE__ */ jsxs9(ui12.box, { style: card, children: [
-        /* @__PURE__ */ jsx10(ui12.text, { style: { fontWeight: 600 }, children: "Add another Flux" }),
+      st6.adding ? /* @__PURE__ */ jsxs9(ui15.box, { style: card, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 600 }, children: "Add another Flux" }),
         /* @__PURE__ */ jsx10(ConnectForm, { name: "another", target: null, done: () => {
-          adding = false;
+          st6.adding = false;
         }, cancel: () => {
-          adding = false;
+          st6.adding = false;
         } })
-      ] }) : /* @__PURE__ */ jsx10(ui12.button, { kind: "secondary", size: "sm", icon: "plus", onClick: () => {
-        adding = true;
+      ] }) : /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", icon: "plus", onClick: () => {
+        st6.adding = true;
       }, style: { alignSelf: "flex-start" }, children: "Add another Flux" })
     ] }),
     connection.state === "ready" || active.projects().length > 0 ? /* @__PURE__ */ jsx10(ProjectLinks, { flux: active }) : null
@@ -83329,34 +83550,34 @@ function detail(flux2) {
 function ConnectionCard({ flux: flux2, active }) {
   const c = flux2.connection();
   const mustAct = c.state === "unauthorized" || c.state === "error";
-  const open5 = mustAct || editing.has(flux2.id);
-  const name2 = `${headline(flux2)}, ${detail(flux2)}`;
-  return /* @__PURE__ */ jsxs9(ui12.box, { label: name2, style: card, children: [
-    /* @__PURE__ */ jsxs9(ui12.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", flexWrap: "wrap" }, children: [
+  const open3 = mustAct || editing.has(flux2.id);
+  const name = `${headline(flux2)}, ${detail(flux2)}`;
+  return /* @__PURE__ */ jsxs9(ui15.box, { label: name, style: card, children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", flexWrap: "wrap" }, children: [
       c.me ? /* @__PURE__ */ jsx10(Avatar, { member: { id: c.me.id, name: c.me.name, username: c.me.username, email: c.me.email, avatarUrl: c.me.avatarUrl ?? null, avatarColor: "gray" }, size: 32 }) : null,
-      /* @__PURE__ */ jsxs9(ui12.box, { style: { flex: 1, minWidth: 160, gap: 2 }, children: [
-        /* @__PURE__ */ jsxs9(ui12.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsx10(ui12.box, { style: { width: 8, height: 8, borderRadius: "full", flexShrink: 0, backgroundColor: DOT2[c.state], ...c.state === "connecting" ? { animation: { name: "pulse" } } : {} } }),
-          /* @__PURE__ */ jsx10(ui12.text, { style: { fontWeight: 500, minWidth: 0 }, maxLines: 1, children: headline(flux2) }),
-          active ? /* @__PURE__ */ jsx10(ui12.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover" }, children: /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: 11, color: "text2" }, children: "Active" }) }) : null
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 160, gap: 2 }, children: [
+        /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", flexShrink: 0, backgroundColor: DOT2[c.state], ...c.state === "connecting" ? { animation: { name: "pulse" } } : {} } }),
+          /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 500, minWidth: 0 }, maxLines: 1, children: headline(flux2) }),
+          active ? /* @__PURE__ */ jsx10(ui15.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover" }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 11, color: "text2" }, children: "Active" }) }) : null
         ] }),
-        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: "small", color: "text2" }, maxLines: 2, children: detail(flux2) })
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", color: "text2" }, maxLines: 2, children: detail(flux2) })
       ] }),
-      /* @__PURE__ */ jsxs9(ui12.box, { style: { flexDirection: "row", gap: 8 }, children: [
-        active === false ? /* @__PURE__ */ jsx10(ui12.button, { kind: "secondary", size: "sm", tooltip: `Use ${hostOf(flux2)} for the board and swarm flux`, onClick: () => {
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8 }, children: [
+        active === false ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: `Use ${hostOf(flux2)} for the board and swarm flux`, onClick: () => {
           hub.use(flux2.id);
-          ui12.toast(`Switched to ${c.workspace?.name ?? hostOf(flux2)}.`);
+          ui15.toast(`Switched to ${c.workspace?.name ?? hostOf(flux2)}.`);
         }, children: "Use" }) : null,
-        c.state === "ready" || c.state === "error" ? /* @__PURE__ */ jsx10(ui12.button, { kind: "secondary", size: "sm", tooltip: "Pull everything from Flux again", onClick: () => resync(flux2), children: "Resync" }) : null,
-        c.state === "ready" || c.state === "offline" ? /* @__PURE__ */ jsx10(ui12.button, { kind: "secondary", size: "sm", tooltip: editing.has(flux2.id) ? void 0 : "Change its URL or token", onClick: () => void (editing.has(flux2.id) ? editing.delete(flux2.id) : editing.add(flux2.id)), children: editing.has(flux2.id) ? "Cancel" : "Change" }) : null
+        c.state === "ready" || c.state === "error" ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: "Pull everything from Flux again", onClick: () => resync(flux2), children: "Resync" }) : null,
+        c.state === "ready" || c.state === "offline" ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: editing.has(flux2.id) ? void 0 : "Change its URL or token", onClick: () => void (editing.has(flux2.id) ? editing.delete(flux2.id) : editing.add(flux2.id)), children: editing.has(flux2.id) ? "Cancel" : "Change" }) : null
       ] })
     ] }),
-    open5 ? /* @__PURE__ */ jsx10(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
-    /* @__PURE__ */ jsx10(ui12.pressable, { label: `Disconnect ${hostOf(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
+    open3 ? /* @__PURE__ */ jsx10(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
+    /* @__PURE__ */ jsx10(ui15.pressable, { label: `Disconnect ${hostOf(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
   ] });
 }
 function resync(flux2) {
-  ui12.toast("Resyncing from Flux.");
+  ui15.toast("Resyncing from Flux.");
   flux2.resync().catch(() => {
   });
 }
@@ -83364,46 +83585,46 @@ function disconnect(flux2) {
   const was = flux2.connection().workspace?.name ?? hostOf(flux2);
   editing.delete(flux2.id);
   hub.disconnect(flux2.id);
-  ui12.toast(`Disconnected from ${was}.`);
+  ui15.toast(`Disconnected from ${was}.`);
 }
 function ProjectLinks({ flux: flux2 }) {
-  if (swarmProjects2 === null) refreshProjects();
+  if (st6.swarmProjects === null) refreshProjects();
   const projects = flux2.projects();
-  const known2 = swarmProjects2 ?? [];
+  const known2 = st6.swarmProjects ?? [];
   const column = { fontSize: 12, fontWeight: 500, color: "text3" };
-  return /* @__PURE__ */ jsxs9(ui12.box, { style: { gap: 12 }, children: [
-    /* @__PURE__ */ jsxs9(ui12.box, { style: { flexDirection: "row", gap: 12, alignItems: "flex-start" }, children: [
-      /* @__PURE__ */ jsxs9(ui12.box, { style: { flex: 1, minWidth: 0, gap: 4 }, children: [
-        /* @__PURE__ */ jsx10(ui12.text, { style: { fontWeight: 600 }, children: "Projects" }),
-        /* @__PURE__ */ jsx10(ui12.text, { style: { fontSize: "small", color: "text2" }, children: "Each project's icon, name and key, as Flux shows them. An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none." })
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 12 }, children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "flex-start" }, children: [
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 4 }, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 600 }, children: "Projects" }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", color: "text2" }, children: "Each project's icon, name and key, as Flux shows them. An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none." })
       ] }),
-      /* @__PURE__ */ jsx10(ui12.button, { kind: "secondary", size: "sm", icon: "plus", onClick: openNewProject, children: "New project" })
+      /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", icon: "plus", onClick: openNewProject, children: "New project" })
     ] }),
-    projects.length === 0 ? /* @__PURE__ */ jsx10(ui12.text, { style: { color: "text3" }, children: `${flux2.connection().workspace?.name ?? "This Flux"} has no projects yet.` }) : /* @__PURE__ */ jsxs9(ui12.box, { style: { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }, children: [
-      /* @__PURE__ */ jsxs9(ui12.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 32, borderBottom: "1px solid divider" }, children: [
-        /* @__PURE__ */ jsx10(ui12.text, { style: { ...column, flex: 1, paddingLeft: 40 }, children: "Name" }),
-        /* @__PURE__ */ jsx10(ui12.text, { style: { ...column, width: 52 }, children: "Key" }),
-        /* @__PURE__ */ jsx10(ui12.text, { style: { ...column, width: 240 }, children: "Where agents work" })
+    projects.length === 0 ? /* @__PURE__ */ jsx10(ui15.text, { style: { color: "text3" }, children: `${flux2.connection().workspace?.name ?? "This Flux"} has no projects yet.` }) : /* @__PURE__ */ jsxs9(ui15.box, { style: { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }, children: [
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 32, borderBottom: "1px solid divider" }, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...column, flex: 1, paddingLeft: 40 }, children: "Name" }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...column, width: 52 }, children: "Key" }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...column, width: 240 }, children: "Where agents work" })
       ] }),
       projects.map((project, i2) => {
         const linked = project.swarmProjectId;
-        const shown = linked ? known2.find((p) => p.id === linked)?.name ?? (swarmProjects2 ? "A removed project" : "…") : "Not linked";
-        return /* @__PURE__ */ jsxs9(ui12.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 44, borderTop: i2 === 0 ? "none" : "1px solid divider" }, children: [
+        const shown = linked ? known2.find((p) => p.id === linked)?.name ?? (st6.swarmProjects ? "A removed project" : "…") : "Not linked";
+        return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 44, borderTop: i2 === 0 ? "none" : "1px solid divider" }, children: [
           /* @__PURE__ */ jsx10(MarkPicker, { label: `Icon of ${project.name}`, value: markOf2(project), onChange: (next2) => setMark2(flux2, project, next2) }),
-          /* @__PURE__ */ jsx10(ui12.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: project.name }),
-          /* @__PURE__ */ jsx10(ui12.text, { style: { width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }, tooltip: keyNote(flux2, project), children: project.key }),
-          /* @__PURE__ */ jsxs9(ui12.menu, { label: `Swarm project for ${project.name}: ${shown}`, style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
-            /* @__PURE__ */ jsx10(ui12.text, { style: { flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }, maxLines: 1, children: shown }),
-            /* @__PURE__ */ jsx10(ui12.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
-            /* @__PURE__ */ jsx10(ui12.item, { checked: !linked, onClick: () => flux2.link(project.id, null), children: "Not linked" }),
-            known2.length ? /* @__PURE__ */ jsx10(ui12.separator, {}) : null,
-            known2.map((p) => /* @__PURE__ */ jsx10(ui12.item, { checked: p.id === linked, onClick: () => flux2.link(project.id, p.id), children: p.name }, p.id))
+          /* @__PURE__ */ jsx10(ui15.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: project.name }),
+          /* @__PURE__ */ jsx10(ui15.text, { style: { width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }, tooltip: keyNote(flux2, project), children: project.key }),
+          /* @__PURE__ */ jsxs9(ui15.menu, { label: `Swarm project for ${project.name}: ${shown}`, style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+            /* @__PURE__ */ jsx10(ui15.text, { style: { flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }, maxLines: 1, children: shown }),
+            /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
+            /* @__PURE__ */ jsx10(ui15.item, { checked: !linked, onClick: () => flux2.link(project.id, null), children: "Not linked" }),
+            known2.length ? /* @__PURE__ */ jsx10(ui15.separator, {}) : null,
+            known2.map((p) => /* @__PURE__ */ jsx10(ui15.item, { checked: p.id === linked, onClick: () => flux2.link(project.id, p.id), children: p.name }, p.id))
           ] }),
-          /* @__PURE__ */ jsxs9(ui12.menu, { label: `Actions for ${project.name}`, tooltip: "Project actions", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
-            /* @__PURE__ */ jsx10(ui12.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
-            /* @__PURE__ */ jsx10(ui12.item, { icon: "settings", onClick: () => openProjectSettings(project), children: "Project settings…" }),
-            /* @__PURE__ */ jsx10(ui12.separator, {}),
-            /* @__PURE__ */ jsx10(ui12.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project), children: "Delete project…" })
+          /* @__PURE__ */ jsxs9(ui15.menu, { label: `Actions for ${project.name}`, tooltip: "Project actions", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+            /* @__PURE__ */ jsx10(ui15.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
+            /* @__PURE__ */ jsx10(ui15.item, { icon: "settings", onClick: () => openProjectSettings(project), children: "Project settings…" }),
+            /* @__PURE__ */ jsx10(ui15.separator, {}),
+            /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project), children: "Delete project…" })
           ] })
         ] }, project.id);
       })
@@ -83435,9 +83656,9 @@ function badges() {
   for (const [thread, issue2] of links) {
     if (seen.has(thread)) continue;
     seen.add(thread);
-    ui13.badge(thread, { text: issue2.key, tone: TONE[issue2.status] === "faint" ? "muted" : TONE[issue2.status], tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})` });
+    ui16.badge(thread, { text: issue2.key, tone: TONE[issue2.status] === "faint" ? "muted" : TONE[issue2.status], tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})` });
   }
-  for (const t of shownBadges) if (!seen.has(t)) ui13.badge(t, null);
+  for (const t of shownBadges) if (!seen.has(t)) ui16.badge(t, null);
   shownBadges = seen;
 }
 var shownBadges = /* @__PURE__ */ new Set();
@@ -83446,11 +83667,11 @@ function connect2() {
 }
 async function refreshWorking() {
   try {
-    if (setThreads(await call5("Threads", {}))) ui13.update();
+    setThreads(await call5("Threads", {}));
   } catch {
   }
 }
-var viewing = /* @__PURE__ */ new Map();
+var viewing = ui16.store(/* @__PURE__ */ new Map());
 function issueView(issue2, thread) {
   const d = flux.detail(issue2.id);
   const project = flux.projects().find((p) => p.id === issue2.projectId);
@@ -83482,47 +83703,47 @@ function issueCard(issue2) {
   const parent = issue2.parentId ? flux.issue(issue2.parentId) : void 0;
   const labels = flux.labels().filter((label) => issue2.labelIds.includes(label.id));
   const chip2 = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" };
-  return /* @__PURE__ */ jsxs10(ui13.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui13.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, cursor: "pointer", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
-    /* @__PURE__ */ jsxs10(ui13.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
+  return /* @__PURE__ */ jsxs10(ui16.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui16.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, cursor: "pointer", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
+    /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
       /* @__PURE__ */ jsx11(ProjectMark, { project, size: 13 }),
-      parent ? /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
-      /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 11, color: "text3", flex: 1 }, children: issue2.key }),
+      parent ? /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
+      /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 11, color: "text3", flex: 1 }, children: issue2.key }),
       /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 12 }),
-      /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, color: "text2" }, children: STATUS_LABELS[issue2.status] })
+      /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2" }, children: STATUS_LABELS[issue2.status] })
     ] }),
-    /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
-    /* @__PURE__ */ jsxs10(ui13.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", flexWrap: "wrap", marginTop: 4 }, children: [
-      /* @__PURE__ */ jsx11(ui13.box, { style: { ...chip2, width: 22, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }, children: /* @__PURE__ */ jsx11(PriorityIcon, { priority: issue2.priority, size: 12 }) }),
-      issue2.dueDate ? /* @__PURE__ */ jsxs10(ui13.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx11(ui13.icon, { icon: "calendar", style: { width: 11, height: 11, color: "text2" } }),
-        /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12 }, children: issue2.dueDate })
+    /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
+    /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", flexWrap: "wrap", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsx11(ui16.box, { style: { ...chip2, width: 22, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }, children: /* @__PURE__ */ jsx11(PriorityIcon, { priority: issue2.priority, size: 12 }) }),
+      issue2.dueDate ? /* @__PURE__ */ jsxs10(ui16.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx11(ui16.icon, { icon: "calendar", style: { width: 11, height: 11, color: "text2" } }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: issue2.dueDate })
       ] }) : null,
-      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx11(ui13.box, { style: chip2, children: /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12 }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` }) }) : null,
-      labels.map((label) => /* @__PURE__ */ jsxs10(ui13.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx11(ui13.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3" } }),
-        /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12 }, children: label.name })
+      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx11(ui16.box, { style: chip2, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` }) }) : null,
+      labels.map((label) => /* @__PURE__ */ jsxs10(ui16.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx11(ui16.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3" } }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: label.name })
       ] }, label.id)),
-      issue2.threadIds.length > 0 ? /* @__PURE__ */ jsxs10(ui13.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx11(ui13.icon, { icon: "bot", style: { width: 11, height: 11, color: "text2" } }),
-        /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12 }, children: issue2.threadIds.length === 1 ? "Agent" : `${issue2.threadIds.length} agents` })
+      issue2.threadIds.length > 0 ? /* @__PURE__ */ jsxs10(ui16.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx11(ui16.icon, { icon: "bot", style: { width: 11, height: 11, color: "text2" } }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: issue2.threadIds.length === 1 ? "Agent" : `${issue2.threadIds.length} agents` })
       ] }) : null,
-      /* @__PURE__ */ jsx11(ui13.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx11(ui16.box, { style: { flex: 1 } }),
       issue2.assigneeIds.map((id2) => /* @__PURE__ */ jsx11(Avatar, { member: members2.find((m) => m.id === id2), size: 20 }, id2))
     ] })
   ] }, issue2.id);
 }
 function activate() {
+  ui16.tracked();
   hub.onChange = () => {
     badges();
     syncNav(flux);
-    ui13.update();
     void refreshWorking();
   };
   watchMergeRequests(hub);
   setInterval(() => void refreshWorking(), 5e3);
   connect2();
   settings2.onChange(connect2);
-  registerCli((name2) => hub.get(name2));
+  registerCli((name) => hub.get(name));
   tool("issue_images", (params2) => issueImages(flux, params2));
   hook("message", ({ thread }) => {
     const issues = flux.issuesOfThread(thread);
@@ -83536,9 +83757,9 @@ function activate() {
     if (e.type !== "thread.deleted" || !e.thread) return;
     for (const i2 of flux.issuesOfThread(e.thread)) flux.detach(i2.id, e.thread);
   });
-  ui13.shareIcon({ id: "mark", path: "icon.svg" });
-  ui13.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => /* @__PURE__ */ jsx11(FluxSettings, {}) });
-  ui13.nav({
+  ui16.shareIcon({ id: "mark", path: "icon.svg" });
+  ui16.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => /* @__PURE__ */ jsx11(FluxSettings, {}) });
+  ui16.nav({
     id: "flux",
     title: "Flux",
     icon: "flux:mark",
@@ -83561,12 +83782,12 @@ function activate() {
   });
   syncNav(flux);
   warmStart();
-  ui13.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: () => /* @__PURE__ */ jsx11(Palette, {}) });
-  ui13.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: () => /* @__PURE__ */ jsx11(Confirm, {}) });
-  ui13.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: () => /* @__PURE__ */ jsx11(StartAgentDialog, { flux }) });
-  ui13.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: () => /* @__PURE__ */ jsx11(ProjectDialog, { flux }) });
-  ui13.command({ id: "flux-new-project", title: "New Flux project", detail: "Its name, key and icon, then its board", icon: "folder-add", run: () => openNewProject() });
-  ui13.overlay({
+  ui16.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: () => /* @__PURE__ */ jsx11(Palette, {}) });
+  ui16.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: () => /* @__PURE__ */ jsx11(Confirm, {}) });
+  ui16.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: () => /* @__PURE__ */ jsx11(StartAgentDialog, { flux }) });
+  ui16.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: () => /* @__PURE__ */ jsx11(ProjectDialog, { flux }) });
+  ui16.command({ id: "flux-new-project", title: "New Flux project", detail: "Its name, key and icon, then its board", icon: "folder-add", run: () => openNewProject() });
+  ui16.overlay({
     id: "flux-new",
     title: "New issue",
     width: 672,
@@ -83574,50 +83795,50 @@ function activate() {
     onClose: closeCreate,
     render: () => /* @__PURE__ */ jsx11(NewIssue, { flux })
   });
-  ui13.header({
+  ui16.header({
     id: "flux-issue",
     render: ({ thread }) => {
       const issue2 = thread ? flux.issuesOfThread(thread)[0] : void 0;
       if (!issue2) return null;
-      return /* @__PURE__ */ jsxs10(ui13.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
+      return /* @__PURE__ */ jsxs10(ui16.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
         /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 12 }),
-        /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, fontWeight: 500, color: "text2", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, color: "text2", maxWidth: 144, minWidth: 0 }, maxLines: 1, children: issue2.title })
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, fontWeight: 500, color: "text2", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", maxWidth: 144, minWidth: 0 }, maxLines: 1, children: issue2.title })
       ] });
     }
   });
-  ui13.home({
+  ui16.home({
     id: "flux-open",
     title: "Flux issues",
     icon: "flux:mark",
     // Open issues nobody's agent has started, yours first, one click from the prompt; the form's project's, where it's linked to one.
     render: (context2) => {
       if (flux.projects().length === 0) {
-        return /* @__PURE__ */ jsx11(ui13.pressable, { label: "Connect Flux", onClick: () => ui13.navTo("flux", ""), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 14, color: "currentColor" }, children: "Connect Flux to pick up issues from here →" }) });
+        return /* @__PURE__ */ jsx11(ui16.pressable, { label: "Connect Flux", onClick: () => ui16.navTo("flux", ""), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, color: "currentColor" }, children: "Connect Flux to pick up issues from here →" }) });
       }
       const linked = context2.args.project ? flux.projectOfSwarm(context2.args.project) : null;
-      const open5 = unstarted(flux, linked?.id);
+      const open3 = unstarted(flux, linked?.id);
       const me2 = flux.me?.id;
-      if (open5.length === 0) {
-        return /* @__PURE__ */ jsxs10(ui13.box, { style: { flexDirection: "row", gap: 4, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 14, color: "text2" }, children: `Nothing waiting${linked ? ` in ${linked.name}` : ""}.` }),
-          /* @__PURE__ */ jsx11(ui13.link, { label: "Browse Flux", href: linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux" })
+      if (open3.length === 0) {
+        return /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 4, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, color: "text2" }, children: `Nothing waiting${linked ? ` in ${linked.name}` : ""}.` }),
+          /* @__PURE__ */ jsx11(ui16.link, { label: "Browse Flux", href: linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux" })
         ] });
       }
-      return /* @__PURE__ */ jsx11(ui13.box, { style: { gap: 0, marginLeft: -4, marginRight: -4 }, children: open5.map((issue2) => /* @__PURE__ */ jsxs10(
-        ui13.pressable,
+      return /* @__PURE__ */ jsx11(ui16.box, { style: { gap: 0, marginLeft: -4, marginRight: -4 }, children: open3.map((issue2) => /* @__PURE__ */ jsxs10(
+        ui16.pressable,
         {
           label: `${issue2.key} ${issue2.title}`,
           tooltip: "Add to the prompt",
-          onClick: () => ui13.prefill({ append: true, prompt: `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }),
+          onClick: () => ui16.prefill({ append: true, prompt: `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }),
           style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } },
           children: [
             /* @__PURE__ */ jsx11(PriorityIcon, { priority: issue2.priority, size: 14 }),
             /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 14 }),
-            /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, color: "text2", flexShrink: 0, minWidth: 56 }, children: issue2.key }),
-            /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 14, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title }),
-            /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned" }),
-            /* @__PURE__ */ jsx11(ui13.icon, { icon: "external", style: { width: 14, height: 14, color: "text2", flexShrink: 0, opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 } } })
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", flexShrink: 0, minWidth: 56 }, children: issue2.key }),
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title }),
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned" }),
+            /* @__PURE__ */ jsx11(ui16.icon, { icon: "external", style: { width: 14, height: 14, color: "text2", flexShrink: 0, opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 } } })
           ]
         },
         issue2.id
@@ -83628,8 +83849,8 @@ function activate() {
     swarm3.mentions.provide({
       id: "flux-issues",
       label: "Flux issues",
-      search: (query2) => {
-        const needle = query2.trim().toLowerCase();
+      search: (query) => {
+        const needle = query.trim().toLowerCase();
         return flux.issues().filter((issue2) => !needle || issue2.key.toLowerCase().includes(needle) || issue2.title.toLowerCase().includes(needle)).slice(0, 8).map((issue2) => ({ id: issue2.key, title: `${issue2.key} ${issue2.title}`, subtitle: STATUS_LABELS[issue2.status] }));
       },
       resolve: (id2) => {
@@ -83640,63 +83861,63 @@ function activate() {
     });
   } catch {
   }
-  ui13.directive({
+  ui16.directive({
     name: "flux",
     render: ({ args: args2 }) => {
       const issue2 = args2.key ? flux.findIssue(args2.key) : null;
-      return issue2 ? issueCard(issue2) : /* @__PURE__ */ jsx11(ui13.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
+      return issue2 ? issueCard(issue2) : /* @__PURE__ */ jsx11(ui16.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
     }
   });
-  let search2 = "";
-  ui13.panel({
+  const search = ui16.state("");
+  ui16.panel({
     id: "flux",
     title: "Flux issue",
     icon: "list",
     render: ({ thread }) => {
       const c = flux.connection();
       if (c.state === "unconfigured" || c.state === "unauthorized" || c.state !== "ready" && c.issueCount === 0) {
-        return /* @__PURE__ */ jsxs10(ui13.column, { gap: "s3", padding: "s4", children: [
-          /* @__PURE__ */ jsx11(ui13.text, { weight: 600, children: "Flux" }),
-          c.state !== "unconfigured" && /* @__PURE__ */ jsx11(ui13.text, { tone: "muted", children: c.message || `Flux is ${c.state}.` }),
-          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui13.text, { tone: "faint", children: "Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux." }),
-          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui13.link, { label: "Open Flux settings", href: "swarm://settings/flux/flux" })
+        return /* @__PURE__ */ jsxs10(ui16.column, { gap: "s3", padding: "s4", children: [
+          /* @__PURE__ */ jsx11(ui16.text, { weight: 600, children: "Flux" }),
+          c.state !== "unconfigured" && /* @__PURE__ */ jsx11(ui16.text, { tone: "muted", children: c.message || `Flux is ${c.state}.` }),
+          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui16.text, { tone: "faint", children: "Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux." }),
+          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui16.link, { label: "Open Flux settings", href: "swarm://settings/flux/flux" })
         ] });
       }
       const attached = flux.issuesOfThread(thread);
       const shown = viewing.has(thread) ? flux.issue(viewing.get(thread)) : null;
-      const needle = search2.trim().toLowerCase();
+      const needle = search.value.trim().toLowerCase();
       const me2 = flux.me?.id ?? "";
-      const open5 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
-      return /* @__PURE__ */ jsx11(ui13.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs10(ui13.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
-        c.state !== "ready" && /* @__PURE__ */ jsxs10(ui13.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
-          /* @__PURE__ */ jsx11(ui13.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13 } }),
-          /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
+      const open3 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
+      return /* @__PURE__ */ jsx11(ui16.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs10(ui16.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
+        c.state !== "ready" && /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
+          /* @__PURE__ */ jsx11(ui16.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13 } }),
+          /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
         ] }),
-        shown ? /* @__PURE__ */ jsxs10(ui13.box, { style: { gap: 12 }, children: [
-          /* @__PURE__ */ jsxs10(ui13.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
-            /* @__PURE__ */ jsx11(ui13.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
-            /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].key : "Back" })
+        shown ? /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 12 }, children: [
+          /* @__PURE__ */ jsxs10(ui16.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
+            /* @__PURE__ */ jsx11(ui16.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].key : "Back" })
           ] }),
           issueView(shown, thread)
         ] }) : attached.map((i2) => issueView(i2, thread)),
-        attached.length || shown ? null : /* @__PURE__ */ jsxs10(ui13.box, { style: { gap: 10 }, children: [
-          /* @__PURE__ */ jsxs10(ui13.box, { style: { gap: 2 }, children: [
-            /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
-            /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, color: "text2" }, children: "The agent in this thread will report progress to it." })
+        attached.length || shown ? null : /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 10 }, children: [
+          /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 2 }, children: [
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2" }, children: "The agent in this thread will report progress to it." })
           ] }),
-          /* @__PURE__ */ jsx11(ui13.field, { value: search2, placeholder: "Search issues", onChange: (v2) => void (search2 = v2) }, "search"),
+          /* @__PURE__ */ jsx11(ui16.field, { value: search.value, placeholder: "Search issues", onChange: (v2) => void (search.value = v2) }, "search"),
           /* @__PURE__ */ jsx11(
-            ui13.list,
+            ui16.list,
             {
-              count: open5.length,
+              count: open3.length,
               rowHeight: 36,
-              rowKey: (n) => open5[n].id,
+              rowKey: (n) => open3[n].id,
               row: (n) => {
-                const i2 = open5[n];
-                return /* @__PURE__ */ jsxs10(ui13.pressable, { label: `Attach ${i2.key} ${i2.title}`, onClick: () => void flux.attach(i2.id, thread, false).then(() => ui13.toast(`Attached to ${i2.key}.`), (e) => ui13.toast(`Couldn't attach ${i2.key}: ${e instanceof Error ? e.message : String(e)}`)), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
+                const i2 = open3[n];
+                return /* @__PURE__ */ jsxs10(ui16.pressable, { label: `Attach ${i2.key} ${i2.title}`, onClick: () => void flux.attach(i2.id, thread, false).then(() => ui16.toast(`Attached to ${i2.key}.`), (e) => ui16.toast(`Couldn't attach ${i2.key}: ${e instanceof Error ? e.message : String(e)}`)), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
                   /* @__PURE__ */ jsx11(StatusIcon, { status: i2.status, size: 13 }),
-                  /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 12, color: "text2", width: 72 }, children: i2.key }),
-                  /* @__PURE__ */ jsx11(ui13.text, { style: { fontSize: 13, flex: 1, minWidth: 0 }, maxLines: 1, children: i2.title })
+                  /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", width: 72 }, children: i2.key }),
+                  /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 13, flex: 1, minWidth: 0 }, maxLines: 1, children: i2.title })
                 ] });
               }
             },

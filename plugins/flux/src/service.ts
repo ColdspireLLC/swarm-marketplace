@@ -3,7 +3,7 @@
 // stream (GET /sync/events), and changed by pushes of whole items,
 // retried when another change won. Ported from bb's service.ts and
 // replica.ts, which kept it in SQLite.
-import swarm, { storage } from "swarm";
+import swarm, { storage, ui, type UIComputed as Computed } from "swarm";
 import { z } from "zod";
 import type { CommentAgent } from "./agent";
 import { parseCommentAgent } from "./agent";
@@ -80,6 +80,8 @@ interface Item {
 	body: Record<string, unknown>;
 }
 
+type Workspace = { id: string; name: string; slug: string; color?: string; imageUrl?: string | null };
+
 interface Replica {
 	scope: string;
 	version: number;
@@ -100,33 +102,97 @@ const asColor = (v: unknown): ColorName => ((COLORS as readonly string[]).includ
 const asDueDate = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
 const unique = <T>(xs: T[]) => [...new Set(xs)];
 
+/** Whether two values are alike: the same, or arrays of the same items. */
+const alikeValue = (a: unknown, b: unknown) => Object.is(a, b) || (Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => Object.is(x, b[i])));
+/** Whether two records are alike, field by field. */
+const alike = (a: object, b: object) => {
+	const ka = Object.keys(a), kb = Object.keys(b);
+	return ka.length === kb.length && ka.every((k) => alikeValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+};
+/** Lists of the same items, in order. */
+const sameList = <T>(a: readonly T[], b: readonly T[]) => a.length === b.length && a.every((x, i) => Object.is(x, b[i]));
+
+/**
+ * A list made again as what it's made of changes, which keeps what's as it
+ * was: each record alike to the one of its id before is that one, and a
+ * list of the same records is the list before. What reads it is told only
+ * of a change, and what reads one of its records only of that record's.
+ */
+function kept<T extends { id: string }>(make: () => T[]): Computed<T[]> {
+	let before: T[] = [];
+	return ui.computed(() => {
+		const was = new Map(before.map((x) => [x.id, x]));
+		const next = make().map((x) => {
+			const had = was.get(x.id);
+			return had && alike(had, x) ? had : x;
+		});
+		before = sameList(before, next) ? before : next;
+		return before;
+	});
+}
+
 /** A Flux workspace, as one URL and token reach it. */
 export class Flux {
-	state: State = "unconfigured";
-	message = "";
-	client: FluxClient | null = null;
-	me: Account | null = null;
-	workspace: { id: string; name: string; slug: string; color?: string; imageUrl?: string | null } | null = null;
-	members: Member[] = [];
-	private replica: Replica;
+	/**
+	 * What renders read of the connection and its copy of the workspace,
+	 * tracked: each change renders again what read it. Values are replaced
+	 * whole (the queue too), and the copy's items are tracked one by one.
+	 */
+	private readonly live = ui.store(
+		{
+			state: "unconfigured" as State,
+			message: "",
+			client: null as FluxClient | null,
+			me: null as Account | null,
+			workspace: null as Workspace | null,
+			members: [] as Member[],
+			replica: { scope: "", version: -1, items: {} } as Replica,
+			queue: [] as Queued[],
+			dropped: [] as Dropped[],
+			syncedAt: null as string | null,
+			configured: "",
+		},
+		{ shallow: true },
+	);
+	get state() { return this.live.state; }
+	set state(v: State) { this.live.state = v; }
+	get message() { return this.live.message; }
+	set message(v: string) { this.live.message = v; }
+	get client() { return this.live.client; }
+	set client(v: FluxClient | null) { this.live.client = v; }
+	get me() { return this.live.me; }
+	set me(v: Account | null) { this.live.me = v; }
+	get workspace() { return this.live.workspace; }
+	set workspace(v: Workspace | null) { this.live.workspace = v; }
+	get members() { return this.live.members; }
+	set members(v: Member[]) { this.live.members = v; }
+	private get replica() { return this.live.replica; }
+	private set replica(r: Replica) {
+		r.items = ui.store(r.items, { shallow: true });
+		this.live.replica = r;
+	}
+	/** The changes made while Flux couldn't be reached, oldest first, and those it didn't take. */
+	private get queue() { return this.live.queue; }
+	private set queue(v: Queued[]) { this.live.queue = v; }
+	private get dropped() { return this.live.dropped; }
+	private set dropped(v: Dropped[]) { this.live.dropped = v; }
+	/** When the copy last caught up with Flux. */
+	private get syncedAt() { return this.live.syncedAt; }
+	private set syncedAt(v: string | null) { this.live.syncedAt = v; }
+	private get configured() { return this.live.configured; }
+	private set configured(v: string) { this.live.configured = v; }
 	/** The copy on disk, and what of it changed since it was last written. */
 	private readonly disk: ItemStore;
 	private dirty = new Set<string>();
 	private cleared = false;
 	private loaded: Promise<void>;
-	/** The changes made while Flux couldn't be reached, oldest first, and those it didn't take. */
-	private queue: Queued[] = [];
-	private dropped: Dropped[] = [];
 	/** The synced items the queue's changes show over, by id; undefined where the item is new. */
 	private shadow = new Map<string, Item | undefined>();
 	private sending = false;
-	/** When the copy last caught up with Flux. */
-	private syncedAt: string | null = null;
 	private stopFollow: AbortController | null = null;
 	private pullSoon: number | null = null;
 	private ready: Promise<void> = Promise.resolve();
 	private generation = 0;
-	private configured = "";
 	private device = "";
 	/** Told after what the copy has changes. */
 	onChange: () => void = () => {};
@@ -523,7 +589,7 @@ export class Flux {
 		// Built now too, so a change that can't apply fails now.
 		this.overlay(this.build(change));
 		const seq = (this.queue[this.queue.length - 1]?.seq ?? 0) + 1;
-		this.queue.push({ seq, label, change });
+		this.queue = [...this.queue, { seq, label, change }];
 		storage.set(this.storeKey("queue"), this.queue);
 		this.onChange();
 	}
@@ -686,13 +752,39 @@ export class Flux {
 		return this.client;
 	}
 
+	// ---- What's derived of the copy ----
+	// Tracked and kept: made again only as what it's made of changes, the
+	// same objects where they're as they were, so that what renders one
+	// renders again only as it changes, and a component given it is used
+	// again (ui.tracked).
+
+	/** The copy's items by type, made again as any changes: cheap, it makes nothing. */
+	private readonly byType = ui.computed(() => {
+		const out = new Map<string, Item[]>();
+		for (const it of Object.values(this.replica.items)) {
+			const type = asString(it.body.type);
+			const list = out.get(type);
+			if (list) list.push(it);
+			else out.set(type, [it]);
+		}
+		return out;
+	});
+	private readonly types = new Map<string, Computed<Item[]>>();
+
+	/** The copy's items of a type, the same list while they're the same. */
 	private ofType(type: string): Item[] {
-		return Object.values(this.replica.items).filter((i) => i.body.type === type);
+		let c = this.types.get(type);
+		if (!c) this.types.set(type, (c = ui.computed(() => this.byType.value.get(type) ?? [], { equals: sameList })));
+		return c.value;
 	}
 
 	// ---- Reading ----
 
 	projects(): Project[] {
+		return this.projectList.value;
+	}
+
+	private readonly projectList = kept(() => {
 		const links = storage.get<Record<string, string>>("projectLinks") ?? {};
 		return this.ofType("project")
 			.map((it) => {
@@ -709,21 +801,89 @@ export class Flux {
 				};
 			})
 			.sort((a, b) => a.position - b.position || a.name.localeCompare(b.name));
-	}
+	});
 
 	labels(): Label[] {
-		return this.ofType("label")
-			.map((it) => ({ id: it.id, name: asString(it.body.name), color: asColor(it.body.color) }))
-			.sort((a, b) => a.name.localeCompare(b.name));
+		return this.labelList.value;
 	}
+
+	private readonly labelList = kept(() =>
+		this.ofType("label")
+			.map((it) => ({ id: it.id, name: asString(it.body.name), color: asColor(it.body.color) }))
+			.sort((a, b) => a.name.localeCompare(b.name)),
+	);
 
 	memberList(): Member[] {
 		return this.members;
 	}
 
 	issues(): Issue[] {
-		const keys = new Map(this.projects().map((p) => [p.id, p.key]));
+		return this.issueList.value;
+	}
+
+	private readonly issueList = kept(() => {
 		const items = this.ofType("issue");
+		return items.map(this.issueMaker(items));
+	});
+	private readonly issueById = ui.computed(() => new Map(this.issues().map((i) => [i.id, i])));
+	/** Each issue asked for, by id: told only as that issue changes. */
+	private readonly oneIssue = new Map<string, Computed<Issue | null>>();
+	/** Each issue asked for by a key or an id, as findIssue resolves it. */
+	private readonly foundIssue = new Map<string, Computed<Issue | null>>();
+	/** Each issue's sub-issues, by number; its comments, oldest first; its whole. */
+	private readonly subsOf = new Map<string, Computed<Issue[]>>();
+	private readonly commentsOf = new Map<string, Computed<Comment[]>>();
+	private readonly details = new Map<string, Computed<IssueDetail | null>>();
+	private readonly issuesByParent = ui.computed(() => {
+		const out = new Map<string, Issue[]>();
+		for (const i of this.issues()) {
+			if (!i.parentId) continue;
+			const list = out.get(i.parentId);
+			if (list) list.push(i);
+			else out.set(i.parentId, [i]);
+		}
+		for (const list of out.values()) list.sort((a, b) => a.number - b.number);
+		return out;
+	});
+	/** Comments by issue, oldest first, each made once for its item and the mentions' handles. */
+	private readonly commentsByIssue = ui.computed(() => {
+		const opts = { baseUrl: this.baseUrl, members: this.mentionTargets() };
+		const out = new Map<string, Comment[]>();
+		const items = [...this.ofType("comment")].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+		for (const c of items) {
+			let made = this.commentMade.get(c);
+			if (!made || made.opts.members !== opts.members || made.opts.baseUrl !== opts.baseUrl) {
+				made = {
+					opts,
+					comment: {
+						id: c.id,
+						authorId: asString(c.body.authorId) || null,
+						html: asString(c.body.body),
+						markdown: htmlToMarkdown(asString(c.body.body), opts),
+						agent: parseCommentAgent(c.body.agent),
+						createdAt: c.createdAt,
+						updatedAt: c.updatedAt,
+					},
+				};
+				this.commentMade.set(c, made);
+			}
+			const issueId = asString(c.body.issueId);
+			const list = out.get(issueId);
+			if (list) list.push(made.comment);
+			else out.set(issueId, [made.comment]);
+		}
+		return out;
+	});
+	private readonly commentMade = new WeakMap<Item, { opts: { baseUrl: string; members: readonly unknown[] }; comment: Comment }>();
+
+	/**
+	 * Makes Issues of the copy's items, items its issues: what each needs
+	 * from the rest (its project's key, its sub-issues, its threads) looked
+	 * up once. The page renders an issue on each key typed, so it builds
+	 * only the issues it shows, not the workspace's.
+	 */
+	private issueMaker(items: Item[]): (it: Item) => Issue {
+		const keys = new Map(this.projects().map((p) => [p.id, p.key]));
 		const children = new Map<string, { total: number; done: number }>();
 		for (const it of items) {
 			const parent = asString(it.body.parentId);
@@ -734,7 +894,7 @@ export class Flux {
 			children.set(parent, c);
 		}
 		const threads = this.threadsByIssue();
-		return items.map((it) => {
+		return (it) => {
 			const number = asNumber(it.body.number);
 			return {
 				id: it.id,
@@ -757,22 +917,31 @@ export class Flux {
 				subIssueCount: children.get(it.id)?.total ?? 0,
 				subIssueDoneCount: children.get(it.id)?.done ?? 0,
 			};
-		});
+		};
 	}
 
 	issue(id: string): Issue | null {
-		return this.issues().find((i) => i.id === id) ?? null;
+		let c = this.oneIssue.get(id);
+		if (!c) this.oneIssue.set(id, (c = ui.computed(() => this.issueById.value.get(id) ?? null)));
+		return c.value;
 	}
 
 	/** An issue by its key (old project keys too) or ID. */
 	findIssue(ref: string): Issue | null {
-		const all = this.issues();
-		const byId = all.find((i) => i.id === ref);
-		if (byId) return byId;
-		const key = parseIssueKey(ref);
-		if (!key) return null;
-		const project = this.findProject(key.projectKey);
-		return project ? (all.find((i) => i.projectId === project.id && i.number === key.number) ?? null) : null;
+		let c = this.foundIssue.get(ref);
+		if (!c) {
+			c = ui.computed(() => {
+				const byId = this.issueById.value.get(ref);
+				if (byId) return byId;
+				const key = parseIssueKey(ref);
+				if (!key) return null;
+				const project = this.findProject(key.projectKey);
+				if (!project) return null;
+				return this.issues().find((i) => i.projectId === project.id && i.number === key.number) ?? null;
+			});
+			this.foundIssue.set(ref, c);
+		}
+		return c.value;
 	}
 
 	requireIssue(ref: string): Issue {
@@ -806,40 +975,49 @@ export class Flux {
 		return `${this.baseUrl}/p/${project.key}`;
 	}
 
+	/** The projects and members a mention names, the same list while they're the same. */
 	private mentionTargets() {
-		return [...this.projects().map((p) => ({ id: `project:${p.id}`, username: p.key, name: p.name })), ...this.members];
+		return this.mentionList.value;
 	}
 
+	private readonly mentionList = ui.computed(
+		() => [...this.projects().map((p) => ({ id: `project:${p.id}`, username: p.key, name: p.name })), ...this.members],
+		{ equals: (a, b) => a.length === b.length && a.every((x, i) => x.id === b[i]!.id && x.username === b[i]!.username && x.name === b[i]!.name) },
+	);
+
 	comments(issueId: string): Comment[] {
-		const opts = { baseUrl: this.baseUrl, members: this.mentionTargets() };
-		return this.ofType("comment")
-			.filter((c) => c.body.issueId === issueId)
-			.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-			.map((c) => ({
-				id: c.id,
-				authorId: asString(c.body.authorId) || null,
-				html: asString(c.body.body),
-				markdown: htmlToMarkdown(asString(c.body.body), opts),
-				agent: parseCommentAgent(c.body.agent),
-				createdAt: c.createdAt,
-				updatedAt: c.updatedAt,
-			}));
+		let c = this.commentsOf.get(issueId);
+		if (!c) this.commentsOf.set(issueId, (c = ui.computed(() => this.commentsByIssue.value.get(issueId) ?? [], { equals: sameList })));
+		return c.value;
 	}
 
 	detail(id: string): IssueDetail {
-		const issue = this.issue(id);
-		if (!issue) throw new FluxNotFoundError(`No Flux issue with id ${id}.`);
-		const html = asString(this.replica.items[id]!.body.description);
-		const all = this.issues();
-		return {
-			issue,
-			url: this.issueUrl(issue),
-			descriptionHtml: html,
-			descriptionMarkdown: htmlToMarkdown(html, { baseUrl: this.baseUrl, members: this.mentionTargets() }),
-			comments: this.comments(id),
-			parent: issue.parentId ? (all.find((i) => i.id === issue.parentId) ?? null) : null,
-			subIssues: all.filter((i) => i.parentId === id).sort((a, b) => a.number - b.number),
-		};
+		let c = this.details.get(id);
+		if (!c) {
+			c = ui.computed(
+				(): IssueDetail | null => {
+					const issue = this.issue(id);
+					if (!issue) return null;
+					const html = asString(this.replica.items[id]?.body.description);
+					let subs = this.subsOf.get(id);
+					if (!subs) this.subsOf.set(id, (subs = ui.computed(() => this.issuesByParent.value.get(id) ?? [], { equals: sameList })));
+					return {
+						issue,
+						url: this.issueUrl(issue),
+						descriptionHtml: html,
+						descriptionMarkdown: htmlToMarkdown(html, { baseUrl: this.baseUrl, members: this.mentionTargets() }),
+						comments: this.comments(id),
+						parent: issue.parentId ? this.issue(issue.parentId) : null,
+						subIssues: subs.value,
+					};
+				},
+				{ equals: (a, b) => (a === null || b === null ? a === b : alike(a, b)) },
+			);
+			this.details.set(id, c);
+		}
+		const d = c.value;
+		if (!d) throw new FluxNotFoundError(`No Flux issue with id ${id}.`);
+		return d;
 	}
 
 	// ---- Writing ----

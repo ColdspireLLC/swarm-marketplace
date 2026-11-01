@@ -448,8 +448,8 @@ export function tickTask(md: string, n: number, done: boolean): string {
 	});
 }
 
-/** How long ago, as bb says it: now, 5m, 3h, 2d, then the date. */
-export function ago(iso: string, now = Date.now()): string {
+/** How long ago, as bb says it: now, 5m, 3h, 2d, then the date. In a render, it says it anew each minute (ui.now). */
+export function ago(iso: string, now = ui.now()): string {
 	const s = Math.max(0, (now - Date.parse(iso)) / 1000);
 	if (s < 60) return "now";
 	if (s < 3600) return Math.floor(s / 60) + "m";

@@ -9,27 +9,24 @@ import { Avatar } from "./view";
 import { MarkPicker, confirmDelete, keyNote, markOf, openNewProject, openProjectSettings, setMark } from "./projects";
 
 /** The Fluxes whose Change form is open, and whether Add another is. */
-const editing = new Set<string>();
-let adding = false;
-
-/** Swarm's projects, for the links; null until they're read. */
-let swarmProjects: { id: string; name: string }[] | null = null;
-let reading = false;
+// Tracked, with whether Add another is open, Swarm's projects for the
+// links (null until they're read), and whether they're being read.
+const editing = ui.store(new Set<string>());
+const st = ui.store({ adding: false, swarmProjects: null as { id: string; name: string }[] | null, reading: false });
 
 /** Reads Swarm's projects again, as one is added, renamed or removed. */
 export function refreshProjects() {
-	if (reading) return;
-	reading = true;
+	if (st.reading) return;
+	st.reading = true;
 	call("Projects", {})
 		.then((projects) => {
-			swarmProjects = projects.map((project) => ({ id: project.id, name: project.name }));
+			st.swarmProjects = projects.map((project) => ({ id: project.id, name: project.name }));
 		})
 		.catch(() => {
-			swarmProjects = [];
+			st.swarmProjects = [];
 		})
 		.finally(() => {
-			reading = false;
-			ui.update();
+			st.reading = false;
 		});
 }
 
@@ -55,13 +52,13 @@ export function FluxSettings() {
 		<ui.box style={{ gap: 24, maxWidth: 640 }}>
 			<ui.box style={{ gap: 12 }}>
 				{list.map((flux) => <ConnectionCard key={flux.id} flux={flux} active={several ? flux.id === active.id : null} />)}
-				{adding ? (
+				{st.adding ? (
 					<ui.box style={card}>
 						<ui.text style={{ fontWeight: 600 }}>Add another Flux</ui.text>
-						<ConnectForm name="another" target={null} done={() => { adding = false; }} cancel={() => { adding = false; }} />
+						<ConnectForm name="another" target={null} done={() => { st.adding = false; }} cancel={() => { st.adding = false; }} />
 					</ui.box>
 				) : (
-					<ui.button kind="secondary" size="sm" icon="plus" onClick={() => { adding = true; }} style={{ alignSelf: "flex-start" }}>Add another Flux</ui.button>
+					<ui.button kind="secondary" size="sm" icon="plus" onClick={() => { st.adding = true; }} style={{ alignSelf: "flex-start" }}>Add another Flux</ui.button>
 				)}
 			</ui.box>
 			{connection.state === "ready" || active.projects().length > 0 ? <ProjectLinks flux={active} /> : null}
@@ -169,9 +166,9 @@ function disconnect(flux: Flux) {
  * settings and Delete; New project at the top.
  */
 function ProjectLinks({ flux }: { flux: Flux }) {
-	if (swarmProjects === null) refreshProjects();
+	if (st.swarmProjects === null) refreshProjects();
 	const projects = flux.projects();
-	const known = swarmProjects ?? [];
+	const known = st.swarmProjects ?? [];
 	const column = { fontSize: 12, fontWeight: 500, color: "text3" } as const;
 	return (
 		<ui.box style={{ gap: 12 }}>
@@ -193,7 +190,7 @@ function ProjectLinks({ flux }: { flux: Flux }) {
 					</ui.box>
 					{projects.map((project, i) => {
 						const linked = project.swarmProjectId;
-						const shown = linked ? (known.find((p) => p.id === linked)?.name ?? (swarmProjects ? "A removed project" : "…")) : "Not linked";
+						const shown = linked ? (known.find((p) => p.id === linked)?.name ?? (st.swarmProjects ? "A removed project" : "…")) : "Not linked";
 						return (
 							<ui.box key={project.id} style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 44, borderTop: i === 0 ? "none" : "1px solid divider" }}>
 								<MarkPicker label={`Icon of ${project.name}`} value={markOf(project)} onChange={(next) => setMark(flux, project, next)} />

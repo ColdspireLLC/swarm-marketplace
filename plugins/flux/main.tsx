@@ -64,7 +64,7 @@ function connect() {
 /** Threads' titles, and whether their agents are working now, as the core last said. */
 async function refreshWorking() {
 	try {
-		if (setThreads(await call("Threads", {}))) ui.update();
+		setThreads(await call("Threads", {}));
 	} catch {
 		// Not granted the read scope: no Working chip.
 	}
@@ -72,7 +72,7 @@ async function refreshWorking() {
 
 
 /** The issue each thread's panel shows, when the user went to another (a parent, a sub-issue). */
-const viewing = new Map<string, string>();
+const viewing = ui.store(new Map<string, string>());
 
 /** An issue as bb's panel shows it, in Swarm's look. */
 function issueView(issue: Issue, thread?: string): Child {
@@ -131,10 +131,12 @@ function issueCard(issue: Issue): Child {
 }
 
 export function activate() {
+	// Its surfaces render as what they read changes: Flux's copy (the
+	// hub's), what's typed and chosen (its stores), storage and settings.
+	ui.tracked();
 	hub.onChange = () => {
 		badges();
 		syncNav(flux);
-		ui.update();
 		void refreshWorking();
 	};
 	watchMergeRequests(hub);
@@ -300,7 +302,7 @@ export function activate() {
 	});
 
 	// Each thread's Flux panel: its issue, or one to attach.
-	let search = "";
+	const search = ui.state("");
 	ui.panel({
 		id: "flux",
 		title: "Flux issue",
@@ -319,7 +321,7 @@ export function activate() {
 			}
 			const attached = flux.issuesOfThread(thread);
 			const shown = viewing.has(thread) ? flux.issue(viewing.get(thread)!) : null;
-			const needle = search.trim().toLowerCase();
+			const needle = search.value.trim().toLowerCase();
 			const me = flux.me?.id ?? "";
 			const open = flux
 				.issues()
@@ -353,7 +355,7 @@ export function activate() {
 									<ui.text style={{ fontSize: 13, fontWeight: 500 }}>Attach a Flux issue</ui.text>
 									<ui.text style={{ fontSize: 12, color: "text2" }}>The agent in this thread will report progress to it.</ui.text>
 								</ui.box>
-								<ui.field key="search" value={search} placeholder="Search issues" onChange={(v) => void (search = v)} />
+								<ui.field key="search" value={search.value} placeholder="Search issues" onChange={(v) => void (search.value = v)} />
 								<ui.list
 									key="issues"
 									count={open.length}

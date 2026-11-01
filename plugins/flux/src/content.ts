@@ -143,11 +143,40 @@ export function markdownToHtml(
   return linkMentions(html.trim(), options.members);
 }
 
+/** The Markdown of HTML lately converted, by what it was of: oldest first. */
+const converted = new Map<string, string>();
+let convertedSize = 0;
+/** How much of it is kept, in characters of HTML and Markdown. */
+const CONVERTED_MAX = 1 << 21;
+
+/**
+ * Flux's HTML as Markdown. The issue page renders on each key typed, with
+ * its description and comments: each is converted once, while it stays
+ * as it is (as do the mentions' handles), not on each render.
+ */
 export function htmlToMarkdown(
   html: string,
   options: { baseUrl: string; members: readonly MentionTarget[] },
 ): string {
   if (!html.trim()) return "";
+  const key = `${options.baseUrl}\0${options.members.map((m) => `${m.id}=${m.username}`).join(",")}\0${html}`;
+  const had = converted.get(key);
+  if (had !== undefined) return had;
+  const md = convertHtml(html, options);
+  converted.set(key, md);
+  convertedSize += key.length + md.length;
+  for (const [k, v] of converted) {
+    if (convertedSize <= CONVERTED_MAX) break;
+    converted.delete(k);
+    convertedSize -= k.length + v.length;
+  }
+  return md;
+}
+
+function convertHtml(
+  html: string,
+  options: { baseUrl: string; members: readonly MentionTarget[] },
+): string {
   const handles = new Map(
     options.members.map((member) => [member.id, member.username]),
   );

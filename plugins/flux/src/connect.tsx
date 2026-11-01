@@ -13,12 +13,12 @@ interface Form {
 	error: string;
 }
 
-const forms = new Map<string, Form>();
+// Tracked: each form's fields, as they're typed and as it connects.
+const forms = ui.store(new Map<string, Form>());
 
 function formOf(key: string, url: string): Form {
-	let form = forms.get(key);
-	if (!form) forms.set(key, (form = { url, token: "", busy: false, error: "" }));
-	return form;
+	if (!forms.has(key)) forms.set(key, { url, token: "", busy: false, error: "" });
+	return forms.get(key)!;
 }
 
 /**
@@ -63,12 +63,10 @@ async function connect(name: string, form: Form, target: string | null, done?: (
 	if (form.busy) return;
 	if (!url || !token) {
 		form.error = !url ? "Give Flux's URL: the address you open Flux at." : "Give an API token: make one in Flux, under Settings, API tokens.";
-		ui.update();
 		return;
 	}
 	form.busy = true;
 	form.error = "";
-	ui.update();
 	try {
 		const found = await checkFlux(url, token);
 		const twin = hub.connected().find((flux) => flux.id !== target && flux.baseUrl === found.baseUrl && flux.workspace?.id === found.workspace.id);
@@ -81,6 +79,5 @@ async function connect(name: string, form: Form, target: string | null, done?: (
 		form.error = describe(e);
 	} finally {
 		form.busy = false;
-		ui.update();
 	}
 }
