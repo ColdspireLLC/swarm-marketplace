@@ -3,11 +3,11 @@
 // outside and Cancel keep it.
 import { ui } from "swarm";
 
-let asking: { title: string; text: string; action: string; run: () => unknown } | null = null;
+const asking = ui.state<{ title: string; text: string; action: string; run: () => unknown } | null>(null);
 
 /** Asks before run: title, then text, and the action's button. */
 export function confirm(title: string, text: string, action: string, run: () => unknown) {
-	asking = { title, text, action, run };
+	asking.value = { title, text, action, run };
 	ui.showOverlay("flux-confirm");
 }
 
@@ -18,11 +18,11 @@ function close() {
 
 /** Forgets the question, as Swarm closes its dialog. */
 export function closeConfirm() {
-	asking = null;
+	asking.value = null;
 }
 
 export function Confirm() {
-	const a = asking;
+	const a = asking.value;
 	if (!a) return null;
 	const go = () => {
 		close();

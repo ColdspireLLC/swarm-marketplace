@@ -6,7 +6,8 @@ import { ui } from "swarm";
 import { fluxAssetId } from "./assets";
 import { hub } from "./hub";
 
-const got = new Map<string, Uint8Array | "loading" | "failed">();
+// Tracked: a render that drew a picture still coming draws it once it's here.
+const got = ui.store(new Map<string, Uint8Array | "loading" | "failed">());
 
 /** A picture's bytes, read once; null while they come, or when they can't. */
 export function pictureBytes(src: string | null | undefined): Uint8Array | null {
@@ -25,12 +26,10 @@ export function pictureBytes(src: string | null | undefined): Uint8Array | null 
 				if (!res.ok) throw new Error(`HTTP ${res.status}`);
 				return new Uint8Array(await res.arrayBuffer());
 			});
-	read
-		.then(
-			(bytes) => void got.set(key, bytes),
-			() => void got.set(key, "failed"),
-		)
-		.finally(() => ui.update());
+	read.then(
+		(bytes) => void got.set(key, bytes),
+		() => void got.set(key, "failed"),
+	);
 	return null;
 }
 

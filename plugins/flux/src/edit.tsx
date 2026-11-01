@@ -90,7 +90,6 @@ export function CommentEditor({ flux, issue, image }: { flux: Flux; issue: Issue
 		if (!text) return;
 		void flux.addComment(issue.id, text).then(() => {
 			clearDraft(key);
-			ui.update();
 		}, (error: unknown) => ui.toast(error instanceof Error ? error.message : String(error)));
 	};
 	const keep = async (markdown: string) => { setDraft(key, markdown); };
@@ -122,25 +121,30 @@ export function CommentEditor({ flux, issue, image }: { flux: Flux; issue: Issue
 	);
 }
 
-let provider = "";
-let model = "";
-let effort = "";
-let approval = "";
-let branch = "";
-let prompt = "";
-let seeded = "";
-let imageIds: string[] = [];
-let starting: string | null = null;
-let busy = false;
-// The Swarm project it starts in: the Flux project's link, else one of its name, else the only one.
-let swarmProject = "";
-let swarmProjects: { id: string; name: string }[] | null = null;
+// Start agent's dialog, tracked: the pickers' choices, the prompt, the
+// issue it's for and was seeded from, whether it's starting; the Swarm
+// project it starts in (the Flux project's link, else one of its name,
+// else the only one), and Swarm's projects, null until read.
+const st = ui.store({
+	provider: "",
+	model: "",
+	effort: "",
+	approval: "",
+	branch: "",
+	prompt: "",
+	seeded: "",
+	imageIds: [] as string[],
+	starting: null as string | null,
+	busy: false,
+	swarmProject: "",
+	swarmProjects: null as { id: string; name: string }[] | null,
+});
 
 /** Reads Swarm's projects ahead, so Start agent opens with its project chosen, not a moment after. */
 export function warmStart() {
 	void call("Projects", {}).then(
 		(list) => {
-			swarmProjects = list.map((p) => ({ id: p.id, name: p.name }));
+			st.swarmProjects = list.map((p) => ({ id: p.id, name: p.name }));
 		},
 		() => {},
 	);
@@ -151,14 +155,14 @@ function knownProject(flux: Flux, issue: Issue): string {
 	const linked = flux.projects().find((project) => project.id === issue.projectId);
 	if (linked?.swarmProjectId) return linked.swarmProjectId;
 	const name = linked?.name.trim().toLowerCase();
-	const match = name ? swarmProjects?.find((project) => project.name.trim().toLowerCase() === name) : undefined;
-	return match?.id ?? (swarmProjects?.length === 1 ? swarmProjects[0]!.id : "");
+	const match = name ? st.swarmProjects?.find((project) => project.name.trim().toLowerCase() === name) : undefined;
+	return match?.id ?? (st.swarmProjects?.length === 1 ? st.swarmProjects[0]!.id : "");
 }
 
 /** Opens Start agent's dialog for the issue, as bb's: over whatever shows it. */
 export function startAgent(issueId: string) {
-	starting = issueId;
-	seeded = "";
+	st.starting = issueId;
+	st.seeded = "";
 	ui.showOverlay("flux-start");
 }
 
@@ -169,31 +173,31 @@ function closeStart() {
 
 /** Forgets the issue Start agent was for, as Swarm closes its dialog. */
 export function forgetStart() {
-	starting = null;
+	st.starting = null;
 }
 
 /** Start agent's dialog: the issue it's for, what starting does, Swarm's pickers and the issue's prompt. */
 export function StartAgentDialog({ flux }: { flux: Flux }) {
-	const issue = starting ? flux.issue(starting) : undefined;
+	const issue = st.starting ? flux.issue(st.starting) : undefined;
 	if (!issue) return null;
 	return <StartAgent flux={flux} issue={issue} />;
 }
 
 function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
-	if (seeded !== issue.id) {
-		seeded = issue.id;
+	if (st.seeded !== issue.id) {
+		st.seeded = issue.id;
 		// bb's prompt: the issue, its description with its images numbered, and where the rest is.
 		const start = startPrompt(flux.detail(issue.id), flux.baseUrl);
-		prompt = start.prompt;
-		imageIds = start.imageIds;
+		st.prompt = start.prompt;
+		st.imageIds = start.imageIds;
 		// Chosen as it opens, from what's read already; read again behind it.
-		swarmProject = knownProject(flux, issue);
+		st.swarmProject = knownProject(flux, issue);
 		void loadProjects(flux, issue);
 	}
 	const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
-	const shown = swarmProjects?.find((p) => p.id === swarmProject)?.name ?? (swarmProjects ? "Choose a project" : "…");
+	const shown = st.swarmProjects?.find((p) => p.id === st.swarmProject)?.name ?? (st.swarmProjects ? "Choose a project" : "…");
 	const moves = issue.status === "backlog" || issue.status === "todo";
-	const images = imageIds.length;
+	const images = st.imageIds.length;
 	return (
 		<ui.box label={`Start an agent on ${issue.key}`} style={{ position: "relative", gap: 14, padding: 20 }}>
 			<ui.iconButton icon="x" label="Close" style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28 }} onClick={closeStart} />
@@ -212,16 +216,16 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 					<ui.icon icon="folder" style={{ width: 14, height: 14, color: "currentColor" }} />
 					<ui.text style={{ fontSize: 13, color: "currentColor" }} maxLines={1}>{shown}</ui.text>
 					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
-					{(swarmProjects ?? []).map((p) => <ui.item key={p.id} checked={p.id === swarmProject} onClick={() => { swarmProject = p.id; }}>{p.name}</ui.item>)}
+					{(st.swarmProjects ?? []).map((p) => <ui.item key={p.id} checked={p.id === st.swarmProject} onClick={() => { st.swarmProject = p.id; }}>{p.name}</ui.item>)}
 				</ui.menu>
-				{ui.agentPicker({ provider, value: model, effort, onChange: (value) => { provider = value.provider; model = value.model; effort = value.effort ?? ""; } })}
-				{ui.modePicker({ provider, value: approval, onChange: (value) => { approval = value; } })}
-				{ui.branchPicker({ value: branch, onChange: (value) => { branch = value; } })}
+				{ui.agentPicker({ provider: st.provider, value: st.model, effort: st.effort, onChange: (value) => { st.provider = value.provider; st.model = value.model; st.effort = value.effort ?? ""; } })}
+				{ui.modePicker({ provider: st.provider, value: st.approval, onChange: (value) => { st.approval = value; } })}
+				{ui.branchPicker({ value: st.branch, onChange: (value) => { st.branch = value; } })}
 			</ui.box>
-			<ui.field key={"agent-prompt-" + issue.id} value={prompt} multiline autoFocus placeholder="What should the agent do?" keys={["Mod+Enter"]} onKeyDown={() => void run(flux, issue)} onChange={(value) => { prompt = value; }} style={{ minHeight: 160, maxHeight: "46vh", fontSize: 14 }} />
+			<ui.field key={"agent-prompt-" + issue.id} value={st.prompt} multiline autoFocus placeholder="What should the agent do?" keys={["Mod+Enter"]} onKeyDown={() => void run(flux, issue)} onChange={(value) => { st.prompt = value; }} style={{ minHeight: 160, maxHeight: "46vh", fontSize: 14 }} />
 			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
 				<ui.button kind="ghost" size="sm" onClick={closeStart}>Cancel</ui.button>
-				<ui.button kind="primary" size="sm" icon="bot" disabled={busy || !prompt.trim()} tooltip="⌘ Enter" onClick={() => void run(flux, issue)}>{busy ? "Starting…" : "Start"}</ui.button>
+				<ui.button kind="primary" size="sm" icon="bot" disabled={st.busy || !st.prompt.trim()} tooltip="⌘ Enter" onClick={() => void run(flux, issue)}>{st.busy ? "Starting…" : "Start"}</ui.button>
 			</ui.box>
 		</ui.box>
 	);
@@ -236,23 +240,21 @@ async function loadProjects(flux: Flux, issue: Issue) {
 	}
 	const found = (await projectFor(flux, issue)) ?? "";
 	// Another issue's Start agent opened meanwhile: this answer isn't its.
-	if (seeded !== issue.id) return;
-	swarmProjects = projects;
-	if (!swarmProject) swarmProject = found;
-	ui.update();
+	if (st.seeded !== issue.id) return;
+	st.swarmProjects = projects;
+	if (!st.swarmProject) st.swarmProject = found;
 }
 
 async function run(flux: Flux, issue: Issue) {
-	if (busy || !prompt.trim()) return;
-	busy = true;
-	ui.update();
+	if (st.busy || !st.prompt.trim()) return;
+	st.busy = true;
 	try {
-		const project = swarmProject || (await projectFor(flux, issue));
+		const project = st.swarmProject || (await projectFor(flux, issue));
 		// Flux shows its images only to its members: they go along as the prompt's pictures, where it numbers them.
 		const pictures: { type: string; data: Uint8Array }[] = [];
 		// The prompt's [Image N], by N, to its picture's place among those that came.
 		const placed = new Map<number, number>();
-		for (const [i, id] of imageIds.entries()) {
+		for (const [i, id] of st.imageIds.entries()) {
 			try {
 				const asset = await flux.requireClient().asset(id);
 				// What a thread starts with: PNG, JPEG, GIF or WebP, 5 MB at most; the rest stay mentions.
@@ -264,30 +266,30 @@ async function run(flux: Flux, issue: Issue) {
 				// Said below; its mention stays as it was.
 			}
 		}
-		const failed = imageIds.length - pictures.length;
-		const text = prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num: string) => {
+		const failed = st.imageIds.length - pictures.length;
+		const text = st.prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num: string) => {
 			const at = placed.get(Number(num));
 			return at ? `[Image #${at}]` : whole;
 		});
 		const spawned = await swarm.threads.spawn({
 			project,
-			provider: provider || undefined,
-			model: model || undefined,
-			effort: effort || undefined,
-			approval: approval || undefined,
+			provider: st.provider || undefined,
+			model: st.model || undefined,
+			effort: st.effort || undefined,
+			approval: st.approval || undefined,
 			worktree: true,
-			branch: branch || undefined,
+			branch: st.branch || undefined,
 			title: `${issue.key} · ${issue.title}`,
 			prompt: text,
 			images: pictures,
 			metadata: { issueId: issue.id, issueKey: issue.key, connectionId: flux.id },
 		});
-		if (failed) ui.toast(failed === imageIds.length ? `${issue.key}'s images weren't attached.` : `${failed} of ${issue.key}'s images weren't attached.`);
+		if (failed) ui.toast(failed === st.imageIds.length ? `${issue.key}'s images weren't attached.` : `${failed} of ${issue.key}'s images weren't attached.`);
 		try {
 			await flux.attach(issue.id, spawned.id, true);
 			// Where this project's work happens, for next time.
 			const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
-			if (fluxProject && !fluxProject.swarmProjectId && project && swarmProjects?.some((p) => p.id === project)) flux.link(fluxProject.id, project);
+			if (fluxProject && !fluxProject.swarmProjectId && project && st.swarmProjects?.some((p) => p.id === project)) flux.link(fluxProject.id, project);
 		} catch (e) {
 			ui.toast(`The agent started, but ${issue.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
 		}
@@ -297,8 +299,7 @@ async function run(flux: Flux, issue: Issue) {
 	} catch (error) {
 		ui.toast(error instanceof Error ? error.message : String(error));
 	} finally {
-		busy = false;
-		ui.update();
+		st.busy = false;
 	}
 }
 

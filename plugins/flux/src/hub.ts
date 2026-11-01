@@ -1,7 +1,7 @@
 // Every Flux this Swarm is connected to. The first one is the url and token
 // settings. The others are a JSON list in the connections secret. One is
 // active: the page and `swarm flux` use it unless a command says --flux.
-import { settings, storage } from "swarm";
+import { settings, storage, ui } from "swarm";
 import { Flux, FluxNotFoundError } from "./service";
 
 interface Extra {
@@ -28,12 +28,20 @@ export function parseExtras(value: string): Extra[] {
 /** The Fluxes Swarm is signed in to. */
 export class Hub {
 	readonly main = new Flux("default");
-	private extras = new Map<string, Flux>();
-	private activeId = storage.get<string>("activeConnection") || "default";
+	/** The other Fluxes, and the one in use: tracked, as each Flux's copy is. */
+	private readonly extras = ui.store(new Map<string, Flux>(), { shallow: true });
+	private readonly activeState = ui.state(storage.get<string>("activeConnection") || "default");
+	private get activeId() { return this.activeState.value; }
+	private set activeId(id: string) { this.activeState.value = id; }
+	/** Told after a Flux changed, for what isn't a render: the badges, the sidebar. */
 	onChange: () => void = () => {};
 
 	constructor() {
-		this.main.onChange = () => this.onChange();
+		this.main.onChange = () => this.changed();
+	}
+
+	private changed() {
+		this.onChange();
 	}
 
 	/** The connection commands and the page use. */
@@ -64,7 +72,7 @@ export class Hub {
 	use(id: string) {
 		this.activeId = id;
 		storage.set("activeConnection", id);
-		this.onChange();
+		this.changed();
 	}
 
 	/** The Fluxes set up, the first one's first. */
@@ -139,7 +147,7 @@ export class Hub {
 			let flux = this.extras.get(item.id);
 			if (!flux) {
 				flux = new Flux(item.id, `conn:${item.id}`);
-				flux.onChange = () => this.onChange();
+				flux.onChange = () => this.changed();
 				this.extras.set(item.id, flux);
 			}
 			flux.configure(item.url, item.token);

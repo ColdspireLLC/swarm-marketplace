@@ -23,16 +23,15 @@ const TITLES: Record<PaletteKind, string> = {
 	parent: "Set parent issue…",
 };
 
-let open: { kind: PaletteKind; ids: string[]; apply: (id: string, patch: IssuePatch) => unknown } | null = null;
-let search = "";
-let sel = 0;
+// Tracked: what the palette is open for, what's typed, the choice the keys are on.
+const st = ui.store({ open: null as { kind: PaletteKind; ids: string[]; apply: (id: string, patch: IssuePatch) => unknown } | null, search: "", sel: 0 });
 
 /** Opens the palette of kind for the issues ids; apply changes one. */
 export function openPalette(kind: PaletteKind, ids: string[], apply: (id: string, patch: IssuePatch) => unknown) {
 	if (ids.length === 0) return;
-	open = { kind, ids, apply };
-	search = "";
-	sel = 0;
+	st.open = { kind, ids, apply };
+	st.search = "";
+	st.sel = 0;
 	ui.showOverlay("flux-palette");
 }
 
@@ -43,7 +42,7 @@ function close() {
 
 /** Forgets what the palette was open for, as Swarm closes it. */
 export function closePalette() {
-	open = null;
+	st.open = null;
 }
 
 interface Row {
@@ -56,7 +55,7 @@ interface Row {
 }
 
 function rows(issues: Issue[]): Row[] {
-	const o = open!;
+	const o = st.open!;
 	const flux = hub.active;
 	const each = (patch: (issue: Issue) => IssuePatch) => { for (const issue of issues) void o.apply(issue.id, patch(issue)); };
 	const all = (has: (issue: Issue) => boolean) => issues.every(has);
@@ -78,7 +77,7 @@ function rows(issues: Issue[]): Row[] {
 		}
 		case "label": {
 			const out: Row[] = flux.labels().map((l) => ({ key: l.id, label: l.name, mark: labelMark(l.color), on: all((i) => i.labelIds.includes(l.id)), run: () => toggle((i) => i.labelIds, l.id, "labelIds") }));
-			const name = search.trim();
+			const name = st.search.trim();
 			if (name && !flux.labels().some((l) => l.name.toLowerCase() === name.toLowerCase())) {
 				out.push({
 					key: "create",
@@ -94,7 +93,7 @@ function rows(issues: Issue[]): Row[] {
 			return flux.projects().map((p) => ({ key: p.id, label: p.name, detail: p.key, mark: navMark(p), on: all((i) => i.projectId === p.id), run: () => each(() => ({ projectId: p.id })) }));
 		case "due": {
 			// A date typed, as Flux reads it (2 weeks, Feb 9, next friday), first.
-			const typed = parseDue(search);
+			const typed = parseDue(st.search);
 			const day = typed ? isoDay(typed) : null;
 			return [
 				...(typed && day ? [{ key: "typed", label: `Due ${dueLabel(day)}`, detail: dueHint(typed), mark: { icon: "calendar" }, on: all((i) => i.dueDate === day), run: () => each(() => ({ dueDate: day })) }] : []),
@@ -115,7 +114,7 @@ function rows(issues: Issue[]): Row[] {
 }
 
 export function Palette() {
-	const o = open;
+	const o = st.open;
 	if (!o) return null;
 	const flux = hub.active;
 	const issues = o.ids.map((id) => flux.issue(id)).filter((i): i is Issue => !!i);
@@ -123,15 +122,15 @@ export function Palette() {
 	// The rows for what's typed: worked out again when one's chosen, as
 	// Enter can come before the render of the last keys typed.
 	const filtered = () => {
-		const needle = search.trim().toLowerCase();
+		const needle = st.search.trim().toLowerCase();
 		return rows(issues).filter((r) => r.key === "create" || r.key === "typed" || !needle || r.label.toLowerCase().includes(needle) || (r.detail ?? "").toLowerCase().includes(needle)).slice(0, 50);
 	};
-	const needle = search.trim().toLowerCase();
+	const needle = st.search.trim().toLowerCase();
 	const found = filtered();
-	sel = Math.min(Math.max(sel, 0), Math.max(found.length - 1, 0));
+	st.sel = Math.min(Math.max(st.sel, 0), Math.max(found.length - 1, 0));
 	const choose = (n: number) => {
 		// Once: Enter is the field's and the dialog's both.
-		if (open !== o) return;
+		if (st.open !== o) return;
 		const now = filtered();
 		const row = now[Math.min(n, now.length - 1)];
 		if (!row) return;
@@ -145,9 +144,9 @@ export function Palette() {
 		<ui.box
 			keys={keys}
 			onKeyDown={(k) => {
-				if (k.key === "ArrowUp") sel = (sel - 1 + found.length) % Math.max(found.length, 1);
-				else if (k.key === "ArrowDown") sel = (sel + 1) % Math.max(found.length, 1);
-				else if (k.key === "Enter") choose(sel);
+				if (k.key === "ArrowUp") st.sel = (st.sel - 1 + found.length) % Math.max(found.length, 1);
+				else if (k.key === "ArrowDown") st.sel = (st.sel + 1) % Math.max(found.length, 1);
+				else if (k.key === "Enter") choose(st.sel);
 				else if (/^[1-9]$/.test(k.key)) choose(Number(k.key) - 1);
 			}}
 			style={{ width: 480, maxHeight: 460, padding: 8, gap: 4 }}
@@ -155,12 +154,12 @@ export function Palette() {
 			<ui.box style={{ gap: 2, padding: "s2 s3" }}>
 				<ui.text style={{ fontSize: "small", color: "text3" }} maxLines={1}>{subject}</ui.text>
 			</ui.box>
-			<ui.field key={"palette-" + o.kind} autoFocus value={search} placeholder={TITLES[o.kind]} onChange={(value) => { search = value; sel = 0; }} onSubmit={(value) => { if (value !== search) { search = value; sel = 0; } choose(sel); }} style={{ fontSize: 15, backgroundColor: "transparent", boxShadow: "none", padding: "s2 s3" }} />
+			<ui.field key={"palette-" + o.kind} autoFocus value={st.search} placeholder={TITLES[o.kind]} onChange={(value) => { st.search = value; st.sel = 0; }} onSubmit={(value) => { if (value !== st.search) { st.search = value; st.sel = 0; } choose(st.sel); }} style={{ fontSize: 15, backgroundColor: "transparent", boxShadow: "none", padding: "s2 s3" }} />
 			<ui.box style={{ height: 1, backgroundColor: "divider", marginLeft: -8, marginRight: -8 }} />
 			<ui.scroll style={{ maxHeight: 380 }}>
 				{found.length === 0 ? <ui.text style={{ padding: "s4", color: "text3" }}>Nothing matches.</ui.text> : null}
 				{found.map((r, n) => (
-					<ui.pressable key={r.key} label={r.label} role="option" checked={n === sel} onClick={() => choose(n)} style={{ flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 10, paddingRight: 10, borderRadius: "control", backgroundColor: n === sel ? "hover" : "transparent", hover: { backgroundColor: "hover" } }}>
+					<ui.pressable key={r.key} label={r.label} role="option" checked={n === st.sel} onClick={() => choose(n)} style={{ flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 10, paddingRight: 10, borderRadius: "control", backgroundColor: n === st.sel ? "hover" : "transparent", hover: { backgroundColor: "hover" } }}>
 						{mark(r.mark)}
 						<ui.text style={{ flex: 1, minWidth: 0, fontSize: 14 }} maxLines={1}>{r.label}</ui.text>
 						{r.detail ? <ui.text style={{ fontSize: "small", color: "text3" }}>{r.detail}</ui.text> : null}

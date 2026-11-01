@@ -19,30 +19,26 @@ import { COLORS, type ColorName } from "./flux";
 const DEFAULT_MARK: ProjectMarkValue = { type: "icon", value: "folder", color: "gray" };
 
 /** The dialog open: a new project's (id null) or a project's settings; follow, whether it was opened on that project's board, which then follows it. */
-let open: { id: string | null; follow: boolean } | null = null;
-let name = "";
-/** The key typed; "" while it's the name's. */
-let keyDraft = "";
-let mark: ProjectMarkValue | null = DEFAULT_MARK;
-let busy = false;
+// Tracked, with the name, the key typed ("" while it's the name's), the mark, and whether it's saving.
+const st = ui.store({ open: null as { id: string | null; follow: boolean } | null, name: "", keyDraft: "", mark: DEFAULT_MARK as ProjectMarkValue | null, busy: false });
 
 /** Opens New project's dialog. */
 export function openNewProject() {
-	open = { id: null, follow: true };
-	name = "";
-	keyDraft = "";
-	mark = DEFAULT_MARK;
-	busy = false;
+	st.open = { id: null, follow: true };
+	st.name = "";
+	st.keyDraft = "";
+	st.mark = DEFAULT_MARK;
+	st.busy = false;
 	ui.showOverlay("flux-project");
 }
 
 /** Opens a project's settings; follow, from its board, which follows it to a new key. */
 export function openProjectSettings(project: Project, follow = false) {
-	open = { id: project.id, follow };
-	name = project.name;
-	keyDraft = project.key;
-	mark = markOf(project);
-	busy = false;
+	st.open = { id: project.id, follow };
+	st.name = project.name;
+	st.keyDraft = project.key;
+	st.mark = markOf(project);
+	st.busy = false;
 	ui.showOverlay("flux-project");
 }
 
@@ -53,7 +49,7 @@ function close() {
 
 /** Forgets the project the dialog was for, as Swarm closes it. */
 export function closeProject() {
-	open = null;
+	st.open = null;
 }
 
 /** A project's mark as Flux keeps it; null for one of its key's letter on its color, which the gallery has none of. */
@@ -143,17 +139,17 @@ export function setMark(flux: Flux, project: Project, next: ProjectMarkValue) {
 
 /** New project's dialog, and a project's settings: its mark and name, then its key and what it numbers. */
 export function ProjectDialog({ flux }: { flux: Flux }) {
-	const o = open;
+	const o = st.open;
 	if (!o) return null;
 	const projects = flux.projects();
 	const editing = o.id ? projects.find((p) => p.id === o.id) : undefined;
 	// Deleted meanwhile, in Flux or here.
 	if (o.id && !editing) return null;
 	const keyed = flux.keyed();
-	const derived = name.trim() ? uniqueProjectKey(keyed, name, o.id ?? undefined) : "";
-	const key = keyDraft || derived;
-	const problem = keyDraft ? flux.keyProblem(keyDraft, o.id ?? undefined) : null;
-	const ready = !!name.trim() && !problem && !busy && (!editing || key.length >= 2);
+	const derived = st.name.trim() ? uniqueProjectKey(keyed, st.name, o.id ?? undefined) : "";
+	const key = st.keyDraft || derived;
+	const problem = st.keyDraft ? flux.keyProblem(st.keyDraft, o.id ?? undefined) : null;
+	const ready = !!st.name.trim() && !problem && !st.busy && (!editing || key.length >= 2);
 	const changes = editing && key !== editing.key;
 	const hint = !key ? "" : changes ? `Issues become ${key}-1, ${key}-2, …; ${editing.key}-1 still finds its issue` : `Issues numbered ${key}-1, ${key}-2, …`;
 	const old = editing ? (keyed.find((p) => p.id === editing.id)?.aliases ?? []) : [];
@@ -168,13 +164,13 @@ export function ProjectDialog({ flux }: { flux: Flux }) {
 				<ui.text style={{ fontSize: 12, fontWeight: 500, color: "text3" }}>{editing ? "Project settings" : "New project"}</ui.text>
 			</ui.box>
 			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 18 }}>
-				<MarkPicker label="Project icon" value={mark} size={36} bordered onChange={(next) => { mark = next; }} />
+				<MarkPicker label="Project icon" value={st.mark} size={36} bordered onChange={(next) => { st.mark = next; }} />
 				<ui.field
 					key={"project-name-" + (o.id ?? "new")}
 					autoFocus
-					value={name}
+					value={st.name}
 					placeholder="Project name"
-					onChange={(value) => { name = value.slice(0, PROJECT_NAME_MAX); }}
+					onChange={(value) => { st.name = value.slice(0, PROJECT_NAME_MAX); }}
 					onSubmit={() => void submit(flux)}
 					style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }}
 				/>
@@ -191,7 +187,7 @@ export function ProjectDialog({ flux }: { flux: Flux }) {
 						key={"project-key-" + (o.id ?? "new")}
 						value={key}
 						placeholder="KEY"
-						onChange={(value) => { keyDraft = normalizeProjectKey(value); }}
+						onChange={(value) => { st.keyDraft = normalizeProjectKey(value); }}
 						onSubmit={() => void submit(flux)}
 						style={{ width: 52, fontFamily: "mono", fontSize: 12, letterSpacing: 0.5, backgroundColor: "transparent", boxShadow: "none", padding: 0 }}
 					/>
@@ -200,34 +196,33 @@ export function ProjectDialog({ flux }: { flux: Flux }) {
 				{editing ? (
 					<ui.button kind="ghost" size="sm" onClick={() => { close(); confirmDelete(flux, editing, o.follow ? () => ui.navTo("flux", "") : undefined); }} style={{ color: "red" }}>Delete…</ui.button>
 				) : null}
-				<ui.button kind="primary" disabled={!ready} onClick={() => void submit(flux)}>{`${busy ? (editing ? "Saving…" : "Creating…") : editing ? "Save" : "Create"}  ⌘↵`}</ui.button>
+				<ui.button kind="primary" disabled={!ready} onClick={() => void submit(flux)}>{`${st.busy ? (editing ? "Saving…" : "Creating…") : editing ? "Save" : "Create"}  ⌘↵`}</ui.button>
 			</ui.box>
 		</ui.box>
 	);
 }
 
 async function submit(flux: Flux) {
-	const o = open;
-	if (!o || busy) return;
-	if (!name.trim()) {
+	const o = st.open;
+	if (!o || st.busy) return;
+	if (!st.name.trim()) {
 		ui.toast("Give the project a name.");
 		return;
 	}
-	busy = true;
-	ui.update();
+	st.busy = true;
 	try {
 		if (o.id) {
 			const before = flux.projects().find((p) => p.id === o.id);
 			if (!before) return close();
 			const was = markOf(before);
-			const marked = mark && JSON.stringify(mark) !== JSON.stringify(was) ? mark : undefined;
-			const project = await flux.updateProject(o.id, { name, key: keyDraft || before.key, mark: marked });
+			const marked = st.mark && JSON.stringify(st.mark) !== JSON.stringify(was) ? st.mark : undefined;
+			const project = await flux.updateProject(o.id, { name: st.name, key: st.keyDraft || before.key, mark: marked });
 			close();
 			// Its board follows it to its new key.
 			if (o.follow && project.key !== before.key) ui.navTo("flux", `p/${project.key}`);
 			ui.toast(project.key !== before.key ? `${project.name} is ${project.key} now. ${before.key}-… still finds its issues.` : `Saved ${project.name}.`);
 		} else {
-			const project = await flux.createProject({ name, key: keyDraft || undefined, mark: mark ?? DEFAULT_MARK });
+			const project = await flux.createProject({ name: st.name, key: st.keyDraft || undefined, mark: st.mark ?? DEFAULT_MARK });
 			close();
 			ui.navTo("flux", `p/${project.key}`);
 			ui.toast(`Created ${project.name}.`);
@@ -235,8 +230,7 @@ async function submit(flux: Flux) {
 	} catch (e) {
 		ui.toast(e instanceof Error ? e.message : String(e));
 	} finally {
-		busy = false;
-		ui.update();
+		st.busy = false;
 	}
 }
 

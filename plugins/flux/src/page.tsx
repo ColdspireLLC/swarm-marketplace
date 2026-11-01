@@ -47,30 +47,46 @@ import {
 	type Property,
 	type Scope,
 } from "./layout";
-
-let query = "";
-let selected = new Set<string>();
-let cursor = "";
-let displayOpen = false;
-/** Whether the keys moved the cursor, which then shows; anchor, where a range selection starts. */
-let keyed = false;
+/**
+ * What the page's renders read that the user changes, tracked: a change
+ * renders again what read it, and nothing else. keyed is whether the keys
+ * moved the cursor, which then shows; filterFocus, bumped by "/" so the
+ * filter, built anew, takes the focus; searching, the filter opened full
+ * width on a narrow bar, as Flux's; shownPath, the path the page shows,
+ * for what's drawn apart from it; retryFailed, a retry that didn't reach
+ * Flux, said a moment where Retry now was; composing, the composer open
+ * under an issue's sub-issues, and what it files next: Flux's defaults.
+ */
+const st = ui.store({
+	query: "",
+	selected: new Set<string>(),
+	cursor: "",
+	displayOpen: false,
+	keyed: false,
+	filterFocus: 0,
+	creating: false,
+	createMore: false,
+	draftTitle: "",
+	draftBody: "",
+	draftStatus: "todo" as Status,
+	draftPriority: "none" as Priority,
+	draftAssignees: [] as string[],
+	draftLabels: [] as string[],
+	draftProject: "",
+	draftDue: null as string | null,
+	draftParent: null as string | null,
+	editingComment: "",
+	commentBody: "",
+	searching: false,
+	shownPath: "",
+	retryFailed: false,
+	editingTitle: "",
+	subsOpen: true,
+	composing: null as { parent: string; title: string; status: Status; priority: Priority; assigneeIds: string[]; labelIds: string[] } | null,
+});
+/** Where a range selection starts; the last change, which "." makes again: the handlers' alone. */
 let anchor = "";
-/** Bumped by "/" so the filter, built anew, takes the focus. */
-let filterFocus = 0;
 let lastPatch: IssuePatch | null = null;
-let creating = false;
-let createMore = false;
-let draftTitle = "";
-let draftBody = "";
-let draftStatus: Status = "todo";
-let draftPriority: Priority = "none";
-let draftAssignees: string[] = [];
-let draftLabels: string[] = [];
-let draftProject = "";
-let draftDue: string | null = null;
-let draftParent: string | null = null;
-let editingComment = "";
-let commentBody = "";
 
 const PAGE_KEYS = [
 	"j", "k", "Enter", "Escape", "c", "C", "/", "s", "S", "p", "P", "a", "A", "l", "L", "i", "I", "d", "D", "x", "X", "e", "E", ".",
@@ -138,7 +154,7 @@ function parsePath(path: string): { kind: "list"; project: string | null } | { k
 
 export function FluxPage({ path, slot, item, section, image }: { path: string; slot: string; item?: string; section?: string; image: ImageOf }) {
 	const flux = hub.active;
-	if (!slot) shownPath = path;
+	if (!slot) st.shownPath = path;
 	// The sidebar's: New project on its heading, a project's right-click.
 	if (slot === "section") return section === "Projects" ? <NewProjectButton /> : null;
 	if (slot === "item") return <SidebarProjectMenu flux={flux} project={flux.projects().find((p) => "p-" + p.id === item)} />;
@@ -168,7 +184,7 @@ export function FluxPage({ path, slot, item, section, image }: { path: string; s
 		return (
 			<ui.box style={{ position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }}>
 				{options.layout === "list" ? <ListBones edge={EDGE} /> : <BoardBones edge={EDGE} />}
-				{displayOpen ? displayPanel(options, !!project) : null}
+				{st.displayOpen ? displayPanel(options, !!project) : null}
 			</ui.box>
 		);
 	}
@@ -189,7 +205,7 @@ function ListScreen({ flux, scope, projectKey }: { flux: Flux; scope: Scope; pro
 		if (!options.showSubIssues && issue.parentId) return false;
 		if (!options.showClosed && CLOSED_STATUSES.has(issue.status)) return false;
 		if (!matchesScope(issue, scope, me)) return false;
-		return matchesQuery(issue, query);
+		return matchesQuery(issue, st.query);
 	});
 	const groups = buildGroups({ issues, grouping, ordering: options.ordering, showEmptyGroups: options.showEmptyGroups, showClosed: options.showClosed, members, labels, projects, me });
 	const flat = groups.flatMap((group) => group.issues);
@@ -204,8 +220,8 @@ function ListScreen({ flux, scope, projectKey }: { flux: Flux; scope: Scope; pro
 		>
 			<SyncBars flux={flux} />
 			{flat.length === 0 ? <Empty flux={flux} scope={scope} inProject={!!project} onCreate={() => openCreate(flux, project?.id)} /> : options.layout === "list" ? <IssueList flux={flux} groups={groups} options={options} showProject={!project} scrollKey={`${project?.key ?? ""}:${scope}`} /> : <Board flux={flux} groups={groups} options={options} showProject={!project} scrollKey={`${project?.key ?? ""}:${scope}`} />}
-			{selected.size > 0 ? <SelectionBar flux={flux} /> : null}
-			{displayOpen ? displayPanel(options, !!project) : null}
+			{st.selected.size > 0 ? <SelectionBar flux={flux} /> : null}
+			{st.displayOpen ? displayPanel(options, !!project) : null}
 		</ui.box>
 	);
 }
@@ -217,32 +233,23 @@ function offline(message: string, copy = true): string {
 	return copy ? `${said} Showing the last copy.` : `${said} Trying again.`;
 }
 
-/** "5m ago": how long since an ISO time. */
+/** "5m ago": how long since an ISO time, said anew each minute (ui.now). */
 function since(iso: string | null): string {
 	if (!iso) return "a while ago";
-	const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+	const minutes = Math.max(0, Math.round((ui.now() - new Date(iso).getTime()) / 60000));
 	if (minutes < 1) return "just now";
 	if (minutes < 60) return `${minutes}m ago`;
 	const hours = Math.round(minutes / 60);
 	return hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
 }
 
-/**
- * Flux's bars over the issues while it can't be reached (bb's page.tsx):
- * the copy showing and how old it is, the changes waiting to send, Retry
- * now; and the changes made offline it didn't take, until dismissed.
- */
-/** A retry that didn't reach Flux, said a moment where Retry now was: when it said so. */
-let retryFailedAt = 0;
-
 /** Retries now, and says a moment if Flux still can't be reached, as Flux's bar. */
 function retryNow(flux: Flux) {
 	flux.reconnect();
 	setTimeout(() => {
 		if (flux.connection().state === "offline") {
-			retryFailedAt = Date.now();
-			ui.update();
-			setTimeout(() => ui.update(), 4_100);
+			st.retryFailed = true;
+			setTimeout(() => { st.retryFailed = false; }, 4_000);
 		}
 	}, 2_000);
 }
@@ -254,7 +261,7 @@ export function SyncBars({ flux }: { flux: Flux }) {
 	// Flux's: one quiet line under the bar, its dot, what's waiting and Retry now at its end.
 	const bar = { flexDirection: "row", gap: 8, alignItems: "center", minHeight: 32, paddingLeft: EDGE, paddingRight: EDGE - 6, paddingTop: 4, paddingBottom: 4, borderBottom: "1px solid border", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 14 } }] } satisfies Style;
 	const barButton = { height: 24, paddingLeft: 6, paddingRight: 6, justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text", hover: { backgroundColor: "hover" } } as const;
-	const failed = Date.now() - retryFailedAt < 4_000;
+	const failed = st.retryFailed;
 	return (
 		<ui.box style={{ gap: 0, flexShrink: 0 }}>
 			{away ? (
@@ -296,8 +303,6 @@ export function SyncBars({ flux }: { flux: Flux }) {
 	);
 }
 
-/** The path the page shows, for what's drawn apart from it. */
-let shownPath = "";
 
 /** New project, at the end of the sidebar's Projects heading, as Flux's. */
 function NewProjectButton() {
@@ -312,7 +317,7 @@ function NewProjectButton() {
 function SidebarProjectMenu({ flux, project }: { flux: Flux; project: Project | undefined }) {
 	if (!project) return null;
 	// On its board, the board follows it: to a new key, or away as it goes.
-	const route = parsePath(shownPath);
+	const route = parsePath(st.shownPath);
 	const here = route.kind === "list" && route.project === project.key;
 	return (
 		<ui.menu context label={`${project.name} actions`}>
@@ -354,17 +359,13 @@ function BarEnd({ onCreate }: { onCreate: () => void }) {
 	]}</>;
 }
 
-
-/** The filter opened full width on a narrow bar, as Flux's. */
-let searching = false;
-
 function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Project | null; scope: Scope; options: DisplayOptions }) {
 	const projects = flux.projects();
-	const narrowSearch = searching || query !== "";
+	const narrowSearch = st.searching || st.query !== "";
 	const filter = (wide: boolean) => (
 		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field", ...(wide ? { flex: 1, minWidth: 0 } : { width: 208, flexShrink: 0 }), focus: { borderColor: "borderStrong" } }}>
 			<ui.icon icon="search" style={{ width: 14, height: 14, color: "text2", flexShrink: 0 }} />
-			<ui.field key={"flux-filter-" + (wide ? "n" : "w") + filterFocus} autoFocus={filterFocus > 0 || (wide && searching)} value={query} placeholder="Filter issues" onChange={(value) => { query = value; }} style={{ flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" }} />
+			<ui.field key={"flux-filter-" + (wide ? "n" : "w") + st.filterFocus} autoFocus={st.filterFocus > 0 || (wide && st.searching)} value={st.query} placeholder="Filter issues" onChange={(value) => { st.query = value; }} style={{ flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" }} />
 		</ui.box>
 	);
 	return (
@@ -372,7 +373,7 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 			{narrowSearch ? (
 				<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }}>
 					{filter(true)}
-					<ui.pressable label="Cancel" onClick={() => { query = ""; searching = false; }} style={{ ...ghostChip }}>
+					<ui.pressable label="Cancel" onClick={() => { st.query = ""; st.searching = false; }} style={{ ...ghostChip }}>
 						<ui.text style={{ fontSize: 14 }}>Cancel</ui.text>
 					</ui.pressable>
 				</ui.box>
@@ -407,10 +408,10 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 				</ui.box>
 				<ui.box style={{ flex: 1, minWidth: 8 }} />
 				<ui.box style={{ display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }}>{filter(false)}</ui.box>
-				<ui.pressable label="Filter issues" tooltip="Filter issues (/)" onClick={() => { searching = true; }} style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }}>
+				<ui.pressable label="Filter issues" tooltip="Filter issues (/)" onClick={() => { st.searching = true; }} style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }}>
 					<ui.icon icon="search" style={{ width: 14, height: 14, color: "currentColor" }} />
 				</ui.pressable>
-				<ui.pressable label="Display" role="button" tooltip="Display options (⇧V)" checked={displayOpen} onClick={() => { displayOpen = !displayOpen; }} style={{ position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }}>
+				<ui.pressable label="Display" role="button" tooltip="Display options (⇧V)" checked={st.displayOpen} onClick={() => { st.displayOpen = !st.displayOpen; }} style={{ position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: st.displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }}>
 					<ui.icon icon="sliders" style={{ width: 14, height: 14, color: "currentColor" }} />
 					{customized(options) ? <ui.box style={{ position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" }} /> : null}
 				</ui.pressable>
@@ -455,7 +456,7 @@ function displayPanel(options: DisplayOptions, singleProject: boolean): Child {
 		// As in Flux, the last property stays on.
 		if (properties.length > 0) set({ properties });
 	};
-	const close = () => { displayOpen = false; };
+	const close = () => { st.displayOpen = false; };
 	const picked = (on: boolean): Style => ({ borderRadius: "control", border: on ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on ? "press" : "transparent", color: on ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on ? "press" : "hover", color: "text" } });
 	return [
 		<ui.pressable key="display-shade" label="Close display options" onClick={close} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 }} />,
@@ -560,7 +561,7 @@ function Board({ flux, groups, options, showProject, scrollKey }: { flux: Flux; 
 						style={{ flex: 1, minHeight: 0 }}
 						placeholder={<ui.box style={{ width: "100%", paddingBottom: 6 }}><CardBones /></ui.box>}
 						dropGap={manual}
-						reveal={keyed && group.issues.some((issue) => issue.id === cursor) ? cursor : undefined}
+						reveal={st.keyed && group.issues.some((issue) => issue.id === st.cursor) ? st.cursor : undefined}
 						onDrop={manual ? (event) => dropAt(flux, group, group.issues, event, options) : undefined}
 					/>
 				</ui.box>
@@ -597,14 +598,14 @@ function Card({ flux, issue, group, index, options, showProject }: { flux: Flux;
 	const parent = issue.parentId ? flux.issue(issue.parentId) : undefined;
 	const assignees = flux.memberList().filter((member) => issue.assigneeIds.includes(member.id));
 	const marks = flux.labels().filter((item) => issue.labelIds.includes(item.id));
-	const on = selected.has(issue.id);
+	const on = st.selected.has(issue.id);
 	const fields = shows(options, "priority") || (shows(options, "dueDate") && !!issue.dueDate) || issue.subIssueCount > 0 || (shows(options, "labels") && marks.length > 0) || (shows(options, "agents") && issue.threadIds.length > 0);
 	return (
 		<ui.box
 			label={issue.title}
 			drag={{ id: issue.id, index }}
 			onClick={(event) => clickIssue(issue, event)}
-			style={{ ...CARD, ...(on ? CARD_ON : null), ...(keyed && cursor === issue.id ? { border: "1px solid accent" } : null) }}
+			style={{ ...CARD, ...(on ? CARD_ON : null), ...(st.keyed && st.cursor === issue.id ? { border: "1px solid accent" } : null) }}
 		>
 			<IssueContextMenu flux={flux} issue={issue} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 0 }}>
@@ -752,7 +753,7 @@ function monthDay(iso: string): string {
 }
 
 function ago(iso: string): string {
-	const minutes = (Date.now() - new Date(iso).getTime()) / 60000;
+	const minutes = (ui.now() - new Date(iso).getTime()) / 60000;
 	if (!Number.isFinite(minutes) || minutes < 1) return "now";
 	if (minutes < 60) return `${Math.round(minutes)}m`;
 	const hours = minutes / 60;
@@ -799,7 +800,7 @@ function IssueList({ flux, groups, options, showProject, scrollKey }: { flux: Fl
 			placeholder={<RowBones />}
 			// Ordered by hand, a gap opens where a row would land, in any group.
 			dropGap={options.ordering === "manual"}
-			reveal={keyed ? cursor : undefined}
+			reveal={st.keyed ? st.cursor : undefined}
 			onDrop={options.ordering === "manual" ? (event) => listDrop(flux, rows, event, options) : undefined}
 		/>
 	);
@@ -862,14 +863,14 @@ function ListRow({ flux, issue, group, index, options, showProject, keyWidth }: 
 	const parent = issue.parentId ? flux.issue(issue.parentId) : undefined;
 	const assignees = flux.memberList().filter((member) => issue.assigneeIds.includes(member.id));
 	const marks = flux.labels().filter((item) => issue.labelIds.includes(item.id));
-	const on = selected.has(issue.id);
+	const on = st.selected.has(issue.id);
 	const closed = CLOSED_STATUSES.has(issue.status);
 	const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" } as const;
 	return (
-		<ui.box key={issue.id} label={issue.title} drag={{ id: issue.id, index }} onClick={(event) => clickIssue(issue, event)} onDrop={options.ordering === "manual" ? undefined : (event) => dropOn(flux, group, event, options)} style={{ width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on ? "selected" : keyed && cursor === issue.id ? "hover" : "transparent", boxShadow: keyed && cursor === issue.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on ? "selected" : "hover" } }}>
+		<ui.box key={issue.id} label={issue.title} drag={{ id: issue.id, index }} onClick={(event) => clickIssue(issue, event)} onDrop={options.ordering === "manual" ? undefined : (event) => dropOn(flux, group, event, options)} style={{ width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on ? "selected" : st.keyed && st.cursor === issue.id ? "hover" : "transparent", boxShadow: st.keyed && st.cursor === issue.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on ? "selected" : "hover" } }}>
 			<IssueContextMenu flux={flux} issue={issue} />
 			{/* Flux's checkbox gutter: shown on the row's hover, or always while choosing. */}
-			<ui.box label={`Select ${issue.key}`} onClick={(event) => (event?.shift ? clickIssue(issue, event) : toggleSelected(issue.id, !on))} style={{ width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on || selected.size > 0 || (keyed && cursor === issue.id) ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }}>
+			<ui.box label={`Select ${issue.key}`} onClick={(event) => (event?.shift ? clickIssue(issue, event) : toggleSelected(issue.id, !on))} style={{ width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on || st.selected.size > 0 || (st.keyed && st.cursor === issue.id) ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }}>
 				{on ? <ui.icon icon="check" style={{ width: 10, height: 10, color: "white" }} /> : null}
 			</ui.box>
 			{shows(options, "priority") ? <Picker label={`Priority: ${PRIORITY_LABELS[issue.priority]}`} style={cell}><PriorityIcon priority={issue.priority} size={14} />{() => pickerItems(flux, issue, "priority")}</Picker> : null}
@@ -1016,16 +1017,16 @@ function duplicate(flux: Flux, id: string, then?: (copy: Issue) => unknown) {
 }
 
 function toggleSelected(id: string, on: boolean) {
-	const next = new Set(selected);
+	const next = new Set(st.selected);
 	if (on) next.add(id);
 	else next.delete(id);
-	selected = next;
-	cursor = id;
+	st.selected = next;
+	st.cursor = id;
 	anchor = id;
 }
 
 function openCard(issue: Issue) {
-	cursor = issue.id;
+	st.cursor = issue.id;
 	openIssue(issue.key);
 }
 
@@ -1035,22 +1036,22 @@ let shownFlat: Issue[] = [];
 let shownGroups: IssueGroup[] = [];
 
 function clickIssue(issue: Issue, event?: { mod?: boolean; shift?: boolean }) {
-	keyed = false;
+	st.keyed = false;
 	if (event?.shift && anchor) {
 		selectRange(shownFlat, anchor, issue.id);
 		return;
 	}
-	if (event?.mod || event?.shift || selected.size > 0) {
-		toggleSelected(issue.id, !selected.has(issue.id));
+	if (event?.mod || event?.shift || st.selected.size > 0) {
+		toggleSelected(issue.id, !st.selected.has(issue.id));
 		return;
 	}
 	openCard(issue);
 }
 
 function SelectionBar({ flux }: { flux: Flux }) {
-	const issues = flux.issues().filter((issue) => selected.has(issue.id));
+	const issues = flux.issues().filter((issue) => st.selected.has(issue.id));
 	const ids = issues.map((issue) => issue.id);
-	const clear = () => { selected = new Set(); };
+	const clear = () => { st.selected = new Set(); };
 	// As Flux's: a pill over the board while issues are selected, rising in
 	// and sinking out, its width following what it says; Move to… is the
 	// palette of statuses, Actions every bulk action, and a way out.
@@ -1146,7 +1147,7 @@ function IssueContextMenu({ flux, issue }: { flux: Flux; issue: Issue }) {
 			<ui.item key="parent" icon="branch" shortcut="Mod+Shift+P" onClick={() => openPalette("parent", [issue.id], (id, patch) => apply(flux, id, patch))}>Set parent</ui.item>,
 			issue.parentId ? <ui.item key="unparent" onClick={() => apply(flux, issue.id, { parentId: null })}>Remove parent</ui.item> : null,
 			<ui.separator key="sep3" />,
-			<ui.item key="delete" icon="trash" danger shortcut="Mod+Backspace" onClick={() => askDelete(flux, [issue.id], () => selected.delete(issue.id))}>Delete</ui.item>,
+			<ui.item key="delete" icon="trash" danger shortcut="Mod+Backspace" onClick={() => askDelete(flux, [issue.id], () => st.selected.delete(issue.id))}>Delete</ui.item>,
 			]}
 		</ui.menu>
 	);
@@ -1171,7 +1172,7 @@ function onIssueKey(flux: Flux, issue: Issue, key: { key: string; shift: boolean
 		ui.toast(`Copied ${issue.key}'s link.`);
 	} else if (key.mod && key.key === "Backspace") askDelete(flux, [issue.id], () => openList(""));
 	else if (key.mod) return;
-	else if (k === "e" && editingTitle !== issue.id) editingTitle = issue.id;
+	else if (k === "e" && st.editingTitle !== issue.id) st.editingTitle = issue.id;
 	else if (k === "s") pick("status");
 	else if (k === "p" && key.shift) pick("project");
 	else if (k === "p") pick("priority");
@@ -1191,48 +1192,48 @@ function onIssueKey(flux: Flux, issue: Issue, key: { key: string; shift: boolean
 
 /** What the keys act on: the selection, else the issue the cursor is on. */
 function targets(flux: Flux, current: Issue | undefined): Issue[] {
-	if (selected.size) return [...selected].map((id) => flux.issue(id)).filter((issue): issue is Issue => !!issue);
+	if (st.selected.size) return [...st.selected].map((id) => flux.issue(id)).filter((issue): issue is Issue => !!issue);
 	return current ? [current] : [];
 }
 
 /** Flux's keys for the issues in view (bb's issue-hotkeys.ts). */
 function onListKey(flux: Flux, key: { key: string; shift: boolean; mod: boolean }, flat: Issue[], groups: IssueGroup[], options: DisplayOptions) {
-	const index = Math.max(0, flat.findIndex((issue) => issue.id === cursor));
-	const current = flat.find((issue) => issue.id === cursor);
+	const index = Math.max(0, flat.findIndex((issue) => issue.id === st.cursor));
+	const current = flat.find((issue) => issue.id === st.cursor);
 	const on = targets(flux, current);
 	const ids = on.map((issue) => issue.id);
 	const change = (patch: (issue: Issue) => IssuePatch) => { for (const issue of on) apply(flux, issue.id, patch(issue)); };
 	const pick = (kind: PaletteKind) => openPalette(kind, ids, (id, patch) => apply(flux, id, patch));
 	// Escape clears a selection first, as Flux's.
-	if (key.key === "Escape" && selected.size > 0) {
-		selected = new Set();
+	if (key.key === "Escape" && st.selected.size > 0) {
+		st.selected = new Set();
 		return;
 	}
 	const move = (next: number) => {
 		const issue = flat[Math.max(0, Math.min(flat.length - 1, next))];
 		if (!issue) return;
-		cursor = issue.id;
-		keyed = true;
+		st.cursor = issue.id;
+		st.keyed = true;
 		if (key.shift) toggleSelected(issue.id, true);
 	};
 	const k = key.key.toLowerCase();
 	if (k === "j" || key.key === "ArrowDown") move(current ? index + 1 : 0);
 	else if (k === "k" || key.key === "ArrowUp") move(current ? index - 1 : 0);
 	else if (key.key === "ArrowRight" || key.key === "ArrowLeft") {
-		const at = groups.findIndex((group) => group.issues.some((issue) => issue.id === cursor));
+		const at = groups.findIndex((group) => group.issues.some((issue) => issue.id === st.cursor));
 		const next = groups[at + (key.key === "ArrowRight" ? 1 : -1)];
 		if (next?.issues[0]) {
-			cursor = next.issues[0].id;
-			keyed = true;
+			st.cursor = next.issues[0].id;
+			st.keyed = true;
 		}
 	} else if (key.key === "Enter" && current) openIssue(current.key);
-	else if (key.mod && k === "a") selected = new Set(flat.map((issue) => issue.id));
+	else if (key.mod && k === "a") st.selected = new Set(flat.map((issue) => issue.id));
 	else if (key.mod && key.key === "Backspace") {
-		if (ids.length) askDelete(flux, ids, () => { selected = new Set(); });
+		if (ids.length) askDelete(flux, ids, () => { st.selected = new Set(); });
 	} else if (key.mod && k === "b") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
 	else if (key.mod) return;
 	else if (k === "c" && !key.shift) openCreate(flux);
-	else if (key.key === "/") { filterFocus++; searching = true; }
+	else if (key.key === "/") { st.filterFocus++; st.searching = true; }
 	else if (k === "s" && !key.shift) pick("status");
 	else if (k === "p" && !key.shift) pick("priority");
 	else if (k === "p" && key.shift) pick("project");
@@ -1246,7 +1247,7 @@ function onListKey(flux: Flux, key: { key: string; shift: boolean; mod: boolean 
 	} else if (k === "d") for (const id of ids) duplicate(flux, id);
 	else if (k === "x" && current) {
 		if (key.shift && anchor) selectRange(flat, anchor, current.id);
-		else toggleSelected(current.id, !selected.has(current.id));
+		else toggleSelected(current.id, !st.selected.has(current.id));
 	} else if (key.key === "." && lastPatch) {
 		const patch = lastPatch;
 		change(() => patch);
@@ -1254,10 +1255,10 @@ function onListKey(flux: Flux, key: { key: string; shift: boolean; mod: boolean 
 		const priority = ({ "1": "urgent", "2": "high", "3": "medium", "4": "low", "0": "none" } as Record<string, Priority>)[key.key];
 		if (priority) change(() => ({ priority }));
 	} else if (key.key === "Escape") {
-		displayOpen = false;
-		keyed = false;
-		if (selected.size) selected = new Set();
-		else if (query) query = "";
+		st.displayOpen = false;
+		st.keyed = false;
+		if (st.selected.size) st.selected = new Set();
+		else if (st.query) st.query = "";
 	}
 }
 
@@ -1266,17 +1267,17 @@ function selectRange(flat: Issue[], from: string, to: string) {
 	const a = flat.findIndex((issue) => issue.id === from);
 	const b = flat.findIndex((issue) => issue.id === to);
 	if (a < 0 || b < 0) return;
-	const next = new Set(selected);
+	const next = new Set(st.selected);
 	for (let i = Math.min(a, b); i <= Math.max(a, b); i++) next.add(flat[i]!.id);
-	selected = next;
-	cursor = to;
+	st.selected = next;
+	st.cursor = to;
 }
 
 function Empty({ flux, scope, inProject, onCreate }: { flux: Flux; scope: Scope; inProject: boolean; onCreate: () => void }) {
-	const filtered = query.trim() !== "";
+	const filtered = st.query.trim() !== "";
 	const title = filtered ? "No matching issues" : scope === "active" ? "Nothing in progress" : scope === "mine" ? "No issues assigned to you" : inProject ? "Add issues to the project" : "No issues yet";
 	const text = filtered
-		? `Nothing here matches “${query.trim()}”.`
+		? `Nothing here matches “${st.query.trim()}”.`
 		: scope === "active"
 			? "Issues show up here once someone starts them or hands them to an agent."
 			: scope === "mine"
@@ -1290,7 +1291,7 @@ function Empty({ flux, scope, inProject, onCreate }: { flux: Flux; scope: Scope;
 			<ui.text style={{ marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }}>{title}</ui.text>
 			<ui.text style={{ marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 384 }}>{text}</ui.text>
 			<ui.box style={{ flexDirection: "row", gap: 8, marginTop: 24 }}>
-				{filtered ? <ui.button kind="secondary" onClick={() => { query = ""; }}>Clear filter</ui.button> : null}
+				{filtered ? <ui.button kind="secondary" onClick={() => { st.query = ""; }}>Clear filter</ui.button> : null}
 				{!filtered && scope !== "all" ? <ui.button kind="secondary" onClick={() => storage.set("scope", "all")}>Show all issues</ui.button> : null}
 				{!filtered && scope !== "active" && flux.projects().length > 0 ? <ui.button kind="primary" icon="plus" tooltip="New issue (C)" onClick={onCreate}>New issue</ui.button> : null}
 			</ui.box>
@@ -1302,39 +1303,39 @@ function Empty({ flux, scope, inProject, onCreate }: { flux: Flux; scope: Scope;
 function openCreate(flux: Flux, projectId?: string, key?: GroupKey, parentId?: string) {
 	const seeded = key ? draftForGroup(key) : {};
 	const me = flux.me?.id;
-	creating = true;
+	st.creating = true;
 	// A draft closed unsent comes back, not lost, unless it's for a parent of its own.
-	const kept = (draftTitle.trim() || draftBody.trim()) && draftParent === (parentId ?? null);
+	const kept = (st.draftTitle.trim() || st.draftBody.trim()) && st.draftParent === (parentId ?? null);
 	if (kept) {
 		ui.showOverlay("flux-new");
 		return;
 	}
-	draftTitle = "";
-	draftBody = "";
-	draftStatus = seeded.status ?? "todo";
-	draftPriority = seeded.priority ?? "none";
-	draftAssignees = seeded.assigneeIds ?? (scopeNow() === "mine" && me ? [me] : []);
-	draftLabels = seeded.labelIds ?? [];
-	draftProject = seeded.projectId ?? projectId ?? flux.projects()[0]?.id ?? "";
-	draftDue = null;
-	draftParent = parentId ?? null;
+	st.draftTitle = "";
+	st.draftBody = "";
+	st.draftStatus = seeded.status ?? "todo";
+	st.draftPriority = seeded.priority ?? "none";
+	st.draftAssignees = seeded.assigneeIds ?? (scopeNow() === "mine" && me ? [me] : []);
+	st.draftLabels = seeded.labelIds ?? [];
+	st.draftProject = seeded.projectId ?? projectId ?? flux.projects()[0]?.id ?? "";
+	st.draftDue = null;
+	st.draftParent = parentId ?? null;
 	ui.showOverlay("flux-new");
 }
 
 /** As Swarm closes New issue's dialog: its draft stays, for next time. */
 export function closeCreate() {
-	creating = false;
+	st.creating = false;
 }
 
 export function NewIssue({ flux }: { flux: Flux }) {
 	const projects = flux.projects();
-	const project = projects.find((item) => item.id === draftProject);
+	const project = projects.find((item) => item.id === st.draftProject);
 	const members = flux.memberList();
 	const me = flux.me?.id;
-	const chosenPeople = members.filter((member) => draftAssignees.includes(member.id));
+	const chosenPeople = members.filter((member) => st.draftAssignees.includes(member.id));
 	const labels = flux.labels();
-	const chosenLabels = labels.filter((label) => draftLabels.includes(label.id));
-	const parent = draftParent ? flux.issue(draftParent) : undefined;
+	const chosenLabels = labels.filter((label) => st.draftLabels.includes(label.id));
+	const parent = st.draftParent ? flux.issue(st.draftParent) : undefined;
 	// Flux's property chips: bordered, their text 12px and medium, muted while unset.
 	const chip = { ...ghostChip, height: 28, border: "1px solid border", gap: 6 } as const;
 	const chipText = { fontSize: 12, fontWeight: 500, minWidth: 0 } as const;
@@ -1345,7 +1346,7 @@ export function NewIssue({ flux }: { flux: Flux }) {
 					<ui.menu label={`Project: ${project?.name ?? "None"}`} style={{ ...ghostChip, height: 28, paddingLeft: 4 }}>
 						<ProjectMark project={project} size={14} />
 						<ui.text style={{ fontSize: 13 }}>{project?.name ?? "Project"}</ui.text>
-						{projects.map((item) => <ui.item key={item.id} {...navMark(item)} checked={item.id === draftProject} onClick={() => { draftProject = item.id; }}>{item.name}</ui.item>)}
+						{projects.map((item) => <ui.item key={item.id} {...navMark(item)} checked={item.id === st.draftProject} onClick={() => { st.draftProject = item.id; }}>{item.name}</ui.item>)}
 					</ui.menu>
 					{parent ? (
 						<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
@@ -1354,25 +1355,25 @@ export function NewIssue({ flux }: { flux: Flux }) {
 						</ui.box>
 					) : null}
 				</ui.box>
-				<ui.field key="new-title" value={draftTitle} placeholder="Issue title" onChange={(value) => { draftTitle = value; }} onSubmit={() => void submitNew(flux)} style={{ fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
-				<ui.editor key="new-body" value={draftBody} placeholder="Add description…" label="Description" options={mentionOptions(flux)} onChange={(value) => { draftBody = value; }} onSubmit={() => void submitNew(flux)} style={{ minHeight: 144 }} />
+				<ui.field key="new-title" value={st.draftTitle} placeholder="Issue title" onChange={(value) => { st.draftTitle = value; }} onSubmit={() => void submitNew(flux)} style={{ fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
+				<ui.editor key="new-body" value={st.draftBody} placeholder="Add description…" label="Description" options={mentionOptions(flux)} onChange={(value) => { st.draftBody = value; }} onSubmit={() => void submitNew(flux)} style={{ minHeight: 144 }} />
 			</ui.box>
 			<ui.box style={{ height: 1, backgroundColor: "divider" }} />
 			<ui.box style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
-				<ui.menu label={`Status: ${STATUS_LABELS[draftStatus]}`} style={chip}>
-					<StatusIcon status={draftStatus} size={14} />
-					<ui.text style={chipText}>{STATUS_LABELS[draftStatus]}</ui.text>
-					{STATUSES.map((status) => <ui.item key={status} {...statusMark(status)} checked={draftStatus === status} onClick={() => { draftStatus = status; }}>{STATUS_LABELS[status]}</ui.item>)}
+				<ui.menu label={`Status: ${STATUS_LABELS[st.draftStatus]}`} style={chip}>
+					<StatusIcon status={st.draftStatus} size={14} />
+					<ui.text style={chipText}>{STATUS_LABELS[st.draftStatus]}</ui.text>
+					{STATUSES.map((status) => <ui.item key={status} {...statusMark(status)} checked={st.draftStatus === status} onClick={() => { st.draftStatus = status; }}>{STATUS_LABELS[status]}</ui.item>)}
 				</ui.menu>
-				<ui.menu label={`Priority: ${PRIORITY_LABELS[draftPriority]}`} style={chip}>
-					<PriorityIcon priority={draftPriority} size={14} />
-					<ui.text style={{ ...chipText, color: draftPriority === "none" ? "text2" : "text" }}>{draftPriority === "none" ? "Priority" : PRIORITY_LABELS[draftPriority]}</ui.text>
-					{PRIORITIES.map((priority) => <ui.item key={priority} {...priorityMark(priority)} checked={draftPriority === priority} onClick={() => { draftPriority = priority; }}>{PRIORITY_LABELS[priority]}</ui.item>)}
+				<ui.menu label={`Priority: ${PRIORITY_LABELS[st.draftPriority]}`} style={chip}>
+					<PriorityIcon priority={st.draftPriority} size={14} />
+					<ui.text style={{ ...chipText, color: st.draftPriority === "none" ? "text2" : "text" }}>{st.draftPriority === "none" ? "Priority" : PRIORITY_LABELS[st.draftPriority]}</ui.text>
+					{PRIORITIES.map((priority) => <ui.item key={priority} {...priorityMark(priority)} checked={st.draftPriority === priority} onClick={() => { st.draftPriority = priority; }}>{PRIORITY_LABELS[priority]}</ui.item>)}
 				</ui.menu>
 				<ui.menu label={chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee"} style={chip}>
 					{chosenPeople.length ? <AvatarStack members={chosenPeople} size={16} ring="overlay" /> : <ui.icon icon="user" style={{ width: 14, height: 14, color: "text2" }} />}
 					<ui.text style={{ ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }} maxLines={1}>{chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee"}</ui.text>
-					{[...members].sort((a, b) => Number(b.id === me) - Number(a.id === me)).map((member) => <ui.item key={member.id} {...memberMark(member)} detail={"@" + member.username} checked={draftAssignees.includes(member.id)} onClick={() => { draftAssignees = draftAssignees.includes(member.id) ? draftAssignees.filter((id) => id !== member.id) : [...draftAssignees, member.id]; }}>{member.id === me ? `${member.name} (you)` : member.name}</ui.item>)}
+					{[...members].sort((a, b) => Number(b.id === me) - Number(a.id === me)).map((member) => <ui.item key={member.id} {...memberMark(member)} detail={"@" + member.username} checked={st.draftAssignees.includes(member.id)} onClick={() => { st.draftAssignees = st.draftAssignees.includes(member.id) ? st.draftAssignees.filter((id) => id !== member.id) : [...st.draftAssignees, member.id]; }}>{member.id === me ? `${member.name} (you)` : member.name}</ui.item>)}
 				</ui.menu>
 				<ui.menu label={chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels"} style={chip}>
 					{chosenLabels.length ? (
@@ -1381,38 +1382,38 @@ export function NewIssue({ flux }: { flux: Flux }) {
 						</ui.box>
 					) : <ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />}
 					<ui.text style={{ ...chipText, color: chosenLabels.length ? "text" : "text2" }}>{chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels"}</ui.text>
-					{labels.map((item) => <ui.item key={item.id} {...labelMark(item.color)} checked={draftLabels.includes(item.id)} onClick={() => { draftLabels = draftLabels.includes(item.id) ? draftLabels.filter((id) => id !== item.id) : [...draftLabels, item.id]; }}>{item.name}</ui.item>)}
+					{labels.map((item) => <ui.item key={item.id} {...labelMark(item.color)} checked={st.draftLabels.includes(item.id)} onClick={() => { st.draftLabels = st.draftLabels.includes(item.id) ? st.draftLabels.filter((id) => id !== item.id) : [...st.draftLabels, item.id]; }}>{item.name}</ui.item>)}
 					{labels.length === 0 ? <ui.item disabled>No labels</ui.item> : null}
 				</ui.menu>
-				<ui.menu label={draftDue ? `Due ${dueLabel(draftDue)}` : "Due date"} style={chip}>
-					<ui.icon icon="calendar" style={{ width: 14, height: 14, color: draftDue ? dueTone(draftDue) : "text2" }} />
-					<ui.text style={{ ...chipText, color: draftDue ? "text" : "text2" }}>{draftDue ? dueLabel(draftDue) : "Due date"}</ui.text>
-					{dueItems(draftDue, (value) => { draftDue = value; ui.update(); })}
+				<ui.menu label={st.draftDue ? `Due ${dueLabel(st.draftDue)}` : "Due date"} style={chip}>
+					<ui.icon icon="calendar" style={{ width: 14, height: 14, color: st.draftDue ? dueTone(st.draftDue) : "text2" }} />
+					<ui.text style={{ ...chipText, color: st.draftDue ? "text" : "text2" }}>{st.draftDue ? dueLabel(st.draftDue) : "Due date"}</ui.text>
+					{dueItems(st.draftDue, (value) => { st.draftDue = value; })}
 				</ui.menu>
 			</ui.box>
 			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
-				<ui.toggle label="Create more" checked={createMore} onChange={(checked) => { createMore = checked; }} />
-				<ui.button kind="primary" disabled={!draftTitle.trim()} onClick={() => void submitNew(flux)}>Create  ⌘↵</ui.button>
+				<ui.toggle label="Create more" checked={st.createMore} onChange={(checked) => { st.createMore = checked; }} />
+				<ui.button kind="primary" disabled={!st.draftTitle.trim()} onClick={() => void submitNew(flux)}>Create  ⌘↵</ui.button>
 			</ui.box>
 		</ui.box>
 	);
 }
 
 async function submitNew(flux: Flux) {
-	const title = draftTitle.trim();
-	if (!title || !draftProject) {
+	const title = st.draftTitle.trim();
+	if (!title || !st.draftProject) {
 		ui.toast(title ? "Pick a project." : "Give the issue a title.");
 		return;
 	}
 	try {
-		const issue = await flux.createIssue({ projectId: draftProject, title, descriptionMarkdown: draftBody, status: draftStatus, priority: draftPriority, assigneeIds: draftAssignees, labelIds: draftLabels, parentId: draftParent, dueDate: draftDue });
+		const issue = await flux.createIssue({ projectId: st.draftProject, title, descriptionMarkdown: st.draftBody, status: st.draftStatus, priority: st.draftPriority, assigneeIds: st.draftAssignees, labelIds: st.draftLabels, parentId: st.draftParent, dueDate: st.draftDue });
 		// As Flux's: it stays where it was, and says so, with Open.
 		ui.toast(`Created ${issue.key} · ${issue.title}`, { action: "Open", href: `swarm://plugin/flux/issues/${encodeURIComponent(issue.key)}` });
-		draftTitle = "";
-		draftBody = "";
-		draftDue = null;
-		if (!createMore) {
-			creating = false;
+		st.draftTitle = "";
+		st.draftBody = "";
+		st.draftDue = null;
+		if (!st.createMore) {
+			st.creating = false;
 			ui.hideOverlay("flux-new");
 		}
 	} catch (error) {
@@ -1466,7 +1467,7 @@ function IssuePage({ flux, issueKey, image }: { flux: Flux; issueKey: string; im
 			<ui.box style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
 				<ui.box style={{ flexDirection: "row", alignItems: "flex-start", width: "100%", maxWidth: 672, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }, { minWidth: 900, style: { maxWidth: 928 } }] }}>
 					<ui.box style={{ flex: 1, minWidth: 0, gap: 0 }}>
-						{editingTitle === issue.id && (titleBefore?.id === issue.id || (titleBefore = { id: issue.id, title: issue.title })) ? (
+						{st.editingTitle === issue.id && (titleBefore?.id === issue.id || (titleBefore = { id: issue.id, title: issue.title })) ? (
 							<ui.field
 								key={titleKey}
 								multiline
@@ -1480,15 +1481,21 @@ function IssuePage({ flux, issueKey, image }: { flux: Flux; issueKey: string; im
 									if (key.key === "Escape") {
 										clearDraft(titleKey);
 										void saveTitle(flux, issue, before);
-									} else void saveTitle(flux, issue, drafted(titleKey, issue.title));
-									editingTitle = "";
+									} else {
+										const typed = drafted(titleKey, issue.title);
+										// Saved, Flux's title (trimmed) is the one to show.
+										void saveTitle(flux, issue, typed).then(() => {
+											if (st.editingTitle !== issue.id && drafted(titleKey, typed) === typed) clearDraft(titleKey);
+										}, (error: unknown) => ui.toast(error instanceof Error ? error.message : String(error)));
+									}
+									st.editingTitle = "";
 									titleBefore = null;
 								}}
-								onChange={(value) => editDraft(titleKey, value.replace(/\n/g, " "), (next) => saveTitle(flux, issue, next))}
+								onChange={(value) => editDraft(titleKey, value.replace(/\n/g, " "), (next) => saveTitle(flux, issue, next), () => st.editingTitle === issue.id)}
 								style={{ ...titleStyle, minHeight: 0, padding: 0, backgroundColor: "transparent", boxShadow: "none" }}
 							/>
 						) : (
-							<ui.pressable label="Title" tooltip="Edit the title (E)" onClick={() => { editingTitle = issue.id; }} style={{ cursor: "text" }}>
+							<ui.pressable label="Title" tooltip="Edit the title (E)" onClick={() => { st.editingTitle = issue.id; }} style={{ cursor: "text" }}>
 								<ui.text style={titleStyle}>{drafted(titleKey, issue.title).trim() || "Untitled"}</ui.text>
 							</ui.pressable>
 						)}
@@ -1547,7 +1554,6 @@ function IssueHead({ flux, issueKey }: { flux: Flux; issueKey: string }) {
 let titleBefore: { id: string; title: string } | null = null;
 
 const titleStyle: Style = { fontSize: 30, lineHeight: "38px", fontWeight: 600, letterSpacing: -0.4, media: [{ maxWidth: 699, style: { fontSize: 24, lineHeight: "30px" } }] };
-let editingTitle = "";
 
 /**
  * Saves an issue's title, when it's not that already. issue is the copy the
@@ -1574,8 +1580,6 @@ function ParentLine({ parent }: { parent: Issue }) {
 	);
 }
 
-let subsOpen = true;
-
 // Sub-issues' display, as Flux keeps it across issues: their order and what each row shows.
 const SUB_ORDERINGS = ["created", "priority", "status"] as const;
 type SubOrdering = (typeof SUB_ORDERINGS)[number];
@@ -1598,27 +1602,24 @@ function orderSubs(subs: Issue[], ordering: SubOrdering): Issue[] {
 	if (ordering === "status") out.sort((a, b) => STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status) || created(a, b));
 	return out;
 }
-
-// The composer open under an issue's sub-issues, and what it files next: Flux's defaults.
-let composing: { parent: string; title: string; status: Status; priority: Priority; assigneeIds: string[]; labelIds: string[] } | null = null;
 // Sub-issues file one at a time, so a pasted list keeps its order in Flux.
 let filing: Promise<unknown> = Promise.resolve();
 
 /** Opens the composer under issue's sub-issues, as ⌘⇧O and every Add sub-issue do on its page. */
 function composeSub(flux: Flux, parent: Issue) {
-	subsOpen = true;
-	if (composing?.parent === parent.id) return;
+	st.subsOpen = true;
+	if (st.composing?.parent === parent.id) return;
 	const me = flux.me?.id;
 	const siblings = flux.issues().filter((i) => i.parentId === parent.id);
 	// Flux's: the parent's assignees when you're one, or when every sibling has just them.
 	const same = (ids: string[]) => ids.length === parent.assigneeIds.length && ids.every((id) => parent.assigneeIds.includes(id));
 	const inherit = parent.assigneeIds.length > 0 && ((!!me && parent.assigneeIds.includes(me)) || (siblings.length > 0 && siblings.every((s) => same(s.assigneeIds))));
-	composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
+	st.composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
 }
 
 /** Files a sub-issue of what the composer holds, titled title; false when it's blank. */
 function fileSub(flux: Flux, parent: Issue, title: string): boolean {
-	const c = composing;
+	const c = st.composing;
 	const trimmed = title.trim();
 	if (!c || !trimmed) return false;
 	const input = { projectId: parent.projectId, parentId: parent.id, title: trimmed, status: c.status, priority: c.priority, assigneeIds: c.assigneeIds, labelIds: c.labelIds };
@@ -1631,14 +1632,14 @@ function SubIssues({ flux, issue, subs }: { flux: Flux; issue: Issue; subs: Issu
 	const display = subDisplay();
 	const ordered = orderSubs(subs, display.ordering);
 	const done = subs.filter((sub) => CLOSED_STATUSES.has(sub.status)).length;
-	const open = composing?.parent === issue.id;
+	const open = st.composing?.parent === issue.id;
 	const setDisplay = (patch: Partial<ReturnType<typeof subDisplay>>) => storage.set("subDisplay", { ...display, ...patch });
 	return (
 		<ui.box style={{ marginTop: 32, gap: 0 }}>
 			{subs.length > 0 ? (
 				<ui.box style={{ flexDirection: "row", gap: 4, alignItems: "center", height: 32 }}>
-					<ui.pressable label="Sub-issues" checked={subsOpen} onClick={() => { subsOpen = !subsOpen; }} style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }}>
-						<ui.icon icon="chevron-right" style={{ width: 12, height: 12, color: "text2", transform: subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } }} />
+					<ui.pressable label="Sub-issues" checked={st.subsOpen} onClick={() => { st.subsOpen = !st.subsOpen; }} style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }}>
+						<ui.icon icon="chevron-right" style={{ width: 12, height: 12, color: "text2", transform: st.subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } }} />
 						<ui.text style={{ fontSize: 14, fontWeight: 500 }}>Sub-issues</ui.text>
 						<SubIssueChip done={done} total={subs.length} />
 					</ui.pressable>
@@ -1661,7 +1662,7 @@ function SubIssues({ flux, issue, subs }: { flux: Flux; issue: Issue; subs: Issu
 					<ui.text style={{ fontSize: 14, color: "currentColor" }}>Add sub-issues</ui.text>
 				</ui.pressable>
 			) : null}
-			{subsOpen && subs.length > 0 ? (
+			{st.subsOpen && subs.length > 0 ? (
 				<ui.box style={{ marginTop: 4 }}>
 					{ordered.map((sub) => <SubRow key={sub.id} flux={flux} sub={sub} members={members} properties={display.properties} />)}
 				</ui.box>
@@ -1692,10 +1693,10 @@ function SubRow({ flux, sub, members, properties }: { flux: Flux; sub: Issue; me
 
 /** Flux's inline composer: one sub-issue per Enter, or per pasted line; ⌘⇧Enter files it and closes. */
 function SubComposer({ flux, parent }: { flux: Flux; parent: Issue }) {
-	const c = composing!;
+	const c = st.composing!;
 	const members = flux.memberList();
 	const me = flux.me?.id;
-	const close = () => { composing = null; };
+	const close = () => { st.composing = null; };
 	const submit = (andClose: boolean) => {
 		if (!fileSub(flux, parent, c.title)) return;
 		c.title = "";
@@ -1806,7 +1807,7 @@ function When({ iso, prefix = " · " }: { iso: string; prefix?: string }) {
 function Comment({ flux, comment, members, image }: { flux: Flux; comment: IssueComment; members: Member[]; image: ImageOf }) {
 	const author = members.find((member) => member.id === comment.authorId);
 	const mine = comment.authorId === flux.me?.id && !comment.agent;
-	const editing = editingComment === comment.id;
+	const editing = st.editingComment === comment.id;
 	const edited = new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 	const agent = comment.agent;
 	return (
@@ -1829,20 +1830,20 @@ function Comment({ flux, comment, members, image }: { flux: Flux; comment: Issue
 					{mine && !editing ? (
 						<ui.menu label="Comment actions" tooltip="Comment actions" style={{ width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "hover", color: "text" }, checked: { opacity: 1, backgroundColor: "press" } }}>
 							<ui.icon icon="more" style={{ width: 14, height: 14, color: "currentColor" }} />
-							<ui.item icon="pencil" onClick={() => { editingComment = comment.id; commentBody = comment.markdown; }}>Edit</ui.item>
+							<ui.item icon="pencil" onClick={() => { st.editingComment = comment.id; st.commentBody = comment.markdown; }}>Edit</ui.item>
 							<ui.separator />
 							<ui.item icon="trash" danger onClick={() => confirm("Delete this comment?", "This cannot be undone.", "Delete", () => flux.deleteComment(comment.id))}>Delete</ui.item>
 						</ui.menu>
 					) : null}
 				</ui.box>
 				{editing ? (
-					<ui.box label="Edit comment" keys={["Escape"]} onKeyDown={() => { editingComment = ""; }} style={{ marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }}>
+					<ui.box label="Edit comment" keys={["Escape"]} onKeyDown={() => { st.editingComment = ""; }} style={{ marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }}>
 						<ui.box style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 6 }}>
-							<ui.editor key={"edit-" + comment.id} value={commentBody} label="Edit comment" placeholder="Edit comment…" options={mentionOptions(flux)} onChange={(value) => { commentBody = value; }} onSubmit={() => saveComment(flux, comment.id)} style={{ padding: 0 }} />
+							<ui.editor key={"edit-" + comment.id} value={st.commentBody} label="Edit comment" placeholder="Edit comment…" options={mentionOptions(flux)} onChange={(value) => { st.commentBody = value; }} onSubmit={() => saveComment(flux, comment.id)} style={{ padding: 0 }} />
 						</ui.box>
 						<ui.box style={{ flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }}>
-							<ui.button size="sm" kind="ghost" onClick={() => { editingComment = ""; }}>Cancel</ui.button>
-							<ui.button size="sm" kind="primary" disabled={!commentBody.trim()} onClick={() => saveComment(flux, comment.id)}>Save</ui.button>
+							<ui.button size="sm" kind="ghost" onClick={() => { st.editingComment = ""; }}>Cancel</ui.button>
+							<ui.button size="sm" kind="primary" disabled={!st.commentBody.trim()} onClick={() => saveComment(flux, comment.id)}>Save</ui.button>
 						</ui.box>
 					</ui.box>
 				) : (
@@ -1854,9 +1855,9 @@ function Comment({ flux, comment, members, image }: { flux: Flux; comment: Issue
 }
 
 function saveComment(flux: Flux, id: string) {
-	const body = commentBody.trim();
+	const body = st.commentBody.trim();
 	if (!body) return;
-	editingComment = "";
+	st.editingComment = "";
 	void flux.updateComment(id, body).catch((error: unknown) => ui.toast(error instanceof Error ? error.message : String(error)));
 }
 
