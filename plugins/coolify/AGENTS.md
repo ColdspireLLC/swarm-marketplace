@@ -1,0 +1,1 @@
+The user deploys with a self-hosted Coolify. To deploy, restart, roll back or read a deployment's log, use `swarm coolify` (the coolify skill says how), not Coolify's API with curl: the token stays in Swarm. In a project Coolify deploys, `swarm coolify deploy --wait` with no name deploys its application.
