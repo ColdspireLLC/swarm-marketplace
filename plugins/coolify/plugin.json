@@ -1,0 +1,66 @@
+{
+  "$schema": "./plugin.schema.json",
+  "id": "coolify",
+  "name": "Coolify",
+  "version": "1.4.2",
+  "description": "Your Coolify in Swarm: what's running and deploying, every deployment and its log, rollbacks, env vars and servers; Deploy beside each thread of a project Coolify runs; and agents that deploy, fix failed builds and set up new apps.",
+  "adds": [
+    "App page",
+    "Settings page",
+    "Composer status",
+    "Agent skill",
+    "Agent instructions",
+    "MCP server for agents"
+  ],
+  "icon": "coolify.svg",
+  "main": "main.tsx",
+  "permissions": {
+    "required": [
+      "network:*"
+    ],
+    "network": [
+      "*"
+    ],
+    "localNetwork": true,
+    "http": true,
+    "api": [
+      "read",
+      "agents"
+    ]
+  },
+  "settings": [
+    {
+      "key": "url",
+      "title": "Coolify URL",
+      "type": "text",
+      "default": "",
+      "placeholder": "https://coolify.example.com",
+      "description": "The address you open Coolify's dashboard at. Coolify's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "token",
+      "title": "API token",
+      "type": "secret",
+      "description": "From Coolify: Keys & Tokens, API tokens. Coolify's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "mcpKey",
+      "title": "Agents' key",
+      "type": "secret",
+      "description": "The key the agents' MCP requests carry to the plugin, never Coolify's token. Coolify's page of Settings makes it.",
+      "hidden": true
+    },
+    {
+      "key": "mcpAgents",
+      "title": "Agents with Coolify's MCP server",
+      "type": "text",
+      "default": "",
+      "description": "The agents Coolify's MCP server was added to, by ID.",
+      "hidden": true
+    }
+  ],
+  "skills": "skills",
+  "instructions": "AGENTS.md"
+}

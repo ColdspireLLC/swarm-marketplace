@@ -47,6 +47,50 @@
         "threads": true,
         "mentions": true
       }
+    },
+    {
+      "id": "coolify",
+      "displayName": "Coolify",
+      "description": "Your self-hosted Coolify in Swarm: deployments and their logs, rollbacks, env vars, and agents that deploy and fix failed builds.",
+      "icon": "plugins/coolify/coolify.svg",
+      "tags": [
+        "deploy",
+        "hosting",
+        "coolify",
+        "agents"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/coolify/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/coolify",
+          "range": "^1.0.0",
+          "tagPrefix": "coolify/"
+        }
+      },
+      "adds": [
+        "App page",
+        "Settings page",
+        "Composer status",
+        "Agent skill",
+        "Agent instructions",
+        "MCP server for agents"
+      ],
+      "permissions": {
+        "required": [
+          "network:*"
+        ],
+        "network": [
+          "*"
+        ],
+        "localNetwork": true,
+        "http": true,
+        "api": [
+          "read",
+          "agents"
+        ]
+      }
     }
   ]
 }
