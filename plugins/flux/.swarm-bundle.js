@@ -79736,7 +79736,7 @@ Commands:
   swarm flux status             The Flux connection, workspace, and signed-in account
   swarm flux list               Issues, open ones first, grouped by status
   swarm flux show [ISSUE]       An issue with its description, sub-issues, and comments
-  swarm flux create             Create an issue
+  swarm flux create             Create an issue (--start to attach this thread to it)
   swarm flux update [ISSUE]     Change an issue's status, priority, assignees, labels, title, description, due date, or parent
   swarm flux comment [ISSUE]    Comment on an issue in Markdown; @username notifies people
   swarm flux start ISSUE        Attach this thread to an issue and move it to In Progress
@@ -79917,10 +79917,12 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
       label: { type: "list" },
       "create-labels": { type: "boolean", aliases: ["create-label"] },
       parent: { type: "string" },
+      start: { type: "boolean" },
       json: { type: "boolean" }
     });
     const title = str(o.title)?.trim();
     if (!title) throw new CliError("--title is required", 'swarm flux create --title "…" [--project KEY]');
+    if (o.start && !ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or leave out --start.");
     if (o["create-labels"] && list(o.label).length === 0) throw new CliError("--create-labels needs --label");
     const parent = str(o.parent) ? flux2.requireIssue(str(o.parent)) : null;
     const project = projectFromOption(str(o.project), ctx) ?? (parent ? flux2.projects().find((p) => p.id === parent.projectId) ?? null : null);
@@ -79929,9 +79931,11 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
     const priority = str(o.priority) ? priorityOrThrow(str(o.priority)) : void 0;
     const assigneeIds = memberIds(list(o.assignee)).filter(Boolean);
     const labels = await addedLabelIds(list(o.label), !!o["create-labels"]);
-    const issue2 = await flux2.createIssue({ projectId: project.id, title, descriptionMarkdown: str(o.description), status, priority, assigneeIds, labelIds: labels.ids, parentId: parent?.id ?? null });
+    const created = await flux2.createIssue({ projectId: project.id, title, descriptionMarkdown: str(o.description), status, priority, assigneeIds, labelIds: labels.ids, parentId: parent?.id ?? null });
+    const issue2 = o.start ? await flux2.attach(created.id, ctx.thread, true) : created;
     if (o.json) return json2(io, issue2);
-    io.print([...createdLine(labels.created), `Created ${issue2.key} · ${issue2.title}`, flux2.issueUrl(issue2)].join("\n"));
+    const attached = o.start ? [`Attached this thread to it (${STATUS_LABELS[issue2.status]}).`] : [];
+    io.print([...createdLine(labels.created), `Created ${issue2.key} · ${issue2.title}`, flux2.issueUrl(issue2), ...attached].join("\n"));
   });
   guarded("update", async (args2, io, ctx) => {
     const { values: o, positionals } = parse3(args2, {

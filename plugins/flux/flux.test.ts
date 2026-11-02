@@ -907,6 +907,13 @@ test("a thread's agent starts on an issue, is told of it, and comments as itself
 	expect(comment.body!.agent).toEqual({ name: "Demo agent", provider: "fake", threadId: th.id });
 	expect((await t.runIn(th, "detach")).stdout).toBe(`Detached ${th.id} from ABC-2.\n`);
 	expect((await t.run("start", "ABC-1")).stderr).toContain("not running in a Swarm thread");
+	// create --start files the issue and attaches the thread in one go.
+	const filed = (await t.runIn(th, "create", "--project", "ABC", "--title", "Fix the retry", "--start")).stdout;
+	expect(filed).toMatch(/^Created ABC-3 · Fix the retry\nhttp.*\nAttached this thread to it \(In Progress\)\.\n$/);
+	expect((await t.runIn(th, "show")).stdout).toContain("# ABC-3 · Fix the retry");
+	// Outside a thread it fails before filing anything.
+	expect((await t.run("create", "--project", "ABC", "--title", "Orphan", "--start")).stderr).toContain("not running in a Swarm thread");
+	expect([...items.values()].some((i) => i.body?.title === "Orphan")).toBe(false);
 });
 
 test("Start agent seeds bb's prompt, sends the issue's images, and remembers the project", async (t) => {
