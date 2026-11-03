@@ -84008,7 +84008,7 @@ function issueCard(issue2) {
   const parent = issue2.parentId ? flux.issue(issue2.parentId) : void 0;
   const labels = flux.labels().filter((label) => issue2.labelIds.includes(label.id));
   const chip2 = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" };
-  return /* @__PURE__ */ jsxs10(ui16.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui16.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
+  return /* @__PURE__ */ jsxs10(ui16.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui16.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
     /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
       /* @__PURE__ */ jsx11(ProjectMark, { project, size: 13 }),
       parent ? /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
