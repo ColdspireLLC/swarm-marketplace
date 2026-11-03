@@ -683,7 +683,14 @@ function resourcePane(r: Resource | undefined, uuid: string, base: string): Chil
 }
 
 export function renderPage({ args }: RenderContext): Child {
-	const { view, base, open } = parsePath(args.path ?? "");
+	let { view, base, open } = parsePath(args.path ?? "");
+	// A project Coolify no longer has (deleted, or another team's token
+	// now), as the window reopens the page where it was: the overview,
+	// which the sidebar shows chosen as it has no row for it.
+	if (view.kind === "project" && state.list && state.places.size && ![...state.places.values()].some((p) => p.projectUuid === (view as { uuid: string }).uuid)) {
+		view = { kind: "overview" };
+		base = "";
+	}
 	// A bare page draws its own title bar: the view's name, and its buttons.
 	if (args.slot === "head") return board(view, base, open, true);
 	if (args.slot) return null;
