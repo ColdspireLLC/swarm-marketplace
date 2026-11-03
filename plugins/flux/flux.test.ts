@@ -476,8 +476,13 @@ test("a big workspace syncs, is kept on disk, and draws", async (t) => {
 	await w.see("Ordering: Manual");
 	await w.click("Display");
 	await w.gone("Show completed issues");
+	// The first column's cards are every fifth issue: the last it shows
+	// before the drag, and one past it after, however tall the fonts make
+	// its cards.
+	const lastShown = async () => Math.max(...(await w.texts()).map((x) => /^Issue number (\d+)$/.exec(x)?.[1]).filter((n) => n !== undefined).map(Number).filter((n) => n % 5 === 0));
+	const before = await lastShown();
 	await w.drag("Issue number 0", "Issue number 20", { place: "below", shot: "flux-drag-scroll" });
-	await w.see("Issue number 60");
+	await t.until(async () => (await lastShown()) > before, { what: `the column scrolled past Issue number ${before}` });
 	// Started again, it has its copy before Flux answers.
 	await t.reload();
 	await t.until(async () => (await t.run("status")).stdout.includes("Issues synced: 502"), { what: "the copy kept" });
