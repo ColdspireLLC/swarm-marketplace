@@ -17,7 +17,7 @@ import { openPalette, type PaletteKind } from "./palette";
 import { dayDelta, dueChoices, dueLabel } from "./dates";
 import { dueItems } from "./due";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
-import { AgentAvatar, Avatar, RAISED_HOVER, FluxMark, IssuesArt, Markdown, TrayArt, Unassigned, PriorityIcon, ProjectMark, Properties, StatusIcon, colorOf, type MentionOf } from "./view";
+import { AgentAvatar, Avatar, RAISED_HOVER, FluxMark, IssuesArt, Markdown, TrayArt, Unassigned, PriorityIcon, ProjectMark, Properties, StatusIcon, WorkspaceLogo, colorOf, workspaceMenuMark, type MentionOf } from "./view";
 import { clearDraft, drafted, editDraft } from "./drafts";
 import type { ImageOf } from "./view";
 import {
@@ -2011,33 +2011,13 @@ function RailRow({ icon, value, menu, muted, children }: { icon: Child; label: s
 	);
 }
 
-/** A workspace's color, as Flux keeps it. */
-function workspaceColor(flux: Flux): ColorName {
-	const c = flux.workspace?.color;
-	return (COLORS as readonly string[]).includes(c ?? "") ? (c as ColorName) : "gray";
-}
-
-/** A workspace's initial, as Flux's WorkspaceAvatar draws it without a logo. */
-function workspaceInitial(flux: Flux): string {
-	return (flux.workspace?.name || flux.baseUrl || "F").replace(/^https?:\/\//, "").trim().slice(0, 1).toUpperCase();
-}
-
-/** A workspace's mark, as Flux's WorkspaceAvatar: its logo, else its initial on its color, in a rounded square. */
+/** A Flux's workspace mark, its logo read through its own connection. */
 function WorkspaceMark({ flux, size }: { flux: Flux; size: number }) {
-	const box = { width: size, height: size, flexShrink: 0, borderRadius: Math.round(size / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" } as const;
-	const logo = flux === hub.active ? pictureBytes(flux.workspace?.imageUrl) : null;
-	if (logo) return <ui.image src={logo} alt="" style={{ ...box, objectFit: "cover" }} />;
-	return (
-		<ui.box style={{ ...box, backgroundColor: colorOf[workspaceColor(flux)] }}>
-			<ui.text style={{ color: "white", fontSize: Math.round(size * 0.6), fontWeight: 600 }}>{workspaceInitial(flux)}</ui.text>
-		</ui.box>
-	);
+	return <WorkspaceLogo workspace={flux.workspace} fallback={flux.baseUrl} from={flux} size={size} />;
 }
 
-/** The same, as a menu item's mark. */
-function workspaceMark(flux: Flux): { mark: Uint8Array } | { initial: string; tint: string } {
-	const logo = flux === hub.active ? pictureBytes(flux.workspace?.imageUrl) : null;
-	return logo ? { mark: logo } : { initial: workspaceInitial(flux), tint: MARK_HEX[workspaceColor(flux)] };
+function workspaceMark(flux: Flux) {
+	return workspaceMenuMark(flux.workspace, flux.baseUrl, flux);
 }
 
 /**

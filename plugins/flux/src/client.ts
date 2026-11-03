@@ -72,6 +72,20 @@ export const workspaceSchema = z.object({
   latestVersion: z.number(),
 });
 
+/** A workspace the token reaches (GET /workspaces): every one the account is in, for a token bound to none. */
+export const workspaceChoiceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  color: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
+});
+export type WorkspaceChoice = z.infer<typeof workspaceChoiceSchema>;
+
+export const workspacesSchema = z.object({
+  workspaces: z.array(workspaceChoiceSchema),
+});
+
 export const membersSchema = z.object({
   members: z.array(accountSchema),
 });
@@ -257,6 +271,11 @@ export class FluxClient {
 
   me(signal?: AbortSignal): Promise<Account> {
     return this.request(accountSchema, "/user", { signal });
+  }
+
+  /** The workspaces the token reaches, whichever this client is on. */
+  workspaces(signal?: AbortSignal) {
+    return this.request(workspacesSchema, "/workspaces", { signal });
   }
 
   workspace(signal?: AbortSignal) {
