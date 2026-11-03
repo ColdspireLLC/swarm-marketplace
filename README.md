@@ -25,6 +25,7 @@ which is where Swarm reads it:
 | Plugin | What it does |
 | --- | --- |
 | [Flux](plugins/flux) | Flux issues in Swarm, for you and your agents. |
+| [Test machines](plugins/test-machines) | Shared test machines and phones for your agents, one thread at a time. |
 
 Swarm's own plugins, Inline visualizations, Plugin development and the
 Thread list, come with Swarm, not here: they're updated with Swarm, and

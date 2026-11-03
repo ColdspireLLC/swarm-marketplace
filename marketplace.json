@@ -91,6 +91,62 @@
           "agents"
         ]
       }
+    },
+    {
+      "id": "test-machines",
+      "displayName": "Test machines",
+      "description": "Shared test machines and phones for your agents, one thread at a time on each screen: screenshots, elements, input, apps, files, recordings, with you first and sensitive apps off limits.",
+      "icon": "plugins/test-machines/icon.svg",
+      "tags": [
+        "testing",
+        "devices",
+        "android",
+        "ios",
+        "agents"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/test-machines/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/test-machines",
+          "range": "^1.0.0",
+          "tagPrefix": "test-machines/"
+        }
+      },
+      "adds": [
+        "Side panel",
+        "Settings page",
+        "Agent tools",
+        "Agent skill",
+        "Agent instructions",
+        "Command line"
+      ],
+      "permissions": {
+        "api": [
+          "read",
+          "media"
+        ],
+        "process": [
+          "bb",
+          "ssh",
+          "scp",
+          "sh",
+          "powershell",
+          "adb",
+          "aapt2",
+          "curl",
+          "osascript",
+          "python3",
+          "xcrun"
+        ],
+        "fs": [
+          {
+            "path": "~/.cache/test-machines"
+          }
+        ],
+        "machines": true
+      }
     }
   ]
 }

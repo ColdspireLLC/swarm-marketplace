@@ -1,0 +1,596 @@
+{
+  "$schema": "./plugin.schema.json",
+  "id": "test-machines",
+  "name": "Test machines",
+  "version": "1.2.0",
+  "description": "The shared test machines for the agents: a queue each machine, screenshots, input, commands, apps, files and recordings, through bb's test-machines, ssh, adb, WebDriverAgent, or a demo machine.",
+  "icon": "icon.svg",
+  "main": "main.tsx",
+  "permissions": {
+    "api": [
+      "read",
+      "media"
+    ],
+    "process": [
+      "bb",
+      "ssh",
+      "scp",
+      "sh",
+      "powershell",
+      "adb",
+      "aapt2",
+      "curl",
+      "osascript",
+      "python3",
+      "xcrun"
+    ],
+    "fs": [
+      {
+        "path": "~/.cache/test-machines"
+      }
+    ],
+    "machines": true
+  },
+  "settings": [
+    {
+      "key": "swarmMachines",
+      "title": "Swarm's machines",
+      "type": "toggle",
+      "default": true,
+      "hidden": true,
+      "description": "The computers joined to Swarm, their screens: macOS, Windows and Linux."
+    },
+    {
+      "key": "thisComputer",
+      "title": "This computer",
+      "type": "toggle",
+      "default": false,
+      "hidden": true,
+      "description": "The screen of the computer Swarm runs on."
+    },
+    {
+      "key": "bb",
+      "title": "Machines of bb's test-machines",
+      "type": "toggle",
+      "default": false,
+      "description": "The machines bb's test-machines plugin has (a Mac, a Linux desktop, a Windows VM, phones), through its command line, where bb runs beside Swarm. In a bb thread they take its turn; elsewhere the plugin waits while bb's queue has a machine.",
+      "hidden": true
+    },
+    {
+      "key": "bbPath",
+      "title": "bb's command",
+      "type": "text",
+      "default": "bb",
+      "hidden": true
+    },
+    {
+      "key": "ssh",
+      "title": "Machines over ssh",
+      "type": "text",
+      "default": "",
+      "placeholder": "studio:mac:me@studio.local, box:linux:me@box",
+      "description": "id:kind:user@host, comma-separated: commands and files, and a Mac's screenshots and input.",
+      "hidden": true
+    },
+    {
+      "key": "android",
+      "title": "Android phones through adb",
+      "type": "toggle",
+      "default": false,
+      "description": "The phones and emulators adb lists: screenshots, taps, apps, logs. Turn off bb's machines if bb has the same phones, so that each has one line.",
+      "hidden": true
+    },
+    {
+      "key": "adbHost",
+      "title": "Where the phones are plugged in",
+      "type": "text",
+      "default": "",
+      "placeholder": "me@mac-mini.local",
+      "description": "A computer joined to Swarm (its name), or an ssh target, whose adb runs for the plugin, when the phones aren't plugged into this computer.",
+      "hidden": true
+    },
+    {
+      "key": "phones",
+      "title": "Names of the phones",
+      "type": "text",
+      "default": "",
+      "placeholder": "pixel:5A150DLCH003YS, emu:emulator-5554",
+      "description": "id:serial, comma-separated: the id agents call a phone by. Unnamed ones go by their serial.",
+      "hidden": true
+    },
+    {
+      "key": "iphones",
+      "title": "iPhones through WebDriverAgent",
+      "type": "text",
+      "default": "",
+      "placeholder": "iphone:http://mac-mini.local:8100@00008150-…",
+      "description": "id:UDID of each iPhone, whose WebDriverAgent the plugin builds and runs on the Mac it's plugged into; or id:URL[@UDID] of one you run yourself.",
+      "hidden": true
+    },
+    {
+      "key": "iosHost",
+      "title": "The Mac the iPhones are plugged into",
+      "type": "text",
+      "default": "",
+      "placeholder": "me@mac-mini.local",
+      "description": "The Mac the iPhones are plugged into: one joined to Swarm (its name), or an ssh target. WebDriverAgent is asked from there, and installs go through its devicectl.",
+      "hidden": true
+    },
+    {
+      "key": "wdaTeam",
+      "title": "Your Apple developer team",
+      "type": "text",
+      "default": "",
+      "hidden": true,
+      "description": "The Team ID WebDriverAgent is signed with, for the plugin to build and run it on your iPhones."
+    },
+    {
+      "key": "demo",
+      "title": "A demo machine",
+      "type": "toggle",
+      "default": false,
+      "description": "A machine of the plugin's own, a screen in memory, for trying the tools.",
+      "hidden": true
+    },
+    {
+      "key": "carried",
+      "title": "Phones you carry",
+      "type": "text",
+      "default": "",
+      "placeholder": "galaxy",
+      "description": "Machine ids, comma-separated, of phones you carry: there agents only install and uninstall your test builds and read their logs. Nothing else, not even a screenshot.",
+      "hidden": true
+    },
+    {
+      "key": "testApps",
+      "title": "Your test builds",
+      "type": "text",
+      "default": "",
+      "placeholder": "com.example.app.*",
+      "description": "The package or bundle ids, comma-separated (* for any part), of the builds agents may uninstall and read the logs of on a phone you carry.",
+      "hidden": true
+    },
+    {
+      "key": "sensitive",
+      "title": "More apps agents stay out of",
+      "type": "text",
+      "default": "",
+      "placeholder": "Notion, com.example.private",
+      "description": "Names or ids, comma-separated, besides the ones agents always stay out of (passwords, banking and payments, mail, messages, photos, health, the car, social posting, shopping).",
+      "hidden": true
+    },
+    {
+      "key": "claimed",
+      "title": "Machines you took",
+      "type": "text",
+      "default": "",
+      "hidden": true,
+      "description": "Kept by the plugin: the machines you took for yourself, still yours after it restarts."
+    }
+  ],
+  "tools": [
+    {
+      "name": "machine_status",
+      "title": "Machines' status",
+      "description": "Who has each test machine, who's waiting, and what each is. Never waits and needs no turn. live: also ask the machine's driver how it is.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "live": {
+            "type": "boolean",
+            "description": "Also ask the machine how it is (a few seconds)."
+          }
+        },
+        "required": []
+      },
+      "readOnly": true
+    },
+    {
+      "name": "machine_take",
+      "title": "Take a machine",
+      "description": "Wait in line for a test machine and hold it without running anything yet, saying what it's for. Use before a sequence of steps you don't want interleaved with another thread's. Every other machine_* tool takes your turn by itself; your turn ends with your turn of the conversation.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "What you're testing."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine"
+        ]
+      }
+    },
+    {
+      "name": "machine_release",
+      "title": "Release a machine",
+      "description": "Give a test machine back now, for the next in line (all of yours when none is named). Your turn ending gives them back anyway.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "machine_capture",
+      "title": "Screenshot a machine",
+      "description": "Take a screenshot of a test machine's screen and look at it. Needs no turn. Returns the image at the screen's own pixels, which are what machine_drive takes. show: also save it, and give a Markdown image line to put in your reply, which shows it in the thread.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "show": {
+            "type": "boolean",
+            "description": "Show it to the user: a Markdown image line to put in your reply."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine"
+        ]
+      },
+      "readOnly": true
+    },
+    {
+      "name": "machine_describe",
+      "title": "Read a machine's screen",
+      "description": "What's on a test machine's screen as named elements (buttons, fields, links, text) and the point to click each, in screenshot pixels: cheaper and surer than reading a screenshot to find where to click. Needs no turn. Android through uiautomator, iPhones through WebDriverAgent, a Mac's window in front through its accessibility, Windows' through UI Automation.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine"
+        ]
+      },
+      "readOnly": true
+    },
+    {
+      "name": "machine_drive",
+      "title": "Drive a machine",
+      "description": "Click, type and press keys on a test machine's screen, waiting in line for your turn first. Steps are in each machine's own language, one per entry (machine_status says which). Pass capture: true to get a screenshot after. A step that lands in a sensitive app is undone at once, and the call says so.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 60
+          },
+          "capture": {
+            "type": "boolean",
+            "description": "Return a screenshot after the steps."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine",
+          "steps"
+        ]
+      }
+    },
+    {
+      "name": "machine_run",
+      "title": "Run a command on a machine",
+      "description": "Run a command on a test machine. Plain commands (builds, headless tests, reading files and logs) run beside whoever has the machine; exclusive: true takes the machine's turn, for the app you're testing or anything on its screen. Returns the exit code and output. A command still running when the call has to answer, or started with background: true, goes on as a job that holds your turn until it ends: machine_job checks on it.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timeout": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 7200,
+            "description": "Seconds before it's stopped (default 600)."
+          },
+          "background": {
+            "type": "boolean",
+            "description": "Start it and answer at once with its job id."
+          },
+          "exclusive": {
+            "type": "boolean",
+            "description": "Take the machine's turn for it."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine",
+          "command"
+        ]
+      }
+    },
+    {
+      "name": "machine_job",
+      "title": "A job of a machine",
+      "description": "Check on, wait for, or stop a command machine_run left running as a job. With no job, lists yours.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "job": {
+            "type": "string",
+            "description": "The job's id, as j3."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "status",
+              "wait",
+              "stop"
+            ],
+            "description": "status (default), wait: until it ends, up to wait minutes; stop: end it."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "machine_app",
+      "title": "An app on a machine",
+      "description": "Start, bring forward, stop, install or uninstall an app on a test machine, or read a phone app's logs, waiting in line for your turn first where it touches the screen. kill: only apps you launched; never the user's. Sensitive apps (passwords, banking, payments, mail, messages, photos, health, the car, social posting, shopping) are refused.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "launch",
+              "focus",
+              "kill",
+              "install",
+              "uninstall",
+              "logs"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "env": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Working directory on the machine (launch)."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine",
+          "action",
+          "target"
+        ]
+      }
+    },
+    {
+      "name": "machine_files",
+      "title": "Copy files to or from a machine",
+      "description": "Copy files to (put) or from (get) a test machine, waiting in line for your turn first. local is on this machine (absolute or ~/); remote ending in / is a folder.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "put",
+              "get"
+            ]
+          },
+          "local": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            ]
+          },
+          "remote": {
+            "type": "string",
+            "minLength": 1
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine",
+          "action",
+          "local",
+          "remote"
+        ]
+      }
+    },
+    {
+      "name": "machine_power",
+      "title": "Power a machine",
+      "description": "A machine's power or a phone's screen: on, off, reboot, or status (status needs no turn).",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "on",
+              "off",
+              "reboot",
+              "status"
+            ]
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine",
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "machine_record",
+      "title": "Record a machine's screen",
+      "description": "Record a test machine's screen while you do a flow: start, do the steps, then stop, which saves the video and gives a line to put in your reply that plays it in the thread. Takes your turn on the machine until you stop. Only for what a still can't show (an animation, a multi-step gesture); machine_capture for the rest.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "machine": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which machine: its id, as machine_status lists them (with the bb driver: \"mac\", \"windows\", \"linux\", or a registered phone's id)."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "start",
+              "stop"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "What it shows (start)."
+          },
+          "seconds": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 180,
+            "description": "The most it records (start; default 120)."
+          },
+          "wait": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 30,
+            "description": "Minutes to wait in line in this call if another thread has the machine (default 4; 0 to not wait). When it runs out, your place in line is kept 3 minutes for your next call."
+          }
+        },
+        "required": [
+          "machine",
+          "action"
+        ]
+      }
+    }
+  ],
+  "hooks": [
+    "turnEnd"
+  ],
+  "instructions": "AGENTS.md",
+  "skills": "skills"
+}
