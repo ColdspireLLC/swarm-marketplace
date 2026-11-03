@@ -44,8 +44,8 @@ export function ConnectForm({ name, target, url = "", done, cancel }: { name: st
 				</ui.box>
 			</ui.box>
 			{form.error ? (
-				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }}>
-					<ui.icon icon="alert-circle" style={{ width: 14, height: 14, color: "red", flexShrink: 0 }} />
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }}>
+					<ui.icon icon="alert-circle" style={{ width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 2 }} />
 					<ui.text style={{ flex: 1, minWidth: 0 }}>{form.error}</ui.text>
 				</ui.box>
 			) : null}

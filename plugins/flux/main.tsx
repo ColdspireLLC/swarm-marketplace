@@ -333,8 +333,8 @@ export function activate() {
 				<ui.scroll style={{ flex: 1 }}>
 					<ui.box style={{ padding: "s6 s6 s8 s6", gap: 16 }}>
 						{c.state !== "ready" && (
-							<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }}>
-								<ui.icon icon="alert" style={{ color: "amber", width: 13, height: 13 }} />
+							<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }}>
+								<ui.icon icon="alert" style={{ color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 }} />
 								<ui.text style={{ fontSize: "small", flex: 1 }}>{c.message || `Flux is ${c.state}: what shows is as it was.`}</ui.text>
 							</ui.box>
 						)}

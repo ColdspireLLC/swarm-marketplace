@@ -54,8 +54,8 @@ export function DescriptionEditor({ flux, issue, markdown, html = "", image }: {
 	if (has) {
 		return (
 			<ui.box style={{ gap: 14, minHeight: "50vh" }}>
-				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }}>
-					<ui.icon icon="info" style={{ width: 14, height: 14, color: "text2", flexShrink: 0 }} />
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }}>
+					<ui.icon icon="info" style={{ width: 14, height: 14, color: "text2", flexShrink: 0, marginTop: 1 }} />
 					<ui.text style={{ flex: 1, minWidth: 0, fontSize: "small", color: "text2" }}>{`This description has ${has}, which Swarm can't edit without changing. Edit it in Flux.`}</ui.text>
 					<ui.link label="Edit in Flux" href={flux.issueUrl(issue)} style={{ fontSize: "small" }} />
 				</ui.box>

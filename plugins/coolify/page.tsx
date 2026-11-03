@@ -67,7 +67,7 @@ function resourceRow(r: Resource, base: string, open: string, why?: string): Chi
 	const linked = projectsOf(r);
 	return (
 		<ui.pressable key={r.uuid} label={`${api.displayName(r)}, ${going ? "Deploying" : s.label}`} checked={open === r.uuid} onClick={() => openIn(base, open === r.uuid ? "" : r.uuid)} style={rowStyle}>
-			<ui.icon icon={iconOf(r)} style={{ width: 15, height: 15, color: "text2", flexShrink: 0 }} />
+			<ui.icon icon={iconOf(r)} style={{ width: 15, height: 15, color: "text2", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 				<ui.text style={{ fontWeight: 500, ...line }}>{api.displayName(r)}</ui.text>
 				<ui.text style={{ ...faint, ...line, color: why ? "amber" : "text3" }}>{sub}</ui.text>
@@ -97,7 +97,7 @@ function feedRow(d: Dep, base: string, open: string): Child {
 	};
 	return (
 		<ui.pressable key={d.deployment_uuid} label={`${r ? api.displayName(r) : d.application_name ?? ""}: ${deploymentTitle(d, r)}, ${s.label}`} checked={open === d.app && !!r && state.opened.get(r.uuid)?.expanded === d.deployment_uuid} onClick={go} style={rowStyle}>
-			<ui.icon icon={api.deploying(d) ? "rocket" : d.status === "failed" ? "alert-circle" : "check-circle"} style={{ width: 15, height: 15, color: api.deploying(d) ? "accent" : d.status === "failed" ? "red" : "text3", flexShrink: 0 }} />
+			<ui.icon icon={api.deploying(d) ? "rocket" : d.status === "failed" ? "alert-circle" : "check-circle"} style={{ width: 15, height: 15, color: api.deploying(d) ? "accent" : d.status === "failed" ? "red" : "text3", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "baseline", minWidth: 0 }}>
 					<ui.text style={{ fontWeight: 500, flexShrink: 0 }}>{r ? api.displayName(r) : (d.application_name ?? "")}</ui.text>
@@ -295,7 +295,7 @@ function serversView(base: string, open: string): Child {
 						}}
 						style={{ ...rowStyle, checked: {} }}
 					>
-						<ui.icon icon="server" style={{ width: 15, height: 15, color: "text2", flexShrink: 0 }} />
+						<ui.icon icon="server" style={{ width: 15, height: 15, color: "text2", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 						<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 							<ui.text style={{ fontWeight: 500, ...line }}>{s.name}</ui.text>
 							<ui.text style={{ ...faint, ...line }}>{[s.ip && s.ip !== "host.docker.internal" ? s.ip : "This machine", s.proxy_type && s.proxy_type !== "NONE" ? `${s.proxy_type.charAt(0) + s.proxy_type.slice(1).toLowerCase()} proxy` : "", s.settings?.concurrent_builds ? `${s.settings.concurrent_builds} builds at once` : ""].filter(Boolean).join(" · ")}</ui.text>
