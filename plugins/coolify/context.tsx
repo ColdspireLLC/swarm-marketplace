@@ -29,6 +29,32 @@ function deploy(r: Resource) {
 	void press(r, openedOf(r), "deploy");
 }
 
+// single is the details of a project's one application: its last
+// deployment, its commit's message and how it went, and where it's served.
+function single(r: Resource): Child {
+	const last = lastDeployment(r.uuid);
+	const doms = api.domains(r.fqdn);
+	const commit = last?.commit && last.commit !== "HEAD" ? last.commit.slice(0, 7) : "";
+	const how = last ? api.deploymentStatus(last.status) : null;
+	return (
+		<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
+			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+				{last ? (
+					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+						{commit ? <ui.text style={{ fontFamily: "mono", fontSize: 12, color: "text2", flexShrink: 0 }}>{commit}</ui.text> : null}
+						<ui.text style={{ ...line, fontWeight: 500 }}>{last.commit_message?.split("\n")[0] || "Deployed"}</ui.text>
+					</ui.box>
+				) : (
+					<ui.text style={{ ...line, color: "text2" }}>Not deployed yet</ui.text>
+				)}
+				<ui.text style={{ ...faint, ...line }}>{[last && how ? `${how.label} ${api.ago(last.updated_at ?? last.created_at)}` : "", doms[0]?.replace(/^https?:\/\//, "")].filter(Boolean).join(" · ")}</ui.text>
+			</ui.box>
+			{doms[0] ? <ui.iconButton icon="globe" label={`Open ${doms[0]}`} href={/^https?:\/\//.test(doms[0]) ? doms[0] : `https://${doms[0]}`} /> : null}
+			<ui.iconButton icon="external" label={`${api.displayName(r)} in Coolify's page`} href={`swarm://plugin/${PAGE}/r/${r.uuid}`} />
+		</ui.box>
+	);
+}
+
 export function registerContext() {
 	ui.context({
 		id: "coolify",
@@ -46,7 +72,7 @@ export function registerContext() {
 				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
 					<ui.text style={{ ...line, fontWeight: 500 }}>{nameOf(r, apps)}</ui.text>
 					{badge(s.tone, s.label)}
-					{last && !deployingNow(r.uuid) ? <ui.text style={faint}>{`deployed ${api.ago(last.created_at)}`}</ui.text> : null}
+					{last && !deployingNow(r.uuid) ? <ui.text style={faint}>{last.status === "failed" ? api.ago(last.created_at) : `deployed ${api.ago(last.created_at)}`}</ui.text> : null}
 					{apps.length > 1 ? <ui.text style={faint}>{`+${apps.length - 1}`}</ui.text> : null}
 				</ui.box>
 			);
@@ -65,6 +91,9 @@ export function registerContext() {
 		},
 		details: ({ thread }) => {
 			const apps = linkedTo(threadProject(thread));
+			// One application: the line above names it, says how it is
+			// and deploys it, so this says what it doesn't.
+			if (apps.length === 1) return single(apps[0]!);
 			return (
 				<ui.box style={{ gap: 2 }}>
 					{apps.map((r): Child => {
