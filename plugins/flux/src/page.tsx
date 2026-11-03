@@ -213,6 +213,7 @@ function ListScreen({ flux, scope, projectKey }: { flux: Flux; scope: Scope; pro
 	const flat = groups.flatMap((group) => group.issues);
 	shownFlat = flat;
 	shownGroups = groups;
+	shownProject = project?.id;
 	const connection = flux.connection();
 	return (
 		<ui.box
@@ -548,7 +549,7 @@ function Board({ flux, groups, options, showProject, scrollKey }: { flux: Flux; 
 						<ui.text style={{ fontSize: 14, fontWeight: 500 }} maxLines={1}>{group.title}</ui.text>
 						<ui.text style={{ fontSize: 14, color: "text2" }}>{String(group.issues.length)}</ui.text>
 						<ui.box style={{ flex: 1 }} />
-						<ui.iconButton icon="plus" label={`New issue in ${group.title}`} style={{ width: 28, height: 28, marginTop: -6, marginBottom: -6 }} onClick={() => openCreate(flux, undefined, group.key)} />
+						<ui.iconButton icon="plus" label={`New issue in ${group.title}`} style={{ width: 28, height: 28, marginTop: -6, marginBottom: -6 }} onClick={() => openCreate(flux, shownProject, group.key)} />
 					</ui.box>
 					{/* Its cards as they scroll into view: a column of hundreds built at once ran the plugin out of memory.
 					    rowHeight is the least a card is, so each card is as tall as it is, 6 apart. */}
@@ -860,7 +861,7 @@ function ListHeading({ flux, group, options, first }: { flux: Flux; group: Issue
 					<ui.text style={{ fontSize: 14, fontWeight: 500, minWidth: 0 }} maxLines={1}>{group.title}</ui.text>
 					<ui.text style={{ fontSize: 14, color: "text2", flexShrink: 0 }}>{String(group.issues.length)}</ui.text>
 				</ui.pressable>
-				<ui.iconButton icon="plus" label={`New issue in ${group.title}`} style={{ width: 24, height: 24 }} onClick={() => openCreate(flux, undefined, group.key)} />
+				<ui.iconButton icon="plus" label={`New issue in ${group.title}`} style={{ width: 24, height: 24 }} onClick={() => openCreate(flux, shownProject, group.key)} />
 			</ui.box>
 		</ui.box>
 	);
@@ -1050,6 +1051,8 @@ function openCard(issue: Issue) {
 let shownFlat: Issue[] = [];
 /** Their groups, as last shown: the title bar's keys move through them as the page's do. */
 let shownGroups: IssueGroup[] = [];
+/** The project whose issues they are, if one's: a new issue from a column's plus or C goes in it. */
+let shownProject: string | undefined;
 
 function clickIssue(issue: Issue, event?: { mod?: boolean; shift?: boolean }) {
 	st.keyed = false;
@@ -1248,7 +1251,7 @@ function onListKey(flux: Flux, key: { key: string; shift: boolean; mod: boolean 
 		if (ids.length) askDelete(flux, ids, () => { st.selected = new Set(); });
 	} else if (key.mod && k === "b") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
 	else if (key.mod) return;
-	else if (k === "c" && !key.shift) openCreate(flux);
+	else if (k === "c" && !key.shift) openCreate(flux, shownProject);
 	else if (key.key === "/") { st.filterFocus++; st.searching = true; }
 	else if (k === "s" && !key.shift) pick("status");
 	else if (k === "p" && !key.shift) pick("priority");

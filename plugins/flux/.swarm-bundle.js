@@ -82066,6 +82066,7 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
   const flat = groups.flatMap((group) => group.issues);
   shownFlat = flat;
   shownGroups = groups;
+  shownProject = project?.id;
   const connection = flux2.connection();
   return /* @__PURE__ */ jsxs8(
     ui14.box,
@@ -82291,7 +82292,7 @@ Board ordered by ${ORDERING_LABELS[options.ordering]}`;
       /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
       /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: String(group.issues.length) }),
       /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, void 0, group.key) })
+      /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, shownProject, group.key) })
     ] }),
     /* @__PURE__ */ jsx9(
       ui14.list,
@@ -82547,7 +82548,7 @@ function ListHeading({ flux: flux2, group, options, first: first2 }) {
       /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0 }, maxLines: 1, children: group.title }),
       /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: String(group.issues.length) })
     ] }),
-    /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, void 0, group.key) })
+    /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, shownProject, group.key) })
   ] }) });
 }
 var HEADING_BG = "color-mix(in srgb, text 5%, bg)";
@@ -82697,6 +82698,7 @@ function openCard(issue2) {
 }
 var shownFlat = [];
 var shownGroups = [];
+var shownProject;
 function clickIssue(issue2, event) {
   st5.keyed = false;
   if (event?.shift && anchor2) {
@@ -82890,7 +82892,7 @@ function onListKey(flux2, key, flat, groups, options) {
     });
   } else if (key.mod && k === "b") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
   else if (key.mod) return;
-  else if (k === "c" && !key.shift) openCreate(flux2);
+  else if (k === "c" && !key.shift) openCreate(flux2, shownProject);
   else if (key.key === "/") {
     st5.filterFocus++;
     st5.searching = true;
