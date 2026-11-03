@@ -1393,7 +1393,7 @@ export function NewIssue({ flux }: { flux: Flux }) {
 					) : null}
 				</ui.box>
 				{/* A title is one line however it wraps: Enter creates the issue. */}
-				<ui.field key="new-title" multiline value={st.draftTitle} placeholder="Issue title" keys={["Enter"]} onKeyDown={() => void submitNew(flux)} onChange={(value) => { st.draftTitle = value.replace(/\n/g, ""); }} style={{ fontSize: 18, fontWeight: 500, lineHeight: "28px", minHeight: 0, backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
+				<ui.field key="new-title" autoFocus multiline value={st.draftTitle} placeholder="Issue title" keys={["Enter"]} onKeyDown={() => void submitNew(flux)} onChange={(value) => { st.draftTitle = value.replace(/\n/g, ""); }} style={{ fontSize: 18, fontWeight: 500, lineHeight: "28px", minHeight: 0, backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
 				<ui.editor key="new-body" value={st.draftBody} placeholder="Add description…" label="Description" options={mentionOptions(flux)} images={editorImages(st.draftBody, imageOf)} onChange={(value) => { st.draftBody = value; }} onSubmit={() => void submitNew(flux)} onUpload={(file) => uploadInto(flux, file, "issue_image", () => st.draftBody, (md) => { st.draftBody = md; })} style={{ minHeight: 144, boxShadow: "none" }} />
 			</ui.box>
 			<ui.box style={{ height: 1, backgroundColor: "divider" }} />

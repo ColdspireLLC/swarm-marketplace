@@ -83181,7 +83181,7 @@ function NewIssue({ flux: flux2 }) {
           /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
         ] }) : null
       ] }),
-      /* @__PURE__ */ jsx9(ui14.field, { multiline: true, value: st5.draftTitle, placeholder: "Issue title", keys: ["Enter"], onKeyDown: () => void submitNew(flux2), onChange: (value) => {
+      /* @__PURE__ */ jsx9(ui14.field, { autoFocus: true, multiline: true, value: st5.draftTitle, placeholder: "Issue title", keys: ["Enter"], onKeyDown: () => void submitNew(flux2), onChange: (value) => {
         st5.draftTitle = value.replace(/\n/g, "");
       }, style: { fontSize: 18, fontWeight: 500, lineHeight: "28px", minHeight: 0, backgroundColor: "transparent", boxShadow: "none", padding: 0 } }, "new-title"),
       /* @__PURE__ */ jsx9(ui14.editor, { value: st5.draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), images: editorImages(st5.draftBody, imageOf2), onChange: (value) => {
