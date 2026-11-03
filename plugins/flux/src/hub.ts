@@ -1,6 +1,9 @@
-// Every Flux this Swarm is connected to. The first one is the url and token
-// settings. The others are a JSON list in the connections secret. One is
-// active: the page and `swarm flux` use it unless a command says --flux.
+// Every Flux this Swarm is connected to. The first one is the url, token
+// and workspace settings. The others are a JSON list in the connections
+// secret. Each is on one workspace, by its id, kept as it first connects:
+// a token for all its account's workspaces makes one of each workspace
+// picked, and stays on it as the account joins others. One is active: the page and `swarm flux` use it
+// unless a command says --flux.
 import { settings, storage, ui } from "swarm";
 import { Flux, FluxNotFoundError } from "./service";
 
@@ -8,6 +11,8 @@ interface Extra {
 	id: string;
 	url: string;
 	token: string;
+	/** The workspace it's on; none for the one its token picks. */
+	workspace?: string;
 }
 
 export function parseExtras(value: string): Extra[] {
@@ -18,7 +23,7 @@ export function parseExtras(value: string): Extra[] {
 		return parsed.filter((item): item is Extra => {
 			if (!item || typeof item !== "object") return false;
 			const row = item as Extra;
-			return typeof row.id === "string" && row.id !== "" && row.id !== "default" && typeof row.url === "string" && typeof row.token === "string";
+			return typeof row.id === "string" && row.id !== "" && row.id !== "default" && typeof row.url === "string" && typeof row.token === "string" && (row.workspace === undefined || typeof row.workspace === "string");
 		});
 	} catch {
 		return [];
@@ -38,6 +43,20 @@ export class Hub {
 
 	constructor() {
 		this.main.onChange = () => this.changed();
+		this.main.onPin = (workspace) => this.pin("default", workspace);
+	}
+
+	/** Keeps the workspace a connection set to none is on. */
+	private pin(id: string, workspace: string) {
+		if (id === "default") {
+			if (!String(settings.get("workspace") ?? "")) settings.set({ workspace });
+			return;
+		}
+		const list = parseExtras(String(settings.get("connections") ?? ""));
+		const row = list.find((item) => item.id === id);
+		if (!row || row.workspace) return;
+		row.workspace = workspace;
+		settings.set({ connections: JSON.stringify(list) });
 	}
 
 	private changed() {
@@ -82,12 +101,13 @@ export class Hub {
 
 	/**
 	 * Sets a Flux's URL and token: target's, or a new one's when null,
-	 * which is the first one's while that isn't set. It's then the active
-	 * one. Returns its id.
+	 * which is the first one's while that isn't set. workspace is the
+	 * workspace it's on, "" for the one its token picks; target's stays as
+	 * it was when it's undefined. It's then the active one. Returns its id.
 	 */
-	save(target: string | null, url: string, token: string): string {
+	save(target: string | null, url: string, token: string, workspace?: string): string {
 		if (target === "default" || (target === null && this.main.url === "")) {
-			settings.set({ url, token });
+			settings.set({ url, token, ...(workspace !== undefined || target === null ? { workspace: workspace || null } : {}) });
 			this.fromSettings();
 			this.use("default");
 			return "default";
@@ -99,9 +119,10 @@ export class Hub {
 			if (!row) throw new FluxNotFoundError(`No Flux connection ${id}.`);
 			row.url = url;
 			row.token = token;
+			if (workspace !== undefined) row.workspace = workspace || undefined;
 		} else {
 			id = crypto.randomUUID();
-			list.push({ id, url, token });
+			list.push({ id, url, token, ...(workspace ? { workspace } : {}) });
 		}
 		settings.set({ connections: JSON.stringify(list) });
 		this.fromSettings();
@@ -116,7 +137,7 @@ export class Hub {
 			this.main.forget();
 			const next = list.shift();
 			if (next) this.extras.get(next.id)?.forget();
-			settings.set({ url: next?.url ?? null, token: next?.token ?? null, connections: list.length ? JSON.stringify(list) : null });
+			settings.set({ url: next?.url ?? null, token: next?.token ?? null, workspace: next?.workspace || null, connections: list.length ? JSON.stringify(list) : null });
 			if (next && this.activeId === next.id) this.activeId = "default";
 		} else {
 			this.extras.get(id)?.forget();
@@ -129,12 +150,12 @@ export class Hub {
 
 	/** Connects as the settings say. */
 	fromSettings() {
-		this.configure(String(settings.get("url") ?? ""), String(settings.get("token") ?? ""), String(settings.get("connections") ?? ""));
+		this.configure(String(settings.get("url") ?? ""), String(settings.get("token") ?? ""), String(settings.get("connections") ?? ""), String(settings.get("workspace") ?? ""));
 	}
 
 	/** Starts, restarts, or stops connections to match the settings. */
-	configure(url: string, token: string, extraJSON: string) {
-		this.main.configure(url, token);
+	configure(url: string, token: string, extraJSON: string, workspace = "") {
+		this.main.configure(url, token, workspace);
 		const want = parseExtras(extraJSON);
 		const ids = new Set(want.map((item) => item.id));
 		for (const [id, flux] of this.extras) {
@@ -148,9 +169,10 @@ export class Hub {
 			if (!flux) {
 				flux = new Flux(item.id, `conn:${item.id}`);
 				flux.onChange = () => this.changed();
+				flux.onPin = (workspace) => this.pin(item.id, workspace);
 				this.extras.set(item.id, flux);
 			}
-			flux.configure(item.url, item.token);
+			flux.configure(item.url, item.token, item.workspace ?? "");
 		}
 		if (this.activeId !== "default" && !this.extras.has(this.activeId)) this.use("default");
 	}

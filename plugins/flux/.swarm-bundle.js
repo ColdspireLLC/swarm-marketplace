@@ -23146,9 +23146,9 @@ function partPattern(schema2) {
     return own2;
   }
   if (def.options) {
-    const sources = def.options.map(partPattern);
-    if (sources.every(Boolean))
-      return `^(${sources.map((s) => cleanRegex(s)).join("|")})$`;
+    const sources2 = def.options.map(partPattern);
+    if (sources2.every(Boolean))
+      return `^(${sources2.map((s) => cleanRegex(s)).join("|")})$`;
   }
   return leafPattern(schema2);
 }
@@ -33891,8 +33891,8 @@ function _stringFormat(Class2, format, fnOrRegex, _params = {}) {
 }
 
 // node_modules/zod/v4/core/to-json-schema.js
-function assignProps(target, ...sources) {
-  for (const source of sources) {
+function assignProps(target, ...sources2) {
+  for (const source of sources2) {
     for (const key of Reflect.ownKeys(source)) {
       if (Object.prototype.propertyIsEnumerable.call(source, key)) {
         assignProp(target, key, source[key]);
@@ -38093,6 +38093,16 @@ var workspaceSchema = external_exports.object({
   imageUrl: external_exports.string().nullable().optional(),
   latestVersion: external_exports.number()
 });
+var workspaceChoiceSchema = external_exports.object({
+  id: external_exports.string(),
+  name: external_exports.string(),
+  slug: external_exports.string(),
+  color: external_exports.string().optional(),
+  imageUrl: external_exports.string().nullable().optional()
+});
+var workspacesSchema = external_exports.object({
+  workspaces: external_exports.array(workspaceChoiceSchema)
+});
 var membersSchema = external_exports.object({
   members: external_exports.array(accountSchema)
 });
@@ -38219,6 +38229,10 @@ var FluxClient = class {
   }
   me(signal) {
     return this.request(accountSchema, "/user", { signal });
+  }
+  /** The workspaces the token reaches, whichever this client is on. */
+  workspaces(signal) {
+    return this.request(workspacesSchema, "/workspaces", { signal });
   }
   workspace(signal) {
     return this.request(workspaceSchema, "/workspace", { signal });
@@ -45261,15 +45275,15 @@ var Fitter = class {
     }
   }
   close($to) {
-    let close5 = this.findCloseLevel($to);
-    if (!close5)
+    let close6 = this.findCloseLevel($to);
+    if (!close6)
       return null;
-    while (this.depth > close5.depth)
+    while (this.depth > close6.depth)
       this.closeFrontierNode();
-    if (close5.fit.childCount)
-      this.placed = addToFragment(this.placed, close5.depth, close5.fit);
-    $to = close5.move;
-    for (let d = close5.depth + 1; d <= $to.depth; d++) {
+    if (close6.fit.childCount)
+      this.placed = addToFragment(this.placed, close6.depth, close6.fit);
+    $to = close6.move;
+    for (let d = close6.depth + 1; d <= $to.depth; d++) {
       let node2 = $to.node(d), add = node2.type.contentMatch.fillBefore(node2.content, true, $to.index(d));
       this.openFrontierNode(node2.type, node2.attrs, add);
     }
@@ -77573,18 +77587,27 @@ var Flux = class {
   /** Told after what the copy has changes. */
   onChange = () => {
   };
+  /** Told the workspace a connection set to none is on, once Flux says, to keep it there. */
+  onPin = () => {
+  };
   storeKey(name) {
     return this.storePrefix ? `${this.storePrefix}:${name}` : name;
   }
   get baseUrl() {
     return this.client?.baseUrl ?? "";
   }
-  /** Connects with url and token, or none. The same pair leaves the stream up. */
-  configure(url2, token) {
+  /**
+   * Connects with url and token, or none, to workspace when it's given:
+   * a token for all its account's workspaces is on the one it joined
+   * last otherwise. The same ones leave the stream up.
+   */
+  configure(url2, token, workspace = "") {
     url2 = url2.trim();
     token = token.trim();
+    workspace = workspace.trim();
     const next2 = `${url2}
-${token}`;
+${token}
+${workspace}`;
     if (next2 === this.configured && (this.client || this.state === "unconfigured")) return;
     this.configured = next2;
     this.generation++;
@@ -77603,7 +77626,7 @@ ${token}`;
     if (!deviceId) storage2.set("deviceId", deviceId = crypto.randomUUID());
     this.device = deviceId;
     try {
-      this.client = new FluxClient({ baseUrl: url2, token, deviceId });
+      this.client = new FluxClient({ baseUrl: url2, token, deviceId, workspaceId: workspace || null });
     } catch (e) {
       this.client = null;
       this.state = "error";
@@ -77621,12 +77644,20 @@ ${token}`;
   get url() {
     return this.configured.split("\n")[0] ?? "";
   }
+  /** The workspace it was set to, or "" for the one its token is on. */
+  get pinned() {
+    return this.configured.split("\n")[2] ?? "";
+  }
+  /** Its workspace's id: the one it was set to, else the one it's on, once it's said. */
+  get workspaceId() {
+    return this.pinned || this.workspace?.id || null;
+  }
   /** Connects again from nothing: the account, the workspace, every item. Its threads' links stay. */
   resync() {
-    const [url2 = "", token = ""] = this.configured.split("\n");
+    const [url2 = "", token = "", workspace = ""] = this.configured.split("\n");
     this.reset(this.replica.scope);
     this.configured = "";
-    this.configure(url2, token);
+    this.configure(url2, token, workspace);
     return this.ready;
   }
   /** Stops, and drops the copy of the workspace, the account and the members. */
@@ -77657,12 +77688,29 @@ ${token}`;
     const client = this.client;
     try {
       await this.loaded;
-      client.workspaceId = null;
+      const pinned = this.pinned;
+      const copied = this.replica.scope.startsWith(client.baseUrl + "#") ? this.replica.scope.slice(client.baseUrl.length + 1) : "";
+      client.workspaceId = pinned || copied || null;
       this.me = await client.me();
-      const ws = await client.workspace();
+      let ws;
+      try {
+        ws = await client.workspace();
+      } catch (e) {
+        if (pinned || !copied || !(e instanceof FluxHttpError) || e.status !== 403 && e.status !== 404) throw e;
+        client.workspaceId = null;
+        ws = await client.workspace();
+      }
       if (!ws.id) throw new Error("Finish setting up your Flux workspace in Flux first.");
+      if (gen !== this.generation) return;
       client.workspaceId = ws.id;
       this.workspace = ws;
+      if (!pinned) {
+        const [url2 = "", token = ""] = this.configured.split("\n");
+        this.configured = `${url2}
+${token}
+${ws.id}`;
+        this.onPin(ws.id);
+      }
       const scope = `${client.baseUrl}#${ws.id}`;
       if (this.replica.scope !== scope) {
         this.reset(scope);
@@ -78045,9 +78093,9 @@ ${token}`;
   }
   /** Tries Flux again now, rather than at the next retry. */
   reconnect() {
-    const [url2 = "", token = ""] = this.configured.split("\n");
+    const [url2 = "", token = "", workspace = ""] = this.configured.split("\n");
     this.configured = "";
-    this.configure(url2, token);
+    this.configure(url2, token, workspace);
   }
   /** Refuses a change that needs Flux now (it numbers issues, say), while it can't be reached. */
   online() {
@@ -78739,12 +78787,17 @@ function parseSSE(frame) {
   return data.length ? { event, data: data.join("\n") } : null;
 }
 var DATA_IMAGE = /!\[([^\]]*)\]\((data:image\/([a-zA-Z0-9.+-]+);base64,([^)]+))\)/g;
-async function checkFlux(url2, token) {
-  const client = new FluxClient({ baseUrl: url2, token, deviceId: storage2.get("deviceId") ?? crypto.randomUUID() });
+async function checkFlux(url2, token, workspace = "") {
+  const client = new FluxClient({ baseUrl: url2, token, deviceId: storage2.get("deviceId") ?? crypto.randomUUID(), workspaceId: workspace || null });
   const me2 = await client.me();
   const ws = await client.workspace();
   if (!ws.id) throw new Error("Finish setting up your Flux workspace in Flux first.");
-  return { baseUrl: client.baseUrl, account: me2.name, workspace: { id: ws.id, name: ws.name } };
+  const here = { id: ws.id, name: ws.name, slug: ws.slug, color: ws.color, imageUrl: ws.imageUrl };
+  const all2 = await client.workspaces().then((r) => r.workspaces, (e) => {
+    if (e instanceof FluxHttpError && (e.status === 404 || e.status === 405)) return [here];
+    throw e;
+  });
+  return { baseUrl: client.baseUrl, account: me2.name, workspace: { id: ws.id, name: ws.name }, workspaces: all2.some((w2) => w2.id === ws.id) ? all2 : [here, ...all2] };
 }
 async function liftDataImages(markdown, upload2) {
   if (!markdown.includes("data:image/")) return markdown;
@@ -78778,7 +78831,7 @@ function parseExtras(value) {
     return parsed.filter((item) => {
       if (!item || typeof item !== "object") return false;
       const row = item;
-      return typeof row.id === "string" && row.id !== "" && row.id !== "default" && typeof row.url === "string" && typeof row.token === "string";
+      return typeof row.id === "string" && row.id !== "" && row.id !== "default" && typeof row.url === "string" && typeof row.token === "string" && (row.workspace === void 0 || typeof row.workspace === "string");
     });
   } catch {
     return [];
@@ -78800,6 +78853,19 @@ var Hub = class {
   };
   constructor() {
     this.main.onChange = () => this.changed();
+    this.main.onPin = (workspace) => this.pin("default", workspace);
+  }
+  /** Keeps the workspace a connection set to none is on. */
+  pin(id2, workspace) {
+    if (id2 === "default") {
+      if (!String(settings.get("workspace") ?? "")) settings.set({ workspace });
+      return;
+    }
+    const list2 = parseExtras(String(settings.get("connections") ?? ""));
+    const row = list2.find((item) => item.id === id2);
+    if (!row || row.workspace) return;
+    row.workspace = workspace;
+    settings.set({ connections: JSON.stringify(list2) });
   }
   changed() {
     this.onChange();
@@ -78837,12 +78903,13 @@ var Hub = class {
   }
   /**
    * Sets a Flux's URL and token: target's, or a new one's when null,
-   * which is the first one's while that isn't set. It's then the active
-   * one. Returns its id.
+   * which is the first one's while that isn't set. workspace is the
+   * workspace it's on, "" for the one its token picks; target's stays as
+   * it was when it's undefined. It's then the active one. Returns its id.
    */
-  save(target, url2, token) {
+  save(target, url2, token, workspace) {
     if (target === "default" || target === null && this.main.url === "") {
-      settings.set({ url: url2, token });
+      settings.set({ url: url2, token, ...workspace !== void 0 || target === null ? { workspace: workspace || null } : {} });
       this.fromSettings();
       this.use("default");
       return "default";
@@ -78854,9 +78921,10 @@ var Hub = class {
       if (!row) throw new FluxNotFoundError(`No Flux connection ${id2}.`);
       row.url = url2;
       row.token = token;
+      if (workspace !== void 0) row.workspace = workspace || void 0;
     } else {
       id2 = crypto.randomUUID();
-      list2.push({ id: id2, url: url2, token });
+      list2.push({ id: id2, url: url2, token, ...workspace ? { workspace } : {} });
     }
     settings.set({ connections: JSON.stringify(list2) });
     this.fromSettings();
@@ -78870,7 +78938,7 @@ var Hub = class {
       this.main.forget();
       const next2 = list2.shift();
       if (next2) this.extras.get(next2.id)?.forget();
-      settings.set({ url: next2?.url ?? null, token: next2?.token ?? null, connections: list2.length ? JSON.stringify(list2) : null });
+      settings.set({ url: next2?.url ?? null, token: next2?.token ?? null, workspace: next2?.workspace || null, connections: list2.length ? JSON.stringify(list2) : null });
       if (next2 && this.activeId === next2.id) this.activeId = "default";
     } else {
       this.extras.get(id2)?.forget();
@@ -78882,11 +78950,11 @@ var Hub = class {
   }
   /** Connects as the settings say. */
   fromSettings() {
-    this.configure(String(settings.get("url") ?? ""), String(settings.get("token") ?? ""), String(settings.get("connections") ?? ""));
+    this.configure(String(settings.get("url") ?? ""), String(settings.get("token") ?? ""), String(settings.get("connections") ?? ""), String(settings.get("workspace") ?? ""));
   }
   /** Starts, restarts, or stops connections to match the settings. */
-  configure(url2, token, extraJSON) {
-    this.main.configure(url2, token);
+  configure(url2, token, extraJSON, workspace = "") {
+    this.main.configure(url2, token, workspace);
     const want = parseExtras(extraJSON);
     const ids = new Set(want.map((item) => item.id));
     for (const [id2, flux2] of this.extras) {
@@ -78900,9 +78968,10 @@ var Hub = class {
       if (!flux2) {
         flux2 = new Flux(item.id, `conn:${item.id}`);
         flux2.onChange = () => this.changed();
+        flux2.onPin = (workspace2) => this.pin(item.id, workspace2);
         this.extras.set(item.id, flux2);
       }
-      flux2.configure(item.url, item.token);
+      flux2.configure(item.url, item.token, item.workspace ?? "");
     }
     if (this.activeId !== "default" && !this.extras.has(this.activeId)) this.use("default");
   }
@@ -78915,17 +78984,25 @@ var hub = new Hub();
 
 // src/pictures.ts
 var got = ui3.store(/* @__PURE__ */ new Map());
-function pictureBytes(src) {
+function pictureBytes(src, from4 = hub.active) {
   if (!src) return null;
-  const flux2 = hub.active;
+  const flux2 = from4;
   const id2 = fluxAssetId(src, flux2.baseUrl);
   const key = id2 ? `asset:${flux2.baseUrl}#${id2}` : src;
   const have = got.get(key);
   if (have instanceof Uint8Array) return have;
   if (have) return null;
   if (!id2 && !/^https?:\/\//i.test(src)) return null;
+  let client = null;
+  if (id2) {
+    try {
+      client = flux2.requireClient();
+    } catch {
+      return null;
+    }
+  }
   got.set(key, "loading");
-  const read = id2 ? flux2.requireClient().asset(id2).then((a3) => new Uint8Array(a3.bytes)) : fetch(src).then(async (res) => {
+  const read = client ? client.asset(id2).then((a3) => new Uint8Array(a3.bytes)) : fetch(src).then(async (res) => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return new Uint8Array(await res.arrayBuffer());
   });
@@ -80245,6 +80322,23 @@ function Avatar({ member: member2, size: size3 = 18 }) {
   if (bytes) return /* @__PURE__ */ jsx4(ui7.image, { src: bytes, alt: "", tooltip: member2.name, style: { ...box, objectFit: "cover" } });
   return /* @__PURE__ */ jsx4(ui7.box, { label: member2.name, style: { ...box, backgroundColor: colorOf[member2.avatarColor] }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { color: "white", fontSize: Math.max(9, Math.round(size3 * 0.55)), fontWeight: 600 }, children: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() }) });
 }
+function workspaceColor(workspace) {
+  const c = workspace?.color;
+  return COLORS.includes(c ?? "") ? c : "gray";
+}
+function workspaceInitial(workspace, fallback) {
+  return (workspace?.name || fallback || "F").replace(/^https?:\/\//, "").trim().slice(0, 1).toUpperCase();
+}
+function WorkspaceLogo({ workspace, fallback = "", from: from4, size: size3 }) {
+  const box = { width: size3, height: size3, flexShrink: 0, borderRadius: Math.round(size3 / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" };
+  const logo = pictureBytes(workspace?.imageUrl, from4);
+  if (logo) return /* @__PURE__ */ jsx4(ui7.image, { src: logo, alt: "", style: { ...box, objectFit: "cover" } });
+  return /* @__PURE__ */ jsx4(ui7.box, { style: { ...box, backgroundColor: colorOf[workspaceColor(workspace)] }, children: /* @__PURE__ */ jsx4(ui7.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 600 }, children: workspaceInitial(workspace, fallback) }) });
+}
+function workspaceMenuMark(workspace, fallback, from4) {
+  const logo = pictureBytes(workspace?.imageUrl, from4);
+  return logo ? { mark: logo } : { initial: workspaceInitial(workspace, fallback), tint: MARK_HEX[workspaceColor(workspace)] };
+}
 function AgentAvatar({ agent: said, size: size3 = 20 }) {
   const agent2 = said.icon ? said : { ...said, ...agentLogo(said.provider) };
   const box = { width: size3, height: size3, borderRadius: 4, flexShrink: 0, alignItems: "center", justifyContent: "center", backgroundColor: "color-mix(in srgb, text 8%, transparent)" };
@@ -81184,18 +81278,46 @@ function IssueBones() {
 }
 
 // src/page.tsx
-import { storage as storage4, ui as ui14 } from "swarm";
+import { storage as storage5, ui as ui14 } from "swarm";
 
 // src/connect.tsx
-import { ui as ui11 } from "swarm";
+import { storage as storage4, ui as ui11 } from "swarm";
 import { jsx as jsx7, jsxs as jsxs6 } from "swarm/jsx-runtime";
 var forms = ui11.store(/* @__PURE__ */ new Map());
+var sources = /* @__PURE__ */ new Map();
 function formOf(key, url2) {
-  if (!forms.has(key)) forms.set(key, { url: url2, token: "", busy: false, error: "" });
+  if (!forms.has(key)) forms.set(key, { url: url2, token: "", busy: false, error: "", pick: null });
   return forms.get(key);
+}
+function close4(name) {
+  forms.delete(name);
+  for (const key of sources.keys()) if (key.startsWith(name + "\n")) sources.delete(key);
+}
+function connectedTo(baseUrl, workspace, except = null) {
+  return hub.connected().some((flux2) => flux2.id !== except && flux2.baseUrl === baseUrl && flux2.workspaceId === workspace);
+}
+function sameFlux(url2, baseUrl) {
+  try {
+    return normalizeBaseUrl(url2) === baseUrl;
+  } catch {
+    return false;
+  }
+}
+function sourceOf(name, pick2, workspace) {
+  const key = `${name}
+${pick2.baseUrl}
+${workspace}`;
+  let source = sources.get(key);
+  if (!source) {
+    const client = new FluxClient({ baseUrl: pick2.baseUrl, token: pick2.token, deviceId: storage4.get("deviceId") ?? "", workspaceId: workspace });
+    source = { baseUrl: client.baseUrl, requireClient: () => client };
+    sources.set(key, source);
+  }
+  return source;
 }
 function ConnectForm({ name, target, url: url2 = "", done, cancel }) {
   const form = formOf(name, url2);
+  if (form.pick) return /* @__PURE__ */ jsx7(Picker, { name, form, pick: form.pick, done, cancel });
   const go = () => void connect(name, form, target, done);
   const tokens = /^https?:\/\/[^/\s]+/.exec(form.url.trim())?.[0];
   return /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 14 }, children: [
@@ -81223,10 +81345,50 @@ function ConnectForm({ name, target, url: url2 = "", done, cancel }) {
     ] }) : null,
     /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
       cancel ? /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
-        forms.delete(name);
+        close4(name);
         cancel();
       }, children: "Cancel" }) : null,
       /* @__PURE__ */ jsx7(ui11.button, { kind: "primary", disabled: form.busy, onClick: go, children: form.busy ? "Connecting…" : "Connect" })
+    ] })
+  ] });
+}
+function Picker({ name, form, pick: pick2, done, cancel }) {
+  const fresh = pick2.chosen.filter((id2) => !connectedTo(pick2.baseUrl, id2));
+  const add = () => {
+    const picked = pick2.workspaces.filter((ws) => fresh.includes(ws.id));
+    if (picked.length === 0) return;
+    const ids = picked.map((ws) => hub.save(null, pick2.url, pick2.token, ws.id));
+    hub.use(ids[0]);
+    close4(name);
+    ui11.toast(picked.length === 1 ? `Connected to ${picked[0].name} as ${pick2.account}.` : `Connected to ${picked.length} workspaces as ${pick2.account}.`);
+    done?.();
+  };
+  return /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 14 }, children: [
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 4 }, children: [
+      /* @__PURE__ */ jsx7(ui11.text, { style: { fontWeight: 500 }, children: "Workspaces" }),
+      /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text2" }, children: `${pick2.account}'s token reaches ${pick2.workspaces.length} workspaces. Each one ticked is added on its own, with this token.` })
+    ] }),
+    /* @__PURE__ */ jsx7(ui11.box, { style: { gap: 2 }, children: pick2.workspaces.map((ws) => {
+      const already = connectedTo(pick2.baseUrl, ws.id);
+      const on3 = already || pick2.chosen.includes(ws.id);
+      return /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control" }, children: [
+        /* @__PURE__ */ jsx7(ui11.checkbox, { tooltip: already ? `${ws.name} is connected already` : `Add ${ws.name}`, checked: on3, disabled: already, onChange: (value) => {
+          pick2.chosen = value ? [...pick2.chosen.filter((id2) => id2 !== ws.id), ws.id] : pick2.chosen.filter((id2) => id2 !== ws.id);
+        } }),
+        /* @__PURE__ */ jsx7(WorkspaceLogo, { workspace: ws, fallback: pick2.baseUrl, from: sourceOf(name, pick2, ws.id), size: 20 }),
+        /* @__PURE__ */ jsx7(ui11.text, { style: { flex: 1, minWidth: 0, color: already ? "text2" : "text" }, maxLines: 1, children: ws.name }),
+        already ? /* @__PURE__ */ jsx7(ui11.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover", flexShrink: 0 }, children: /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: 11, color: "text2" }, children: "Connected" }) }) : null
+      ] }, ws.id);
+    }) }),
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
+      /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
+        form.pick = null;
+      }, children: "Back" }),
+      cancel ? /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
+        close4(name);
+        cancel();
+      }, children: "Cancel" }) : null,
+      /* @__PURE__ */ jsx7(ui11.button, { kind: "primary", disabled: fresh.length === 0, onClick: add, children: fresh.length > 1 ? `Add ${fresh.length} workspaces` : fresh.length === 1 ? "Add 1 workspace" : "Add" })
     ] })
   ] });
 }
@@ -81241,11 +81403,17 @@ async function connect(name, form, target, done) {
   form.busy = true;
   form.error = "";
   try {
-    const found2 = await checkFlux(url2, token);
-    const twin = hub.connected().find((flux2) => flux2.id !== target && flux2.baseUrl === found2.baseUrl && flux2.workspace?.id === found2.workspace.id);
-    if (twin) throw new Error(`${found2.workspace.name} at ${found2.baseUrl} is connected already: change its token there.`);
-    hub.save(target, url2, token);
-    forms.delete(name);
+    const changing = target ? hub.all().find((flux2) => flux2.id === target) : void 0;
+    const pinned = changing && sameFlux(url2, changing.baseUrl) ? changing.workspaceId ?? "" : "";
+    const found2 = await checkFlux(url2, token, pinned);
+    if (target === null && found2.workspaces.length > 1) {
+      const fresh = found2.workspaces.filter((ws) => !connectedTo(found2.baseUrl, ws.id)).map((ws) => ws.id);
+      form.pick = { url: url2, token, baseUrl: found2.baseUrl, account: found2.account, workspaces: found2.workspaces, chosen: fresh };
+      return;
+    }
+    if (connectedTo(found2.baseUrl, found2.workspace.id, target)) throw new Error(`${found2.workspace.name} at ${found2.baseUrl} is connected already: change its token there.`);
+    hub.save(target, url2, token, found2.workspace.id);
+    close4(name);
     ui11.toast(`Connected to ${found2.workspace.name} as ${found2.account}.`);
     done?.();
   } catch (e) {
@@ -81483,7 +81651,7 @@ function openProjectSettings(project, follow = false) {
   st4.busy = false;
   ui13.showOverlay("flux-project");
 }
-function close4() {
+function close5() {
   closeProject();
   ui13.hideOverlay("flux-project");
 }
@@ -81630,7 +81798,7 @@ function ProjectDialog({ flux: flux2 }) {
           ),
           /* @__PURE__ */ jsx8(ui13.text, { style: { flex: 1, minWidth: 0, fontSize: 12, color: problem ? "red" : "text2" }, maxLines: 1, tooltip: problem ?? hint, children: problem ?? hint }),
           editing2 ? /* @__PURE__ */ jsx8(ui13.button, { kind: "ghost", size: "sm", onClick: () => {
-            close4();
+            close5();
             confirmDelete(flux2, editing2, o.follow ? () => ui13.navTo("flux", "") : void 0);
           }, style: { color: "red" }, children: "Delete…" }) : null,
           /* @__PURE__ */ jsx8(ui13.button, { kind: "primary", disabled: !ready, onClick: () => void submit(flux2), children: `${st4.busy ? editing2 ? "Saving…" : "Creating…" : editing2 ? "Save" : "Create"}  ⌘↵` })
@@ -81650,16 +81818,16 @@ async function submit(flux2) {
   try {
     if (o.id) {
       const before = flux2.projects().find((p) => p.id === o.id);
-      if (!before) return close4();
+      if (!before) return close5();
       const was = markOf2(before);
       const marked = st4.mark && JSON.stringify(st4.mark) !== JSON.stringify(was) ? st4.mark : void 0;
       const project = await flux2.updateProject(o.id, { name: st4.name, key: st4.keyDraft || before.key, mark: marked });
-      close4();
+      close5();
       if (o.follow && project.key !== before.key) ui13.navTo("flux", `p/${project.key}`);
       ui13.toast(project.key !== before.key ? `${project.name} is ${project.key} now. ${before.key}-… still finds its issues.` : `Saved ${project.name}.`);
     } else {
       const project = await flux2.createProject({ name: st4.name, key: st4.keyDraft || void 0, mark: st4.mark ?? DEFAULT_MARK });
-      close4();
+      close5();
       ui13.navTo("flux", `p/${project.key}`);
       ui13.toast(`Created ${project.name}.`);
     }
@@ -81973,10 +82141,10 @@ var PAGE_KEYS = [
 ];
 var BAR_KEYS = PAGE_KEYS.filter((key) => key !== "Escape");
 function displayOf() {
-  return parseDisplay(storage4.get("display"));
+  return parseDisplay(storage5.get("display"));
 }
 function setDisplay(next2) {
-  storage4.set("display", next2);
+  storage5.set("display", next2);
 }
 function openIssue(key) {
   ui14.navTo("flux", `issues/${encodeURIComponent(key)}`);
@@ -82010,7 +82178,7 @@ function syncNav(flux2) {
   }
 }
 function scopeNow() {
-  return scopeOf(storage4.get("scope") ?? "mine");
+  return scopeOf(storage5.get("scope") ?? "mine");
 }
 function parsePath(path) {
   const parts = path.split("/").filter(Boolean);
@@ -82197,11 +82365,11 @@ function Toolbar({ flux: flux2, project, scope, options }) {
         projectMenuItems(project)
       ] }),
       /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] } }),
-      /* @__PURE__ */ jsx9(ui14.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage4.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
+      /* @__PURE__ */ jsx9(ui14.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage5.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
       /* @__PURE__ */ jsx9(ui14.box, { style: { flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui14.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
         /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
         /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
-        SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.item, { checked: scope === item, onClick: () => storage4.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
+        SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.item, { checked: scope === item, onClick: () => storage5.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
       ] }) }),
       /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minWidth: 8 } }),
       /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
@@ -82235,12 +82403,12 @@ function displayPanel(options, singleProject) {
     const properties = has2 ? options.properties.filter((item) => item !== property) : PROPERTIES.filter((item) => item === property || options.properties.includes(item));
     if (properties.length > 0) set2({ properties });
   };
-  const close5 = () => {
+  const close6 = () => {
     st5.displayOpen = false;
   };
   const picked = (on3) => ({ borderRadius: "control", border: on3 ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on3 ? "press" : "transparent", color: on3 ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "press" : "hover", color: "text" } });
   return [
-    /* @__PURE__ */ jsx9(ui14.pressable, { label: "Close display options", onClick: close5, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
+    /* @__PURE__ */ jsx9(ui14.pressable, { label: "Close display options", onClick: close6, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
     /* @__PURE__ */ jsxs8(ui14.box, { label: "Display options", style: { position: "absolute", top: 44, right: 16, width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
       /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs8(ui14.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
         /* @__PURE__ */ jsx9(ui14.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
@@ -82350,23 +82518,23 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
             /* @__PURE__ */ jsx9(KeyLine, { issue: issue2, parent: parent ?? void 0, showKey: shows(options, "id") })
           ] }) : null,
           /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: shows(options, "id") || parent || project ? 4 : 0 }, children: [
-            shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 4, backgroundColor: "transparent" }, children: [
+            shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 4, backgroundColor: "transparent" }, children: [
               /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status, size: 14 }),
               () => pickerItems(flux2, issue2, "status")
             ] }) : null,
             /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text2" : "text" }, maxLines: 2, children: issue2.title })
           ] }),
           fields ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
-            shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }, children: [
+            shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }, children: [
               /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority, size: 12 }),
               () => pickerItems(flux2, issue2, "priority")
             ] }) : null,
-            shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsxs8(Picker, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+            shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsxs8(Picker2, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
               dueContent(issue2.dueDate),
               () => pickerItems(flux2, issue2, "due")
             ] }) : null,
             issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null,
-            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs8(Picker, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs8(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
               tagContent(item),
               () => pickerItems(flux2, issue2, "labels")
             ] }, item.id)) : null,
@@ -82375,7 +82543,7 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
           shows(options, "created") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
         ] }),
         /* @__PURE__ */ jsxs8(ui14.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
-          shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
+          shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
             assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 20, ring: "overlay" }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
             () => pickerItems(flux2, issue2, "assignees")
           ] }) : /* @__PURE__ */ jsx9(ui14.box, {}),
@@ -82407,7 +82575,7 @@ function pickerItems(flux2, issue2, kind) {
     }
   }
 }
-function Picker({ label, style, children }) {
+function Picker2({ label, style, children }) {
   return /* @__PURE__ */ jsx9(ui14.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
 }
 var field = { flexDirection: "row", gap: 4, alignItems: "center", justifyContent: "center", height: 22, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: 4, border: "1px solid border" };
@@ -82482,7 +82650,7 @@ function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
   const headed = effectiveGrouping(options, !showProject) !== "none";
   const rows2 = [];
   const headers = [];
-  const folded = new Set(storage4.get("folded") ?? []);
+  const folded = new Set(storage5.get("folded") ?? []);
   for (const group of groups) {
     if (headed) {
       headers.push(rows2.length);
@@ -82531,13 +82699,13 @@ function listDrop(flux2, rows2, event, options) {
   dropAt(flux2, group, group.issues, { data: event.data, index: next2 >= 0 ? next2 : inGroup.length }, options);
 }
 function foldedGroup(group) {
-  return (storage4.get("folded") ?? []).includes(group.id);
+  return (storage5.get("folded") ?? []).includes(group.id);
 }
 function foldGroup(group) {
-  const folded = new Set(storage4.get("folded") ?? []);
+  const folded = new Set(storage5.get("folded") ?? []);
   if (folded.has(group.id)) folded.delete(group.id);
   else folded.add(group.id);
-  storage4.set("folded", [...folded]);
+  storage5.set("folded", [...folded]);
 }
 function ListHeading({ flux: flux2, group, options, first: first2 }) {
   const open3 = !foldedGroup(group);
@@ -82566,12 +82734,12 @@ function ListRow({ flux: flux2, issue: issue2, group, index, options, showProjec
   return /* @__PURE__ */ jsxs8(ui14.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on3 ? "selected" : st5.keyed && st5.cursor === issue2.id ? "hover" : "transparent", boxShadow: st5.keyed && st5.cursor === issue2.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "selected" : "hover" } }, children: [
     /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: issue2 }),
     /* @__PURE__ */ jsx9(ui14.box, { label: `Select ${issue2.key}`, onClick: (event) => event?.shift ? clickIssue(issue2, event) : toggleSelected(issue2.id, !on3), style: { width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on3 ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on3 ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on3 || st5.selected.size > 0 || st5.keyed && st5.cursor === issue2.id ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }, children: on3 ? /* @__PURE__ */ jsx9(ui14.icon, { icon: "check", style: { width: 10, height: 10, color: "white" } }) : null }),
-    shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: cell, children: [
+    shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: cell, children: [
       /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority, size: 14 }),
       () => pickerItems(flux2, issue2, "priority")
     ] }) : null,
     shows(options, "id") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", width: keyWidth, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
-    shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: cell, children: [
+    shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: cell, children: [
       /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status, size: 14 }),
       () => pickerItems(flux2, issue2, "status")
     ] }) : null,
@@ -82585,15 +82753,15 @@ function ListRow({ flux: flux2, issue: issue2, group, index, options, showProjec
       issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null
     ] }),
     shows(options, "agents") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 24, justifyContent: "center", flexShrink: 0 }, children: issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx9(AgentChip, { issue: issue2 }) : closed ? null : /* @__PURE__ */ jsx9(StartAgentButton, { issue: issue2 }) }) : null,
-    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs8(Picker, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs8(Picker2, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
       dueContent(issue2.dueDate),
       () => pickerItems(flux2, issue2, "due")
     ] }) }) : null,
-    shows(options, "labels") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs8(Picker, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+    shows(options, "labels") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs8(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
       tagContent(item),
       () => pickerItems(flux2, issue2, "labels")
     ] }, item.id)) }) : null,
-    shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
+    shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
       assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
       () => pickerItems(flux2, issue2, "assignees")
     ] }) : null,
@@ -82944,7 +83112,7 @@ function Empty({ flux: flux2, scope, inProject, onCreate }) {
       filtered ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => {
         st5.query = "";
       }, children: "Clear filter" }) : null,
-      !filtered && scope !== "all" ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => storage4.set("scope", "all"), children: "Show all issues" }) : null,
+      !filtered && scope !== "all" ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => storage5.set("scope", "all"), children: "Show all issues" }) : null,
       !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) : null
     ] })
   ] }, filtered ? "tray-q" : scope) });
@@ -83222,7 +83390,7 @@ var SUB_PROPERTIES = ["id", "priority", "assignee", "labels"];
 var SUB_ORDERING_LABELS = { created: "Created", priority: "Priority", status: "Status" };
 var SUB_PROPERTY_LABELS = { id: "ID", priority: "Priority", assignee: "Assignee", labels: "Labels" };
 function subDisplay() {
-  const raw = storage4.get("subDisplay") ?? {};
+  const raw = storage5.get("subDisplay") ?? {};
   const ordering = SUB_ORDERINGS.includes(raw.ordering) ? raw.ordering : "created";
   const properties = Array.isArray(raw.properties) ? SUB_PROPERTIES.filter((p) => raw.properties.includes(p)) : ["assignee"];
   return { ordering, properties };
@@ -83258,7 +83426,7 @@ function SubIssues({ flux: flux2, issue: issue2, subs }) {
   const ordered = orderSubs(subs, display.ordering);
   const done = subs.filter((sub) => CLOSED_STATUSES.has(sub.status)).length;
   const open3 = st5.composing?.parent === issue2.id;
-  const setDisplay2 = (patch) => storage4.set("subDisplay", { ...display, ...patch });
+  const setDisplay2 = (patch) => storage5.set("subDisplay", { ...display, ...patch });
   return /* @__PURE__ */ jsxs8(ui14.box, { style: { marginTop: 32, gap: 0 }, children: [
     subs.length > 0 ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
       /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Sub-issues", checked: st5.subsOpen, onClick: () => {
@@ -83296,7 +83464,7 @@ function SubRow({ flux: flux2, sub, members: members2, properties }) {
   const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
   return /* @__PURE__ */ jsxs8(ui14.box, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
     /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: sub }),
-    /* @__PURE__ */ jsxs8(Picker, { label: `Status: ${STATUS_LABELS[sub.status]}`, style: cell, children: [
+    /* @__PURE__ */ jsxs8(Picker2, { label: `Status: ${STATUS_LABELS[sub.status]}`, style: cell, children: [
       /* @__PURE__ */ jsx9(StatusIcon, { status: sub.status, size: 14 }),
       pickerItems(flux2, sub, "status")
     ] }),
@@ -83304,7 +83472,7 @@ function SubRow({ flux: flux2, sub, members: members2, properties }) {
     shown("priority") && sub.priority !== "none" ? /* @__PURE__ */ jsx9(PriorityIcon, { priority: sub.priority, size: 14 }) : null,
     /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
     shown("labels") && labels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx9(ui14.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
-    shown("assignee") ? /* @__PURE__ */ jsxs8(Picker, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
+    shown("assignee") ? /* @__PURE__ */ jsxs8(Picker2, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
       who.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: who, size: 20 }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
       pickerItems(flux2, sub, "assignees")
     ] }) : null
@@ -83314,20 +83482,20 @@ function SubComposer({ flux: flux2, parent }) {
   const c = st5.composing;
   const members2 = flux2.memberList();
   const me2 = flux2.me?.id;
-  const close5 = () => {
+  const close6 = () => {
     st5.composing = null;
   };
   const submit2 = (andClose) => {
     if (!fileSub(flux2, parent, c.title)) return;
     c.title = "";
-    if (andClose) close5();
+    if (andClose) close6();
   };
   const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
   const who = members2.filter((m) => c.assigneeIds.includes(m.id));
   const chosen = flux2.labels().filter((l) => c.labelIds.includes(l.id));
   const chip2 = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, maxWidth: 224, minWidth: 0, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, border: "1px solid border", backgroundColor: "overlay", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } };
   const chipText = (text2, muted) => /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: text2 });
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs8(ui14.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close5, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs8(ui14.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close6, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
     /* @__PURE__ */ jsx9(
       ui14.field,
       {
@@ -83337,7 +83505,7 @@ function SubComposer({ flux: flux2, parent }) {
         placeholder: "Sub-issue title",
         keys: ["Enter", "Mod+Shift+Enter", "Escape"],
         onKeyDown: (key) => {
-          if (key.key === "Escape") close5();
+          if (key.key === "Escape") close6();
           else submit2(key.mod && key.shift);
         },
         onChange: (value) => {
@@ -83381,7 +83549,7 @@ function SubComposer({ flux: flux2, parent }) {
         }, children: l.name }, l.id))
       ] }),
       /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui14.button, { kind: "ghost", size: "sm", onClick: close5, children: "Cancel" }),
+      /* @__PURE__ */ jsx9(ui14.button, { kind: "ghost", size: "sm", onClick: close6, children: "Cancel" }),
       /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", size: "sm", disabled: !c.title.trim(), tooltip: "⌘ Enter to submit and draft a similar issue\n⌘ ⇧ Enter to submit issue", onClick: () => submit2(false), children: "Create" })
     ] })
   ] }) });
@@ -83534,22 +83702,11 @@ function RailRow({ icon, value, menu, muted, children }) {
     children
   ] });
 }
-function workspaceColor(flux2) {
-  const c = flux2.workspace?.color;
-  return COLORS.includes(c ?? "") ? c : "gray";
-}
-function workspaceInitial(flux2) {
-  return (flux2.workspace?.name || flux2.baseUrl || "F").replace(/^https?:\/\//, "").trim().slice(0, 1).toUpperCase();
-}
 function WorkspaceMark({ flux: flux2, size: size3 }) {
-  const box = { width: size3, height: size3, flexShrink: 0, borderRadius: Math.round(size3 / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" };
-  const logo = flux2 === hub.active ? pictureBytes(flux2.workspace?.imageUrl) : null;
-  if (logo) return /* @__PURE__ */ jsx9(ui14.image, { src: logo, alt: "", style: { ...box, objectFit: "cover" } });
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { ...box, backgroundColor: colorOf[workspaceColor(flux2)] }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { color: "white", fontSize: Math.round(size3 * 0.6), fontWeight: 600 }, children: workspaceInitial(flux2) }) });
+  return /* @__PURE__ */ jsx9(WorkspaceLogo, { workspace: flux2.workspace, fallback: flux2.baseUrl, from: flux2, size: size3 });
 }
 function workspaceMark(flux2) {
-  const logo = flux2 === hub.active ? pictureBytes(flux2.workspace?.imageUrl) : null;
-  return logo ? { mark: logo } : { initial: workspaceInitial(flux2), tint: MARK_HEX[workspaceColor(flux2)] };
+  return workspaceMenuMark(flux2.workspace, flux2.baseUrl, flux2);
 }
 function WorkspaceSwitcher() {
   const list2 = hub.connected();
@@ -83664,6 +83821,12 @@ var DOT2 = {
 function hostOf(flux2) {
   return (flux2.baseUrl || flux2.url || "Flux").replace(/^https?:\/\//, "");
 }
+function nameOf2(flux2) {
+  const host = hostOf(flux2);
+  const workspace = flux2.workspace?.name;
+  const shared = hub.connected().some((other) => other !== flux2 && hostOf(other) === host);
+  return shared && workspace ? `${workspace} at ${host}` : host;
+}
 function headline(flux2) {
   const c = flux2.connection();
   const host = hostOf(flux2);
@@ -83706,7 +83869,7 @@ function ConnectionCard({ flux: flux2, active }) {
         /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", color: "text2" }, maxLines: 2, children: detail(flux2) })
       ] }),
       /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8 }, children: [
-        active === false ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: `Use ${hostOf(flux2)} for the board and swarm flux`, onClick: () => {
+        active === false ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: `Use ${nameOf2(flux2)} for the board and swarm flux`, onClick: () => {
           hub.use(flux2.id);
           ui15.toast(`Switched to ${c.workspace?.name ?? hostOf(flux2)}.`);
         }, children: "Use" }) : null,
@@ -83715,7 +83878,7 @@ function ConnectionCard({ flux: flux2, active }) {
       ] })
     ] }),
     open3 ? /* @__PURE__ */ jsx10(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
-    /* @__PURE__ */ jsx10(ui15.pressable, { label: `Disconnect ${hostOf(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
+    /* @__PURE__ */ jsx10(ui15.pressable, { label: `Disconnect ${nameOf2(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
   ] });
 }
 function resync(flux2) {

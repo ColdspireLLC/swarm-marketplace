@@ -80,6 +80,14 @@ function hostOf(flux: Flux): string {
 	return (flux.baseUrl || flux.url || "Flux").replace(/^https?:\/\//, "");
 }
 
+/** Which Flux a card's controls name: its address, and its workspace where another is at that address too. */
+function nameOf(flux: Flux): string {
+	const host = hostOf(flux);
+	const workspace = flux.workspace?.name;
+	const shared = hub.connected().some((other) => other !== flux && hostOf(other) === host);
+	return shared && workspace ? `${workspace} at ${host}` : host;
+}
+
 function headline(flux: Flux): string {
 	const c = flux.connection();
 	const host = hostOf(flux);
@@ -131,7 +139,7 @@ function ConnectionCard({ flux, active }: { flux: Flux; active: boolean | null }
 					<ui.text style={{ fontSize: "small", color: "text2" }} maxLines={2}>{detail(flux)}</ui.text>
 				</ui.box>
 				<ui.box style={{ flexDirection: "row", gap: 8 }}>
-					{active === false ? <ui.button kind="secondary" size="sm" tooltip={`Use ${hostOf(flux)} for the board and swarm flux`} onClick={() => { hub.use(flux.id); ui.toast(`Switched to ${c.workspace?.name ?? hostOf(flux)}.`); }}>Use</ui.button> : null}
+					{active === false ? <ui.button kind="secondary" size="sm" tooltip={`Use ${nameOf(flux)} for the board and swarm flux`} onClick={() => { hub.use(flux.id); ui.toast(`Switched to ${c.workspace?.name ?? hostOf(flux)}.`); }}>Use</ui.button> : null}
 					{/* Offline, it would drop the copy that's showing. */}
 					{c.state === "ready" || c.state === "error" ? <ui.button kind="secondary" size="sm" tooltip="Pull everything from Flux again" onClick={() => resync(flux)}>Resync</ui.button> : null}
 					{(c.state === "ready" || c.state === "offline") ? (
@@ -140,7 +148,7 @@ function ConnectionCard({ flux, active }: { flux: Flux; active: boolean | null }
 				</ui.box>
 			</ui.box>
 			{open ? <ConnectForm name={"change-" + flux.id} target={flux.id} url={flux.baseUrl || flux.url} done={() => void editing.delete(flux.id)} /> : null}
-			<ui.pressable label={`Disconnect ${hostOf(flux)}`} role="link" onClick={() => disconnect(flux)} style={{ alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
+			<ui.pressable label={`Disconnect ${nameOf(flux)}`} role="link" onClick={() => disconnect(flux)} style={{ alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
 				<ui.text style={{ fontSize: "small", textDecoration: "underline" }}>Disconnect and forget the token</ui.text>
 			</ui.pressable>
 		</ui.box>

@@ -2,7 +2,7 @@
   "$schema": "./plugin.schema.json",
   "id": "flux",
   "name": "Flux",
-  "version": "1.6.5",
+  "version": "1.7.0",
   "description": "Flux issues in Swarm, kept current by your threads.",
   "adds": ["App page", "Side panel", "Agent skill"],
   "icon": "icon.svg",
@@ -19,7 +19,8 @@
   "settings": [
     { "key": "url", "title": "Flux URL", "type": "text", "default": "", "placeholder": "https://flux.example.com", "description": "The address you open Flux at. Flux's page of Settings sets it.", "hidden": true },
     { "key": "token", "title": "API token", "type": "secret", "description": "From Flux: Settings, API tokens. Flux's page of Settings sets it.", "hidden": true },
-    { "key": "connections", "title": "More Fluxes", "type": "secret", "description": "Other Fluxes, kept by Flux's page of Settings. A JSON list of id, url and token.", "hidden": true }
+    { "key": "workspace", "title": "Workspace", "type": "text", "default": "", "description": "The id of the workspace the first Flux is on, for a token that reaches several; empty for the one Flux picks. Flux's page of Settings sets it.", "hidden": true },
+    { "key": "connections", "title": "More Fluxes", "type": "secret", "description": "Other Fluxes, kept by Flux's page of Settings. A JSON list of id, url, token and workspace.", "hidden": true }
   ],
   "commands": [
     { "name": "help", "description": "The commands" },

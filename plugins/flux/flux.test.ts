@@ -8,6 +8,9 @@ const ME = { id: "u1", username: "ada", name: "Ada Lovelace", email: "ada@exampl
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 const ASSET = "0192f0e4-0000-7000-8000-0000000000aa";
 
+/** The nth workspace's logo, an asset of its own. */
+const logoOf = (n: number) => `0192f0e4-0000-7000-8000-0000000000b${n}`;
+
 interface Stored {
 	id: string;
 	version: number;
@@ -17,7 +20,7 @@ interface Stored {
 	body: Record<string, unknown> | null;
 }
 
-async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; long?: boolean; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean; crowd?: boolean; long_name?: boolean } = {}) {
+async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; demo?: boolean; unset?: boolean; workspace?: string; many?: number; long?: boolean; marks?: boolean; rich?: boolean; hold?: boolean; talk?: boolean; crowd?: boolean; long_name?: boolean; workspaces?: string[] } = {}) {
 	let version = 0;
 	const items = new Map<string, Stored>();
 	const put = (id: string, body: Record<string, unknown> | null) => {
@@ -98,6 +101,17 @@ async function flux(t: T, opts: { conflictOnce?: boolean; subIssue?: boolean; de
 		if (req.headers["authorization"] !== "Bearer tok") return { status: 401, json: { message: "no" } };
 		const path = req.path;
 		if (path === "/user") return { json: ME };
+		if (opts.workspaces) {
+			// A token for all the account's workspaces: x-workspace-id picks
+			// one, else it's the one joined last. Each has a logo of its own.
+			const all = opts.workspaces.map((name, n) => ({ id: "w-" + name.toLowerCase(), name, slug: name.toLowerCase(), color: ["indigo", "green", "orange"][n % 3], imageUrl: `/assets/${logoOf(n)}`, role: "member" }));
+			const asked = req.headers["x-workspace-id"];
+			const ws = asked ? all.find((w) => w.id === asked) : all[all.length - 1];
+			if (path === "/workspaces") return { json: { workspaces: all } };
+			if (!ws) return { status: 403, json: { message: "Not a member of that workspace" } };
+			if (path === "/workspace") return { json: { ...ws, latestVersion: version } };
+			if (path.startsWith("/assets/") && all.some((w) => w.imageUrl === path)) return { headers: { "content-type": "image/png" }, base64: PNG };
+		}
 		if (path === "/workspace") return { json: { id: opts.workspace ? "w-" + opts.workspace.toLowerCase() : "w1", name: opts.workspace ?? "Coldspire", slug: (opts.workspace ?? "coldspire").toLowerCase(), color: "indigo", latestVersion: version } };
 		if (path === "/workspace/members") return { json: { members: [ME, { ...ME, id: "u2", username: "bob", name: "Bob", email: "bob@example.com", avatarUrl: opts.marks ? `/assets/${ASSET}` : null }, ...crew] } };
 		if (path.startsWith("/sync/pull/")) {
@@ -273,6 +287,119 @@ test("Flux's page of Settings connects, adds another, switches and disconnects",
 	await w.click(`Disconnect ${second.srv.url.replace(/^https?:\/\//, "")}`);
 	await w.see("Connect Flux");
 	expect((await t.run("status")).stdout).toContain("Flux: unconfigured");
+});
+
+test("a token for every workspace adds the ones ticked, each on its own, kept across a restart", async (t) => {
+	const { srv } = await flux(t, { unset: true, workspaces: ["Coldspire", "Syntad", "Nimbus"] });
+	const w = await t.window();
+	await w.resize(1280, 900);
+	await w.click("Flux");
+	await w.see("Connect Flux");
+	await w.click("https://flux.example.com");
+	await w.type(srv.url);
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.click("Connect");
+	// It reaches three: each listed with its mark, ticked, to add.
+	await w.see("Ada Lovelace's token reaches 3 workspaces. Each one ticked is added on its own, with this token.");
+	await w.see("Add 3 workspaces");
+	await w.screenshot("flux-connect-workspaces");
+	await w.dark(true);
+	await w.screenshot("flux-connect-workspaces-dark");
+	await w.dark(false);
+	await w.click("Add Nimbus");
+	await w.click("Add 2 workspaces");
+	await w.see("Connected to 2 workspaces as Ada Lovelace.");
+	// The first is in use; each is on its own workspace, asked for by its id.
+	await t.until(async () => (await t.run("status")).stdout.includes("Workspace: Coldspire"), { what: "Coldspire active" });
+	await t.until(() => srv.requests.some((r) => r.path === "/sync/pull/-1" && r.headers["x-workspace-id"] === "w-syntad"), { what: "Syntad synced" });
+	expect(srv.requests.some((r) => r.path.startsWith("/sync/") && r.headers["x-workspace-id"] === "w-nimbus")).toBe(false);
+
+	// Another time, the ones connected say so, and only the rest are added.
+	await w.click("Workspace: Coldspire");
+	await w.click("Flux settings…");
+	await w.see("Connected to Syntad");
+	await w.click("Add another Flux");
+	await w.click("https://flux.example.com");
+	await w.type(srv.url);
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.click("Connect");
+	await w.see("Coldspire is connected already");
+	await w.see("Syntad is connected already");
+	await w.see("Add 1 workspace");
+	await w.screenshot("flux-connect-workspaces-again");
+	await w.click("Add 1 workspace");
+	await w.see("Connected to Nimbus as Ada Lovelace.");
+	await w.see("Connected to Nimbus");
+	await t.until(async () => (await t.run("status")).stdout.includes("Workspace: Nimbus"), { what: "Nimbus active" });
+
+	// After a restart each is on its workspace still, and the workspace
+	// menu draws each one's logo, read through its own connection.
+	const logos = () => srv.requests.filter((r) => r.path === `/assets/${logoOf(1)}`);
+	const before = logos().length;
+	await t.reload();
+	await t.until(async () => (await t.run("status")).stdout.includes("Flux: ready"), { what: "Flux ready again" });
+	expect((await t.run("status")).stdout).toContain("Workspace: Nimbus");
+	await w.click("Flux");
+	await w.click("Workspace: Nimbus");
+	await w.see("Syntad");
+	await t.until(() => logos().length > before, { what: "Syntad's logo read" });
+	expect(logos().at(-1)!.headers["x-workspace-id"]).toBe("w-syntad");
+	await t.until(() => [0, 2].every((n) => srv.requests.some((r) => r.path === `/assets/${logoOf(n)}` && r.headers["x-workspace-id"] === `w-${["coldspire", "syntad", "nimbus"][n]}`)), { what: "the others' logos read" });
+	await w.screenshot("flux-workspace-menu-logos");
+
+	// Disconnecting the first, Syntad takes its place, on its workspace still.
+	await w.click("Flux settings…");
+	const host = srv.url.replace(/^https?:\/\//, "");
+	await w.click(`Disconnect Coldspire at ${host}`);
+	await w.gone(`Disconnect Coldspire at ${host}`);
+	await t.until(async () => (await w.texts()).filter((s) => s === "Connected to Syntad" || s === "Connected to Nimbus").length === 2 && !(await w.has("Connected to Coldspire")), { what: "Syntad and Nimbus left" });
+	expect((await w.texts()).filter((s) => s === "Connected to Nimbus").length).toBe(1);
+});
+
+test("a connection stays on its workspace as the account joins another, across a restart", async (t) => {
+	// The first, set from the command line as before workspaces were kept;
+	// the second connected on the page, its token reaching the one.
+	const firstJoined = ["Coldspire"];
+	const secondJoined = ["Syntad"];
+	const first = await flux(t, { workspaces: firstJoined });
+	const second = await flux(t, { unset: true, workspaces: secondJoined });
+	const w = await t.window();
+	await w.resize(1280, 900);
+	await w.click("Flux");
+	await w.click("Workspace: Coldspire");
+	await w.click("Flux settings…");
+	await w.click("Add another Flux");
+	await w.click("https://flux.example.com");
+	await w.type(second.srv.url);
+	await w.click("flux_…");
+	await w.type("tok");
+	await w.click("Connect");
+	// One workspace: no list, connected as before.
+	await w.see("Connected to Syntad as Ada Lovelace.");
+	await w.see("Connected to Syntad");
+	expect(await w.has("Add 1 workspace")).toBe(false);
+	// Each is kept on its workspace: what it asks for says so.
+	await t.until(() => second.srv.requests.some((r) => r.path === "/sync/pull/-1" && r.headers["x-workspace-id"] === "w-syntad"), { what: "Syntad synced on its workspace" });
+
+	// The account joins another on each, which its token is on unless it says.
+	firstJoined.push("Nimbus");
+	secondJoined.push("Orbit");
+	const seen = { first: first.srv.requests.length, second: second.srv.requests.length };
+	// The first's workspace not kept, as one from before this was: it's
+	// kept again as the one its copy is of, not the one joined last.
+	await t.set("workspace", null);
+	await t.until(() => first.srv.requests.slice(seen.first).some((r) => r.path === "/workspace"), { what: "the first connected again" });
+	await t.reload();
+	await t.until(async () => (await t.run("status")).stdout.includes("Flux: ready"), { what: "Flux ready again" });
+	await w.see("Connected to Coldspire");
+	await w.see("Connected to Syntad");
+	expect(await w.has("Connected to Nimbus")).toBe(false);
+	expect(await w.has("Connected to Orbit")).toBe(false);
+	// Every request since the restart said which workspace.
+	expect(first.srv.requests.slice(seen.first).filter((r) => r.headers["x-workspace-id"] !== "w-coldspire")).toEqual([]);
+	expect(second.srv.requests.slice(seen.second).filter((r) => r.headers["x-workspace-id"] !== "w-syntad")).toEqual([]);
 });
 
 test("Where agents work links a Flux project to a Swarm project", async (t) => {

@@ -19,7 +19,9 @@ request. The sidebar's projects drag into a new order, as Flux's.
 
 Its page of Settings (Settings, Plugins, Flux; or Flux settings… in the
 board's Flux menu) connects it: a Flux's URL and an API token, tried with
-Flux before they're kept, more Fluxes beside it, Resync and Disconnect,
+Flux before they're kept, more Fluxes beside it (each kept on its
+workspace, by its id; a token for all your workspaces lists them, to
+tick the ones to add, each a connection of its own), Resync and Disconnect,
 and the Flux projects: each one's icon, Delete, and which
 Swarm project its agents work in. New project (there, in the board's
 project menu, or the palette) makes one as Flux's own dialog does: its
@@ -36,6 +38,7 @@ command line:
 swarm plugin install examples/plugins/flux
 swarm plugin set flux url https://flux.example.com
 swarm plugin set flux token -           # paste a token (Flux: Settings, API tokens), then Ctrl+D
+swarm plugin set flux workspace ID      # optional: which workspace, for a token for all yours; kept as it first connects
 swarm plugin grant flux --all
 swarm plugin enable flux
 swarm flux status

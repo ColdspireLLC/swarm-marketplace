@@ -9,9 +9,9 @@ import { ui, type Child, type ColorValue, type Style } from "swarm";
 import type { Comment, Issue, IssueDetail, Label, Member, Project } from "./contract";
 import type { CommentAgent } from "./agent";
 import { agentLogo } from "./agentlogos";
-import { PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
+import { COLORS, PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
 import { asIcon, emojiSrc, glyphBytes, MARK_HEX } from "./marks";
-import { pictureBytes } from "./pictures";
+import { pictureBytes, type PictureSource } from "./pictures";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
 import { dayDelta, dueLabel } from "./dates";
 import { dueItems } from "./due";
@@ -105,6 +105,46 @@ export function Avatar({ member, size = 18 }: { member: Member | undefined; size
 			<ui.text style={{ color: "white", fontSize: Math.max(9, Math.round(size * 0.55)), fontWeight: 600 }}>{(member.name || member.username).trim().slice(0, 1).toUpperCase()}</ui.text>
 		</ui.box>
 	);
+}
+
+/** A workspace as its mark needs it: a connection's, or one a token reaches. */
+export interface WorkspaceLook {
+	name: string;
+	color?: string;
+	imageUrl?: string | null;
+}
+
+/** A workspace's color, as Flux keeps it. */
+function workspaceColor(workspace: WorkspaceLook | null): ColorName {
+	const c = workspace?.color;
+	return (COLORS as readonly string[]).includes(c ?? "") ? (c as ColorName) : "gray";
+}
+
+/** A workspace's initial, as Flux's WorkspaceAvatar draws it without a logo; fallback's (its URL) without a name. */
+function workspaceInitial(workspace: WorkspaceLook | null, fallback: string): string {
+	return (workspace?.name || fallback || "F").replace(/^https?:\/\//, "").trim().slice(0, 1).toUpperCase();
+}
+
+/**
+ * A workspace's mark, as Flux's WorkspaceAvatar: its logo, read through
+ * from (the workspace's own Flux), else its initial on its color, in a
+ * rounded square.
+ */
+export function WorkspaceLogo({ workspace, fallback = "", from, size }: { workspace: WorkspaceLook | null; fallback?: string; from: PictureSource; size: number }) {
+	const box = { width: size, height: size, flexShrink: 0, borderRadius: Math.round(size / 4), overflow: "hidden", alignItems: "center", justifyContent: "center" } as const;
+	const logo = pictureBytes(workspace?.imageUrl, from);
+	if (logo) return <ui.image src={logo} alt="" style={{ ...box, objectFit: "cover" }} />;
+	return (
+		<ui.box style={{ ...box, backgroundColor: colorOf[workspaceColor(workspace)] }}>
+			<ui.text style={{ color: "white", fontSize: Math.round(size * 0.6), fontWeight: 600 }}>{workspaceInitial(workspace, fallback)}</ui.text>
+		</ui.box>
+	);
+}
+
+/** The same, as a menu item's mark. */
+export function workspaceMenuMark(workspace: WorkspaceLook | null, fallback: string, from: PictureSource): { mark: Uint8Array } | { initial: string; tint: string } {
+	const logo = pictureBytes(workspace?.imageUrl, from);
+	return logo ? { mark: logo } : { initial: workspaceInitial(workspace, fallback), tint: MARK_HEX[workspaceColor(workspace)] };
 }
 
 /**

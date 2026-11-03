@@ -7,7 +7,7 @@ import swarm, { storage, ui, type UIComputed as Computed } from "swarm";
 import { z } from "zod";
 import type { CommentAgent } from "./agent";
 import { parseCommentAgent } from "./agent";
-import { FluxClient, FluxHttpError, describe, isUnauthorized, isUnreachable, type Account, type SyncItem, type SyncOp } from "./client";
+import { FluxClient, FluxHttpError, describe, isUnauthorized, isUnreachable, type Account, type SyncItem, type SyncOp, type WorkspaceChoice } from "./client";
 import { htmlToMarkdown, markdownToHtml } from "./content";
 import type { Comment, Issue, IssueDetail, IssuePatch, Label, Member, Project } from "./contract";
 import { parseDescription, descriptionState, writeLiveDescription } from "./description";
@@ -196,6 +196,8 @@ export class Flux {
 	private device = "";
 	/** Told after what the copy has changes. */
 	onChange: () => void = () => {};
+	/** Told the workspace a connection set to none is on, once Flux says, to keep it there. */
+	onPin: (workspace: string) => void = () => {};
 
 	/** id names the connection. storePrefix keeps its copy apart from the first one's. */
 	constructor(readonly id = "default", private readonly storePrefix = "") {
@@ -230,11 +232,16 @@ export class Flux {
 		return this.client?.baseUrl ?? "";
 	}
 
-	/** Connects with url and token, or none. The same pair leaves the stream up. */
-	configure(url: string, token: string) {
+	/**
+	 * Connects with url and token, or none, to workspace when it's given:
+	 * a token for all its account's workspaces is on the one it joined
+	 * last otherwise. The same ones leave the stream up.
+	 */
+	configure(url: string, token: string, workspace = "") {
 		url = url.trim();
 		token = token.trim();
-		const next = `${url}\n${token}`;
+		workspace = workspace.trim();
+		const next = `${url}\n${token}\n${workspace}`;
 		if (next === this.configured && (this.client || this.state === "unconfigured")) return;
 		this.configured = next;
 		this.generation++;
@@ -253,7 +260,7 @@ export class Flux {
 		if (!deviceId) storage.set("deviceId", (deviceId = crypto.randomUUID()));
 		this.device = deviceId;
 		try {
-			this.client = new FluxClient({ baseUrl: url, token, deviceId });
+			this.client = new FluxClient({ baseUrl: url, token, deviceId, workspaceId: workspace || null });
 		} catch (e) {
 			this.client = null;
 			this.state = "error";
@@ -273,12 +280,22 @@ export class Flux {
 		return this.configured.split("\n")[0] ?? "";
 	}
 
+	/** The workspace it was set to, or "" for the one its token is on. */
+	get pinned() {
+		return this.configured.split("\n")[2] ?? "";
+	}
+
+	/** Its workspace's id: the one it was set to, else the one it's on, once it's said. */
+	get workspaceId(): string | null {
+		return this.pinned || this.workspace?.id || null;
+	}
+
 	/** Connects again from nothing: the account, the workspace, every item. Its threads' links stay. */
 	resync(): Promise<void> {
-		const [url = "", token = ""] = this.configured.split("\n");
+		const [url = "", token = "", workspace = ""] = this.configured.split("\n");
 		this.reset(this.replica.scope);
 		this.configured = "";
-		this.configure(url, token);
+		this.configure(url, token, workspace);
 		return this.ready;
 	}
 
@@ -311,12 +328,30 @@ export class Flux {
 		const client = this.client!;
 		try {
 			await this.loaded;
-			client.workspaceId = null;
+			const pinned = this.pinned;
+			// One kept from before workspaces were kept stays on its copy's,
+			// where it still reaches it, not the one its account joined last.
+			const copied = this.replica.scope.startsWith(client.baseUrl + "#") ? this.replica.scope.slice(client.baseUrl.length + 1) : "";
+			client.workspaceId = pinned || copied || null;
 			this.me = await client.me();
-			const ws = await client.workspace();
+			let ws: Workspace;
+			try {
+				ws = await client.workspace();
+			} catch (e) {
+				if (pinned || !copied || !(e instanceof FluxHttpError) || (e.status !== 403 && e.status !== 404)) throw e;
+				client.workspaceId = null;
+				ws = await client.workspace();
+			}
 			if (!ws.id) throw new Error("Finish setting up your Flux workspace in Flux first.");
+			if (gen !== this.generation) return;
 			client.workspaceId = ws.id;
 			this.workspace = ws;
+			if (!pinned) {
+				// Kept, so that it stays on it as the account joins others.
+				const [url = "", token = ""] = this.configured.split("\n");
+				this.configured = `${url}\n${token}\n${ws.id}`;
+				this.onPin(ws.id);
+			}
 			const scope = `${client.baseUrl}#${ws.id}`;
 			if (this.replica.scope !== scope) {
 				this.reset(scope);
@@ -735,9 +770,9 @@ export class Flux {
 
 	/** Tries Flux again now, rather than at the next retry. */
 	reconnect() {
-		const [url = "", token = ""] = this.configured.split("\n");
+		const [url = "", token = "", workspace = ""] = this.configured.split("\n");
 		this.configured = "";
-		this.configure(url, token);
+		this.configure(url, token, workspace);
 	}
 
 	/** Refuses a change that needs Flux now (it numbers issues, say), while it can't be reached. */
@@ -1518,13 +1553,31 @@ function parseSSE(frame: string): { event: string; data: string } | null {
 const DATA_IMAGE = /!\[([^\]]*)\]\((data:image\/([a-zA-Z0-9.+-]+);base64,([^)]+))\)/g;
 
 /** Uploads Markdown's data-URL pictures and puts Flux's URLs in their place. */
-/** Signs in to a Flux with url and token, saving nothing: who it is, and its workspace. */
-export async function checkFlux(url: string, token: string): Promise<{ baseUrl: string; account: string; workspace: { id: string; name: string } }> {
-	const client = new FluxClient({ baseUrl: url, token, deviceId: storage.get<string>("deviceId") ?? crypto.randomUUID() });
+export interface Checked {
+	baseUrl: string;
+	account: string;
+	/** The workspace it's on: workspace's when one was asked for, else the one Flux picks. */
+	workspace: { id: string; name: string };
+	/** Every workspace the token reaches: several for a token bound to none. */
+	workspaces: WorkspaceChoice[];
+}
+
+/**
+ * Signs in to a Flux with url and token, saving nothing: who it is, its
+ * workspace (workspace when it's given), and the others the token reaches.
+ */
+export async function checkFlux(url: string, token: string, workspace = ""): Promise<Checked> {
+	const client = new FluxClient({ baseUrl: url, token, deviceId: storage.get<string>("deviceId") ?? crypto.randomUUID(), workspaceId: workspace || null });
 	const me = await client.me();
 	const ws = await client.workspace();
 	if (!ws.id) throw new Error("Finish setting up your Flux workspace in Flux first.");
-	return { baseUrl: client.baseUrl, account: me.name, workspace: { id: ws.id, name: ws.name } };
+	const here: WorkspaceChoice = { id: ws.id, name: ws.name, slug: ws.slug, color: ws.color, imageUrl: ws.imageUrl };
+	// A Flux older than GET /workspaces reaches the one.
+	const all = await client.workspaces().then((r) => r.workspaces, (e) => {
+		if (e instanceof FluxHttpError && (e.status === 404 || e.status === 405)) return [here];
+		throw e;
+	});
+	return { baseUrl: client.baseUrl, account: me.name, workspace: { id: ws.id, name: ws.name }, workspaces: all.some((w) => w.id === ws.id) ? all : [here, ...all] };
 }
 
 export async function liftDataImages(markdown: string, upload: (bytes: Uint8Array, type: string, name: string) => Promise<string>): Promise<string> {
