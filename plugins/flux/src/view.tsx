@@ -15,6 +15,7 @@ import { pictureBytes } from "./pictures";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
 import { dayDelta, dueLabel } from "./dates";
 import { dueItems } from "./due";
+import { HTML_IMAGE, readImageTag, type ImageTag } from "./markdown";
 
 /** A Flux color, as the theme's where it has one. */
 export const colorOf: Record<ColorName, ColorValue> = {
@@ -317,10 +318,14 @@ export type ImageOf = (src: string) => string | Uint8Array | null;
 export function Markdown({ md, onTask, image, mention }: { md: string; onTask?: (index: number, done: boolean) => unknown; image?: ImageOf; mention?: MentionOf }) {
 	const inline = (text: string) => inlineText(text, mention);
 	const blocks: Child[] = [];
-	const picture = (key: string, src: string, alt: string): Child => {
+	// A picture at its size and alignment, as Flux shows it; a click opens
+	// it in Swarm's viewer, as Flux's lightbox.
+	const picture = (key: string, src: string, alt: string, tag?: ImageTag | null): Child => {
 		const got = image ? image(src) : src;
-		if (got === null) return <ui.box key={key} label={alt || "A picture"} style={{ height: 120, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } }} />;
-		return <ui.image key={key} src={got} alt={alt || "A picture"} style={{ maxWidth: "100%", borderRadius: "control", alignSelf: "flex-start" }} />;
+		const alignSelf = tag?.align === "center" ? "center" : tag?.align === "right" ? "flex-end" : "flex-start";
+		const width = tag?.width;
+		if (got === null) return <ui.box key={key} label={alt || "A picture"} style={{ height: width && tag?.height ? tag.height : 120, width: width ?? "100%", maxWidth: "100%", alignSelf, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } }} />;
+		return <ui.image key={key} src={got} alt={alt || "A picture"} viewer style={{ ...(width ? { width } : {}), maxWidth: "100%", borderRadius: "control", alignSelf }} />;
 	};
 	let task = 0;
 	const lines = md.replace(/\r/g, "").split("\n");
@@ -381,6 +386,12 @@ export function Markdown({ md, onTask, image, mention }: { md: string; onTask?: 
 			i++;
 			continue;
 		}
+		const tag = /^\s*<img\b/i.test(l) && l.trim().endsWith(">") ? readImageTag(l.trim()) : null;
+		if (tag) {
+			blocks.push(picture("img" + i, tag.src, tag.alt, tag));
+			i++;
+			continue;
+		}
 		if (/^\s*([-*+]|\d+\.)\s/.test(l)) {
 			const items: Child[] = [];
 			for (; i < lines.length && /^\s*([-*+]|\d+\.)\s/.test(lines[i]!); i++) {
@@ -431,6 +442,11 @@ export function Markdown({ md, onTask, image, mention }: { md: string; onTask?: 
 		const pics: Child[] = [];
 		const words = para.join(" ").replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, (_, alt: string, src: string) => {
 			pics.push(picture("pic" + i + "-" + pics.length, src, alt));
+			return "";
+		}).replace(HTML_IMAGE, (whole) => {
+			const tag = readImageTag(whole);
+			if (!tag) return whole;
+			pics.push(picture("pic" + i + "-" + pics.length, tag.src, tag.alt, tag));
 			return "";
 		}).trim();
 		if (words) blocks.push(<ui.text key={"p" + i} style={prose}>{inline(words)}</ui.text>);

@@ -884,6 +884,19 @@ test("create, update and comment push what Flux takes", async (t) => {
 	expect((await t.run("update", "ABC-1", "--status", "nope")).stderr).toContain('unknown status "nope"');
 });
 
+test("a picture's size and alignment go to Flux and come back, as its image node keeps them", async (t) => {
+	const { pushes } = await flux(t);
+	await t.run("create", "--project", "ABC", "--title", "Sized", "--description", `Look:\n\n<img src="/assets/${ASSET}" alt="the &quot;shot&quot;" width="320" height="200" data-align="center">\n\nNot <img src="javascript:alert(1)" width="9"> nor <script>alert(1)</script>`);
+	const html = String((pushes()[0]![1] as { body: { description: string } }).body.description);
+	expect(html).toContain(`<img src="/assets/${ASSET}" alt="the &quot;shot&quot;" width="320" height="200" data-align="center">`);
+	expect(html).not.toContain("javascript");
+	expect(html).toContain("&lt;script&gt;");
+	// Back from Flux, it's the editor's <img>, and an agent's [Image 1].
+	const show = (await t.run("show", "ABC-3")).stdout;
+	expect(show).toContain("Look:\n\n[Image 1]");
+	expect(show).not.toContain("<img");
+});
+
 test("a push someone else's change beat is built again and sent", async (t) => {
 	const { items } = await flux(t, { conflictOnce: true });
 	expect((await t.run("update", "ABC-2", "--status", "todo")).stdout).toBe("Updated ABC-2: status → Todo\n");

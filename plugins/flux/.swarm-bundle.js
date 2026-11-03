@@ -40311,6 +40311,55 @@ function canConvert(input2) {
   return input2 != null && (typeof input2 === "string" || input2.nodeType && (input2.nodeType === 1 || input2.nodeType === 9 || input2.nodeType === 11));
 }
 
+// src/markdown.ts
+var MARKDOWN_IMAGE = /!\[((?:\\.|[^\\\]])*)\]\(([^()\s]+)((?:\s+"[^"]*")?)\)/g;
+function mapOutsideCode(markdown, change) {
+  return markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`)/g).map((part, index) => index % 2 === 1 ? part : change(part)).join("");
+}
+var HTML_IMAGE = /<img\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi;
+var ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", "#39": "'" };
+function readImageTag(tag) {
+  if (!/^<img\b/i.test(tag.trim())) return null;
+  const attrs = {};
+  for (const m of tag.matchAll(/([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g)) {
+    attrs[m[1].toLowerCase()] = (m[2] ?? m[3] ?? m[4] ?? "").replace(/&(amp|lt|gt|quot|apos|#39);/g, (_2, e) => ENTITIES[e]);
+  }
+  return imageOf(attrs);
+}
+function imageOf(attrs) {
+  const src = (attrs.src ?? "").trim();
+  if (!src) return null;
+  const side = (v2) => {
+    const n = Number.parseFloat(v2 ?? "");
+    return Number.isFinite(n) && n > 0 && n <= 1e5 ? Math.round(n) : void 0;
+  };
+  const align = attrs["data-align"];
+  return {
+    src,
+    alt: attrs.alt ?? "",
+    width: side(attrs.width),
+    height: side(attrs.height),
+    align: align === "center" || align === "right" ? align : void 0
+  };
+}
+function writeImage(image, escape2) {
+  if (!image.width && !image.align) return `![${image.alt.replace(/([\\\[\]])/g, "\\$1")}](${image.src})`;
+  let tag = `<img src="${escape2(image.src)}" alt="${escape2(image.alt)}"`;
+  if (image.width) tag += ` width="${image.width}"`;
+  if (image.width && image.height) tag += ` height="${image.height}"`;
+  if (image.align) tag += ` data-align="${image.align}"`;
+  return tag + ">";
+}
+function imageSources(markdown) {
+  const found2 = [];
+  for (const m of markdown.matchAll(MARKDOWN_IMAGE)) found2.push({ at: m.index, src: m[2] });
+  for (const m of markdown.matchAll(HTML_IMAGE)) {
+    const tag = readImageTag(m[0]);
+    if (tag) found2.push({ at: m.index, src: tag.src });
+  }
+  return found2.sort((a3, b) => a3.at - b.at).map((f2) => f2.src);
+}
+
 // src/content.ts
 var ASSET_PATH = /^\/assets\/[0-9a-f-]{36}$/i;
 function escapeHtml(value) {
@@ -40334,11 +40383,31 @@ function withoutCheckbox(tokens) {
   );
 }
 function createMarked(baseUrl) {
+  const imageHtml = (image, title) => {
+    if (!isSafeHref(image.src)) return escapeHtml(image.alt);
+    let src = image.src;
+    if (src.startsWith(baseUrl)) {
+      const path = src.slice(baseUrl.length);
+      if (ASSET_PATH.test(path)) src = path;
+    }
+    let attrs = ` alt="${escapeHtml(image.alt)}"`;
+    if (title) attrs += ` title="${escapeHtml(title)}"`;
+    if (image.width) attrs += ` width="${image.width}"`;
+    if (image.width && image.height) attrs += ` height="${image.height}"`;
+    if (image.align) attrs += ` data-align="${image.align}"`;
+    return `<img src="${escapeHtml(src)}"${attrs}>`;
+  };
   const marked = new U({ gfm: true, breaks: false });
   marked.use({
     renderer: {
-      // Raw HTML from an agent is shown as text, never interpreted.
+      // Raw HTML from an agent is shown as text, never interpreted, but
+      // for images of a size or alignment, as Swarm's editor writes them:
+      // written anew, of what Flux's image node keeps.
       html({ text: text2 }) {
+        if (/^\s*(<img\b(?:[^>"']|"[^"]*"|'[^']*')*>\s*)+$/i.test(text2)) {
+          const tags = [...text2.matchAll(HTML_IMAGE)].map((m) => readImageTag(m[0]));
+          if (tags.every((tag) => tag !== null)) return tags.map((tag) => imageHtml(tag)).join("");
+        }
         return escapeHtml(text2);
       },
       // Task lists use TipTap's markup so they stay checkable in Flux.
@@ -40358,16 +40427,8 @@ function createMarked(baseUrl) {
         const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
         return `<a href="${escapeHtml(href)}"${titleAttr}>${text2}</a>`;
       },
-      // Flux reference-counts uploaded images by their `/assets/<id>` path.
       image({ href, title, text: text2 }) {
-        if (!isSafeHref(href)) return escapeHtml(text2);
-        let src = href;
-        if (src.startsWith(baseUrl)) {
-          const path = src.slice(baseUrl.length);
-          if (ASSET_PATH.test(path)) src = path;
-        }
-        const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
-        return `<img src="${escapeHtml(src)}" alt="${escapeHtml(text2)}"${titleAttr}>`;
+        return imageHtml({ src: href, alt: text2 }, title);
       }
     }
   });
@@ -40479,8 +40540,16 @@ ${[line(rows2[0]), line(Array.from({ length: width }, () => "---")), ...rows2.sl
       const element2 = node2;
       let src = element2.getAttribute("src") ?? "";
       if (src.startsWith("/")) src = `${options.baseUrl}${src}`;
-      const alt = element2.getAttribute("alt") ?? "";
-      return src ? `![${alt}](${src})` : "";
+      if (!src) return "";
+      const at3 = (name) => element2.getAttribute(name);
+      const tag = imageOf({ src, alt: at3("alt"), width: at3("width"), height: at3("height"), "data-align": at3("data-align") });
+      if (!tag) return "";
+      const md = writeImage(tag, escapeHtml);
+      return tag.width || tag.align ? `
+
+${md}
+
+` : md;
     }
   });
   turndown.addRule("unsafeLink", {
@@ -78866,7 +78935,7 @@ function pictureBytes(src) {
   );
   return null;
 }
-function imageOf(src) {
+function imageOf2(src) {
   if (!fluxAssetId(src, hub.active.baseUrl)) return src;
   const bytes = pictureBytes(src);
   if (bytes) return bytes;
@@ -79493,12 +79562,6 @@ function agentLogo(provider) {
   return TINT[mark2] ? { icon, tint: TINT[mark2] } : { icon };
 }
 
-// src/markdown.ts
-var MARKDOWN_IMAGE = /!\[((?:\\.|[^\\\]])*)\]\(([^()\s]+)((?:\s+"[^"]*")?)\)/g;
-function mapOutsideCode(markdown, change) {
-  return markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`)/g).map((part, index) => index % 2 === 1 ? part : change(part)).join("");
-}
-
 // src/prompt.ts
 var RECENT_COMMENTS = 5;
 var MAX_DESCRIPTION_CHARS = 2e4;
@@ -79575,10 +79638,10 @@ ${images.length === 1 ? "This issue has 1 image, written [Image 1]" : `This issu
 }
 function imageIds(markdown, baseUrl) {
   const ids = [];
-  if (!markdown.includes("![")) return ids;
+  if (!markdown.includes("![") && !/<img\b/i.test(markdown)) return ids;
   mapOutsideCode(markdown, (part) => {
-    for (const match2 of part.matchAll(MARKDOWN_IMAGE)) {
-      const id2 = fluxAssetId(match2[2], baseUrl);
+    for (const src of imageSources(part)) {
+      const id2 = fluxAssetId(src, baseUrl);
       if (id2 && !ids.includes(id2)) ids.push(id2);
     }
     return part;
@@ -79586,13 +79649,14 @@ function imageIds(markdown, baseUrl) {
   return ids;
 }
 function numberImages(markdown, ids, baseUrl) {
-  if (ids.length === 0 || !markdown.includes("![")) return markdown;
+  if (ids.length === 0 || !markdown.includes("![") && !/<img\b/i.test(markdown)) return markdown;
+  const number4 = (whole, url2) => {
+    const index = ids.indexOf(fluxAssetId(url2, baseUrl) ?? "");
+    return index >= 0 ? `[Image ${index + 1}]` : whole;
+  };
   return mapOutsideCode(
     markdown,
-    (part) => part.replace(MARKDOWN_IMAGE, (whole, _alt, url2) => {
-      const index = ids.indexOf(fluxAssetId(url2, baseUrl) ?? "");
-      return index >= 0 ? `[Image ${index + 1}]` : whole;
-    })
+    (part) => part.replace(MARKDOWN_IMAGE, (whole, _alt, url2) => number4(whole, url2)).replace(HTML_IMAGE, (whole) => number4(whole, readImageTag(whole)?.src ?? ""))
   );
 }
 function issueImageIds(detail2, baseUrl) {
@@ -80326,10 +80390,12 @@ var prose = { fontSize: "prose", lineHeight: 1.7, color: "text" };
 function Markdown({ md, onTask, image, mention }) {
   const inline2 = (text2) => inlineText(text2, mention);
   const blocks = [];
-  const picture = (key, src, alt) => {
+  const picture = (key, src, alt, tag) => {
     const got2 = image ? image(src) : src;
-    if (got2 === null) return /* @__PURE__ */ jsx4(ui7.box, { label: alt || "A picture", style: { height: 120, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } } }, key);
-    return /* @__PURE__ */ jsx4(ui7.image, { src: got2, alt: alt || "A picture", style: { maxWidth: "100%", borderRadius: "control", alignSelf: "flex-start" } }, key);
+    const alignSelf = tag?.align === "center" ? "center" : tag?.align === "right" ? "flex-end" : "flex-start";
+    const width = tag?.width;
+    if (got2 === null) return /* @__PURE__ */ jsx4(ui7.box, { label: alt || "A picture", style: { height: width && tag?.height ? tag.height : 120, width: width ?? "100%", maxWidth: "100%", alignSelf, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } } }, key);
+    return /* @__PURE__ */ jsx4(ui7.image, { src: got2, alt: alt || "A picture", viewer: true, style: { ...width ? { width } : {}, maxWidth: "100%", borderRadius: "control", alignSelf } }, key);
   };
   let task = 0;
   const lines = md.replace(/\r/g, "").split("\n");
@@ -80376,6 +80442,12 @@ function Markdown({ md, onTask, image, mention }) {
     const img = /^!\[([^\]]*)\]\(([^)\s]+)[^)]*\)\s*$/.exec(l);
     if (img) {
       blocks.push(picture("img" + i2, img[2], img[1]));
+      i2++;
+      continue;
+    }
+    const tag = /^\s*<img\b/i.test(l) && l.trim().endsWith(">") ? readImageTag(l.trim()) : null;
+    if (tag) {
+      blocks.push(picture("img" + i2, tag.src, tag.alt, tag));
       i2++;
       continue;
     }
@@ -80442,6 +80514,11 @@ function Markdown({ md, onTask, image, mention }) {
     const pics = [];
     const words = para.join(" ").replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, (_2, alt, src) => {
       pics.push(picture("pic" + i2 + "-" + pics.length, src, alt));
+      return "";
+    }).replace(HTML_IMAGE, (whole) => {
+      const tag2 = readImageTag(whole);
+      if (!tag2) return whole;
+      pics.push(picture("pic" + i2 + "-" + pics.length, tag2.src, tag2.alt, tag2));
       return "";
     }).trim();
     if (words) blocks.push(/* @__PURE__ */ jsx4(ui7.text, { style: prose, children: inline2(words) }, "p" + i2));
@@ -80668,8 +80745,7 @@ function mentionOptions(flux2) {
 }
 function editorImages(markdown, image) {
   const images = [];
-  for (const match2 of markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)) {
-    const url2 = match2[1];
+  for (const url2 of imageSources(markdown)) {
     const got2 = image(url2);
     if (got2 instanceof Uint8Array) images.push({ url: url2, src: got2 });
   }
@@ -83694,9 +83770,9 @@ function issueView(issue2, thread) {
       detach: thread && issue2.threadIds.includes(thread) ? () => flux.detach(issue2.id, thread) : void 0,
       start: thread && !issue2.threadIds.includes(thread) ? async () => void await flux.attach(issue2.id, thread, true) : void 0,
       open: thread ? (other) => void viewing.set(thread, other.id) : void 0,
-      image: imageOf,
-      description: /* @__PURE__ */ jsx11(DescriptionEditor, { flux, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf }),
-      comment: /* @__PURE__ */ jsx11(CommentEditor, { flux, issue: issue2, image: imageOf })
+      image: imageOf2,
+      description: /* @__PURE__ */ jsx11(DescriptionEditor, { flux, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf2 }),
+      comment: /* @__PURE__ */ jsx11(CommentEditor, { flux, issue: issue2, image: imageOf2 })
     },
     issue2.id
   );
@@ -83782,7 +83858,7 @@ function activate() {
       const project = flux.projects().find((p) => "p-" + p.id === item);
       if (project) moveProject(flux, project, index);
     },
-    render: ({ args: args2 }) => /* @__PURE__ */ jsx11(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", item: args2.item, section: args2.section, image: imageOf })
+    render: ({ args: args2 }) => /* @__PURE__ */ jsx11(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", item: args2.item, section: args2.section, image: imageOf2 })
   });
   syncNav(flux);
   warmStart();

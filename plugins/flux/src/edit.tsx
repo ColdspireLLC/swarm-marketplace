@@ -7,6 +7,7 @@ import { clearDraft, drafted, editDraft, finishUpload, setDraft } from "./drafts
 import type { Flux } from "./service";
 import type { Issue } from "./contract";
 import { startPrompt } from "./prompt";
+import { imageSources } from "./markdown";
 import { StatusIcon } from "./view";
 
 export function mentionOptions(flux: Flux) {
@@ -18,8 +19,7 @@ export function mentionOptions(flux: Flux) {
 
 export function editorImages(markdown: string, image: ImageOf) {
 	const images: { url: string; src: string }[] = [];
-	for (const match of markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)) {
-		const url = match[1]!;
+	for (const url of imageSources(markdown)) {
 		const got = image(url);
 		// The editor keeps picture bytes by reference; the type is the recording's string.
 		if (got instanceof Uint8Array) images.push({ url, src: got as unknown as string });
