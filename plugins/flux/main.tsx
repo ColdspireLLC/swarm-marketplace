@@ -108,7 +108,7 @@ function issueCard(issue: Issue): Child {
 	const labels = flux.labels().filter((label) => issue.labelIds.includes(label.id));
 	const chip = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" } as const;
 	return (
-		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }}>
+		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }}>
 			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
 				<ProjectMark project={project} size={13} />
 				{parent ? <ui.text style={{ fontSize: 11, color: "text3" }}>{`${parent.key} ›`}</ui.text> : null}
