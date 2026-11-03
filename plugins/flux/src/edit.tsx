@@ -27,6 +27,28 @@ export function editorImages(markdown: string, image: ImageOf) {
 	return images;
 }
 
+export type EditorFile = { id: string; name: string; type: string; base64: string };
+
+/** Placeholder for a picture that's still uploading: the editor inserts it, and Flux won't take it. */
+export const uploading = (markdown: string) => markdown.includes("flux-local:");
+
+/**
+ * Uploads a picture an editor took (pasted, dropped, or picked with /Image)
+ * into a draft kept in the page's store, read with get and written with set:
+ * its URL replaces the editor's placeholder, or the picture comes out when
+ * it can't upload.
+ */
+export function uploadInto(flux: Flux, file: EditorFile, entity: "issue_image" | "comment_image", get: () => string, set: (markdown: string) => void) {
+	const placeholder = "flux-local:" + file.id;
+	void flux.uploadImage(Uint8Array.fromBase64(file.base64), file.type, file.name, entity).then(
+		(url) => set(get().replaceAll(placeholder, url)),
+		(error: unknown) => {
+			set(get().replace(new RegExp(`!\\[[^\\]]*\\]\\(${placeholder}\\)`, "g"), ""));
+			ui.toast(error instanceof Error ? error.message : String(error));
+		},
+	);
+}
+
 function upload(flux: Flux, key: string, file: { id: string; name: string; type: string; base64: string }, entity: "issue_image" | "comment_image", save: (markdown: string) => Promise<void>, keep = false) {
 	const bytes = Uint8Array.fromBase64(file.base64);
 	void flux.uploadImage(bytes, file.type, file.name, entity).then(
