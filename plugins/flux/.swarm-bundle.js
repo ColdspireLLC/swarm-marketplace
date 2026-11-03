@@ -83020,7 +83020,7 @@ function NewIssue({ flux: flux2 }) {
         st5.draftBody = value;
       }, onSubmit: () => void submitNew(flux2), onUpload: (file2) => uploadInto(flux2, file2, "issue_image", () => st5.draftBody, (md) => {
         st5.draftBody = md;
-      }), style: { minHeight: 144 } }, "new-body")
+      }), style: { minHeight: 144, boxShadow: "none" } }, "new-body")
     ] }),
     /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider" } }),
     /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
