@@ -1180,17 +1180,35 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.key("Down");
 	await w.key("Enter");
 	await w.see("1 label");
+	// A name no label has is made there, as Flux's: typed, then Create.
+	await w.type("Docs");
+	await w.see("Create “Docs”");
+	await w.screenshot("flux-new-issue-create-label");
+	await w.key("Enter");
+	await w.see("2 labels");
+	await w.gone("Change or add labels…");
+	await w.see("Create more");
+	const docs = [...items.values()].find((it) => it.body?.type === "label" && it.body?.name === "Docs");
+	expect(!!docs).toBe(true);
 	await w.screenshot("flux-new-issue-picked");
 	// Made, it stays on the board, and says so, with Open, as Flux's.
 	await w.click("Issue title");
 	await w.type("Ship the toast");
-	await w.key("Mod+Enter");
+	// Closed with something typed, it asks first, as Flux's; kept, it's as it was.
+	await w.key("Escape");
+	await w.see("Discard issue?");
+	await w.click("Keep editing");
+	await w.see("Create more");
+	await w.see("Assignee: Ada Lovelace, Bob");
+	// Enter on the title creates it: a title wraps, but it's one line.
+	await w.click("Issue title");
+	await w.key("Enter");
 	await w.gone("Create more");
 	await w.see("Open");
 	const made = [...items.values()].find((it) => it.body?.title === "Ship the toast");
 	expect(!!made).toBe(true);
 	expect(made!.body!.assigneeIds).toEqual(["u1", "u2"]);
-	expect(made!.body!.labelIds).toEqual(["l1"]);
+	expect(made!.body!.labelIds).toEqual(["l1", docs!.id]);
 	await w.see("Fix the login redirect");
 	await w.click("Open");
 	await w.see("Add sub-issues");
@@ -1561,6 +1579,18 @@ test("the sidebar makes a project with its heading's plus, and each project's ri
 	expect(copy.body!.key).not.toBe("SWARM");
 	await w.see("Swarm copy");
 	// New issue is in that project; Delete says what becomes of its issues.
+	await w.rightClick("Alpha");
+	await w.see("Copy link");
+	await t.sleep(200);
+	await w.click("New issue");
+	await w.see("Issue title");
+	await w.click("Issue title");
+	await w.type("Scrap this");
+	await w.key("Escape");
+	await w.click("Discard");
+	await w.gone("Discard issue?");
+	await w.gone("Issue title");
+	// Discarded, it opens empty, and closes empty without asking.
 	await w.rightClick("Alpha");
 	await w.see("Copy link");
 	await t.sleep(200);

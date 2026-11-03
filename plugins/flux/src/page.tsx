@@ -6,11 +6,11 @@ import type { Comment as IssueComment, Issue, IssuePatch, Label, Member, Project
 import { ConnectForm } from "./connect";
 import { hub } from "./hub";
 import { CLOSED_STATUSES, COLORS, PRIORITIES, PRIORITY_LABELS, PRIORITY_LEVEL, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
-import { CommentEditor, DescriptionEditor, mentionOptions, startAgent } from "./edit";
+import { CommentEditor, DescriptionEditor, editorImages, mentionOptions, startAgent, uploadInto, uploading } from "./edit";
 import type { Flux } from "./service";
 import { threadInfo } from "./threads";
 import { MARK_HEX, navMark } from "./marks";
-import { pictureBytes } from "./pictures";
+import { imageOf, pictureBytes } from "./pictures";
 import { confirmDelete, duplicateProject, openNewProject, openProjectSettings, projectAt, projectMenuItems } from "./projects";
 import { confirm } from "./confirm";
 import { openPalette, type PaletteKind } from "./palette";
@@ -75,6 +75,8 @@ const st = ui.store({
 	draftProject: "",
 	draftDue: null as string | null,
 	draftParent: null as string | null,
+	/** What's typed in New issue's labels: Create, for a name no label has. */
+	labelQuery: "",
 	editingComment: "",
 	commentBody: "",
 	searching: false,
@@ -685,13 +687,25 @@ function KeyLine({ issue, parent, showKey }: { issue: Issue; parent?: Issue; sho
 	);
 }
 
+/**
+ * A 2px ring in the color behind it, as Flux's gap between what overlaps:
+ * the surface's, and while the button it's in is hovered or its menu open,
+ * the button's (hover over the surface: hover itself is see-through, and
+ * would show what's under the ring through it).
+ */
+function gapRing(surface: ColorValue) {
+	const lit = `0 0 0 2px color-mix(in srgb, text 5%, ${surface})`;
+	return { boxShadow: `0 0 0 2px ${surface}`, groupHover: { boxShadow: lit }, groupChecked: { boxShadow: lit } } as const;
+}
+
 /** Assignees, overlapping as Flux's, each ringed in the surface's color so the one under shows its edge. */
 function AvatarStack({ members, size, ring = "bg" }: { members: Member[]; size: number; ring?: ColorValue }) {
 	const overlap = Math.round(size * 0.3);
 	return (
 		<ui.box style={{ flexDirection: "row", flexShrink: 0, alignItems: "center" }}>
 			{members.slice(0, 4).map((member, n) => (
-				<ui.box key={member.id} style={{ marginLeft: n === 0 ? 0 : -overlap, borderRadius: "full", boxShadow: n === 0 ? "none" : `0 0 0 1.5px ${ring}`, flexShrink: 0 }}>
+				// The ring takes the avatar's shape, a rounded square's (Avatar).
+				<ui.box key={member.id} style={{ marginLeft: n === 0 ? 0 : -overlap, borderRadius: size >= 28 ? 6 : 4, flexShrink: 0, ...(n === 0 ? {} : gapRing(ring)) }}>
 					<Avatar member={member} size={size} />
 				</ui.box>
 			))}
@@ -1324,9 +1338,24 @@ function openCreate(flux: Flux, projectId?: string, key?: GroupKey, parentId?: s
 	ui.showOverlay("flux-new");
 }
 
-/** As Swarm closes New issue's dialog: its draft stays, for next time. */
+/** As Swarm closes New issue's dialog, with Escape, Close or a click
+ * outside: as Flux's, a draft with a title or a description asks before
+ * it's lost. Keep editing brings the dialog back as it was. */
 export function closeCreate() {
 	st.creating = false;
+	if (!st.draftTitle.trim() && !st.draftBody.trim()) return;
+	confirm("Discard issue?", "Your work will be lost.", "Discard", () => {
+		st.draftTitle = "";
+		st.draftBody = "";
+		st.draftDue = null;
+		st.draftParent = null;
+	}, {
+		cancel: "Keep editing",
+		onCancel: () => {
+			st.creating = true;
+			ui.showOverlay("flux-new");
+		},
+	});
 }
 
 export function NewIssue({ flux }: { flux: Flux }) {
@@ -1337,6 +1366,9 @@ export function NewIssue({ flux }: { flux: Flux }) {
 	const chosenPeople = members.filter((member) => st.draftAssignees.includes(member.id));
 	const labels = flux.labels();
 	const chosenLabels = labels.filter((label) => st.draftLabels.includes(label.id));
+	// As Flux's picker: Create, for a name typed that no label has.
+	const typed = st.labelQuery.trim();
+	const newLabel = typed && !labels.some((label) => label.name.toLowerCase() === typed.toLowerCase()) ? typed : "";
 	const parent = st.draftParent ? flux.issue(st.draftParent) : undefined;
 	// Flux's property chips: bordered, their text 12px and medium, muted while unset.
 	const chip = { ...ghostChip, height: 28, border: "1px solid border", gap: 6 } as const;
@@ -1357,8 +1389,9 @@ export function NewIssue({ flux }: { flux: Flux }) {
 						</ui.box>
 					) : null}
 				</ui.box>
-				<ui.field key="new-title" value={st.draftTitle} placeholder="Issue title" onChange={(value) => { st.draftTitle = value; }} onSubmit={() => void submitNew(flux)} style={{ fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
-				<ui.editor key="new-body" value={st.draftBody} placeholder="Add description…" label="Description" options={mentionOptions(flux)} onChange={(value) => { st.draftBody = value; }} onSubmit={() => void submitNew(flux)} style={{ minHeight: 144 }} />
+				{/* A title is one line however it wraps: Enter creates the issue. */}
+				<ui.field key="new-title" multiline value={st.draftTitle} placeholder="Issue title" keys={["Enter"]} onKeyDown={() => void submitNew(flux)} onChange={(value) => { st.draftTitle = value.replace(/\n/g, ""); }} style={{ fontSize: 18, fontWeight: 500, lineHeight: "28px", minHeight: 0, backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
+				<ui.editor key="new-body" value={st.draftBody} placeholder="Add description…" label="Description" options={mentionOptions(flux)} images={editorImages(st.draftBody, imageOf)} onChange={(value) => { st.draftBody = value; }} onSubmit={() => void submitNew(flux)} onUpload={(file) => uploadInto(flux, file, "issue_image", () => st.draftBody, (md) => { st.draftBody = md; })} style={{ minHeight: 144 }} />
 			</ui.box>
 			<ui.box style={{ height: 1, backgroundColor: "divider" }} />
 			<ui.box style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
@@ -1377,15 +1410,15 @@ export function NewIssue({ flux }: { flux: Flux }) {
 					<ui.text style={{ ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }} maxLines={1}>{chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee"}</ui.text>
 					{[...members].sort((a, b) => Number(b.id === me) - Number(a.id === me)).map((member) => <ui.item key={member.id} {...memberMark(member)} detail={"@" + member.username} checked={st.draftAssignees.includes(member.id)} onClick={() => { st.draftAssignees = st.draftAssignees.includes(member.id) ? st.draftAssignees.filter((id) => id !== member.id) : [...st.draftAssignees, member.id]; }}>{member.id === me ? `${member.name} (you)` : member.name}</ui.item>)}
 				</ui.menu>
-				<ui.menu label={chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels"} style={chip}>
+				<ui.menu label={chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels"} search="Change or add labels…" onChange={(query) => { st.labelQuery = query; }} style={chip}>
 					{chosenLabels.length ? (
 						<ui.box style={{ flexDirection: "row", alignItems: "center" }}>
-							{chosenLabels.map((l, n) => <ui.box key={l.id} style={{ width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" }} />)}
+							{chosenLabels.map((l, n) => <ui.box key={l.id} style={{ width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") }} />)}
 						</ui.box>
 					) : <ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />}
 					<ui.text style={{ ...chipText, color: chosenLabels.length ? "text" : "text2" }}>{chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels"}</ui.text>
-					{labels.map((item) => <ui.item key={item.id} {...labelMark(item.color)} checked={st.draftLabels.includes(item.id)} onClick={() => { st.draftLabels = st.draftLabels.includes(item.id) ? st.draftLabels.filter((id) => id !== item.id) : [...st.draftLabels, item.id]; }}>{item.name}</ui.item>)}
-					{labels.length === 0 ? <ui.item disabled>No labels</ui.item> : null}
+					{labels.map((item) => <ui.item key={item.id} {...labelMark(item.color)} keepOpen checked={st.draftLabels.includes(item.id)} onClick={() => { st.draftLabels = st.draftLabels.includes(item.id) ? st.draftLabels.filter((id) => id !== item.id) : [...st.draftLabels, item.id]; }}>{item.name}</ui.item>)}
+					{newLabel ? <ui.item key="create" icon="plus" onClick={() => void createDraftLabel(flux, newLabel)}>{`Create “${newLabel}”`}</ui.item> : null}
 				</ui.menu>
 				<ui.menu label={st.draftDue ? `Due ${dueLabel(st.draftDue)}` : "Due date"} style={chip}>
 					<ui.icon icon="calendar" style={{ width: 14, height: 14, color: st.draftDue ? dueTone(st.draftDue) : "text2" }} />
@@ -1401,10 +1434,24 @@ export function NewIssue({ flux }: { flux: Flux }) {
 	);
 }
 
+/** A label of name, made in Flux, and chosen for the draft. */
+async function createDraftLabel(flux: Flux, name: string) {
+	try {
+		const label = await flux.createLabel(name);
+		if (!st.draftLabels.includes(label.id)) st.draftLabels = [...st.draftLabels, label.id];
+	} catch (error) {
+		ui.toast(error instanceof Error ? error.message : String(error));
+	}
+}
+
 async function submitNew(flux: Flux) {
 	const title = st.draftTitle.trim();
 	if (!title || !st.draftProject) {
 		ui.toast(title ? "Pick a project." : "Give the issue a title.");
+		return;
+	}
+	if (uploading(st.draftBody)) {
+		ui.toast("A picture is still uploading.");
 		return;
 	}
 	try {
@@ -1752,7 +1799,7 @@ function SubComposer({ flux, parent }: { flux: Flux; parent: Issue }) {
 					<ui.menu label={chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels"} style={chip}>
 						{chosen.length ? (
 							<ui.box style={{ flexDirection: "row" }}>
-								{chosen.map((l, n) => <ui.box key={l.id} style={{ width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" }} />)}
+								{chosen.map((l, n) => <ui.box key={l.id} style={{ width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") }} />)}
 							</ui.box>
 						) : <ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />}
 						{chipText(chosen.length ? `${chosen.length} ${chosen.length === 1 ? "label" : "labels"}` : "Labels", chosen.length === 0)}
@@ -1841,7 +1888,7 @@ function Comment({ flux, comment, members, image }: { flux: Flux; comment: Issue
 				{editing ? (
 					<ui.box label="Edit comment" keys={["Escape"]} onKeyDown={() => { st.editingComment = ""; }} style={{ marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }}>
 						<ui.box style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 6 }}>
-							<ui.editor key={"edit-" + comment.id} value={st.commentBody} label="Edit comment" placeholder="Edit comment…" options={mentionOptions(flux)} onChange={(value) => { st.commentBody = value; }} onSubmit={() => saveComment(flux, comment.id)} style={{ padding: 0 }} />
+							<ui.editor key={"edit-" + comment.id} value={st.commentBody} label="Edit comment" placeholder="Edit comment…" options={mentionOptions(flux)} images={editorImages(st.commentBody, image)} onChange={(value) => { st.commentBody = value; }} onSubmit={() => saveComment(flux, comment.id)} onUpload={(file) => uploadInto(flux, file, "comment_image", () => st.commentBody, (md) => { st.commentBody = md; })} style={{ padding: 0 }} />
 						</ui.box>
 						<ui.box style={{ flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }}>
 							<ui.button size="sm" kind="ghost" onClick={() => { st.editingComment = ""; }}>Cancel</ui.button>
@@ -1859,6 +1906,10 @@ function Comment({ flux, comment, members, image }: { flux: Flux; comment: Issue
 function saveComment(flux: Flux, id: string) {
 	const body = st.commentBody.trim();
 	if (!body) return;
+	if (uploading(body)) {
+		ui.toast("A picture is still uploading.");
+		return;
+	}
 	st.editingComment = "";
 	void flux.updateComment(id, body).catch((error: unknown) => ui.toast(error instanceof Error ? error.message : String(error)));
 }

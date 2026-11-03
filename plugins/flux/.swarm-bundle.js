@@ -78946,8 +78946,8 @@ function imageOf2(src) {
 import { ui as ui4 } from "swarm";
 import { jsx, jsxs } from "swarm/jsx-runtime";
 var asking = ui4.state(null);
-function confirm(title, text2, action, run4) {
-  asking.value = { title, text: text2, action, run: run4 };
+function confirm(title, text2, action, run4, opts = {}) {
+  asking.value = { title, text: text2, action, run: run4, ...opts };
   ui4.showOverlay("flux-confirm");
 }
 function close2() {
@@ -78955,20 +78955,23 @@ function close2() {
   ui4.hideOverlay("flux-confirm");
 }
 function closeConfirm() {
+  const a3 = asking.value;
   asking.value = null;
+  a3?.onCancel?.();
 }
 function Confirm() {
   const a3 = asking.value;
   if (!a3) return null;
   const go = () => {
-    close2();
+    asking.value = null;
+    ui4.hideOverlay("flux-confirm");
     void Promise.resolve(a3.run()).catch((e) => ui4.toast(e instanceof Error ? e.message : String(e)));
   };
   return /* @__PURE__ */ jsxs(ui4.box, { style: { width: 400, gap: 8, padding: 20 }, children: [
     /* @__PURE__ */ jsx(ui4.text, { style: { fontSize: 16, fontWeight: 600 }, children: a3.title }),
     /* @__PURE__ */ jsx(ui4.text, { style: { color: "text2" }, children: a3.text }),
     /* @__PURE__ */ jsxs(ui4.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end", marginTop: 12 }, children: [
-      /* @__PURE__ */ jsx(ui4.button, { kind: "secondary", onClick: close2, children: "Cancel" }),
+      /* @__PURE__ */ jsx(ui4.button, { kind: "secondary", onClick: close2, children: a3.cancel ?? "Cancel" }),
       /* @__PURE__ */ jsx(ui4.button, { kind: "danger", onClick: go, children: a3.action })
     ] })
   ] });
@@ -80751,6 +80754,17 @@ function editorImages(markdown, image) {
   }
   return images;
 }
+var uploading = (markdown) => markdown.includes("flux-local:");
+function uploadInto(flux2, file2, entity, get2, set2) {
+  const placeholder = "flux-local:" + file2.id;
+  void flux2.uploadImage(Uint8Array.fromBase64(file2.base64), file2.type, file2.name, entity).then(
+    (url2) => set2(get2().replaceAll(placeholder, url2)),
+    (error62) => {
+      set2(get2().replace(new RegExp(`!\\[[^\\]]*\\]\\(${placeholder}\\)`, "g"), ""));
+      ui9.toast(error62 instanceof Error ? error62.message : String(error62));
+    }
+  );
+}
 function upload(flux2, key, file2, entity, save, keep = false) {
   const bytes = Uint8Array.fromBase64(file2.base64);
   void flux2.uploadImage(bytes, file2.type, file2.name, entity).then(
@@ -81895,6 +81909,8 @@ var st5 = ui14.store({
   draftProject: "",
   draftDue: null,
   draftParent: null,
+  /** What's typed in New issue's labels: Create, for a name no label has. */
+  labelQuery: "",
   editingComment: "",
   commentBody: "",
   searching: false,
@@ -82402,9 +82418,16 @@ function KeyLine({ issue: issue2, parent, showKey }) {
     showKey ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: issue2.key }) : null
   ] });
 }
+function gapRing(surface) {
+  const lit = `0 0 0 2px color-mix(in srgb, text 5%, ${surface})`;
+  return { boxShadow: `0 0 0 2px ${surface}`, groupHover: { boxShadow: lit }, groupChecked: { boxShadow: lit } };
+}
 function AvatarStack({ members: members2, size: size3, ring = "bg" }) {
   const overlap = Math.round(size3 * 0.3);
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: "full", boxShadow: n === 0 ? "none" : `0 0 0 1.5px ${ring}`, flexShrink: 0 }, children: /* @__PURE__ */ jsx9(Avatar, { member: member2, size: size3 }) }, member2.id)) });
+  return /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => (
+    // The ring takes the avatar's shape, a rounded square's (Avatar).
+    /* @__PURE__ */ jsx9(ui14.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: size3 >= 28 ? 6 : 4, flexShrink: 0, ...n === 0 ? {} : gapRing(ring) }, children: /* @__PURE__ */ jsx9(Avatar, { member: member2, size: size3 }) }, member2.id)
+  )) });
 }
 function dueTone(date5) {
   const delta = dayDelta(date5);
@@ -82946,6 +82969,19 @@ function openCreate(flux2, projectId, key, parentId) {
 }
 function closeCreate() {
   st5.creating = false;
+  if (!st5.draftTitle.trim() && !st5.draftBody.trim()) return;
+  confirm("Discard issue?", "Your work will be lost.", "Discard", () => {
+    st5.draftTitle = "";
+    st5.draftBody = "";
+    st5.draftDue = null;
+    st5.draftParent = null;
+  }, {
+    cancel: "Keep editing",
+    onCancel: () => {
+      st5.creating = true;
+      ui14.showOverlay("flux-new");
+    }
+  });
 }
 function NewIssue({ flux: flux2 }) {
   const projects = flux2.projects();
@@ -82955,6 +82991,8 @@ function NewIssue({ flux: flux2 }) {
   const chosenPeople = members2.filter((member2) => st5.draftAssignees.includes(member2.id));
   const labels = flux2.labels();
   const chosenLabels = labels.filter((label) => st5.draftLabels.includes(label.id));
+  const typed = st5.labelQuery.trim();
+  const newLabel = typed && !labels.some((label) => label.name.toLowerCase() === typed.toLowerCase()) ? typed : "";
   const parent = st5.draftParent ? flux2.issue(st5.draftParent) : void 0;
   const chip2 = { ...ghostChip, height: 28, border: "1px solid border", gap: 6 };
   const chipText = { fontSize: 12, fontWeight: 500, minWidth: 0 };
@@ -82973,12 +83011,14 @@ function NewIssue({ flux: flux2 }) {
           /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
         ] }) : null
       ] }),
-      /* @__PURE__ */ jsx9(ui14.field, { value: st5.draftTitle, placeholder: "Issue title", onChange: (value) => {
-        st5.draftTitle = value;
-      }, onSubmit: () => void submitNew(flux2), style: { fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 } }, "new-title"),
-      /* @__PURE__ */ jsx9(ui14.editor, { value: st5.draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), onChange: (value) => {
+      /* @__PURE__ */ jsx9(ui14.field, { multiline: true, value: st5.draftTitle, placeholder: "Issue title", keys: ["Enter"], onKeyDown: () => void submitNew(flux2), onChange: (value) => {
+        st5.draftTitle = value.replace(/\n/g, "");
+      }, style: { fontSize: 18, fontWeight: 500, lineHeight: "28px", minHeight: 0, backgroundColor: "transparent", boxShadow: "none", padding: 0 } }, "new-title"),
+      /* @__PURE__ */ jsx9(ui14.editor, { value: st5.draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), images: editorImages(st5.draftBody, imageOf2), onChange: (value) => {
         st5.draftBody = value;
-      }, onSubmit: () => void submitNew(flux2), style: { minHeight: 144 } }, "new-body")
+      }, onSubmit: () => void submitNew(flux2), onUpload: (file2) => uploadInto(flux2, file2, "issue_image", () => st5.draftBody, (md) => {
+        st5.draftBody = md;
+      }), style: { minHeight: 144 } }, "new-body")
     ] }),
     /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider" } }),
     /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
@@ -83003,13 +83043,15 @@ function NewIssue({ flux: flux2 }) {
           st5.draftAssignees = st5.draftAssignees.includes(member2.id) ? st5.draftAssignees.filter((id2) => id2 !== member2.id) : [...st5.draftAssignees, member2.id];
         }, children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
-        chosenLabels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", search: "Change or add labels…", onChange: (query) => {
+        st5.labelQuery = query;
+      }, style: chip2, children: [
+        chosenLabels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
         /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: chosenLabels.length ? "text" : "text2" }, children: chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels" }),
-        labels.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(item.color), checked: st5.draftLabels.includes(item.id), onClick: () => {
+        labels.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(item.color), keepOpen: true, checked: st5.draftLabels.includes(item.id), onClick: () => {
           st5.draftLabels = st5.draftLabels.includes(item.id) ? st5.draftLabels.filter((id2) => id2 !== item.id) : [...st5.draftLabels, item.id];
         }, children: item.name }, item.id)),
-        labels.length === 0 ? /* @__PURE__ */ jsx9(ui14.item, { disabled: true, children: "No labels" }) : null
+        newLabel ? /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: () => void createDraftLabel(flux2, newLabel), children: `Create “${newLabel}”` }, "create") : null
       ] }),
       /* @__PURE__ */ jsxs8(ui14.menu, { label: st5.draftDue ? `Due ${dueLabel(st5.draftDue)}` : "Due date", style: chip2, children: [
         /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 14, height: 14, color: st5.draftDue ? dueTone(st5.draftDue) : "text2" } }),
@@ -83027,10 +83069,22 @@ function NewIssue({ flux: flux2 }) {
     ] })
   ] });
 }
+async function createDraftLabel(flux2, name) {
+  try {
+    const label = await flux2.createLabel(name);
+    if (!st5.draftLabels.includes(label.id)) st5.draftLabels = [...st5.draftLabels, label.id];
+  } catch (error62) {
+    ui14.toast(error62 instanceof Error ? error62.message : String(error62));
+  }
+}
 async function submitNew(flux2) {
   const title = st5.draftTitle.trim();
   if (!title || !st5.draftProject) {
     ui14.toast(title ? "Pick a project." : "Give the issue a title.");
+    return;
+  }
+  if (uploading(st5.draftBody)) {
+    ui14.toast("A picture is still uploading.");
     return;
   }
   try {
@@ -83318,7 +83372,7 @@ function SubComposer({ flux: flux2, parent }) {
         }, children: m.id === me2 ? `${m.name} (you)` : m.name }, m.id))
       ] }),
       /* @__PURE__ */ jsxs8(ui14.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
-        chosen.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", boxShadow: "0 0 0 2px overlay" } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        chosen.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
         chipText(chosen.length ? `${chosen.length} ${chosen.length === 1 ? "label" : "labels"}` : "Labels", chosen.length === 0),
         () => flux2.labels().map((l) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
           c.labelIds = toggle(c.labelIds, l.id);
@@ -83386,9 +83440,11 @@ function Comment({ flux: flux2, comment, members: members2, image }) {
       editing2 ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Edit comment", keys: ["Escape"], onKeyDown: () => {
         st5.editingComment = "";
       }, style: { marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }, children: [
-        /* @__PURE__ */ jsx9(ui14.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx9(ui14.editor, { value: st5.commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), onChange: (value) => {
+        /* @__PURE__ */ jsx9(ui14.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx9(ui14.editor, { value: st5.commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), images: editorImages(st5.commentBody, image), onChange: (value) => {
           st5.commentBody = value;
-        }, onSubmit: () => saveComment(flux2, comment.id), style: { padding: 0 } }, "edit-" + comment.id) }),
+        }, onSubmit: () => saveComment(flux2, comment.id), onUpload: (file2) => uploadInto(flux2, file2, "comment_image", () => st5.commentBody, (md) => {
+          st5.commentBody = md;
+        }), style: { padding: 0 } }, "edit-" + comment.id) }),
         /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }, children: [
           /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: "ghost", onClick: () => {
             st5.editingComment = "";
@@ -83402,6 +83458,10 @@ function Comment({ flux: flux2, comment, members: members2, image }) {
 function saveComment(flux2, id2) {
   const body = st5.commentBody.trim();
   if (!body) return;
+  if (uploading(body)) {
+    ui14.toast("A picture is still uploading.");
+    return;
+  }
   st5.editingComment = "";
   void flux2.updateComment(id2, body).catch((error62) => ui14.toast(error62 instanceof Error ? error62.message : String(error62)));
 }
