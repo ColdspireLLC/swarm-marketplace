@@ -82169,7 +82169,7 @@ function Toolbar({ flux: flux2, project, scope, options }) {
         st5.query = "";
         st5.searching = false;
       }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14 }, children: "Cancel" }) })
-    ] }) : null,
+    ] }, "search") : null,
     /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
       /* @__PURE__ */ jsxs8(ui14.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
         project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx9(FluxMark, { size: 16 }),
@@ -82198,7 +82198,7 @@ function Toolbar({ flux: flux2, project, scope, options }) {
         customized(options) ? /* @__PURE__ */ jsx9(ui14.box, { style: { position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
       ] }),
       /* @__PURE__ */ jsx9(BarEnd, { onCreate: () => openCreate(flux2, project?.id) })
-    ] })
+    ] }, "bar")
   ] });
 }
 var WIDE = 860;
