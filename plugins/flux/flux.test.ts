@@ -1018,7 +1018,7 @@ test("each thread's Flux panel attaches an issue, and shows it", async (t) => {
 	await w.screenshot("flux-directive-dark");
 	await w.dark(false);
 	// The new-thread screen's section: open issues nobody's agent has.
-	await w.click("New thread");
+	await w.click("New thread (Mod+N)");
 	await w.see("Write the docs");
 	await w.see("Unassigned");
 	await w.screenshot("flux-home");
