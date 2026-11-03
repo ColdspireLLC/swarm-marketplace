@@ -371,14 +371,16 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 	return (
 		<ui.box style={bar} keys={BAR_KEYS} onKeyDown={(key) => onListKey(flux, key, shownFlat, shownGroups, options)}>
 			{narrowSearch ? (
-				<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }}>
+				<ui.box key="search" style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }}>
 					{filter(true)}
 					<ui.pressable label="Cancel" onClick={() => { st.query = ""; st.searching = false; }} style={{ ...ghostChip }}>
 						<ui.text style={{ fontSize: 14 }}>Cancel</ui.text>
 					</ui.pressable>
 				</ui.box>
 			) : null}
-			<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...(narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null) }}>
+			{/* Keyed, so the row of search coming in ahead of it, as the first
+			    character's typed, doesn't build it anew, and its field keep the focus. */}
+			<ui.box key="bar" style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...(narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null) }}>
 				{/* The one part that shrinks: its name cut short, once all else has given way. */}
 				<ui.menu label={`Project: ${project ? project.name : "All projects"}`} style={{ ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }}>
 					{project ? <ProjectMark project={project} size={16} /> : <FluxMark size={16} />}

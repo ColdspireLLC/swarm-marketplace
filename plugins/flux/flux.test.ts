@@ -364,6 +364,23 @@ test("an empty board shows Flux's art", async (t) => {
 	await w.dark(false);
 });
 
+test("the filter keeps the focus as it's typed in", async (t) => {
+	await flux(t, { subIssue: true });
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.see("Write the docs");
+	await w.click("Filter issues");
+	// The first character brings the narrow layout's search row in ahead
+	// of the bar: what's typed once it has shows the field kept the focus.
+	await w.type("s");
+	await w.gone("Fix the login redirect");
+	await w.type(" q");
+	await w.gone("Write the docs");
+	await w.see("Keep the redirect's query");
+});
+
 test("the first sync shows the board's shape, shimmering, then the board", async (t) => {
 	const { held } = await flux(t, { demo: true, hold: true });
 	const w = await t.window();
