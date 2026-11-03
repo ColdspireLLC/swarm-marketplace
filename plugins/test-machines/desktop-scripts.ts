@@ -327,6 +327,17 @@ function Out-Answer($o) { [Console]::Out.WriteLine(($o | ConvertTo-Json -Compres
 try {
 	$p = $Payload | ConvertFrom-Json
 	function Need-Desktop { if ([System.Diagnostics.Process]::GetCurrentProcess().SessionId -eq 0) { throw "Swarm runs outside the signed-in desktop here (session 0, as a service), which has no screen: run Swarm's machine at sign-in instead." } }
+	# Why the screen can't be read, as it can't: a session Remote Desktop left disconnected has no display, a locked one shows its lock screen to no one else.
+	function No-Desktop {
+		$id = [System.Diagnostics.Process]::GetCurrentProcess().SessionId
+		if (-not ('SwarmSession' -as [type])) { Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public static class SwarmSession { [DllImport("wtsapi32.dll")] public static extern bool WTSQuerySessionInformation(IntPtr s, int id, int c, out IntPtr b, out int n); [DllImport("wtsapi32.dll")] public static extern void WTSFreeMemory(IntPtr b); }' }
+		$b = [IntPtr]::Zero; $n = 0
+		if ([SwarmSession]::WTSQuerySessionInformation([IntPtr]::Zero, $id, 8, [ref]$b, [ref]$n)) {
+			$state = [System.Runtime.InteropServices.Marshal]::ReadInt32($b); [SwarmSession]::WTSFreeMemory($b)
+			if ($state -eq 4) { throw "Windows' signed-in session here is disconnected (Remote Desktop left it, or the user switched away), so it has no screen: sign in at the machine again, or run tscon $id /dest:console there as an administrator." }
+		}
+		throw "Windows won't let Swarm read the screen here: it's locked, or a User Account Control prompt has it. Sign in at the machine, or answer the prompt."
+	}
 	Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 	$screen = [System.Windows.Forms.SystemInformation]::VirtualScreen
 	$rec = Join-Path $env:TEMP 'swarm-test-machines.mp4'
@@ -348,6 +359,18 @@ const WIN_WINDOW = String.raw`
 	if (-not ('SwarmWindow' -as [type])) { Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public static class SwarmWindow { [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow(); [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid); [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); }' }
 `;
 
+// Input from Swarm, which isn't elevated, goes nowhere while a window that
+// runs as administrator is in front (Windows' UIPI): Need-Input says so,
+// and how to get past it, before the steps are lost.
+const WIN_INPUT = String.raw`
+	function Need-Input {
+		if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { return }
+		if (-not ('SwarmElevated' -as [type])) { Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; using System.Text; public static class SwarmElevated { [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow(); [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid); [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n); [DllImport("kernel32.dll")] static extern IntPtr OpenProcess(uint a, bool i, uint pid); [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h); [DllImport("advapi32.dll")] static extern bool OpenProcessToken(IntPtr p, uint a, out IntPtr t); [DllImport("advapi32.dll")] static extern bool GetTokenInformation(IntPtr t, int c, out int v, int l, out int r); public static string Front() { IntPtr h = GetForegroundWindow(); uint pid; if (h == IntPtr.Zero || GetWindowThreadProcessId(h, out pid) == 0) return null; IntPtr p = OpenProcess(0x1000, false, pid); if (p == IntPtr.Zero) return null; IntPtr t; bool elevated; if (OpenProcessToken(p, 8, out t)) { int v, r; elevated = GetTokenInformation(t, 20, out v, 4, out r) && v != 0; CloseHandle(t); } else { elevated = Marshal.GetLastWin32Error() == 5; } CloseHandle(p); if (!elevated) return null; StringBuilder s = new StringBuilder(256); GetWindowText(h, s, 256); return s.Length > 0 ? s.ToString() : "The window in front"; } }' }
+		$front = [SwarmElevated]::Front()
+		if ($front) { throw "$front runs as administrator, so Windows won't take Swarm's input while it's in front: ask the user to close it or switch away from it at the machine, or to run Swarm's machine there as administrator." }
+	}
+`;
+
 const WIN_ACTIONS: Record<string, string> = {
 	status: String.raw`
 	Out-Answer @{ summary = "Windows $([Environment]::OSVersion.Version), $($screen.Width)x$($screen.Height)" }
@@ -358,7 +381,7 @@ const WIN_ACTIONS: Record<string, string> = {
 	Need-Desktop
 	$bmp = New-Object System.Drawing.Bitmap $screen.Width, $screen.Height
 	$g = [System.Drawing.Graphics]::FromImage($bmp)
-	$g.CopyFromScreen($screen.Left, $screen.Top, 0, 0, $bmp.Size)
+	try { $g.CopyFromScreen($screen.Left, $screen.Top, 0, 0, $bmp.Size) } catch { $g.Dispose(); $bmp.Dispose(); No-Desktop }
 	# Saved, and read by a script of its own (read): one that grabs the screen and prints it is read as spyware's.
 	$out = Join-Path $env:TEMP ('swarm-shot-' + [guid]::NewGuid().ToString('N') + '.jpg')
 	$bmp.Save($out, [System.Drawing.Imaging.ImageFormat]::Jpeg); $g.Dispose(); $bmp.Dispose()
@@ -366,8 +389,10 @@ const WIN_ACTIONS: Record<string, string> = {
 `,
 	drive:
 		WIN_DPI +
+		WIN_INPUT +
 		String.raw`
 	Need-Desktop
+	Need-Input
 	if (-not ('SwarmPointer' -as [type])) { Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public static class SwarmPointer { [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y); [DllImport("user32.dll")] public static extern void mouse_event(uint f, uint dx, uint dy, int d, UIntPtr e); }' }
 	function Mouse($x, $y) { [SwarmPointer]::SetCursorPos([int]$x + $screen.Left, [int]$y + $screen.Top) | Out-Null }
 	function Btn($f) { [SwarmPointer]::mouse_event($f, 0, 0, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 20 }
