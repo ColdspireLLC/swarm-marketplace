@@ -2,7 +2,7 @@
   "$schema": "./plugin.schema.json",
   "id": "test-machines",
   "name": "Test machines",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "The shared test machines for the agents: a queue each machine, screenshots, input, commands, apps, files and recordings, through bb's test-machines, ssh, adb, WebDriverAgent, or a demo machine.",
   "icon": "icon.svg",
   "main": "main.tsx",
