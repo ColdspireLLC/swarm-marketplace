@@ -3,7 +3,7 @@
 import { fluxAssetId } from "./assets";
 import type { IssueDetail, Label, Member, Project } from "./contract";
 import { PRIORITY_LABELS, STATUS_LABELS } from "./flux";
-import { MARKDOWN_IMAGE, mapOutsideCode } from "./markdown";
+import { HTML_IMAGE, MARKDOWN_IMAGE, imageSources, mapOutsideCode, readImageTag } from "./markdown";
 
 const RECENT_COMMENTS = 5;
 const MAX_DESCRIPTION_CHARS = 20_000;
@@ -102,10 +102,10 @@ export function issueContext(detail: IssueDetail, lookup: Lookup): string {
 /** Flux's own images in `markdown`, in order, without repeats. */
 export function imageIds(markdown: string, baseUrl: string): string[] {
   const ids: string[] = [];
-  if (!markdown.includes("![")) return ids;
+  if (!markdown.includes("![") && !/<img\b/i.test(markdown)) return ids;
   mapOutsideCode(markdown, (part) => {
-    for (const match of part.matchAll(MARKDOWN_IMAGE)) {
-      const id = fluxAssetId(match[2]!, baseUrl);
+    for (const src of imageSources(part)) {
+      const id = fluxAssetId(src, baseUrl);
       if (id && !ids.includes(id)) ids.push(id);
     }
     return part;
@@ -123,12 +123,15 @@ export function numberImages(
   ids: readonly string[],
   baseUrl: string,
 ): string {
-  if (ids.length === 0 || !markdown.includes("![")) return markdown;
+  if (ids.length === 0 || (!markdown.includes("![") && !/<img\b/i.test(markdown))) return markdown;
+  const number = (whole: string, url: string) => {
+    const index = ids.indexOf(fluxAssetId(url, baseUrl) ?? "");
+    return index >= 0 ? `[Image ${index + 1}]` : whole;
+  };
   return mapOutsideCode(markdown, (part) =>
-    part.replace(MARKDOWN_IMAGE, (whole, _alt: string, url: string) => {
-      const index = ids.indexOf(fluxAssetId(url, baseUrl) ?? "");
-      return index >= 0 ? `[Image ${index + 1}]` : whole;
-    }),
+    part
+      .replace(MARKDOWN_IMAGE, (whole, _alt: string, url: string) => number(whole, url))
+      .replace(HTML_IMAGE, (whole) => number(whole, readImageTag(whole)?.src ?? "")),
   );
 }
 

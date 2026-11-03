@@ -4,6 +4,7 @@
 // and a Flux mention reads back as `@username`.
 import { Marked, type Token, type Tokens } from "marked";
 import TurndownService from "turndown";
+import { HTML_IMAGE, imageOf, readImageTag, writeImage, type ImageTag } from "./markdown";
 
 export interface MentionTarget {
   id: string;
@@ -50,11 +51,32 @@ function withoutCheckbox(tokens: readonly Token[]): Token[] {
 }
 
 function createMarked(baseUrl: string): Marked {
+  // Flux reference-counts uploaded images by their `/assets/<id>` path.
+  const imageHtml = (image: ImageTag, title?: string | null): string => {
+    if (!isSafeHref(image.src)) return escapeHtml(image.alt);
+    let src = image.src;
+    if (src.startsWith(baseUrl)) {
+      const path = src.slice(baseUrl.length);
+      if (ASSET_PATH.test(path)) src = path;
+    }
+    let attrs = ` alt="${escapeHtml(image.alt)}"`;
+    if (title) attrs += ` title="${escapeHtml(title)}"`;
+    if (image.width) attrs += ` width="${image.width}"`;
+    if (image.width && image.height) attrs += ` height="${image.height}"`;
+    if (image.align) attrs += ` data-align="${image.align}"`;
+    return `<img src="${escapeHtml(src)}"${attrs}>`;
+  };
   const marked = new Marked({ gfm: true, breaks: false });
   marked.use({
     renderer: {
-      // Raw HTML from an agent is shown as text, never interpreted.
+      // Raw HTML from an agent is shown as text, never interpreted, but
+      // for images of a size or alignment, as Swarm's editor writes them:
+      // written anew, of what Flux's image node keeps.
       html({ text }: Tokens.HTML | Tokens.Tag) {
+        if (/^\s*(<img\b(?:[^>"']|"[^"]*"|'[^']*')*>\s*)+$/i.test(text)) {
+          const tags = [...text.matchAll(HTML_IMAGE)].map((m) => readImageTag(m[0]));
+          if (tags.every((tag) => tag !== null)) return tags.map((tag) => imageHtml(tag!)).join("");
+        }
         return escapeHtml(text);
       },
       // Task lists use TipTap's markup so they stay checkable in Flux.
@@ -78,16 +100,8 @@ function createMarked(baseUrl: string): Marked {
         const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
         return `<a href="${escapeHtml(href)}"${titleAttr}>${text}</a>`;
       },
-      // Flux reference-counts uploaded images by their `/assets/<id>` path.
       image({ href, title, text }: Tokens.Image) {
-        if (!isSafeHref(href)) return escapeHtml(text);
-        let src = href;
-        if (src.startsWith(baseUrl)) {
-          const path = src.slice(baseUrl.length);
-          if (ASSET_PATH.test(path)) src = path;
-        }
-        const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
-        return `<img src="${escapeHtml(src)}" alt="${escapeHtml(text)}"${titleAttr}>`;
+        return imageHtml({ src: href, alt: text }, title);
       },
     },
   });
@@ -235,8 +249,14 @@ function convertHtml(
       const element = node as HTMLElement;
       let src = element.getAttribute("src") ?? "";
       if (src.startsWith("/")) src = `${options.baseUrl}${src}`;
-      const alt = element.getAttribute("alt") ?? "";
-      return src ? `![${alt}](${src})` : "";
+      if (!src) return "";
+      // Its size and alignment, as Flux's image node has them: an <img>.
+      const at = (name: string) => element.getAttribute(name);
+      const tag = imageOf({ src, alt: at("alt"), width: at("width"), height: at("height"), "data-align": at("data-align") });
+      if (!tag) return "";
+      const md = writeImage(tag, escapeHtml);
+      // A block of its own, as Flux's are, which Markdown keeps apart.
+      return tag.width || tag.align ? `\n\n${md}\n\n` : md;
     },
   });
   turndown.addRule("unsafeLink", {

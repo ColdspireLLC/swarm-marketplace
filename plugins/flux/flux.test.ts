@@ -476,8 +476,13 @@ test("a big workspace syncs, is kept on disk, and draws", async (t) => {
 	await w.see("Ordering: Manual");
 	await w.click("Display");
 	await w.gone("Show completed issues");
+	// The first column's cards are every fifth issue: the last it shows
+	// before the drag, and one past it after, however tall the fonts make
+	// its cards.
+	const lastShown = async () => Math.max(...(await w.texts()).map((x) => /^Issue number (\d+)$/.exec(x)?.[1]).filter((n) => n !== undefined).map(Number).filter((n) => n % 5 === 0));
+	const before = await lastShown();
 	await w.drag("Issue number 0", "Issue number 20", { place: "below", shot: "flux-drag-scroll" });
-	await w.see("Issue number 60");
+	await t.until(async () => (await lastShown()) > before, { what: `the column scrolled past Issue number ${before}` });
 	// Started again, it has its copy before Flux answers.
 	await t.reload();
 	await t.until(async () => (await t.run("status")).stdout.includes("Issues synced: 502"), { what: "the copy kept" });
@@ -884,6 +889,19 @@ test("create, update and comment push what Flux takes", async (t) => {
 	expect((await t.run("update", "ABC-1", "--status", "nope")).stderr).toContain('unknown status "nope"');
 });
 
+test("a picture's size and alignment go to Flux and come back, as its image node keeps them", async (t) => {
+	const { pushes } = await flux(t);
+	await t.run("create", "--project", "ABC", "--title", "Sized", "--description", `Look:\n\n<img src="/assets/${ASSET}" alt="the &quot;shot&quot;" width="320" height="200" data-align="center">\n\nNot <img src="javascript:alert(1)" width="9"> nor <script>alert(1)</script>`);
+	const html = String((pushes()[0]![1] as { body: { description: string } }).body.description);
+	expect(html).toContain(`<img src="/assets/${ASSET}" alt="the &quot;shot&quot;" width="320" height="200" data-align="center">`);
+	expect(html).not.toContain("javascript");
+	expect(html).toContain("&lt;script&gt;");
+	// Back from Flux, it's the editor's <img>, and an agent's [Image 1].
+	const show = (await t.run("show", "ABC-3")).stdout;
+	expect(show).toContain("Look:\n\n[Image 1]");
+	expect(show).not.toContain("<img");
+});
+
 test("a push someone else's change beat is built again and sent", async (t) => {
 	const { items } = await flux(t, { conflictOnce: true });
 	expect((await t.run("update", "ABC-2", "--status", "todo")).stdout).toBe("Updated ABC-2: status → Todo\n");
@@ -1005,7 +1023,7 @@ test("each thread's Flux panel attaches an issue, and shows it", async (t) => {
 	await w.screenshot("flux-directive-dark");
 	await w.dark(false);
 	// The new-thread screen's section: open issues nobody's agent has.
-	await w.click("New thread");
+	await w.click("New thread (Mod+N)");
 	await w.see("Write the docs");
 	await w.see("Unassigned");
 	await w.screenshot("flux-home");
