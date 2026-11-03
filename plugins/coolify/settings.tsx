@@ -157,7 +157,7 @@ function agentsCard(): Child {
 	return (
 		<ui.card padding="s5 s6" gap="s4">
 			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-				<ui.icon icon="bot" style={{ width: 16, height: 16, color: "text2" }} />
+				<ui.icon icon="bot" style={{ width: 16, height: 16, color: "text2", alignSelf: "flex-start", marginTop: 1, flexShrink: 0 }} />
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 					<ui.text style={{ fontWeight: 500 }}>Let agents set things up</ui.text>
 					<ui.text style={{ fontSize: "small", color: "text2" }}>{detail}</ui.text>
@@ -213,7 +213,7 @@ function tokenCard(): Child {
 				const mark = !a ? (token.checking ? "Asking…" : "") : v === true ? "Yes" : v === false ? "No" : "Not known";
 				return (
 					<ui.box key={k} style={{ flexDirection: "row", gap: 12, alignItems: "center", padding: "s3 s6", borderTop: "1px solid divider" }}>
-						<ui.icon icon={v === true ? "check-circle" : v === false ? "x" : "help"} style={{ width: 14, height: 14, color: v === true ? "green" : v === false ? "red" : "text3", flexShrink: 0 }} />
+						<ui.icon icon={v === true ? "check-circle" : v === false ? "x" : "help"} style={{ width: 14, height: 14, color: v === true ? "green" : v === false ? "red" : "text3", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 						<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 							<ui.text style={{ fontWeight: 500 }}>{title}</ui.text>
 							<ui.text style={{ fontSize: "small", color: "text2" }}>{what}</ui.text>
@@ -244,7 +244,7 @@ export function settingsPage(): Child {
 		return (
 			<ui.box style={{ gap: 16 }}>
 				<ui.card padding="s5 s6" gap="s5" style={{ flexDirection: "row", alignItems: "center" }}>
-					<ui.icon icon="check-circle" style={{ width: 16, height: 16, color: "green" }} />
+					<ui.icon icon="check-circle" style={{ width: 16, height: 16, color: "green", alignSelf: "flex-start", marginTop: 1, flexShrink: 0 }} />
 					<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 						<ui.text style={{ fontWeight: 500 }}>Connected</ui.text>
 						<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{api.baseOf(c.url) + (form.version ? ` · ${form.version}` : "")}</ui.text>

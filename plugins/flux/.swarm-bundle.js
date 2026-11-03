@@ -80770,8 +80770,8 @@ function DescriptionEditor({ flux: flux2, issue: issue2, markdown, html = "", im
   const has2 = unkept(html);
   if (has2) {
     return /* @__PURE__ */ jsxs4(ui9.box, { style: { gap: 14, minHeight: "50vh" }, children: [
-      /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
-        /* @__PURE__ */ jsx5(ui9.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
+      /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
+        /* @__PURE__ */ jsx5(ui9.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0, marginTop: 1 } }),
         /* @__PURE__ */ jsx5(ui9.text, { style: { flex: 1, minWidth: 0, fontSize: "small", color: "text2" }, children: `This description has ${has2}, which Swarm can't edit without changing. Edit it in Flux.` }),
         /* @__PURE__ */ jsx5(ui9.link, { label: "Edit in Flux", href: flux2.issueUrl(issue2), style: { fontSize: "small" } })
       ] }),
@@ -81203,8 +81203,8 @@ function ConnectForm({ name, target, url: url2 = "", done, cancel }) {
         tokens ? /* @__PURE__ */ jsx7(ui11.link, { label: "Settings, API tokens.", href: `${tokens}/settings/tokens`, style: { fontSize: "small" } }) : /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text3" }, children: "Settings, API tokens." })
       ] })
     ] }),
-    form.error ? /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx7(ui11.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
+    form.error ? /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx7(ui11.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 2 } }),
       /* @__PURE__ */ jsx7(ui11.text, { style: { flex: 1, minWidth: 0 }, children: form.error })
     ] }) : null,
     /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
@@ -83969,8 +83969,8 @@ function activate() {
       const me2 = flux.me?.id ?? "";
       const open3 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
       return /* @__PURE__ */ jsx11(ui16.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs10(ui16.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
-        c.state !== "ready" && /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
-          /* @__PURE__ */ jsx11(ui16.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13 } }),
+        c.state !== "ready" && /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
+          /* @__PURE__ */ jsx11(ui16.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 } }),
           /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
         ] }),
         shown ? /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 12 }, children: [
