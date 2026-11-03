@@ -1293,6 +1293,8 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	await w.dark(true);
 	await w.screenshot("flux-new-issue-dark");
 	await w.dark(false);
+	// The title has the keyboard as the dialog opens.
+	await w.type("Ship the toast");
 	// Its chips say what's picked, as Flux's: everyone assigned, how many labels.
 	await w.click("Assignee");
 	await w.click("Ada Lovelace (you)");
@@ -1318,15 +1320,13 @@ test("the board opens an issue, and a status change is pushed", async (t) => {
 	const docs = [...items.values()].find((it) => it.body?.type === "label" && it.body?.name === "Docs");
 	expect(!!docs).toBe(true);
 	await w.screenshot("flux-new-issue-picked");
-	// Made, it stays on the board, and says so, with Open, as Flux's.
-	await w.click("Issue title");
-	await w.type("Ship the toast");
 	// Closed with something typed, it asks first, as Flux's; kept, it's as it was.
 	await w.key("Escape");
 	await w.see("Discard issue?");
 	await w.click("Keep editing");
 	await w.see("Create more");
 	await w.see("Assignee: Ada Lovelace, Bob");
+	// Made, it stays on the board, and says so, with Open, as Flux's.
 	// Enter on the title creates it: a title wraps, but it's one line.
 	await w.click("Issue title");
 	await w.key("Enter");
