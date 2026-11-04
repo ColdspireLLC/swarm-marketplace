@@ -66,6 +66,12 @@ function shotSize(d: Uint8Array) {
 	return sizes.get(d)!;
 }
 
+/** Remembers a machine's screen size as its screen's shown. */
+function remember(m: Machine, d: Uint8Array) {
+	const sz = shotSize(d);
+	if (sz?.width && sz.height) lastSize.set(m.id, sz);
+}
+
 /**
  * The screen's box, at the screenshot's own proportions and at most
  * SHOT_MAX tall: it keeps its size while the next screenshot loads,
@@ -74,8 +80,19 @@ function shotSize(d: Uint8Array) {
  */
 function shotBox(d: Uint8Array) {
 	const sz = shotSize(d);
-	if (!sz || !sz.width || !sz.height) return {};
-	return { width: Math.round(Math.min(SHOT_MAX * (sz.width / sz.height), 2000)), aspectRatio: `${sz.width} / ${sz.height}` as const };
+	return sz && sz.width && sz.height ? boxOf(sz) : {};
+}
+
+const boxOf = (sz: { width: number; height: number }) => ({ width: Math.round(Math.min(SHOT_MAX * (sz.width / sz.height), 2000)), aspectRatio: `${sz.width} / ${sz.height}` as const });
+
+/** Each machine's last screen size, for the box its first look fills while it loads. */
+const lastSize = new Map<string, { width: number; height: number }>();
+
+/** The box a look fills before its screen comes: the machine's last screen's, else a phone's or a computer's proportions. */
+function loadingBox(m: Machine) {
+	const k = shots.get(m.id);
+	const sz = (k && shotSize(k.data)) || lastSize.get(m.id) || (m.kind === "android" || m.kind === "ios" ? { width: 9, height: 20 } : { width: 16, height: 10 });
+	return boxOf(sz);
 }
 
 /** When each machine was last looked at by itself, for a card shown with no screen, or an old one. */
@@ -117,6 +134,7 @@ export function card(m: Machine, thread: string): Child {
 	const rec = recording.get(m.id);
 	lookIfStale(m);
 	const k = shots.get(m.id);
+	if (k) remember(m, k.data);
 	const busy = looking.has(m.id) && !looking.get(m.id);
 	const problem = looking.get(m.id);
 	const tag: [string, "green" | "accent" | "amber" | "muted"] = carry ? ["You carry it", "muted"] : yours ? ["Yours", "accent"] : mine ? ["This thread", "accent"] : h ? ["In use", "amber"] : ["Free", "green"];
@@ -146,7 +164,7 @@ export function card(m: Machine, thread: string): Child {
 					</ui.box>
 				</ui.box>
 			) : busy ? (
-				<ui.box style={{ height: 96, borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } }} />
+				<ui.box style={{ ...loadingBox(m), maxWidth: "100%", alignSelf: "flex-start", borderRadius: "control", backgroundColor: "hover", animation: { name: "shimmer" } }} />
 			) : null}
 			<ui.text style={{ fontSize: "small", color: "text2" }}>{detail}</ui.text>
 			{problem ? <ui.text style={{ fontSize: "small", color: "red" }}>{problem}</ui.text> : null}
