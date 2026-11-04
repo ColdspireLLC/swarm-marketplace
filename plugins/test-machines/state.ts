@@ -4,7 +4,7 @@
 // renders as they change.
 import { call, settings, ui } from "swarm";
 import { Desktop } from "./desktop";
-import { ADB, BB, Demo, DriverError, SSH, WDA, type Driver, type Machine, type Shot } from "./drivers";
+import { ADB, BB, Demo, DriverError, SSH, userHas, WDA, type Driver, type Machine, type Shot } from "./drivers";
 import { base64 } from "./png";
 import { KEEP_PLACE_MS, TurnError, Turns, USER } from "./turns";
 import { joinedMachines } from "./where";
@@ -76,6 +76,9 @@ export async function machineNamed(id: string): Promise<Machine> {
 
 export const turnsOf = (m: Machine) => turns.get(m.id)!;
 
+// The drivers turn a phone's screen off when it's unused: not one the user has.
+userHas.now = (id) => turns.get(id)?.holder?.thread === USER;
+
 /** The machines the user took, kept in a setting of the plugin's own across its restarts. */
 export function claimed(): string[] {
 	return String(settings.get("claimed") ?? "").split(",").filter(Boolean);
@@ -96,6 +99,8 @@ export function claim(m: Machine, on: boolean): string | null | boolean {
 		recording.delete(m.id);
 		void m.driver.recordStop?.(m).then((got) => got.cleanup?.()).catch(() => {});
 	}
+	// Given back: a phone's screen goes off soon, as no one uses it.
+	if (!on) void m.driver.released(m).catch(() => {});
 	const now = new Set(claimed());
 	if (on) now.add(claimKey(m));
 	else now.delete(claimKey(m));

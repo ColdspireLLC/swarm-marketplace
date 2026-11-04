@@ -32,6 +32,36 @@ export interface Machine {
 	screen?: string;
 }
 
+/** Whether the user has a machine now (set by state.ts): a phone the user took isn't turned off under them. */
+export const userHas = { now: (_id: string) => false };
+
+/** A phone's screen goes off this long after the plugin's last action there, and sooner once its turn's let go. */
+export const REST_MS = 60_000;
+const RELEASED_REST_MS = 10_000;
+
+/**
+ * Turns a phone's screen off once the plugin's done with it: rest runs
+ * after REST_MS without an action (touch), or RELEASED_REST_MS after its
+ * turn's let go (soon), unless the user has it then.
+ */
+class Rester {
+	private timers = new Map<string, number>();
+	constructor(private rest: (m: Machine) => Promise<unknown>) {}
+	touch(m: Machine, ms = REST_MS) {
+		clearTimeout(this.timers.get(m.id));
+		this.timers.set(
+			m.id,
+			setTimeout(() => {
+				this.timers.delete(m.id);
+				if (!userHas.now(m.id)) void this.rest(m).catch(() => {});
+			}, ms),
+		);
+	}
+	soon(m: Machine) {
+		this.touch(m, RELEASED_REST_MS);
+	}
+}
+
 export interface Shot {
 	data: Uint8Array;
 	mimeType: string;
@@ -427,27 +457,13 @@ export class ADB implements Driver {
 		return `adb: ${awake.toLowerCase()}${battery ? `, battery ${battery}%` : ""}${locked ? ", locked (the user unlocks it)" : ""}`;
 	}
 
-	/** Turns the screen on before an action, as a finger would. */
-	/** The phones whose screens the plugin turned on, and when each goes off again. */
-	private woke = new Set<string>();
-	private sleepers = new Map<string, number>();
+	/** Its screen off once the plugin's done with it, whoever turned it on: a phone's isn't left on unused. */
+	private rester = new Rester((m) => this.shell(m, "input keyevent KEYCODE_SLEEP", 20));
 
-	/** Turns the screen on before an action, as a finger would; one the plugin turned on goes off 90 s after its last. */
+	/** Turns the screen on before an action, as a finger would (WAKE_SH). */
 	private async wake(m: Machine) {
-		this.woken(m, await this.shell(m, WAKE_SH, 20).catch(() => ""));
-	}
-
-	/** What WAKE_SH said: a screen it turned on goes off 90 s after the plugin's last action there. */
-	private woken(m: Machine, said: string) {
-		if (/^WOKE$/m.test(said)) this.woke.add(m.id);
-		clearTimeout(this.sleepers.get(m.id));
-		this.sleepers.set(m.id, setTimeout(() => void this.sleepAgain(m), 90_000));
-	}
-
-	/** The screen off again, where the plugin turned it on: none the user had on. */
-	private async sleepAgain(m: Machine) {
-		clearTimeout(this.sleepers.get(m.id));
-		if (this.woke.delete(m.id)) await this.shell(m, "input keyevent KEYCODE_SLEEP", 20).catch(() => "");
+		await this.shell(m, WAKE_SH, 20).catch(() => "");
+		this.rester.touch(m);
 	}
 
 	/** Reaches a phone over wireless debugging (its port is new each time it's turned on), pairing it first with its code. */
@@ -468,7 +484,7 @@ export class ADB implements Driver {
 		// One call: the wake, then the screenshot, which the phone encodes (what a process prints here is text):
 		// a JPEG where its screencap makes one (Android 14 on), half a PNG's bytes and time at the same pixels.
 		const said = await this.shell(m, `${WAKE_SH}; f=/data/local/tmp/swarm-shot.jpg; if screencap -j $f 2>/dev/null && [ -s $f ]; then echo JPEG; base64 $f; rm -f $f; else echo PNG; screencap -p | base64; fi`, 60);
-		this.woken(m, said);
+		this.rester.touch(m);
 		const at = said.search(/^(JPEG|PNG)$/m);
 		const data = unbase64(at < 0 ? "" : said.slice(said.indexOf("\n", at) + 1));
 		const jpeg = data[0] === 0xff && data[1] === 0xd8;
@@ -561,7 +577,7 @@ export class ADB implements Driver {
 	}
 
 	async released(m: Machine) {
-		await this.sleepAgain(m);
+		this.rester.soon(m);
 	}
 
 	async describe(m: Machine): Promise<Element[]> {
@@ -705,15 +721,14 @@ export function adbStep(step: string): string {
 
 /**
  * Turns an Android phone's screen on where it's off, as a finger would, and
- * waits for it to draw: asleep or dozing, a wake key (and WOKE, so the plugin
- * turns it off again); awake with the panel off, which Android 17 leaves with
+ * waits for it to draw: asleep or dozing, a wake key; awake with the panel off, which Android 17 leaves with
  * Stay awake on (Developer options) at the screen timeout and where a wake
  * key does nothing, a sleep and a wake.
  */
 const WAKE_SH = [
 	"s=$(dumpsys power | grep -m1 mWakefulness=; dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -o 'powerMode=[A-Za-z]*')",
 	"w=",
-	'case "$s" in *Asleep*|*Dozing*) input keyevent KEYCODE_WAKEUP; echo WOKE; w=1;; *powerMode=Off*) input keyevent KEYCODE_SLEEP; sleep 0.5; input keyevent KEYCODE_WAKEUP; w=1;; esac',
+	'case "$s" in *Asleep*|*Dozing*) input keyevent KEYCODE_WAKEUP; w=1;; *powerMode=Off*) input keyevent KEYCODE_SLEEP; sleep 0.5; input keyevent KEYCODE_WAKEUP; w=1;; esac',
 	// The panel on, then past the wake's fade in.
 	'if [ -n "$w" ]; then for i in 1 2 3 4 5 6 7 8 9 10; do dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -q powerMode=On && break; sleep 0.2; done; sleep 0.8; fi',
 ].join("; ");
@@ -837,7 +852,20 @@ export class WDA implements Driver {
 		return p;
 	}
 
+	/** The iPhones the plugin locked once it was done with them, which it unlocks before its next action there. */
+	private lockedByUs = new Set<string>();
+	private rester = new Rester(async (m) => {
+		await this.http(m, "POST", "/wda/lock", undefined, 20);
+		this.lockedByUs.add(m.id);
+	});
+
 	private async http(m: Machine, method: "GET" | "POST" | "DELETE", path: string, body?: unknown, timeoutS = 60): Promise<any> {
+		if (!/^\/(status|wda\/(lock|unlock|locked))$/.test(path)) {
+			this.rester.touch(m);
+			// Locked by the plugin when it was done: unlocked again, where the phone has no passcode. One that asks
+			// for its passcode stays locked, and the next call says so: unlocking it is the user's.
+			if (this.lockedByUs.delete(m.id)) await this.http(m, "POST", "/wda/unlock", undefined, 20).catch(() => {});
+		}
 		const args = ["-sS", "-g", "--max-time", String(timeoutS), "-X", method, "-H", "Content-Type: application/json"];
 		if (body !== undefined) args.push("--data-binary", "@-");
 		args.push((await this.url(m)) + path);
@@ -1021,7 +1049,9 @@ export class WDA implements Driver {
 		throw new DriverError(`${m.name}'s power: status, or off to lock it. Unlocking is the user's.`);
 	}
 
-	async released() {}
+	async released(m: Machine) {
+		this.rester.soon(m);
+	}
 
 	async describe(m: Machine): Promise<Element[]> {
 		const k = await this.scale(m);

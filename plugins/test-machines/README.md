@@ -41,8 +41,10 @@ The machines come from six drivers, each turned on in the settings:
   screenshots,
   taps and typing, apps, logs, and the screen on and off. A phone that
   `aapt2` (Android's build-tools, on the PATH there) can read a build for
-  takes test builds even when it's one the user carries. A screen the
-  plugin turned on goes off 90 s after its last use, or as the turn ends.
+  takes test builds even when it's one the user carries. A phone's screen
+  goes off once the plugin's done with it, whoever turned it on: 60 s after
+  its last action, or 10 s after its turn's let go, but never while you
+  have it.
 - **wda**: iPhones and iPads through WebDriverAgent (*iPhones*,
   `iphone:UDID`): screenshots, taps, swipes and typing in screenshot
   pixels, launching and stopping apps, which app is in front, and their
@@ -56,7 +58,10 @@ The machines come from six drivers, each turned on in the settings:
   plugged into*: one joined to Swarm, which WebDriverAgent is asked from
   too, or over ssh; and `@UDID` after its address). iOS has
   no shell: no commands or files. While a phone sleeps, WebDriverAgent
-  answers slowly (10–15 s a call).
+  answers slowly (10–15 s a call). The plugin locks an iPhone once it's done
+  with it (as an Android phone's screen goes off, below), and unlocks it
+  before its next action there: one with a passcode stays locked, for you
+  to unlock.
 - **demo**: a screen in memory and this machine's shell, for trying the
   tools without a machine.
 
