@@ -131,7 +131,71 @@ export async function forTurn(t: Turns, thread: string) {
 	t.forTurn(thread, turn);
 }
 
-export async function withMachine<T>(thread: string | null, m: Machine, o: { exclusive: boolean; wait?: number }, work: () => Promise<T>): Promise<T> {
+/** What a thread does on a machine now, for the row above its composer and the pages: "tap 603 2166", "screenshot". */
+export interface Op {
+	thread: string;
+	label: string;
+	since: number;
+}
+export const doing = ui.store(new Map<string, Op[]>(), { shallow: true });
+
+/** Runs work as op on m, seen in doing while it runs. */
+async function doingOp<T>(m: Machine, thread: string, label: string, work: () => Promise<T>): Promise<T> {
+	const op: Op = { thread, label, since: Date.now() };
+	doing.set(m.id, [...(doing.get(m.id) ?? []), op]);
+	try {
+		return await work();
+	} finally {
+		const left = (doing.get(m.id) ?? []).filter((x) => x !== op);
+		if (left.length) doing.set(m.id, left);
+		else doing.delete(m.id);
+	}
+}
+
+/** A machine as a thread is on it: using it (something runs), holding it between calls, waiting in line, or looking beside whoever has it. */
+export interface Use {
+	m: Machine;
+	state: "using" | "holding" | "waiting" | "looking";
+	/** Since it got it, joined the line, or began what it does. */
+	since: number;
+	ops: Op[];
+	/** In line: its place, 1 = next, and who has it. */
+	position?: number;
+	holder?: string;
+	/** Its place is kept for its next call, no call waiting on it. */
+	kept?: boolean;
+	recording?: boolean;
+}
+
+/** What a thread uses, holds or waits for, machine by machine. */
+export function usesOf(thread: string): Use[] {
+	const out: Use[] = [];
+	for (const m of st.machines) {
+		const t = turns.get(m.id);
+		if (!t) continue;
+		const ops = (doing.get(m.id) ?? []).filter((o) => o.thread === thread);
+		const rec = recording.get(m.id)?.thread === thread;
+		const h = t.holder;
+		if (h?.thread === thread) {
+			out.push({ m, state: ops.length ? "using" : "holding", since: ops.length ? Math.min(...ops.map((o) => o.since)) : h.since, ops, recording: rec });
+			continue;
+		}
+		const at = t.waiting.findIndex((w) => w.thread === thread);
+		if (at >= 0) {
+			out.push({ m, state: "waiting", since: t.waiting[at]!.since, ops, position: at + 1, holder: h?.thread, kept: t.waiting[at]!.kept });
+			continue;
+		}
+		if (ops.length) out.push({ m, state: "looking", since: Math.min(...ops.map((o) => o.since)), ops });
+	}
+	return out;
+}
+
+export async function withMachine<T>(thread: string | null, m: Machine, o: { exclusive: boolean; wait?: number; label?: string; by?: string }, work: () => Promise<T>): Promise<T> {
+	const who = thread ?? o.by;
+	if (o.label && who) {
+		const inner = work;
+		work = () => doingOp(m, who, o.label!, inner);
+	}
 	const t = turnsOf(m);
 	const deadline = Date.now() + waitMs(o.wait);
 	const inLine = o.exclusive && thread && thread !== USER;

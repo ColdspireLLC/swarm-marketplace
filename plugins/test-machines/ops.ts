@@ -127,7 +127,7 @@ export async function release(thread: string, machine?: string): Promise<Out> {
 export async function capture(thread: string, machine: string, o: { show?: boolean; wait?: number }): Promise<Out & { line?: string }> {
 	const m = await machineNamed(machine);
 	notCarried(m, thread);
-	const s = await withMachine(thread, m, { exclusive: false, wait: o.wait }, async () => {
+	const s = await withMachine(thread, m, { exclusive: false, wait: o.wait, label: "screenshot" }, async () => {
 		await refuseSensitive(m, thread, "no screenshot");
 		return m.driver.capture(m);
 	});
@@ -148,7 +148,7 @@ export async function describe(thread: string, machine: string, wait?: number): 
 	const m = await machineNamed(machine);
 	notCarried(m, thread);
 	if (!m.driver.describe) throw new DriverError(`${m.name} can't be read as elements: the ${m.driver.name} driver only looks (machine_capture).`);
-	const list = await withMachine(thread, m, { exclusive: false, wait }, async () => {
+	const list = await withMachine(thread, m, { exclusive: false, wait, label: "reading the screen" }, async () => {
 		await refuseSensitive(m, thread, "nothing read");
 		return m.driver.describe!(m);
 	});
@@ -159,7 +159,7 @@ export async function describe(thread: string, machine: string, wait?: number): 
 export async function drive(thread: string, machine: string, steps: string[], o: { capture?: boolean; wait?: number }): Promise<Out> {
 	const m = await machineNamed(machine);
 	notCarried(m, thread);
-	return withMachine(thread, m, { exclusive: true, wait: o.wait }, async () => {
+	return withMachine(thread, m, { exclusive: true, wait: o.wait, label: stepsLabel(steps) }, async () => {
 		const said = await m.driver.drive(m, steps);
 		const left = await leaveSensitive(m, thread);
 		if (left) return { text: left, code: 1 };
@@ -169,6 +169,16 @@ export async function drive(thread: string, machine: string, steps: string[], o:
 		keep(m, s, thread);
 		return { text, shot: s };
 	});
+}
+
+/** A label of what's done, short enough for a row: its first 48 characters. */
+const clipLabel = (s: string) => (s.length > 48 ? s.slice(0, 47) + "…" : s);
+
+/** Steps, as the row above the composer says them: the first two, and how many more. */
+export function stepsLabel(steps: string[]): string {
+	const shown = steps.filter((x) => !/^wait\b/i.test(x)).slice(0, 2);
+	const more = steps.filter((x) => !/^wait\b/i.test(x)).length - shown.length;
+	return clipLabel((shown.length ? shown.join(", ") : steps[0] ?? "") + (more > 0 ? ` +${more}` : ""));
 }
 
 // ---- Commands and jobs ----
@@ -202,7 +212,8 @@ export async function run(thread: string, machine: string, command: string, o: {
 		const left = await leaveSensitive(m, thread);
 		return left ? { ...r, code: r.code || 1, output: `${left}\n${r.output}` } : r;
 	};
-	job.promise = (exclusive ? t.run(thread, () => withMachine(null, m, { exclusive: false, wait: o.wait }, work)) : withMachine(thread, m, { exclusive: false, wait: o.wait }, work)).then(
+	const label = `running ${clipLabel(command)}`;
+	job.promise = (exclusive ? t.run(thread, () => withMachine(null, m, { exclusive: false, wait: o.wait, label, by: thread }, work)) : withMachine(thread, m, { exclusive: false, wait: o.wait, label }, work)).then(
 		(r) => {
 			job.done = r;
 		},
@@ -245,7 +256,7 @@ export async function adbRaw(thread: string, machine: string, args: string[], wa
 	if (thread !== USER && !ADB_ALLOWED.has(args[0] ?? "")) {
 		throw new DriverError(`adb ${args[0] ?? ""} isn't one an agent gives here: ${[...ADB_ALLOWED].join(", ")}, for ${m.name} alone (no -s, -d, -e or -t: the plugin names the phone).`);
 	}
-	return withMachine(thread, m, { exclusive: true, wait }, async () => {
+	return withMachine(thread, m, { exclusive: true, wait, label: `adb ${clipLabel(args.join(" "))}` }, async () => {
 		const r = await m.driver.raw!(m, args);
 		const left = await leaveSensitive(m, thread);
 		return { text: left ? `${left}\n${r.output}` : r.output, code: left ? r.code || 1 : r.code };
@@ -263,7 +274,7 @@ export async function app(thread: string, machine: string, action: string, targe
 		if (kind) throw new DriverError(refusedApp(target, kind));
 	}
 	const exclusive = ["launch", "focus", "kill", "install"].includes(action);
-	return withMachine(thread, m, { exclusive, wait: o.wait }, async () => {
+	return withMachine(thread, m, { exclusive, wait: o.wait, label: `${action} ${clipLabel(target)}` }, async () => {
 		if (carriedHere && action === "install") {
 			// A test build's, as the driver reads its file: here, in the turn, right before it's installed.
 			const id = await m.driver.packageOf?.(m, target).catch(() => "");
@@ -316,13 +327,13 @@ export async function files(thread: string, machine: string, action: "put" | "ge
 	const m = await machineNamed(machine);
 	notCarried(m, thread);
 	const locals = await localPaths(thread, given);
-	return { text: await withMachine(thread, m, { exclusive: false, wait }, () => (action === "put" ? m.driver.put(m, locals, remote) : m.driver.get(m, remote, locals[0]!))) };
+	return { text: await withMachine(thread, m, { exclusive: false, wait, label: action === "put" ? "copying files to it" : "copying files from it" }, () => (action === "put" ? m.driver.put(m, locals, remote) : m.driver.get(m, remote, locals[0]!))) };
 }
 
 export async function power(thread: string, machine: string, action: string, wait?: number): Promise<Out> {
 	const m = await machineNamed(machine);
 	notCarried(m, thread);
-	return { text: await withMachine(thread, m, { exclusive: action !== "status", wait }, () => m.driver.power(m, action)) };
+	return { text: await withMachine(thread, m, { exclusive: action !== "status", wait, label: `power ${action}` }, () => m.driver.power(m, action)) };
 }
 
 // ---- Recordings ----
@@ -334,7 +345,7 @@ export async function record(thread: string, machine: string, action: "start" | 
 	const rec = recording.get(m.id);
 	if (action === "stop") {
 		if (!rec || rec.thread !== thread) throw new DriverError(`You aren't recording ${m.name}.`);
-		const line = await withMachine(thread, m, { exclusive: true, wait: o.wait }, async () => {
+		const line = await withMachine(thread, m, { exclusive: true, wait: o.wait, label: "saving the recording" }, async () => {
 			recording.delete(m.id);
 			const got = await m.driver.recordStop!(m);
 			const data = got.data ?? (await fs.readBytes(got.path!));
@@ -354,7 +365,7 @@ export async function record(thread: string, machine: string, action: "start" | 
 	if (rec) throw new DriverError(rec.thread === thread ? `You're recording ${m.name} already: stop it first.` : `${title(rec.thread)} is recording ${m.name}.`);
 	const seconds = Math.max(5, Math.min(180, o.seconds ?? 120));
 	await refuseSensitive(m, thread, "no recording");
-	await withMachine(thread, m, { exclusive: true, wait: o.wait }, () => m.driver.recordStart!(m, { seconds, title: o.title ?? "" }));
+	await withMachine(thread, m, { exclusive: true, wait: o.wait, label: "starting a recording" }, () => m.driver.recordStart!(m, { seconds, title: o.title ?? "" }));
 	recording.set(m.id, { thread, title: o.title ?? "", since: Date.now() });
 	return { text: `Recording ${m.name}, ${seconds} s at most: do the flow, then stop the recording. It's your turn on ${m.name} until then.` };
 }

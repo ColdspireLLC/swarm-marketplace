@@ -232,7 +232,7 @@ function iphoneSetup(): Child {
 }
 
 /** A phone found plugged in: what it is and where, and using it or not. */
-function phoneRow(f: Found): Child {
+export function phoneRow(f: Found): Child {
 	const busy = acting.serial === f.serial;
 	const kind = f.kind === "ios" ? "iPhone" : "Android";
 	const moves = f.id || f.problem ? null : movesFrom(f);

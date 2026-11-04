@@ -10,18 +10,18 @@ import { USER } from "./turns";
 
 export const PAGE = "test-machines";
 /** The link that opens the Settings page. */
-const SETUP = `swarm://settings/test-machines/${PAGE}`;
+export const SETUP = `swarm://settings/test-machines/${PAGE}`;
 
-const KIND_ICON: Record<string, IconName> = { mac: "laptop", linux: "computer", windows: "monitor", android: "mobile", ios: "mobile", demo: "terminal" };
+export const KIND_ICON: Record<string, IconName> = { mac: "laptop", linux: "computer", windows: "monitor", android: "mobile", ios: "mobile", demo: "terminal" };
 
 const looking = ui.store(new Map<string, string>());
 
 /** The machines the panel watches: a screenshot every few seconds, for 5 minutes at most. */
-const watching = ui.store(new Map<string, number>());
+export const watching = ui.store(new Map<string, number>());
 const WATCH_EVERY = 3000;
 const WATCH_FOR = 5 * 60_000;
 
-function watch(m: Machine, on: boolean) {
+export function watch(m: Machine, on: boolean) {
 	clearInterval(watching.get(m.id));
 	watching.delete(m.id);
 	if (!on) return;
@@ -45,7 +45,7 @@ function watch(m: Machine, on: boolean) {
 }
 
 /** Looks at a machine for the user. */
-async function look(m: Machine) {
+export async function look(m: Machine) {
 	looking.set(m.id, "");
 	try {
 		keep(m, await m.driver.capture(m), USER);
@@ -56,14 +56,14 @@ async function look(m: Machine) {
 }
 
 /** When, said anew each minute in a render (ui.now). */
-function ago(at: number) {
+export function ago(at: number) {
 	const s = Math.max(0, (ui.now() - at) / 1000);
 	return s < 60 ? "just now" : s < 3600 ? `${Math.floor(s / 60)} min ago` : s < 86400 ? `${Math.floor(s / 3600)} h ago` : new Date(at).toISOString().slice(0, 10);
 }
 
-const line = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
+export const line = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
 
-function card(m: Machine, thread: string): Child {
+export function card(m: Machine, thread: string): Child {
 	const t = turnsOf(m);
 	const h = t.holder;
 	const mine = h?.thread === thread;
@@ -152,7 +152,7 @@ function empty(): Child {
 }
 
 /** The phones plugged in that the plugin doesn't use, from the last look: one link turns them on. */
-function unusedPhones(): Child {
+export function unusedPhones(): Child {
 	const unused = found.phones.filter((f) => !f.id && !f.problem);
 	if (!unused.length) return null;
 	const names = unused.map((f) => f.model);

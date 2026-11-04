@@ -67,6 +67,18 @@ accessibility (a small reader compiled once), Windows' through UI
 Automation. Linux on Wayland doesn't say where its windows are, so it
 isn't read there.
 
+Above a thread's composer, a row says what the thread does on the
+machines: *Using iPhone 17 · tap 603 2166*, *Holding*, *Waiting for* (its
+place in line and who has it), or *Recording*, with how long, and a
+button at its end that ends the thread's turn there or takes it out of
+the line. Open, it shows each machine's latest screen, Watch, Open and
+End turn.
+
+*Test machines* on the window's rail is every machine at once: its latest
+screen, who has it and who waits, the phones plugged in and not used yet
+(each turned on from there), and a badge of how many machines agents are
+on.
+
 The Machines panel beside a thread shows who has each machine, who's
 waiting, and a screenshot; *Watch* takes one every few seconds, for 5
 minutes at most. An agent shows one in its reply as a Markdown

@@ -94,6 +94,15 @@ test("the user takes a machine: the agent on it is cut off, the rest wait until 
 	const gate = `${t.project}/gate`;
 	const a = await t.thread(call("machine_run", { machine: "demo", command: `while [ ! -e '${gate}' ]; do sleep 0.05; done; echo done`, exclusive: true }));
 	await t.until(async () => (await t.run("status")).stdout.includes("'s turn"), { what: "A's turn" });
+	// The row above A's composer says what it does there, and the rail's page that an agent has it.
+	const w = await t.window();
+	await w.show(a);
+	await w.see("Using");
+	await w.see(`running while [ ! -e`);
+	await w.screenshot("test-machines-composer");
+	await w.click("Test machines");
+	await w.see("1 machine · 1 in use by agents");
+	await w.screenshot("test-machines-page");
 	// An agent's shell can't take it for the user, nor end A's turn.
 	const b = await t.thread("say Hello.");
 	await b.idle();
