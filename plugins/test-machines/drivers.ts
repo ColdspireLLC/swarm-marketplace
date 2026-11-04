@@ -434,17 +434,12 @@ export class ADB implements Driver {
 
 	/** Turns the screen on before an action, as a finger would; one the plugin turned on goes off 90 s after its last. */
 	private async wake(m: Machine) {
-		// Android's word, and the panel's own: with Stay awake on (Developer options), Android 17 turns the
-		// panel off at the screen timeout but still says it's awake, and every screenshot is black.
-		const s = await this.shell(m, "dumpsys power | grep -m1 mWakefulness=; dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -o 'powerMode=[A-Za-z]*'", 20).catch(() => "");
-		if (/Asleep|Dozing/.test(s)) {
-			await this.shell(m, "input keyevent KEYCODE_WAKEUP", 20);
-			this.woke.add(m.id);
-		} else if (/powerMode=Off/.test(s)) {
-			// Awake with the panel off: a wake key does nothing there, so sleep and wake, as the power button twice,
-			// and wait for the panel to draw again, past the wake's fade in.
-			await this.shell(m, "input keyevent KEYCODE_SLEEP; sleep 0.5; input keyevent KEYCODE_WAKEUP; for i in 1 2 3 4 5 6 7 8 9 10; do dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -q 'powerMode=On' && break; sleep 0.2; done; sleep 0.8", 20);
-		}
+		this.woken(m, await this.shell(m, WAKE_SH, 20).catch(() => ""));
+	}
+
+	/** What WAKE_SH said: a screen it turned on goes off 90 s after the plugin's last action there. */
+	private woken(m: Machine, said: string) {
+		if (/^WOKE$/m.test(said)) this.woke.add(m.id);
 		clearTimeout(this.sleepers.get(m.id));
 		this.sleepers.set(m.id, setTimeout(() => void this.sleepAgain(m), 90_000));
 	}
@@ -470,12 +465,15 @@ export class ADB implements Driver {
 	}
 
 	async capture(m: Machine): Promise<Shot> {
-		await this.wake(m);
-		// The phone encodes it: what a process prints here is text.
-		const text = await this.shell(m, "screencap -p | base64", 60);
-		const data = unbase64(text);
-		if (data.length < 8 || data[0] !== 0x89) throw new DriverError(`the screenshot of ${m.name} came back empty: is its screen locked or protected?`);
-		return { data, mimeType: "image/png" };
+		// One call: the wake, then the screenshot, which the phone encodes (what a process prints here is text):
+		// a JPEG where its screencap makes one (Android 14 on), half a PNG's bytes and time at the same pixels.
+		const said = await this.shell(m, `${WAKE_SH}; f=/data/local/tmp/swarm-shot.jpg; if screencap -j $f 2>/dev/null && [ -s $f ]; then echo JPEG; base64 $f; rm -f $f; else echo PNG; screencap -p | base64; fi`, 60);
+		this.woken(m, said);
+		const at = said.search(/^(JPEG|PNG)$/m);
+		const data = unbase64(at < 0 ? "" : said.slice(said.indexOf("\n", at) + 1));
+		const jpeg = data[0] === 0xff && data[1] === 0xd8;
+		if (data.length < 8 || (!jpeg && data[0] !== 0x89)) throw new DriverError(`the screenshot of ${m.name} came back empty: is its screen locked or protected?`);
+		return { data, mimeType: jpeg ? "image/jpeg" : "image/png" };
 	}
 
 	async drive(m: Machine, steps: string[]): Promise<string> {
@@ -704,6 +702,21 @@ export function adbStep(step: string): string {
 	}
 	throw new DriverError(`no step ${op}: ${ADB_STEPS}`);
 }
+
+/**
+ * Turns an Android phone's screen on where it's off, as a finger would, and
+ * waits for it to draw: asleep or dozing, a wake key (and WOKE, so the plugin
+ * turns it off again); awake with the panel off, which Android 17 leaves with
+ * Stay awake on (Developer options) at the screen timeout and where a wake
+ * key does nothing, a sleep and a wake.
+ */
+const WAKE_SH = [
+	"s=$(dumpsys power | grep -m1 mWakefulness=; dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -o 'powerMode=[A-Za-z]*')",
+	"w=",
+	'case "$s" in *Asleep*|*Dozing*) input keyevent KEYCODE_WAKEUP; echo WOKE; w=1;; *powerMode=Off*) input keyevent KEYCODE_SLEEP; sleep 0.5; input keyevent KEYCODE_WAKEUP; w=1;; esac',
+	// The panel on, then past the wake's fade in.
+	'if [ -n "$w" ]; then for i in 1 2 3 4 5 6 7 8 9 10; do dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -q powerMode=On && break; sleep 0.2; done; sleep 0.8; fi',
+].join("; ");
 
 function unbase64(text: string): Uint8Array {
 	const bin = atob(text.replace(/\s+/g, ""));
