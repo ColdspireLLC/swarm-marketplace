@@ -434,10 +434,16 @@ export class ADB implements Driver {
 
 	/** Turns the screen on before an action, as a finger would; one the plugin turned on goes off 90 s after its last. */
 	private async wake(m: Machine) {
-		const s = await this.shell(m, "dumpsys power | grep -m1 mWakefulness=", 20).catch(() => "");
+		// Android's word, and the panel's own: with Stay awake on (Developer options), Android 17 turns the
+		// panel off at the screen timeout but still says it's awake, and every screenshot is black.
+		const s = await this.shell(m, "dumpsys power | grep -m1 mWakefulness=; dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -o 'powerMode=[A-Za-z]*'", 20).catch(() => "");
 		if (/Asleep|Dozing/.test(s)) {
 			await this.shell(m, "input keyevent KEYCODE_WAKEUP", 20);
 			this.woke.add(m.id);
+		} else if (/powerMode=Off/.test(s)) {
+			// Awake with the panel off: a wake key does nothing there, so sleep and wake, as the power button twice,
+			// and wait for the panel to draw again, past the wake's fade in.
+			await this.shell(m, "input keyevent KEYCODE_SLEEP; sleep 0.5; input keyevent KEYCODE_WAKEUP; for i in 1 2 3 4 5 6 7 8 9 10; do dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -q 'powerMode=On' && break; sleep 0.2; done; sleep 0.8", 20);
 		}
 		clearTimeout(this.sleepers.get(m.id));
 		this.sleepers.set(m.id, setTimeout(() => void this.sleepAgain(m), 90_000));
