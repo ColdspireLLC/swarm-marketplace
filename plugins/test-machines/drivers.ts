@@ -12,6 +12,7 @@
 //   none: for trying the tools and for its tests.
 import { fs, process, settings } from "swarm";
 import { MAX_ELEMENTS, parseUiAutomator, type Element } from "./elements";
+import { parseTeams } from "./teams";
 import { Screen } from "./png";
 import { runAt, whereOf } from "./where";
 
@@ -396,7 +397,9 @@ export class ADB implements Driver {
 		const found: Machine[] = [];
 		// USB first: a phone on both is one machine, by its cable.
 		const seen = new Set<string>();
-		const devices = parseDevices(r.stdout).sort((a, b) => Number(a.serial.includes(":")) - Number(b.serial.includes(":")));
+		// The phones the user stopped using, by either serial: adb lists every one plugged in.
+		const skipped = new Set(String(settings.get("skipPhones") ?? "").split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean));
+		const devices = parseDevices(r.stdout).filter((d) => !skipped.has(d.serial)).sort((a, b) => Number(a.serial.includes(":")) - Number(b.serial.includes(":")));
 		for (const d of devices) {
 			let hw = this.hardware.get(d.serial);
 			if (!hw) {
@@ -406,7 +409,7 @@ export class ADB implements Driver {
 			}
 			// The setting's name for either serial; else the phone's own serial, the transport's for an emulator.
 			const id = names.get(d.serial) ?? (hw ? names.get(hw) : undefined) ?? (d.serial.includes(":") && hw ? hw : d.serial);
-			if (serials.has(id) || (hw && seen.has(hw))) continue;
+			if (serials.has(id) || (hw && seen.has(hw)) || (hw && skipped.has(hw))) continue;
 			if (hw) seen.add(hw);
 			serials.set(id, d.serial);
 			const model = d.model.replace(/_/g, " ");
@@ -779,6 +782,19 @@ export class WDA implements Driver {
 		return url;
 	}
 
+	/** Whether WebDriverAgent's built on the Mac, for the plugin to start on the phones. */
+	async built(): Promise<boolean> {
+		const r = await runAt(await this.mac(), "sh", ["-c", `ls ${WDA.BUILD}/Build/Products/*.xctestrun >/dev/null 2>&1`], { timeout: 20_000 });
+		return r.code === 0;
+	}
+
+	/** The Apple developer teams the Mac's signing certificates are of: the Team ID WebDriverAgent's signed for, and the team's name. */
+	async teams(): Promise<{ id: string; name: string }[]> {
+		const script = `security find-identity -v -p codesigning | sed -n 's/.*"\\(Apple Development[^"]*\\)".*/\\1/p' | sort -u | while IFS= read -r n; do security find-certificate -c "$n" -p | openssl x509 -noout -subject; done`;
+		const r = await runAt(await this.mac(), "sh", ["-c", script], { timeout: 30_000 });
+		return parseTeams(r.stdout);
+	}
+
 	/** Builds WebDriverAgent on the Mac, signed with the user's team, for the plugin to start on the phones. */
 	async setup(team: string, onLine: (s: string) => void): Promise<string> {
 		if (!/^[A-Z0-9]{10}$/.test(team)) throw new DriverError("Give your Apple developer Team ID (ten letters and digits, in Xcode's Signing & Capabilities or developer.apple.com, Membership).");
@@ -1029,7 +1045,8 @@ export class WDA implements Driver {
 	}
 
 	async frontmost(m: Machine): Promise<App | null> {
-		const v = await this.http(m, "GET", "/wda/activeAppInfo", undefined, 15);
+		// On the Home Screen WebDriverAgent waits out its own 15 s snapshot of SpringBoard (iOS 27) before it answers; an app's answers at once.
+		const v = await this.http(m, "GET", "/wda/activeAppInfo", undefined, 30);
 		const id = String(v?.bundleId ?? "");
 		return id ? { name: String(v?.name ?? id), id } : null;
 	}

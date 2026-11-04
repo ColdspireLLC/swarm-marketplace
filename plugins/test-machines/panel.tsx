@@ -2,6 +2,7 @@
 // who waits, its last screen, and what the user does with it: look, take
 // it for themselves, give it back, end an agent's turn.
 import { ui, type Child, type IconName } from "swarm";
+import { discover, found } from "./discover";
 import type { Machine } from "./drivers";
 import { carried } from "./rules";
 import { claim, keep, learnTitles, message, plainTitle, recording, refresh, shots, st, turnsOf } from "./state";
@@ -150,6 +151,24 @@ function empty(): Child {
 	);
 }
 
+/** The phones plugged in that the plugin doesn't use, from the last look: one link turns them on. */
+function unusedPhones(): Child {
+	const unused = found.phones.filter((f) => !f.id && !f.problem);
+	if (!unused.length) return null;
+	const names = unused.map((f) => f.model);
+	const said = names.length === 1 ? `${names[0]} is plugged in` : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} are plugged in`;
+	return (
+		<ui.box style={{ flexDirection: "row", gap: 10, alignItems: "flex-start", padding: "s4 s5", borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }}>
+			<ui.icon icon="mobile" style={{ width: 16, height: 16, marginTop: 2, color: "text2", flexShrink: 0 }} />
+			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+				<ui.text style={{ fontWeight: 500 }}>{`${said}, not in use`}</ui.text>
+				<ui.text style={{ fontSize: "small", color: "text2" }}>{`On ${[...new Set(unused.map((f) => f.placeLabel))].join(", ")}. Turn ${names.length === 1 ? "it" : "them"} on for agents to test on.`}</ui.text>
+			</ui.box>
+			<ui.link label="Set up" href={SETUP} />
+		</ui.box>
+	);
+}
+
 export function registerPanel() {
 	ui.panel({
 		id: "machines",
@@ -162,11 +181,12 @@ export function registerPanel() {
 						<ui.text style={{ fontWeight: 600 }}>Test machines</ui.text>
 						<ui.spacer />
 						<ui.iconButton icon="settings" label="Set up test machines" href={SETUP} />
-						<ui.iconButton icon="refresh" label="Look for machines again" onClick={async () => { await refresh(); await learnTitles(); }} />
+						<ui.iconButton icon="refresh" label="Look for machines again" onClick={async () => { await refresh(); await learnTitles(); void discover(); }} />
 					</ui.box>
 					{st.driverProblems.map((p, i) => (
 						<ui.text key={"dp" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
 					))}
+					{unusedPhones()}
 					{st.machines.length === 0 ? empty() : (
 						<ui.box style={{ display: "grid", gridTemplateColumns: 1, gap: 10, media: [{ minWidth: 760, style: { gridTemplateColumns: 2 } }] }}>
 							{st.machines.map((m) => card(m, thread))}

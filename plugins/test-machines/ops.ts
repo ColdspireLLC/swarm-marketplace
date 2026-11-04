@@ -2,6 +2,7 @@
 // (tools.ts) and the command line (cli.ts) both call these. thread is
 // whose turn it takes: a thread's id, or USER for the user, who comes
 // first and waits in no line.
+import { discover, found, unusedLine } from "./discover";
 import { call, fs } from "swarm";
 import { DriverError, elementLines, type Check, type Machine, type Shot } from "./drivers";
 import { carried, carriedRefusal, isTestApp, refusedApp, sensitive } from "./rules";
@@ -85,6 +86,12 @@ export async function status(machine?: string, live?: boolean): Promise<Out> {
 		lines.push(line);
 	}
 	if (st.driverProblems.length) lines.push(...st.driverProblems.map((p) => `(${p})`));
+	// Phones plugged in and unused, from the last look: status never waits for a new one.
+	if (!machine) {
+		if (Date.now() - found.at > 5 * 60_000 && !found.busy) void discover().catch(() => {});
+		const unused = unusedLine();
+		if (unused) lines.push(unused);
+	}
 	return { text: lines.join("\n\n") || "No machines yet: the user adds them in Settings, Plugins, Test machines." };
 }
 

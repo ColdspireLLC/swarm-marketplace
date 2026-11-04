@@ -2,7 +2,7 @@
   "$schema": "./plugin.schema.json",
   "id": "test-machines",
   "name": "Test machines",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "The shared test machines for the agents: a queue each machine, screenshots, input, commands, apps, files and recordings, through bb's test-machines, ssh, adb, WebDriverAgent, or a demo machine.",
   "icon": "icon.svg",
   "main": "main.tsx",
@@ -97,6 +97,14 @@
       "placeholder": "pixel:5A150DLCH003YS, emu:emulator-5554",
       "description": "id:serial, comma-separated: the id agents call a phone by. Unnamed ones go by their serial.",
       "hidden": true
+    },
+    {
+      "key": "skipPhones",
+      "title": "Phones not used",
+      "type": "text",
+      "default": "",
+      "hidden": true,
+      "description": "Serials of the Android phones the plugin leaves out, though adb lists them: those you stopped using on the Settings page."
     },
     {
       "key": "iphones",

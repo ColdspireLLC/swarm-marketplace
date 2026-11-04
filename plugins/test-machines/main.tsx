@@ -8,6 +8,7 @@
 // Settings page (settingsPage.tsx) sets them up.
 import { hook, on, settings, ui } from "swarm";
 import { registerCli } from "./cli";
+import { discover } from "./discover";
 import { turnEnded } from "./ops";
 import { PAGE, registerPanel } from "./panel";
 import { settingsPage } from "./settingsPage";
@@ -29,4 +30,6 @@ export function activate() {
 	settings.onChange(() => void refresh());
 	void refresh();
 	void learnTitles();
+	// The phones plugged in, for the panel to say when one's unused.
+	void discover().catch(() => {});
 }

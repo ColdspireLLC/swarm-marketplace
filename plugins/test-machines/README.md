@@ -121,10 +121,15 @@ skill they load.
 ## Settings
 
 Its own page of Settings, under Plugins (also from the gear in the
-Machines panel): the machines it found, then Computers (Swarm's
+Machines panel): the machines it found; Phones, those plugged into this
+computer or one joined to Swarm (through adb and devicectl there), each
+turned on with *Use for testing* or *It's my phone*, and an iPhone's
+WebDriverAgent built with one button, signed for the team of the Mac's
+Apple Development certificate; then Computers (Swarm's
 machines, this computer, over ssh),
-Android (adb, where the phones are plugged in, their names), iPhone
-(WebDriverAgent's addresses, the Mac for installs), Other machines (bb's,
+Android and iPhone by hand (adb's host and the phones' names,
+WebDriverAgent's addresses and the Mac, for what Phones doesn't find:
+ssh, wireless, a WebDriverAgent you run), Other machines (bb's,
 the demo machine), and What agents stay out of (phones you carry, your
 test builds, more apps).
 
@@ -151,7 +156,10 @@ from your terminal at once (you wait in no line):
 | `adb PHONE -- ARGS` | adb on an Android phone, in the turn, held to the apps agents may use: that phone's commands alone (shell, install, push, pull, logcat…), no `-s`. |
 | `connect HOST:PORT [--pair HOST:PORT --code CODE]` | An Android phone over wireless debugging, paired first where given. |
 | `doctor [--json]` | Everything the turned-on machines need, checked (also *Check everything* on the Settings page). |
-| `setup-iphone [--team ID]` | Yours: build WebDriverAgent on the Mac the iPhones are plugged into. |
+| `discover [--json]` | The phones plugged into this computer and those joined to Swarm, used or not (status names the unused ones too). |
+| `use PHONE [--carried]` | Yours: turn on a phone discover found. |
+| `stop-using PHONE` | Yours: stop testing on a phone. |
+| `setup-iphone [--team ID]` | Yours: build WebDriverAgent on the Mac the iPhones are plugged into, for the team of its certificate when none is given. |
 | `carry PHONE [--off]` | Yours: the phone you carry. |
 | `test-apps [ID…] [--clear]` | Your test builds (anyone lists them; you set them). |
 | `offlimits [APP…] [--clear]` | Apps agents stay out of, besides the built-in kinds. |
