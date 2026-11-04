@@ -7,7 +7,7 @@
 // for its narrow column; Settings keeps how the machines are reached.
 import { ui, type Child, type Color } from "swarm";
 import { discover, found, type Found } from "./discover";
-import type { Machine } from "./drivers";
+import { viewing, VIEWING_MS, type Machine } from "./drivers";
 import { ago, isPhone, KIND_ICON, line, look, lookIfStale, looking, SETUP, watch, watching } from "./panel";
 import { carried } from "./rules";
 import { phoneRow } from "./settingsPage";
@@ -15,6 +15,11 @@ import { claim, doing, learnTitles, plainTitle, recording, refresh, shots, st, t
 import { USER } from "./turns";
 
 export const NAV = "test-machines";
+
+/** The user opened a machine's live view: a phone's screen isn't turned off under them for a while. */
+export function watchingLive(m: Machine) {
+	viewing.set(m.id, Date.now() + VIEWING_MS);
+}
 
 /** A tile's width: a phone's narrow, a computer's wide; its screen at its own proportions under that. */
 const PHONE_W = 172;
@@ -112,9 +117,9 @@ export function tile(m: Machine, thread = ""): Child {
 				<ui.box style={{ flexDirection: "row", gap: 2, alignItems: "center" }}>
 					{m.screen && !carry ? (
 						phone ? (
-							<ui.iconButton icon="monitor" label={`Live view: ${m.name}'s screen in Swarm, live. An agent on it keeps its turn.`} href={m.screen} />
+							<ui.iconButton icon="monitor" label={`Live view: ${m.name}'s screen in Swarm, live. An agent on it keeps its turn.`} href={m.screen} onClick={() => watchingLive(m)} />
 						) : (
-							<ui.button size="sm" kind="soft" icon="monitor" href={m.screen} tooltip={`${m.name}'s screen in Swarm, live. An agent on it keeps its turn: take it to use it.`}>
+							<ui.button size="sm" kind="soft" icon="monitor" href={m.screen} onClick={() => watchingLive(m)} tooltip={`${m.name}'s screen in Swarm, live. An agent on it keeps its turn: take it to use it.`}>
 								Live view
 							</ui.button>
 						)

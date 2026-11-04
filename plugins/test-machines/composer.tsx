@@ -5,6 +5,7 @@
 // Watch, where it has none) and End turn.
 import { ui, type Child, type Color } from "swarm";
 import { ago, KIND_ICON, line, look, watch, watching } from "./panel";
+import { watchingLive } from "./machinesPage";
 import { plainTitle, shots, turnsOf, usesOf, type Use } from "./state";
 import { USER } from "./turns";
 
@@ -81,7 +82,7 @@ function detail(u: Use, thread: string): Child {
 				<ui.text style={{ fontSize: "small", color: "text2" }}>{[...s.meta, k ? `screen ${ago(k.at)}` : ""].filter(Boolean).join(" · ")}</ui.text>
 				<ui.box style={{ flexDirection: "row", gap: 6, paddingTop: 4, flexWrap: "wrap" }}>
 					{u.m.screen ? (
-						<ui.button size="sm" kind="ghost" icon="monitor" href={u.m.screen}>Live view</ui.button>
+						<ui.button size="sm" kind="ghost" icon="monitor" href={u.m.screen} onClick={() => watchingLive(u.m)}>Live view</ui.button>
 					) : (
 						<ui.button size="sm" kind="ghost" icon={watching.has(u.m.id) ? "pause" : "play"} onClick={() => watch(u.m, !watching.has(u.m.id))}>{watching.has(u.m.id) ? "Stop watching" : "Watch"}</ui.button>
 					)}

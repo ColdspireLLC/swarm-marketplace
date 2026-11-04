@@ -58,11 +58,14 @@ The machines come from six drivers, each turned on in the settings:
   plugged into*: one joined to Swarm, which WebDriverAgent is asked from
   too, or over ssh; and `@UDID` after its address). iOS has
   no shell: no commands or files. While a phone sleeps, WebDriverAgent
-  answers slowly (10–15 s a call). The plugin doesn't lock an iPhone when
-  it's unused (WebDriverAgent's lock times out on iOS 27), but unlocks one
-  its Auto-Lock locked before its next action there, where it has no
-  passcode. Auto-Lock fires after your own touches; after WebDriverAgent's,
-  iOS keeps the screen on.
+  answers slowly (10–15 s a call). An iPhone nobody's used for a minute is
+  rested as bb's test-machines does: the lock button, then the screen
+  going dark is what counts; WebDriverAgent stops 10 min later unless it's
+  used again, so "Automation Running" goes. The next action wakes it (Home,
+  and the lock screen swiped away, where there's no passcode). On iOS 27.2
+  the lock button leaves the screen on: status says so. A phone's screen
+  isn't turned off for 20 min after you open its Live view, nor while an
+  Android phone's live view shows it.
 - **demo**: a screen in memory and this machine's shell, for trying the
   tools without a machine.
 

@@ -38,6 +38,11 @@ export const phoneModels = new Map<string, string>();
 /** Whether the user has a machine now (set by state.ts): a phone the user took isn't turned off under them. */
 export const userHas = { now: (_id: string) => false };
 
+/** Phones the user opened the live view of, and until when: their screens aren't turned off under the user meanwhile. */
+export const viewing = new Map<string, number>();
+/** How long a Live view click keeps a phone's screen on: the plugin can't tell when the live view closes. */
+export const VIEWING_MS = 20 * 60_000;
+
 /** A phone's screen goes off this long after the plugin's last action there, and sooner once its turn's let go. */
 export const REST_MS = 60_000;
 const RELEASED_REST_MS = 10_000;
@@ -56,7 +61,11 @@ class Rester {
 			m.id,
 			setTimeout(() => {
 				this.timers.delete(m.id);
-				if (!userHas.now(m.id)) void this.rest(m).catch(() => {});
+				if (userHas.now(m.id)) return;
+				// Watched live: looked at again once that's over.
+				const until = viewing.get(m.id) ?? 0;
+				if (until > Date.now()) return this.touch(m, until - Date.now() + 1000);
+				void this.rest(m).catch(() => {});
 			}, ms),
 		);
 	}
@@ -461,7 +470,8 @@ export class ADB implements Driver {
 	}
 
 	/** Its screen off once the plugin's done with it, whoever turned it on: a phone's isn't left on unused. */
-	private rester = new Rester((m) => this.shell(m, "input keyevent KEYCODE_SLEEP", 20));
+	// Not while Swarm's live view (scrcpy) shows it: its display is there while it does.
+	private rester = new Rester((m) => this.shell(m, "dumpsys display 2>/dev/null | grep -q 'scrcpy' || input keyevent KEYCODE_SLEEP", 20));
 
 	/** Turns the screen on before an action, as a finger would (WAKE_SH). */
 	private async wake(m: Machine) {
@@ -911,7 +921,8 @@ export class WDA implements Driver {
 		const v = await this.http(m, "GET", "/status", undefined, 15);
 		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => undefined);
 		const os = v?.os ? `iOS ${v.os.version ?? ""}`.trim() : "iOS";
-		return `wda: ${v?.ready === false ? "not ready" : "ready"}, ${os}${locked === true ? ", locked" : ""}`;
+		const rest = this.restSaid.get(m.id);
+		return `wda: ${v?.ready === false ? "not ready" : "ready"}, ${os}${locked === true ? ", locked" : ""}${rest ? `; ${rest}` : ""}`;
 	}
 
 	/**
@@ -921,8 +932,78 @@ export class WDA implements Driver {
 	 * WebDriverAgent's, iOS keeps the screen on.
 	 */
 	private async awake(m: Machine) {
+		this.rester.touch(m);
+		clearTimeout(this.stopTimers.get(m.id));
 		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => false);
-		if (locked === true) await this.http(m, "POST", "/wda/unlock", undefined, 30).catch(() => {});
+		const rested = this.rested.delete(m.id);
+		if (locked !== true && !rested) return;
+		// Home wakes a dark screen (to the lock screen); unlock swipes the lock screen away, where there's no passcode.
+		if (locked !== true) await this.http(m, "POST", "/wda/homescreen", undefined, 15).catch(() => {});
+		if (locked === true || (await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => false)) === true) await this.http(m, "POST", "/wda/unlock", undefined, 30).catch(() => {});
+	}
+
+	/** The iPhones the plugin put to rest (their dark screen its doing), and the timers that stop WebDriverAgent after. */
+	private rested = new Set<string>();
+	private stopTimers = new Map<string, number>();
+	/** What the last rest did, for status. */
+	private restSaid = new Map<string, string>();
+	private rester = new Rester((m) => this.rest(m));
+
+	/** Whether a screenshot is all but black (the screen off): a dark screen's PNG is a hundredth of a byte a pixel, a lit one's most of one. */
+	private static dark(d: Uint8Array): boolean {
+		if (d.length < 24 || d[0] !== 0x89) return false;
+		const w = ((d[16]! << 24) | (d[17]! << 16) | (d[18]! << 8) | d[19]!) >>> 0;
+		const h = ((d[20]! << 24) | (d[21]! << 16) | (d[22]! << 8) | d[23]!) >>> 0;
+		return w > 0 && h > 0 && d.length / (w * h) < 0.05;
+	}
+
+	private async shot(m: Machine): Promise<Uint8Array> {
+		return unbase64(String((await this.http(m, "GET", "/screenshot", undefined, 60)) ?? ""));
+	}
+
+	/**
+	 * Rests an iPhone nobody's using, as bb's test-machines does: the lock
+	 * button, where it's lit and not locked, and the screen going dark is
+	 * what counts (WebDriverAgent times out waiting for "locked" while an app
+	 * uses the microphone); then WebDriverAgent stops 10 min later unless it's
+	 * used again, so iOS's "Automation Running" goes. One that can't be locked
+	 * stays on, and status says so. Never one whose WebDriverAgent the user runs.
+	 */
+	private async rest(m: Machine) {
+		if (this.phone(m).url) return;
+		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => null);
+		if (locked !== true && !WDA.dark(await this.shot(m))) {
+			await this.http(m, "POST", "/wda/lock", {}, 20).catch(() => {});
+			await new Promise((r) => setTimeout(r, 1000));
+			const off = WDA.dark(await this.shot(m));
+			this.restSaid.set(m.id, off ? "" : "couldn't turn its screen off when unused: the lock button didn't (iOS 27.2's WebDriverAgent)");
+			if (!off) return this.stopLater(m);
+		}
+		this.restSaid.set(m.id, "");
+		this.rested.add(m.id);
+		this.stopLater(m);
+	}
+
+	/** WebDriverAgent stops 10 min after a rest unless it's used again: iOS keeps an automated phone awake. */
+	private stopLater(m: Machine) {
+		clearTimeout(this.stopTimers.get(m.id));
+		this.stopTimers.set(
+			m.id,
+			setTimeout(() => {
+				this.stopTimers.delete(m.id);
+				if (userHas.now(m.id) || (viewing.get(m.id) ?? 0) > Date.now()) return;
+				void this.stopWda(m).catch(() => {});
+			}, 10 * 60_000),
+		);
+	}
+
+	/** Ends the plugin's WebDriverAgent on a phone, gently, so its automation session closes; the next action starts it again. */
+	private async stopWda(m: Machine) {
+		const p = this.phone(m);
+		if (p.url || !p.udid) return;
+		await runAt(await this.mac(), "sh", ["-c", 'pkill -INT -f "test-without-building.*id=$1"; true', "sh", p.udid], { timeout: 20_000 });
+		this.urls.delete(m.id);
+		this.sessions.delete(m.id);
 	}
 
 	async capture(m: Machine): Promise<Shot> {
@@ -1053,9 +1134,9 @@ export class WDA implements Driver {
 		throw new DriverError(`${m.name}'s power: status, or off to lock it. Unlocking is the user's.`);
 	}
 
-	// An iPhone isn't locked when it's unused: its passcode would keep agents out until the user unlocked it,
-	// and WebDriverAgent's lock times out on iOS 27 anyway. iOS's own Auto-Lock is the user's.
-	async released() {}
+	async released(m: Machine) {
+		this.rester.soon(m);
+	}
 
 	async describe(m: Machine): Promise<Element[]> {
 		await this.awake(m);
