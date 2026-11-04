@@ -107,11 +107,12 @@ export function registerComposer() {
 			const live = u.state === "using" || !!u.recording;
 			return (
 				<ui.box label={s.label} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+					{/* Swarm draws the row's laptop-mobile icon before it: a machine's own would say it twice. */}
 					{live ? (
 						<ui.box style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: s.tone, flexShrink: 0, animation: { name: "pulse" } }} />
-					) : (
-						<ui.icon icon={u.state === "waiting" ? "clock" : KIND_ICON[u.m.kind] ?? "computer"} style={{ width: 13, height: 13, color: "text3", flexShrink: 0 }} />
-					)}
+					) : u.state === "waiting" ? (
+						<ui.icon icon="clock" style={{ width: 13, height: 13, color: "text3", flexShrink: 0 }} />
+					) : null}
 					<ui.text style={{ fontWeight: 500, color: s.tone, flexShrink: 0 }}>{s.verb}</ui.text>
 					<ui.text style={{ fontWeight: 500, flexShrink: 0 }}>{u.m.name}</ui.text>
 					{s.meta.length ? <ui.text style={{ ...line, color: "text2" }}>{s.meta.join(" · ")}</ui.text> : null}
