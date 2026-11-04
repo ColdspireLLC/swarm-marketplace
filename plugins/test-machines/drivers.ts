@@ -914,7 +914,19 @@ export class WDA implements Driver {
 		return `wda: ${v?.ready === false ? "not ready" : "ready"}, ${os}${locked === true ? ", locked" : ""}`;
 	}
 
+	/**
+	 * Unlocks an iPhone its Auto-Lock locked, before an action there, as a
+	 * swipe up would (one with no passcode: with one, it stays locked and the
+	 * action says so). Auto-Lock fires after the user's own touches; after
+	 * WebDriverAgent's, iOS keeps the screen on.
+	 */
+	private async awake(m: Machine) {
+		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => false);
+		if (locked === true) await this.http(m, "POST", "/wda/unlock", undefined, 30).catch(() => {});
+	}
+
 	async capture(m: Machine): Promise<Shot> {
+		await this.awake(m);
 		const b64 = await this.http(m, "GET", "/screenshot", undefined, 60);
 		const data = unbase64(String(b64 ?? ""));
 		if (data.length < 8) throw new DriverError(`the screenshot of ${m.name} came back empty.`);
@@ -943,6 +955,7 @@ export class WDA implements Driver {
 	}
 
 	async drive(m: Machine, steps: string[]): Promise<string> {
+		await this.awake(m);
 		const k = await this.scale(m);
 		const pt = (v: number) => Math.round((v / k) * 10) / 10;
 		for (const step of steps) {
@@ -1000,6 +1013,7 @@ export class WDA implements Driver {
 	}
 
 	async app(m: Machine, action: string, target: string): Promise<string> {
+		if (action === "launch" || action === "focus") await this.awake(m);
 		const id = target.trim();
 		switch (action) {
 			case "launch":
@@ -1044,6 +1058,7 @@ export class WDA implements Driver {
 	async released() {}
 
 	async describe(m: Machine): Promise<Element[]> {
+		await this.awake(m);
 		const k = await this.scale(m);
 		const tree = await this.http(m, "GET", "/source?format=json", undefined, 90);
 		const out: Element[] = [];
