@@ -37,5 +37,6 @@ export function activate() {
 	void refresh();
 	void learnTitles();
 	// The phones plugged in, for the panel to say when one's unused.
-	void discover().catch(() => {});
+	// and their models, which name an iPhone (refreshed once known).
+	void discover().then(() => refresh()).catch(() => {});
 }

@@ -32,6 +32,9 @@ export interface Machine {
 	screen?: string;
 }
 
+/** Phones' models by serial or UDID, as discover finds them: an iPhone's name, where its setting gives only an id. */
+export const phoneModels = new Map<string, string>();
+
 /** Whether the user has a machine now (set by state.ts): a phone the user took isn't turned off under them. */
 export const userHas = { now: (_id: string) => false };
 
@@ -852,20 +855,7 @@ export class WDA implements Driver {
 		return p;
 	}
 
-	/** The iPhones the plugin locked once it was done with them, which it unlocks before its next action there. */
-	private lockedByUs = new Set<string>();
-	private rester = new Rester(async (m) => {
-		await this.http(m, "POST", "/wda/lock", undefined, 20);
-		this.lockedByUs.add(m.id);
-	});
-
 	private async http(m: Machine, method: "GET" | "POST" | "DELETE", path: string, body?: unknown, timeoutS = 60): Promise<any> {
-		if (!/^\/(status|wda\/(lock|unlock|locked))$/.test(path)) {
-			this.rester.touch(m);
-			// Locked by the plugin when it was done: unlocked again, where the phone has no passcode. One that asks
-			// for its passcode stays locked, and the next call says so: unlocking it is the user's.
-			if (this.lockedByUs.delete(m.id)) await this.http(m, "POST", "/wda/unlock", undefined, 20).catch(() => {});
-		}
 		const args = ["-sS", "-g", "--max-time", String(timeoutS), "-X", method, "-H", "Content-Type: application/json"];
 		if (body !== undefined) args.push("--data-binary", "@-");
 		args.push((await this.url(m)) + path);
@@ -914,7 +904,7 @@ export class WDA implements Driver {
 		const host = String(settings.get("iosHost") ?? "").trim();
 		const w = host || process.platform === "darwin" ? await whereOf(host) : undefined;
 		const screenOf = (udid?: string) => (udid && w && !w.ssh ? `swarm://screen/${encodeURIComponent(w.machine ?? "server")}?iphone=${encodeURIComponent(udid)}` : undefined);
-		return [...this.phones()].map(([id, p]) => ({ id, name: id, kind: "ios" as Kind, about: p.url ? `iOS, through WebDriverAgent at ${p.url}${p.udid ? ` (${p.udid})` : ""}.` : `iOS (${p.udid}), WebDriverAgent run by the plugin on the Mac it's plugged into.`, driver: this, screen: screenOf(p.udid) }));
+		return [...this.phones()].map(([id, p]) => ({ id, name: phoneModels.get(p.udid.toUpperCase()) ?? id, kind: "ios" as Kind, about: p.url ? `iOS, through WebDriverAgent at ${p.url}${p.udid ? ` (${p.udid})` : ""}.` : `iOS (${p.udid}), WebDriverAgent run by the plugin on the Mac it's plugged into.`, driver: this, screen: screenOf(p.udid) }));
 	}
 
 	async status(m: Machine): Promise<string> {
@@ -1049,9 +1039,9 @@ export class WDA implements Driver {
 		throw new DriverError(`${m.name}'s power: status, or off to lock it. Unlocking is the user's.`);
 	}
 
-	async released(m: Machine) {
-		this.rester.soon(m);
-	}
+	// An iPhone isn't locked when it's unused: its passcode would keep agents out until the user unlocked it,
+	// and WebDriverAgent's lock times out on iOS 27 anyway. iOS's own Auto-Lock is the user's.
+	async released() {}
 
 	async describe(m: Machine): Promise<Element[]> {
 		const k = await this.scale(m);

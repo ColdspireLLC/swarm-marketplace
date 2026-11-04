@@ -73,19 +73,18 @@ test("the Machines panel shows a screen, and the user takes the machine", async 
 	const w = await t.window();
 	await w.panel(th, "machines");
 	await w.see("Demo machine");
-	await w.see("Free: the next agent to use it gets it at once.");
-	// Its screen shows without a click: a card with none looks by itself.
+	await w.see("The next agent gets it at once");
+	// Its screen shows without a click: a tile with none looks by itself.
 	await w.see("Screenshot of Demo machine");
-	await w.see("just now · by you");
 	// The picture, as the window has it once it comes.
 	await w.screenshot("test-machines-panel", { delay: 500 });
 	// The user takes it from the panel, and gives it back.
-	await w.click("Use it myself");
-	await w.see("You have it since just now. Agents wait until you give it back.");
+	await w.click("Use Demo machine myself: the agent on it is cut off, the rest wait");
+	await w.see("Agents wait until you give it back");
 	expect((await t.run("status")).stdout).toContain("the user's turn");
 	await w.screenshot("test-machines-panel-yours");
-	await w.click("Give it back");
-	await w.see("Free: the next agent to use it gets it at once.");
+	await w.click("Give Demo machine back");
+	await w.see("The next agent gets it at once");
 });
 
 test("the user takes a machine: the agent on it is cut off, the rest wait until they give it back", async (t) => {

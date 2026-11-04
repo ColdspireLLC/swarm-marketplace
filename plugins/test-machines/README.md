@@ -58,10 +58,9 @@ The machines come from six drivers, each turned on in the settings:
   plugged into*: one joined to Swarm, which WebDriverAgent is asked from
   too, or over ssh; and `@UDID` after its address). iOS has
   no shell: no commands or files. While a phone sleeps, WebDriverAgent
-  answers slowly (10–15 s a call). The plugin locks an iPhone once it's done
-  with it (as an Android phone's screen goes off, below), and unlocks it
-  before its next action there: one with a passcode stays locked, for you
-  to unlock.
+  answers slowly (10–15 s a call). The plugin doesn't lock an iPhone when
+  it's unused: with a passcode, agents couldn't get back in, and
+  WebDriverAgent's lock times out on iOS 27. Its own Auto-Lock is yours.
 - **demo**: a screen in memory and this machine's shell, for trying the
   tools without a machine.
 

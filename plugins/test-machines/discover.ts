@@ -5,7 +5,7 @@
 // it in status and `discover`: so a phone isn't left out for want of the
 // settings' formats.
 import { settings, ui } from "swarm";
-import { parseDevices } from "./drivers";
+import { parseDevices, phoneModels } from "./drivers";
 import { joinedMachines, runAt, whereOf, type Where } from "./where";
 
 export interface Found {
@@ -146,6 +146,7 @@ export async function discover(): Promise<Found[]> {
 			}),
 		);
 		await markUsed(phones);
+		for (const f of phones) phoneModels.set(f.serial.toUpperCase(), f.model);
 	} catch (e) {
 		problems.push(e instanceof Error ? e.message : String(e));
 	}

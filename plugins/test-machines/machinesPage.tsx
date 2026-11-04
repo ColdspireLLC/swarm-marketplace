@@ -39,7 +39,7 @@ function counts() {
 }
 
 /** Who has a machine, as a tile says it: a dot's colour, a line, and what's under it. */
-function standing(m: Machine): { dot: Color; said: string; more: string } {
+function standing(m: Machine, thread: string): { dot: Color; said: string; more: string } {
 	const t = turnsOf(m);
 	const h = t.holder;
 	const waiting = t.waiting.filter((w) => !w.kept).length;
@@ -50,7 +50,7 @@ function standing(m: Machine): { dot: Color; said: string; more: string } {
 		const ops = (doing.get(m.id) ?? []).filter((o) => o.thread === h.thread);
 		const rec = recording.get(m.id)?.thread === h.thread;
 		const what = rec ? "recording" : ops.length ? ops.map((o) => o.label).join(", ") : h.note || `holding it since ${ago(h.since)}`;
-		return { dot: "amber", said: plainTitle(h.thread), more: `${what}${queue}` };
+		return { dot: h.thread === thread ? "accent" : "amber", said: h.thread === thread ? "This thread" : plainTitle(h.thread), more: `${what}${queue}` };
 	}
 	return { dot: "green", said: "Free", more: "The next agent gets it at once" };
 }
@@ -82,19 +82,19 @@ function screenOf(m: Machine, width: number): Child {
 	);
 }
 
-/** One machine: its screen, its name and who has it, and what the user does there. */
-function tile(m: Machine): Child {
+/** One machine: its screen, its name and who has it, and what the user does there; thread, the panel's beside it ("" on the page). */
+export function tile(m: Machine, thread = ""): Child {
 	const t = turnsOf(m);
 	const h = t.holder;
 	const yours = h?.thread === USER;
 	const carry = carried(m.id);
 	const phone = isPhone(m);
 	const width = phone ? PHONE_W : COMPUTER_W;
-	const s = standing(m);
+	const s = standing(m, thread);
 	const busy = looking.has(m.id) && !looking.get(m.id);
 	const problem = looking.get(m.id);
 	return (
-		<ui.box key={m.id} label={m.name} style={{ width, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", overflow: "hidden" }}>
+		<ui.box key={m.id} label={m.name} style={{ width, maxWidth: "100%", borderRadius: "card", backgroundColor: "raised", border: "1px solid border", overflow: "hidden" }}>
 			{screenOf(m, width)}
 			<ui.box style={{ padding: "s4 s5 s5", gap: 8 }}>
 				<ui.box style={{ gap: 2 }}>
@@ -122,7 +122,7 @@ function tile(m: Machine): Child {
 					<ui.spacer />
 					{!carry ? <ui.iconButton icon="refresh" label={`Look at ${m.name} now`} busy={busy} disabled={busy} onClick={() => void look(m)} /> : null}
 					{!carry && !m.screen ? <ui.iconButton icon={watching.has(m.id) ? "pause" : "play"} label={watching.has(m.id) ? `Stop watching ${m.name}` : `Watch ${m.name}: a screenshot every few seconds`} onClick={() => watch(m, !watching.has(m.id))} /> : null}
-					{h && !yours ? <ui.iconButton icon="stop" label={`End ${plainTitle(h.thread)}'s turn on ${m.name}`} onClick={() => void t.release(h.thread)} /> : null}
+					{h && !yours ? <ui.iconButton icon="stop" label={h.thread === thread ? `Release ${m.name}` : `End ${plainTitle(h.thread)}'s turn on ${m.name}`} onClick={() => void t.release(h.thread)} /> : null}
 					{yours ? <ui.iconButton icon="check" label={`Give ${m.name} back`} onClick={() => void claim(m, false)} /> : <ui.iconButton icon="hand" label={`Use ${m.name} myself: the agent on it is cut off, the rest wait`} onClick={() => void claim(m, true)} />}
 				</ui.box>
 			</ui.box>
@@ -131,7 +131,7 @@ function tile(m: Machine): Child {
 }
 
 /** A section: its heading and how many, then its tiles, wrapping. */
-function section(title: string, count: number, children: Child): Child {
+export function section(title: string, count: number, children: Child): Child {
 	return (
 		<ui.box style={{ gap: 10 }}>
 			<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "baseline", paddingLeft: 2 }}>
@@ -144,7 +144,7 @@ function section(title: string, count: number, children: Child): Child {
 }
 
 /** Phones plugged in and not used yet, under the phones: each turned on from here. */
-function unusedPhones(unused: Found[]): Child {
+export function unusedPhones(unused: Found[]): Child {
 	if (!unused.length) return null;
 	return (
 		<ui.box style={{ padding: "s5 s6", gap: 14, borderRadius: "card", border: "1px dashed borderStrong", maxWidth: 720 }}>
@@ -188,11 +188,11 @@ function body(): Child {
 				))}
 				{phones.length || unused.length ? (
 					<ui.box style={{ gap: 12 }}>
-						{section("Phones", phones.length, phones.map(tile))}
+						{section("Phones", phones.length, phones.map((m) => tile(m)))}
 						{unusedPhones(unused)}
 					</ui.box>
 				) : null}
-				{computers.length ? section("Computers", computers.length, computers.map(tile)) : null}
+				{computers.length ? section("Computers", computers.length, computers.map((m) => tile(m))) : null}
 			</ui.box>
 		</ui.scroll>
 	);

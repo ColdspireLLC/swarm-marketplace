@@ -91,27 +91,3 @@ export function base64(bytes: Uint8Array): string {
 	}
 	return s;
 }
-
-/** A PNG's or a JPEG's size, from its header: for keeping its place while the next one loads. */
-export function imageSize(d: Uint8Array): { width: number; height: number } | null {
-	const u32 = (o: number) => ((d[o]! << 24) | (d[o + 1]! << 16) | (d[o + 2]! << 8) | d[o + 3]!) >>> 0;
-	const u16 = (o: number) => (d[o]! << 8) | d[o + 1]!;
-	// PNG: the signature, then IHDR's width and height.
-	if (d.length >= 24 && d[0] === 0x89 && d[1] === 0x50 && d[2] === 0x4e && d[3] === 0x47) return { width: u32(16), height: u32(20) };
-	// JPEG: the segments to the first start of frame (SOF0–SOF15 but DHT, JPG and DAC).
-	if (d.length >= 4 && d[0] === 0xff && d[1] === 0xd8) {
-		let o = 2;
-		while (o + 9 < d.length) {
-			if (d[o] !== 0xff) return null;
-			const marker = d[o + 1]!;
-			if (marker === 0xff) {
-				o++;
-				continue;
-			}
-			const len = u16(o + 2);
-			if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return { width: u16(o + 7), height: u16(o + 5) };
-			o += 2 + len;
-		}
-	}
-	return null;
-}
