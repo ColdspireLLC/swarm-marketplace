@@ -6,6 +6,7 @@ import { discover, found } from "./discover";
 import type { Machine } from "./drivers";
 import { carried } from "./rules";
 import { claim, keep, learnTitles, message, plainTitle, recording, refresh, shots, st, turnsOf } from "./state";
+import { imageSize } from "./png";
 import { USER } from "./turns";
 
 export const PAGE = "test-machines";
@@ -53,6 +54,28 @@ export async function look(m: Machine) {
 	} catch (e) {
 		looking.set(m.id, message(e));
 	}
+}
+
+/** The tallest a card's screen is drawn. */
+const SHOT_MAX = 360;
+
+/** A screenshot's size, read once per picture. */
+const sizes = new WeakMap<Uint8Array, { width: number; height: number } | null>();
+function shotSize(d: Uint8Array) {
+	if (!sizes.has(d)) sizes.set(d, imageSize(d));
+	return sizes.get(d)!;
+}
+
+/**
+ * The screen's box, at the screenshot's own proportions and at most
+ * SHOT_MAX tall: it keeps its size while the next screenshot loads,
+ * rather than folding to nothing for a frame and the card under it
+ * jumping.
+ */
+function shotBox(d: Uint8Array) {
+	const sz = shotSize(d);
+	if (!sz || !sz.width || !sz.height) return {};
+	return { width: Math.round(Math.min(SHOT_MAX * (sz.width / sz.height), 2000)), aspectRatio: `${sz.width} / ${sz.height}` as const };
 }
 
 /** When each machine was last looked at by itself, for a card shown with no screen, or an old one. */
@@ -116,8 +139,8 @@ export function card(m: Machine, thread: string): Child {
 				<ui.tag tone={tag[1]} style={{ flexShrink: 0 }}>{tag[0]}</ui.tag>
 			</ui.box>
 			{k && !carry ? (
-				<ui.box style={{ borderRadius: "control", overflow: "hidden", border: "1px solid border", position: "relative", alignSelf: "flex-start", maxWidth: "100%" }}>
-					<ui.image src={k.data} alt={`Screenshot of ${m.name}`} style={{ maxWidth: "100%", maxHeight: 360 }} />
+				<ui.box style={{ borderRadius: "control", overflow: "hidden", border: "1px solid border", position: "relative", alignSelf: "flex-start", maxWidth: "100%", ...shotBox(k.data) }}>
+					<ui.image src={k.data} alt={`Screenshot of ${m.name}`} style={shotSize(k.data) ? { width: "100%", height: "100%" } : { maxWidth: "100%", maxHeight: SHOT_MAX }} />
 					<ui.box style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "s3 s4", background: "linear-gradient(to top, rgba(0,0,0,0.55), transparent)" }}>
 						<ui.text style={{ color: "white", fontSize: "small", ...line }}>{watching.has(m.id) ? "Live · every few seconds" : `${ago(k.at)} · ${k.by === USER ? "by you" : plainTitle(k.by)}`}</ui.text>
 					</ui.box>
