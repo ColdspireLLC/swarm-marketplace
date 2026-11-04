@@ -160,11 +160,6 @@ export async function discover(): Promise<Found[]> {
 	return phones;
 }
 
-/** The last look, or a new one when it's older than maxAgeMs. */
-export async function phonesFound(maxAgeMs = 60_000): Promise<Found[]> {
-	return Date.now() - found.at < maxAgeMs ? found.phones : discover();
-}
-
 /** An id for a phone that no machine has yet: its model's, as "pixel-10-pro". */
 function freshId(f: Found, taken: Set<string>) {
 	const base = slug(f.model) || (f.kind === "ios" ? "iphone" : "android");

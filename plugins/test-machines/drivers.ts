@@ -962,6 +962,26 @@ export class WDA implements Driver {
 	}
 
 	/**
+	 * Turns an iPhone's screen off with the lock button, unless it's dark
+	 * already (pressed then, it would wake). The screen going dark is what
+	 * counts: WebDriverAgent waits 5 s for "locked" and gives up, and the
+	 * screen can stay lit a few seconds more. False when it stayed on (and
+	 * whatever the press opened, Siri, swiped away).
+	 */
+	private async lockScreen(m: Machine): Promise<boolean> {
+		if ((await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => null)) === true || WDA.dark(await this.shot(m))) return true;
+		await this.http(m, "POST", "/wda/lock", {}, 20).catch(() => {});
+		for (let i = 0; i < 8; i++) {
+			if (WDA.dark(await this.shot(m))) return true;
+			await new Promise((r) => setTimeout(r, 1000));
+		}
+		// Lit still: iOS can take the press as a long one and open Siri, listening. Swiped away, so it's never left open.
+		const size = (await this.inSession(m, "GET", "/window/size").catch(() => null)) as { width?: number; height?: number } | null;
+		if (size?.width && size.height) await this.inSession(m, "POST", "/wda/dragfromtoforduration", { fromX: size.width / 2, fromY: size.height * 0.34, toX: size.width / 2, toY: size.height * 0.04, duration: 0.25 }).catch(() => {});
+		return false;
+	}
+
+	/**
 	 * Rests an iPhone nobody's using, as bb's test-machines does: the lock
 	 * button, where it's lit and not locked, and the screen going dark is
 	 * what counts (WebDriverAgent times out waiting for "locked" while an app
@@ -971,16 +991,9 @@ export class WDA implements Driver {
 	 */
 	private async rest(m: Machine) {
 		if (this.phone(m).url) return;
-		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => null);
-		if (locked !== true && !WDA.dark(await this.shot(m))) {
-			await this.http(m, "POST", "/wda/lock", {}, 20).catch(() => {});
-			await new Promise((r) => setTimeout(r, 1000));
-			const off = WDA.dark(await this.shot(m));
-			this.restSaid.set(m.id, off ? "" : "couldn't turn its screen off when unused: the lock button didn't (iOS 27.2's WebDriverAgent)");
-			if (!off) return this.stopLater(m);
-		}
-		this.restSaid.set(m.id, "");
-		this.rested.add(m.id);
+		const off = await this.lockScreen(m);
+		this.restSaid.set(m.id, off ? "" : "couldn't turn its screen off when unused: the lock button left it on (with Auto-Lock at Never, iOS does)");
+		if (off) this.rested.add(m.id);
 		this.stopLater(m);
 	}
 
@@ -1128,10 +1141,11 @@ export class WDA implements Driver {
 	async power(m: Machine, action: string): Promise<string> {
 		if (action === "status") return this.status(m);
 		if (action === "off") {
-			await this.http(m, "POST", "/wda/lock");
-			return `${m.name} is locked.`;
+			if (!(await this.lockScreen(m))) throw new DriverError(`${m.name}'s screen stayed on after the lock button: is its Auto-Lock set to Never?`);
+			this.rested.add(m.id);
+			return `${m.name}'s screen is off. The next action wakes it.`;
 		}
-		throw new DriverError(`${m.name}'s power: status, or off to lock it. Unlocking is the user's.`);
+		throw new DriverError(`${m.name}'s power: status, or off to turn its screen off (the next action wakes it).`);
 	}
 
 	async released(m: Machine) {

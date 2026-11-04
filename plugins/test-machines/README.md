@@ -62,8 +62,9 @@ The machines come from six drivers, each turned on in the settings:
   rested as bb's test-machines does: the lock button, then the screen
   going dark is what counts; WebDriverAgent stops 10 min later unless it's
   used again, so "Automation Running" goes. The next action wakes it (Home,
-  and the lock screen swiped away, where there's no passcode). On iOS 27.2
-  the lock button leaves the screen on: status says so. A phone's screen
+  and the lock screen swiped away, where there's no passcode). With its
+  Auto-Lock at Never, iOS leaves the screen on at the lock button: status
+  says so. A phone's screen
   isn't turned off for 20 min after you open its Live view, nor while an
   Android phone's live view shows it.
 - **demo**: a screen in memory and this machine's shell, for trying the
