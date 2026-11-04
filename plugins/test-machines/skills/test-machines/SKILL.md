@@ -41,10 +41,17 @@ iPhones run no commands.
 scripts, in your thread's turn: `status [--json]`, `take`, `release`,
 `run MACHINE [--exclusive] [--background] -- COMMAND` (its exit code is the
 command's), `job ID --wait 5m`, `capture` (prints the screenshot's file),
-`describe`, `doctor`,
+`describe`, `doctor`, `discover` (the phones plugged in, used or not),
 `drive MACHINE -- STEP…`, `app`, `put`, `get`, `power`, `record`, and
 `adb PHONE -- ARGS` for an Android phone: never adb itself, which skips
 your turn and the apps you may use.
+
+## Real phones first
+
+Test a phone app on the real phones machine_status lists. When it ends
+with phones plugged in but not turned on, ask the user to turn them on
+(Settings, Plugins, Test machines: one button each) instead of testing on
+a simulator or emulator, or driving the app from hooks in its code.
 
 ## The user's rules
 

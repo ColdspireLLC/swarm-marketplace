@@ -41,8 +41,10 @@ The machines come from six drivers, each turned on in the settings:
   screenshots,
   taps and typing, apps, logs, and the screen on and off. A phone that
   `aapt2` (Android's build-tools, on the PATH there) can read a build for
-  takes test builds even when it's one the user carries. A screen the
-  plugin turned on goes off 90 s after its last use, or as the turn ends.
+  takes test builds even when it's one the user carries. A phone's screen
+  goes off once the plugin's done with it, whoever turned it on: 60 s after
+  its last action, or 10 s after its turn's let go, but never while you
+  have it.
 - **wda**: iPhones and iPads through WebDriverAgent (*iPhones*,
   `iphone:UDID`): screenshots, taps, swipes and typing in screenshot
   pixels, launching and stopping apps, which app is in front, and their
@@ -56,7 +58,15 @@ The machines come from six drivers, each turned on in the settings:
   plugged into*: one joined to Swarm, which WebDriverAgent is asked from
   too, or over ssh; and `@UDID` after its address). iOS has
   no shell: no commands or files. While a phone sleeps, WebDriverAgent
-  answers slowly (10–15 s a call).
+  answers slowly (10–15 s a call). An iPhone nobody's used for a minute is
+  rested as bb's test-machines does: the lock button, then the screen
+  going dark is what counts; WebDriverAgent stops 10 min later unless it's
+  used again, so "Automation Running" goes. The next action wakes it (Home,
+  and the lock screen swiped away, where there's no passcode). With its
+  Auto-Lock at Never, iOS leaves the screen on at the lock button: status
+  says so. A phone's screen
+  isn't turned off for 20 min after you open its Live view, nor while an
+  Android phone's live view shows it.
 - **demo**: a screen in memory and this machine's shell, for trying the
   tools without a machine.
 
@@ -67,8 +77,25 @@ accessibility (a small reader compiled once), Windows' through UI
 Automation. Linux on Wayland doesn't say where its windows are, so it
 isn't read there.
 
+Above a thread's composer, a row says what the thread does on the
+machines: *Using iPhone 17 · tap 603 2166*, *Holding*, *Waiting for* (its
+place in line and who has it), or *Recording*, with how long, and a
+button at its end that ends the thread's turn there or takes it out of
+the line. Open, it shows each machine's latest screen, its live view
+(or Watch, where it has none) and End turn.
+
+*Test machines* on the window's rail is every machine at once, Phones
+then Computers, each a tile shaped like its screen: its latest screen,
+who has it (and what it's doing there) and who waits, the phones
+plugged in and not used yet (each turned on from there), and a badge of
+how many machines agents are on. The Machines panel groups them the same
+way.
+
 The Machines panel beside a thread shows who has each machine, who's
-waiting, and a screenshot; *Watch* takes one every few seconds, for 5
+waiting, and a screenshot. *Live view* shows a computer or phone joined
+to Swarm live, in Swarm's window (Swarm's remote screen), without taking
+it: an agent on it keeps its turn. A machine with no live view (the demo,
+over ssh, bb's) has *Watch* instead, a screenshot every few seconds for 5
 minutes at most. An agent shows one in its reply as a Markdown
 image: Swarm keeps the picture with the thread (`KeepMedia`), wherever
 its agent runs, and it goes when the thread does. `machine_record` records a flow: bb's machines and Android
@@ -88,9 +115,9 @@ instructions (`rules.ts`):
   agent's recording there is thrown away. Until you give it back, input
   waits in line, and a look, a command or a copy beside you is refused.
   Agents can't take a machine for you, nor end another thread's turn.
-  A computer joined to Swarm has *Open* too: its screen live in Swarm's
-  window, to use as if at it (Swarm's remote screen), the machine yours
-  as it opens.
+  *Live view* shows a machine's screen without taking it: take it first
+  (*Use it myself*) to use it as if at it, so an agent's clicks don't land
+  among yours.
 - **Sensitive apps.** Passwords, banking and payments, mail, messages,
   photos, health, the car, social posting and shopping, and any you add:
   launching or focusing one is refused, a step that lands in one is
@@ -121,10 +148,15 @@ skill they load.
 ## Settings
 
 Its own page of Settings, under Plugins (also from the gear in the
-Machines panel): the machines it found, then Computers (Swarm's
+Machines panel): the machines it found; Phones, those plugged into this
+computer or one joined to Swarm (through adb and devicectl there), each
+turned on with *Use for testing* or *It's my phone*, and an iPhone's
+WebDriverAgent built with one button, signed for the team of the Mac's
+Apple Development certificate; then Computers (Swarm's
 machines, this computer, over ssh),
-Android (adb, where the phones are plugged in, their names), iPhone
-(WebDriverAgent's addresses, the Mac for installs), Other machines (bb's,
+Android and iPhone by hand (adb's host and the phones' names,
+WebDriverAgent's addresses and the Mac, for what Phones doesn't find:
+ssh, wireless, a WebDriverAgent you run), Other machines (bb's,
 the demo machine), and What agents stay out of (phones you carry, your
 test builds, more apps).
 
@@ -151,7 +183,10 @@ from your terminal at once (you wait in no line):
 | `adb PHONE -- ARGS` | adb on an Android phone, in the turn, held to the apps agents may use: that phone's commands alone (shell, install, push, pull, logcat…), no `-s`. |
 | `connect HOST:PORT [--pair HOST:PORT --code CODE]` | An Android phone over wireless debugging, paired first where given. |
 | `doctor [--json]` | Everything the turned-on machines need, checked (also *Check everything* on the Settings page). |
-| `setup-iphone [--team ID]` | Yours: build WebDriverAgent on the Mac the iPhones are plugged into. |
+| `discover [--json]` | The phones plugged into this computer and those joined to Swarm, used or not (status names the unused ones too). |
+| `use PHONE [--carried]` | Yours: turn on a phone discover found. |
+| `stop-using PHONE` | Yours: stop testing on a phone. |
+| `setup-iphone [--team ID]` | Yours: build WebDriverAgent on the Mac the iPhones are plugged into, for the team of its certificate when none is given. |
 | `carry PHONE [--off]` | Yours: the phone you carry. |
 | `test-apps [ID…] [--clear]` | Your test builds (anyone lists them; you set them). |
 | `offlimits [APP…] [--clear]` | Apps agents stay out of, besides the built-in kinds. |

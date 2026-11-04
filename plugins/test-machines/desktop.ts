@@ -258,7 +258,8 @@ export class Desktop implements Driver {
 	private async fetch(m: Machine, path: string, size: number, remove = true): Promise<Uint8Array> {
 		const parts: Uint8Array[] = [];
 		for (let at = 0; at < size; at += CHUNK) parts.push(unbase64(String((await this.helper(m, "read", { path, offset: at, length: CHUNK }, 120)).data ?? "")));
-		if (remove) await this.helper(m, "remove", { path }, 20).catch(() => {});
+		// The file goes after: the picture's here, and Windows' PowerShell takes most of a second to start.
+		if (remove) void this.helper(m, "remove", { path }, 20).catch(() => {});
 		const data = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
 		let at = 0;
 		for (const p of parts) data.set(p, (at += p.length) - p.length);

@@ -5,22 +5,57 @@ import { settings, ui, type Child } from "swarm";
 import { carried } from "./rules";
 import type { Check } from "./drivers";
 import { doctor } from "./ops";
+import { discover, found, movesFrom, stopUsing, use, type Found } from "./discover";
 import { learnTitles, message, refresh, st, wda } from "./state";
 
 /** WebDriverAgent's build, from the page. */
 const building = ui.store({ busy: false, said: "", failed: false });
 
-async function build() {
+async function build(team = text("wdaTeam")) {
 	building.busy = true;
 	building.failed = false;
 	building.said = "Building on the Mac: a few minutes the first time…";
 	try {
-		building.said = await wda.setup(text("wdaTeam"), (l) => (building.said = l));
+		if (team !== text("wdaTeam")) settings.set({ wdaTeam: team });
+		building.said = await wda.setup(team, (l) => (building.said = l));
+		ios.built = true;
 	} catch (e) {
 		building.said = message(e);
 		building.failed = true;
 	}
 	building.busy = false;
+}
+
+/** What the iPhones' Mac has: WebDriverAgent built, and the signing teams it could be built for. */
+const ios = ui.store({ at: 0, host: "", busy: false, built: false, teams: [] as { id: string; name: string }[], error: "" });
+
+async function checkIos() {
+	ios.busy = true;
+	ios.host = text("iosHost");
+	try {
+		const [built, teams] = await Promise.all([wda.built(), wda.teams()]);
+		ios.built = built;
+		ios.teams = teams;
+		ios.error = "";
+	} catch (e) {
+		ios.error = message(e);
+	}
+	ios.at = Date.now();
+	ios.busy = false;
+}
+
+/** The phone a button acts on, while it does. */
+const acting = ui.store({ serial: "", error: "" });
+
+async function act(f: Found, fn: () => Promise<unknown>) {
+	acting.serial = f.serial;
+	acting.error = "";
+	try {
+		await fn();
+	} catch (e) {
+		acting.error = message(e);
+	}
+	acting.serial = "";
 }
 
 /** doctor's last checks, for the page. */
@@ -126,7 +161,7 @@ function section(title: string, ...rows: Child[]): Child {
 	);
 }
 
-function found(): Child {
+function machinesFound(): Child {
 	return section(
 		"Machines",
 		<ui.box style={{ padding: "s5 s6", gap: 8 }}>
@@ -144,7 +179,7 @@ function found(): Child {
 				<ui.text key={"p" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
 			))}
 			<ui.box style={{ flexDirection: "row", gap: 6 }}>
-				<ui.button size="sm" kind="soft" icon="refresh" onClick={async () => { await refresh(); await learnTitles(); }}>Look for machines again</ui.button>
+				<ui.button size="sm" kind="soft" icon="refresh" onClick={async () => { await refresh(); await learnTitles(); void discover(); }}>Look for machines again</ui.button>
 				<ui.button size="sm" kind="ghost" icon="check-circle" disabled={checked.busy} onClick={() => void check()}>{checked.busy ? "Checking…" : "Check everything"}</ui.button>
 			</ui.box>
 			{checked.error ? <ui.text style={{ fontSize: "small", color: "red" }}>{checked.error}</ui.text> : null}
@@ -165,11 +200,101 @@ function found(): Child {
 	);
 }
 
+/** The iPhone's WebDriverAgent, under its row: built, or built here with a button, signed for the team the Mac's certificate is of. */
+function iphoneSetup(): Child {
+	if (!ios.at || ios.host !== text("iosHost")) {
+		if (!ios.busy) void checkIos();
+		return <ui.text style={{ fontSize: "small", color: "text3" }}>Checking WebDriverAgent on the Mac…</ui.text>;
+	}
+	if (ios.error) return <ui.text style={{ fontSize: "small", color: "red" }}>{ios.error}</ui.text>;
+	if (ios.built && !building.busy) {
+		return <ui.text style={{ fontSize: "small", color: "text2" }}>{building.said || "Ready. The first time an agent uses it, the phone asks to trust the developer: Settings, General, VPN & Device Management."}</ui.text>;
+	}
+	const team = text("wdaTeam") || (ios.teams.length === 1 ? ios.teams[0]!.id : "");
+	const name = ios.teams.find((t) => t.id === team)?.name;
+	return (
+		<ui.box style={{ gap: 8 }}>
+			<ui.text style={{ fontSize: "small", color: "text2" }}>
+				{team
+					? `Needs WebDriverAgent, built once on the Mac and signed for ${name ? `${name} (${team})` : `team ${team}`}. A few minutes the first time.`
+					: ios.teams.length > 1
+						? "Needs WebDriverAgent, built once on the Mac: which of its developer teams signs it?"
+						: "Needs WebDriverAgent, built once on the Mac, signed with your Apple developer team. The Mac has no Apple Development certificate: sign in with your Apple ID in Xcode (Settings, Accounts) there, or give the Team ID below."}
+			</ui.text>
+			{!team && ios.teams.length > 1 ? <ui.select style={{ alignSelf: "flex-start" }} value="" options={[{ value: "", label: "Choose a team" }, ...ios.teams.map((t) => ({ value: t.id, label: `${t.name} (${t.id})` }))]} onChange={(v) => v && void settings.set({ wdaTeam: v })} /> : null}
+			{!team && !ios.teams.length ? input("wdaTeam", "ABCDE12345") : null}
+			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+				<ui.button size="sm" kind="primary" icon="hammer" disabled={building.busy || !team} onClick={() => void build(team)}>{building.busy ? "Building…" : "Build WebDriverAgent"}</ui.button>
+				{building.said ? <ui.text style={{ fontSize: "small", color: building.failed ? "red" : "text2" }}>{building.said}</ui.text> : null}
+			</ui.box>
+		</ui.box>
+	);
+}
+
+/** A phone found plugged in: what it is and where, and using it or not. */
+export function phoneRow(f: Found): Child {
+	const busy = acting.serial === f.serial;
+	const kind = f.kind === "ios" ? "iPhone" : "Android";
+	const moves = f.id || f.problem ? null : movesFrom(f);
+	const about = f.id ? `${kind}, on ${f.placeLabel}. Agents call it ${f.id}.` : `${kind}, on ${f.placeLabel}.${moves ? ` Using it moves the plugin's ${kind === "iPhone" ? "iPhones" : "Android phones"} here: those on ${moves} stop being used.` : ""}`;
+	const controls = f.id ? (
+		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+			{carried(f.id) ? <ui.tag tone="muted">You carry it</ui.tag> : <ui.tag tone="green">In use</ui.tag>}
+			<ui.button size="sm" kind="ghost" disabled={busy} onClick={() => void act(f, () => stopUsing(f))}>Stop using</ui.button>
+		</ui.box>
+	) : f.problem ? null : (
+		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+			<ui.button size="sm" kind="primary" disabled={busy} onClick={() => void act(f, () => use(f, false))}>{busy ? "Turning on…" : "Use for testing"}</ui.button>
+			<ui.button size="sm" kind="ghost" disabled={busy} onClick={() => void act(f, () => use(f, true))}>It's my phone</ui.button>
+		</ui.box>
+	);
+	return (
+		<ui.box key={f.kind + f.serial} style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
+			<ui.icon icon="mobile" style={{ width: 16, height: 16, marginTop: 2, color: f.id ? "text" : "text3", flexShrink: 0 }} />
+			<ui.box style={{ flex: 1, minWidth: 0, gap: 4 }}>
+				<ui.box style={{ flexDirection: "row", gap: 16, alignItems: "flex-start" }}>
+					<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+						<ui.text style={{ fontWeight: 500 }}>{f.model}</ui.text>
+						<ui.text style={{ fontSize: "small", color: "text2" }}>{about}</ui.text>
+						{f.problem ? <ui.text style={{ fontSize: "small", color: "amber" }}>{`Can't use it yet: ${f.problem}.`}</ui.text> : null}
+					</ui.box>
+					{controls}
+				</ui.box>
+				{f.id && f.kind === "ios" && !carried(f.id) ? iphoneSetup() : null}
+			</ui.box>
+		</ui.box>
+	);
+}
+
+/** The phones plugged into this computer and those joined to Swarm, each turned on with a button. */
+function phones(): Child {
+	if (!found.at && !found.busy) void discover();
+	return section(
+		"Phones",
+		<ui.box style={{ padding: "s5 s6", gap: 14 }}>
+			{found.phones.map(phoneRow)}
+			{!found.phones.length ? (
+				<ui.text style={{ color: "text2" }}>
+					{found.busy && !found.at ? "Looking for phones…" : "No phones plugged in. Plug one into this computer or one joined to Swarm (Settings, Machines): an Android phone with USB debugging on, or an iPhone with Developer Mode on that trusts the Mac."}
+				</ui.text>
+			) : null}
+			{acting.error ? <ui.text style={{ fontSize: "small", color: "red" }}>{acting.error}</ui.text> : null}
+			{found.problems.map((p, i) => (
+				<ui.text key={"p" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
+			))}
+			<ui.box style={{ flexDirection: "row", gap: 6 }}>
+				<ui.button size="sm" kind="soft" icon="refresh" disabled={found.busy} onClick={() => void discover()}>{found.busy ? "Looking…" : "Look for phones again"}</ui.button>
+			</ui.box>
+		</ui.box>,
+	);
+}
+
 export function settingsPage(): Child {
 	return (
 		<ui.box style={{ gap: 20, maxWidth: 680 }}>
 			<ui.text style={{ color: "text2" }}>Computers and phones your agents test on, one thread at a time on each screen. A turn ends when its thread's turn of the conversation does, and you can take any machine for yourself from the Machines panel beside a thread.</ui.text>
-			{found()}
+			{machinesFound()}
+			{phones()}
 			{section(
 				"Computers",
 				row("Swarm's machines", "The Macs, Windows and Linux computers joined to Swarm (Settings, Machines): their screens, apps and commands. A Mac needs Accessibility and Screen Recording for Swarm; on Windows, Swarm's machine runs at sign-in, in the desktop.", toggle("swarmMachines")),
@@ -177,13 +302,13 @@ export function settingsPage(): Child {
 				row("Over ssh", "One a line, id:kind:user@host, where kind is mac or linux. Commands and files on each, and a Mac's screen and clicks (screencapture, cliclick).", null, input("ssh", "studio:mac:me@studio.local\nbox:linux:ci@buildbox", true)),
 			)}
 			{section(
-				"Android",
+				"Android, by hand",
 				row("Phones and emulators through adb", "The devices adb lists: screenshots, taps and typing, apps and their logs, recordings.", toggle("android")),
 				row("Where they're plugged in", "The computer whose adb runs for the plugin: one joined to Swarm needs nothing more. Its aapt2 (Android's build-tools) lets agents install your test builds on a phone you carry.", null, placePicker("adbHost")),
 				row("Names", "id:serial, so agents call a phone by name. Unnamed ones go by their serial.", null, input("phones", "pixel:5A150DLCH003YS, emu:emulator-5554")),
 			)}
 			{section(
-				"iPhone",
+				"iPhone, by hand",
 				row("iPhones", "id:UDID of each (Finder or devicectl list devices shows it): the plugin runs WebDriverAgent for them on the Mac below. Or id:URL@UDID for a WebDriverAgent you run yourself.", null, input("iphones", "iphone:00008150-000279220A28401C")),
 				row("The Mac they're plugged into", "WebDriverAgent runs and is asked from there, and installs go through its devicectl.", null, placePicker("iosHost", "darwin")),
 				row(

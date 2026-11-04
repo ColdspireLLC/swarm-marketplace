@@ -30,6 +30,8 @@ interface Waiter {
 	timer: number;
 	/** A kept place: no call waits on it, until the thread's next. */
 	kept: boolean;
+	/** When the thread joined the line: a kept place's call taking it over keeps its time. */
+	since: number;
 }
 
 export interface Holder {
@@ -100,7 +102,7 @@ export class Turns {
 		return new Promise((resolve, reject) => {
 			// A kept place of this thread's: its call takes it over.
 			const at = this.waiting.findIndex((w) => w.thread === thread && w.kept);
-			const w: Waiter = { thread, resolve, reject, timer: 0, kept: false };
+			const w: Waiter = { thread, resolve, reject, timer: 0, kept: false, since: at >= 0 ? this.waiting[at]!.since : this.now() };
 			w.timer = setTimeout(() => {
 				const i = this.waiting.indexOf(w);
 				if (i < 0) return;

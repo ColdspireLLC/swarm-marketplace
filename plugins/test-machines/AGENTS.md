@@ -14,6 +14,10 @@ sign in or out, or quit their apps. On an Android phone, use `swarm
 test-machines adb PHONE -- …`, never adb itself: it takes your turn and
 holds to the apps you may use.
 
+Test phone apps on the real phones. When machine_status says one is
+plugged in but not turned on, ask the user to turn it on rather than
+falling back to a simulator.
+
 The user comes first: a machine they take is theirs until they give it
 back, and a call of yours cut off by it says so. Stop, and tell them what
 you were doing there. Sensitive apps (passwords, banking and payments,

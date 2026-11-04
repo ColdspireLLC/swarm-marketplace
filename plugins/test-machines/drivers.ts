@@ -12,6 +12,7 @@
 //   none: for trying the tools and for its tests.
 import { fs, process, settings } from "swarm";
 import { MAX_ELEMENTS, parseUiAutomator, type Element } from "./elements";
+import { parseTeams } from "./teams";
 import { Screen } from "./png";
 import { runAt, whereOf } from "./where";
 
@@ -29,6 +30,48 @@ export interface Machine {
 	where?: string;
 	/** The link that opens its screen in Swarm's window, live (swarm://screen/…), where Swarm can show it. */
 	screen?: string;
+}
+
+/** Phones' models by serial or UDID, as discover finds them: an iPhone's name, where its setting gives only an id. */
+export const phoneModels = new Map<string, string>();
+
+/** Whether the user has a machine now (set by state.ts): a phone the user took isn't turned off under them. */
+export const userHas = { now: (_id: string) => false };
+
+/** Phones the user opened the live view of, and until when: their screens aren't turned off under the user meanwhile. */
+export const viewing = new Map<string, number>();
+/** How long a Live view click keeps a phone's screen on: the plugin can't tell when the live view closes. */
+export const VIEWING_MS = 20 * 60_000;
+
+/** A phone's screen goes off this long after the plugin's last action there, and sooner once its turn's let go. */
+export const REST_MS = 60_000;
+const RELEASED_REST_MS = 10_000;
+
+/**
+ * Turns a phone's screen off once the plugin's done with it: rest runs
+ * after REST_MS without an action (touch), or RELEASED_REST_MS after its
+ * turn's let go (soon), unless the user has it then.
+ */
+class Rester {
+	private timers = new Map<string, number>();
+	constructor(private rest: (m: Machine) => Promise<unknown>) {}
+	touch(m: Machine, ms = REST_MS) {
+		clearTimeout(this.timers.get(m.id));
+		this.timers.set(
+			m.id,
+			setTimeout(() => {
+				this.timers.delete(m.id);
+				if (userHas.now(m.id)) return;
+				// Watched live: looked at again once that's over.
+				const until = viewing.get(m.id) ?? 0;
+				if (until > Date.now()) return this.touch(m, until - Date.now() + 1000);
+				void this.rest(m).catch(() => {});
+			}, ms),
+		);
+	}
+	soon(m: Machine) {
+		this.touch(m, RELEASED_REST_MS);
+	}
 }
 
 export interface Shot {
@@ -396,7 +439,9 @@ export class ADB implements Driver {
 		const found: Machine[] = [];
 		// USB first: a phone on both is one machine, by its cable.
 		const seen = new Set<string>();
-		const devices = parseDevices(r.stdout).sort((a, b) => Number(a.serial.includes(":")) - Number(b.serial.includes(":")));
+		// The phones the user stopped using, by either serial: adb lists every one plugged in.
+		const skipped = new Set(String(settings.get("skipPhones") ?? "").split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean));
+		const devices = parseDevices(r.stdout).filter((d) => !skipped.has(d.serial)).sort((a, b) => Number(a.serial.includes(":")) - Number(b.serial.includes(":")));
 		for (const d of devices) {
 			let hw = this.hardware.get(d.serial);
 			if (!hw) {
@@ -406,7 +451,7 @@ export class ADB implements Driver {
 			}
 			// The setting's name for either serial; else the phone's own serial, the transport's for an emulator.
 			const id = names.get(d.serial) ?? (hw ? names.get(hw) : undefined) ?? (d.serial.includes(":") && hw ? hw : d.serial);
-			if (serials.has(id) || (hw && seen.has(hw))) continue;
+			if (serials.has(id) || (hw && seen.has(hw)) || (hw && skipped.has(hw))) continue;
 			if (hw) seen.add(hw);
 			serials.set(id, d.serial);
 			const model = d.model.replace(/_/g, " ");
@@ -424,26 +469,14 @@ export class ADB implements Driver {
 		return `adb: ${awake.toLowerCase()}${battery ? `, battery ${battery}%` : ""}${locked ? ", locked (the user unlocks it)" : ""}`;
 	}
 
-	/** Turns the screen on before an action, as a finger would. */
-	/** The phones whose screens the plugin turned on, and when each goes off again. */
-	private woke = new Set<string>();
-	private sleepers = new Map<string, number>();
+	/** Its screen off once the plugin's done with it, whoever turned it on: a phone's isn't left on unused. */
+	// Not while Swarm's live view (scrcpy) shows it: its display is there while it does.
+	private rester = new Rester((m) => this.shell(m, "dumpsys display 2>/dev/null | grep -q 'scrcpy' || input keyevent KEYCODE_SLEEP", 20));
 
-	/** Turns the screen on before an action, as a finger would; one the plugin turned on goes off 90 s after its last. */
+	/** Turns the screen on before an action, as a finger would (WAKE_SH). */
 	private async wake(m: Machine) {
-		const s = await this.shell(m, "dumpsys power | grep -m1 mWakefulness=", 20).catch(() => "");
-		if (/Asleep|Dozing/.test(s)) {
-			await this.shell(m, "input keyevent KEYCODE_WAKEUP", 20);
-			this.woke.add(m.id);
-		}
-		clearTimeout(this.sleepers.get(m.id));
-		this.sleepers.set(m.id, setTimeout(() => void this.sleepAgain(m), 90_000));
-	}
-
-	/** The screen off again, where the plugin turned it on: none the user had on. */
-	private async sleepAgain(m: Machine) {
-		clearTimeout(this.sleepers.get(m.id));
-		if (this.woke.delete(m.id)) await this.shell(m, "input keyevent KEYCODE_SLEEP", 20).catch(() => "");
+		await this.shell(m, WAKE_SH, 20).catch(() => "");
+		this.rester.touch(m);
 	}
 
 	/** Reaches a phone over wireless debugging (its port is new each time it's turned on), pairing it first with its code. */
@@ -461,12 +494,15 @@ export class ADB implements Driver {
 	}
 
 	async capture(m: Machine): Promise<Shot> {
-		await this.wake(m);
-		// The phone encodes it: what a process prints here is text.
-		const text = await this.shell(m, "screencap -p | base64", 60);
-		const data = unbase64(text);
-		if (data.length < 8 || data[0] !== 0x89) throw new DriverError(`the screenshot of ${m.name} came back empty: is its screen locked or protected?`);
-		return { data, mimeType: "image/png" };
+		// One call: the wake, then the screenshot, which the phone encodes (what a process prints here is text):
+		// a JPEG where its screencap makes one (Android 14 on), half a PNG's bytes and time at the same pixels.
+		const said = await this.shell(m, `${WAKE_SH}; f=/data/local/tmp/swarm-shot.jpg; if screencap -j $f 2>/dev/null && [ -s $f ]; then echo JPEG; base64 $f; rm -f $f; else echo PNG; screencap -p | base64; fi`, 60);
+		this.rester.touch(m);
+		const at = said.search(/^(JPEG|PNG)$/m);
+		const data = unbase64(at < 0 ? "" : said.slice(said.indexOf("\n", at) + 1));
+		const jpeg = data[0] === 0xff && data[1] === 0xd8;
+		if (data.length < 8 || (!jpeg && data[0] !== 0x89)) throw new DriverError(`the screenshot of ${m.name} came back empty: is its screen locked or protected?`);
+		return { data, mimeType: jpeg ? "image/jpeg" : "image/png" };
 	}
 
 	async drive(m: Machine, steps: string[]): Promise<string> {
@@ -554,7 +590,7 @@ export class ADB implements Driver {
 	}
 
 	async released(m: Machine) {
-		await this.sleepAgain(m);
+		this.rester.soon(m);
 	}
 
 	async describe(m: Machine): Promise<Element[]> {
@@ -696,6 +732,20 @@ export function adbStep(step: string): string {
 	throw new DriverError(`no step ${op}: ${ADB_STEPS}`);
 }
 
+/**
+ * Turns an Android phone's screen on where it's off, as a finger would, and
+ * waits for it to draw: asleep or dozing, a wake key; awake with the panel off, which Android 17 leaves with
+ * Stay awake on (Developer options) at the screen timeout and where a wake
+ * key does nothing, a sleep and a wake.
+ */
+const WAKE_SH = [
+	"s=$(dumpsys power | grep -m1 mWakefulness=; dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -o 'powerMode=[A-Za-z]*')",
+	"w=",
+	'case "$s" in *Asleep*|*Dozing*) input keyevent KEYCODE_WAKEUP; w=1;; *powerMode=Off*) input keyevent KEYCODE_SLEEP; sleep 0.5; input keyevent KEYCODE_WAKEUP; w=1;; esac',
+	// The panel on, then past the wake's fade in.
+	'if [ -n "$w" ]; then for i in 1 2 3 4 5 6 7 8 9 10; do dumpsys SurfaceFlinger 2>/dev/null | grep -m1 -q powerMode=On && break; sleep 0.2; done; sleep 0.8; fi',
+].join("; ");
+
 function unbase64(text: string): Uint8Array {
 	const bin = atob(text.replace(/\s+/g, ""));
 	const data = new Uint8Array(bin.length);
@@ -779,6 +829,19 @@ export class WDA implements Driver {
 		return url;
 	}
 
+	/** Whether WebDriverAgent's built on the Mac, for the plugin to start on the phones. */
+	async built(): Promise<boolean> {
+		const r = await runAt(await this.mac(), "sh", ["-c", `ls ${WDA.BUILD}/Build/Products/*.xctestrun >/dev/null 2>&1`], { timeout: 20_000 });
+		return r.code === 0;
+	}
+
+	/** The Apple developer teams the Mac's signing certificates are of: the Team ID WebDriverAgent's signed for, and the team's name. */
+	async teams(): Promise<{ id: string; name: string }[]> {
+		const script = `security find-identity -v -p codesigning | sed -n 's/.*"\\(Apple Development[^"]*\\)".*/\\1/p' | sort -u | while IFS= read -r n; do security find-certificate -c "$n" -p | openssl x509 -noout -subject; done`;
+		const r = await runAt(await this.mac(), "sh", ["-c", script], { timeout: 30_000 });
+		return parseTeams(r.stdout);
+	}
+
 	/** Builds WebDriverAgent on the Mac, signed with the user's team, for the plugin to start on the phones. */
 	async setup(team: string, onLine: (s: string) => void): Promise<string> {
 		if (!/^[A-Z0-9]{10}$/.test(team)) throw new DriverError("Give your Apple developer Team ID (ten letters and digits, in Xcode's Signing & Capabilities or developer.apple.com, Membership).");
@@ -851,17 +914,113 @@ export class WDA implements Driver {
 		const host = String(settings.get("iosHost") ?? "").trim();
 		const w = host || process.platform === "darwin" ? await whereOf(host) : undefined;
 		const screenOf = (udid?: string) => (udid && w && !w.ssh ? `swarm://screen/${encodeURIComponent(w.machine ?? "server")}?iphone=${encodeURIComponent(udid)}` : undefined);
-		return [...this.phones()].map(([id, p]) => ({ id, name: id, kind: "ios" as Kind, about: p.url ? `iOS, through WebDriverAgent at ${p.url}${p.udid ? ` (${p.udid})` : ""}.` : `iOS (${p.udid}), WebDriverAgent run by the plugin on the Mac it's plugged into.`, driver: this, screen: screenOf(p.udid) }));
+		return [...this.phones()].map(([id, p]) => ({ id, name: phoneModels.get(p.udid.toUpperCase()) ?? id, kind: "ios" as Kind, about: p.url ? `iOS, through WebDriverAgent at ${p.url}${p.udid ? ` (${p.udid})` : ""}.` : `iOS (${p.udid}), WebDriverAgent run by the plugin on the Mac it's plugged into.`, driver: this, screen: screenOf(p.udid) }));
 	}
 
 	async status(m: Machine): Promise<string> {
 		const v = await this.http(m, "GET", "/status", undefined, 15);
 		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => undefined);
 		const os = v?.os ? `iOS ${v.os.version ?? ""}`.trim() : "iOS";
-		return `wda: ${v?.ready === false ? "not ready" : "ready"}, ${os}${locked === true ? ", locked" : ""}`;
+		const rest = this.restSaid.get(m.id);
+		return `wda: ${v?.ready === false ? "not ready" : "ready"}, ${os}${locked === true ? ", locked" : ""}${rest ? `; ${rest}` : ""}`;
+	}
+
+	/**
+	 * Unlocks an iPhone its Auto-Lock locked, before an action there, as a
+	 * swipe up would (one with no passcode: with one, it stays locked and the
+	 * action says so). Auto-Lock fires after the user's own touches; after
+	 * WebDriverAgent's, iOS keeps the screen on.
+	 */
+	private async awake(m: Machine) {
+		this.rester.touch(m);
+		clearTimeout(this.stopTimers.get(m.id));
+		const locked = await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => false);
+		const rested = this.rested.delete(m.id);
+		if (locked !== true && !rested) return;
+		// Home wakes a dark screen (to the lock screen); unlock swipes the lock screen away, where there's no passcode.
+		if (locked !== true) await this.http(m, "POST", "/wda/homescreen", undefined, 15).catch(() => {});
+		if (locked === true || (await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => false)) === true) await this.http(m, "POST", "/wda/unlock", undefined, 30).catch(() => {});
+	}
+
+	/** The iPhones the plugin put to rest (their dark screen its doing), and the timers that stop WebDriverAgent after. */
+	private rested = new Set<string>();
+	private stopTimers = new Map<string, number>();
+	/** What the last rest did, for status. */
+	private restSaid = new Map<string, string>();
+	private rester = new Rester((m) => this.rest(m));
+
+	/** Whether a screenshot is all but black (the screen off): a dark screen's PNG is a hundredth of a byte a pixel, a lit one's most of one. */
+	private static dark(d: Uint8Array): boolean {
+		if (d.length < 24 || d[0] !== 0x89) return false;
+		const w = ((d[16]! << 24) | (d[17]! << 16) | (d[18]! << 8) | d[19]!) >>> 0;
+		const h = ((d[20]! << 24) | (d[21]! << 16) | (d[22]! << 8) | d[23]!) >>> 0;
+		return w > 0 && h > 0 && d.length / (w * h) < 0.05;
+	}
+
+	private async shot(m: Machine): Promise<Uint8Array> {
+		return unbase64(String((await this.http(m, "GET", "/screenshot", undefined, 60)) ?? ""));
+	}
+
+	/**
+	 * Turns an iPhone's screen off with the lock button, unless it's dark
+	 * already (pressed then, it would wake). The screen going dark is what
+	 * counts: WebDriverAgent waits 5 s for "locked" and gives up, and the
+	 * screen can stay lit a few seconds more. False when it stayed on (and
+	 * whatever the press opened, Siri, swiped away).
+	 */
+	private async lockScreen(m: Machine): Promise<boolean> {
+		if ((await this.http(m, "GET", "/wda/locked", undefined, 15).catch(() => null)) === true || WDA.dark(await this.shot(m))) return true;
+		await this.http(m, "POST", "/wda/lock", {}, 20).catch(() => {});
+		for (let i = 0; i < 8; i++) {
+			if (WDA.dark(await this.shot(m))) return true;
+			await new Promise((r) => setTimeout(r, 1000));
+		}
+		// Lit still: iOS can take the press as a long one and open Siri, listening. Swiped away, so it's never left open.
+		const size = (await this.inSession(m, "GET", "/window/size").catch(() => null)) as { width?: number; height?: number } | null;
+		if (size?.width && size.height) await this.inSession(m, "POST", "/wda/dragfromtoforduration", { fromX: size.width / 2, fromY: size.height * 0.34, toX: size.width / 2, toY: size.height * 0.04, duration: 0.25 }).catch(() => {});
+		return false;
+	}
+
+	/**
+	 * Rests an iPhone nobody's using, as bb's test-machines does: the lock
+	 * button, where it's lit and not locked, and the screen going dark is
+	 * what counts (WebDriverAgent times out waiting for "locked" while an app
+	 * uses the microphone); then WebDriverAgent stops 10 min later unless it's
+	 * used again, so iOS's "Automation Running" goes. One that can't be locked
+	 * stays on, and status says so. Never one whose WebDriverAgent the user runs.
+	 */
+	private async rest(m: Machine) {
+		if (this.phone(m).url) return;
+		const off = await this.lockScreen(m);
+		this.restSaid.set(m.id, off ? "" : "couldn't turn its screen off when unused: the lock button left it on (with Auto-Lock at Never, iOS does)");
+		if (off) this.rested.add(m.id);
+		this.stopLater(m);
+	}
+
+	/** WebDriverAgent stops 10 min after a rest unless it's used again: iOS keeps an automated phone awake. */
+	private stopLater(m: Machine) {
+		clearTimeout(this.stopTimers.get(m.id));
+		this.stopTimers.set(
+			m.id,
+			setTimeout(() => {
+				this.stopTimers.delete(m.id);
+				if (userHas.now(m.id) || (viewing.get(m.id) ?? 0) > Date.now()) return;
+				void this.stopWda(m).catch(() => {});
+			}, 10 * 60_000),
+		);
+	}
+
+	/** Ends the plugin's WebDriverAgent on a phone, gently, so its automation session closes; the next action starts it again. */
+	private async stopWda(m: Machine) {
+		const p = this.phone(m);
+		if (p.url || !p.udid) return;
+		await runAt(await this.mac(), "sh", ["-c", 'pkill -INT -f "test-without-building.*id=$1"; true', "sh", p.udid], { timeout: 20_000 });
+		this.urls.delete(m.id);
+		this.sessions.delete(m.id);
 	}
 
 	async capture(m: Machine): Promise<Shot> {
+		await this.awake(m);
 		const b64 = await this.http(m, "GET", "/screenshot", undefined, 60);
 		const data = unbase64(String(b64 ?? ""));
 		if (data.length < 8) throw new DriverError(`the screenshot of ${m.name} came back empty.`);
@@ -890,6 +1049,7 @@ export class WDA implements Driver {
 	}
 
 	async drive(m: Machine, steps: string[]): Promise<string> {
+		await this.awake(m);
 		const k = await this.scale(m);
 		const pt = (v: number) => Math.round((v / k) * 10) / 10;
 		for (const step of steps) {
@@ -947,6 +1107,7 @@ export class WDA implements Driver {
 	}
 
 	async app(m: Machine, action: string, target: string): Promise<string> {
+		if (action === "launch" || action === "focus") await this.awake(m);
 		const id = target.trim();
 		switch (action) {
 			case "launch":
@@ -980,15 +1141,19 @@ export class WDA implements Driver {
 	async power(m: Machine, action: string): Promise<string> {
 		if (action === "status") return this.status(m);
 		if (action === "off") {
-			await this.http(m, "POST", "/wda/lock");
-			return `${m.name} is locked.`;
+			if (!(await this.lockScreen(m))) throw new DriverError(`${m.name}'s screen stayed on after the lock button: is its Auto-Lock set to Never?`);
+			this.rested.add(m.id);
+			return `${m.name}'s screen is off. The next action wakes it.`;
 		}
-		throw new DriverError(`${m.name}'s power: status, or off to lock it. Unlocking is the user's.`);
+		throw new DriverError(`${m.name}'s power: status, or off to turn its screen off (the next action wakes it).`);
 	}
 
-	async released() {}
+	async released(m: Machine) {
+		this.rester.soon(m);
+	}
 
 	async describe(m: Machine): Promise<Element[]> {
+		await this.awake(m);
 		const k = await this.scale(m);
 		const tree = await this.http(m, "GET", "/source?format=json", undefined, 90);
 		const out: Element[] = [];
@@ -1029,7 +1194,8 @@ export class WDA implements Driver {
 	}
 
 	async frontmost(m: Machine): Promise<App | null> {
-		const v = await this.http(m, "GET", "/wda/activeAppInfo", undefined, 15);
+		// On the Home Screen WebDriverAgent waits out its own 15 s snapshot of SpringBoard (iOS 27) before it answers; an app's answers at once.
+		const v = await this.http(m, "GET", "/wda/activeAppInfo", undefined, 30);
 		const id = String(v?.bundleId ?? "");
 		return id ? { name: String(v?.name ?? id), id } : null;
 	}

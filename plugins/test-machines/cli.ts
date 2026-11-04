@@ -4,6 +4,7 @@
 // does, taking a machine for themselves and saying which phones they
 // carry and which apps are off limits, is refused to an agent.
 import { cliCommand, defineCli, PluginCliError, settings, type CliResult, type CommandIO } from "swarm";
+import { discover, stopUsing, use, type Found } from "./discover";
 import { DriverError } from "./drivers";
 import * as ops from "./ops";
 import { carried, testApps } from "./rules";
@@ -41,6 +42,15 @@ async function act(io: CommandIO, fn: (thread: string) => Promise<ops.Out>): Pro
 
 const wait = { wait: { type: "duration", defaultUnit: "m", description: "How long to wait in line if another thread has the machine (default 4m, at most 10m; 0 not to wait)." } } as const;
 const machine = { name: "machine", required: true, description: "Its id, as status lists them" };
+
+/** A phone discover finds, by its id, serial, UDID or model. */
+async function foundPhone(name: string): Promise<Found> {
+	const phones = await discover();
+	const n = name.toLowerCase();
+	const f = phones.find((f) => [f.id, f.serial].some((x) => x?.toLowerCase() === n)) ?? phones.find((f) => f.model.toLowerCase() === n);
+	if (!f) throw new PluginCliError(`No phone ${JSON.stringify(name)} is plugged in: ${phones.map((f) => `${f.model} (${f.serial})`).join(", ") || "none found"}.`, { code: "not_found", hint: "swarm test-machines discover lists them." });
+	return f;
+}
 
 /** Settings of the user's, as lists: the phones they carry, their test builds, the apps off limits. */
 function listSetting(key: string): string[] {
@@ -224,12 +234,54 @@ export function registerCli() {
 				constraints: [{ requires: ["pair", "code"] }],
 				run: async ({ positionals, options }, io) => act(io, () => ops.connect(String(positionals.address), options.pair ? { addr: String(options.pair), code: String(options.code) } : undefined)),
 			}),
+			discover: cliCommand({
+				summary: "The phones plugged into this computer and the computers joined to Swarm, used or not: those the plugin doesn't use yet, the user turns on (Settings, Plugins, Test machines, or use)",
+				options: { json: { type: "boolean", description: "Print JSON" } },
+				run: async ({ options }) => {
+					const phones = await discover();
+					if (options.json) return { stdout: JSON.stringify({ phones: phones.map((f) => ({ kind: f.kind, serial: f.serial, model: f.model, pluggedInto: f.placeLabel, used: !!f.id, id: f.id ?? null, carried: f.id ? carried(f.id) : false, problem: f.problem ?? null })) }, null, 2) + "\n" };
+					if (!phones.length) return { stdout: "No phones plugged into this computer or the computers joined to Swarm.\n" };
+					const lines = phones.map((f) => `${f.model} — ${f.kind === "ios" ? "iPhone" : "Android"}, ${f.serial}, on ${f.placeLabel}: ${f.id ? `in use as ${f.id}${carried(f.id) ? " (the user carries it)" : ""}` : f.problem ? `can't be used yet: ${f.problem}` : "not turned on"}.`);
+					if (phones.some((f) => !f.id && !f.problem)) lines.push("", "Only the user turns a phone on: Settings, Plugins, Test machines, or swarm test-machines use PHONE in their terminal.");
+					return { stdout: lines.join("\n") + "\n" };
+				},
+			}),
+			use: cliCommand({
+				summary: "Turn on a phone discover found, for agents to test on; --carried for the phone you carry (yours alone)",
+				positionals: [{ name: "phone", required: true, description: "Its serial or UDID, or its model, as discover lists it" }],
+				options: { carried: { type: "boolean", description: "You carry it: agents only install and uninstall your test builds there" } },
+				run: async ({ positionals, options }, io) => {
+					userOnly(io, "turns on the phones agents test on");
+					const f = await foundPhone(String(positionals.phone));
+					if (f.problem) throw new PluginCliError(`${f.model} can't be used yet: ${f.problem}.`, { code: "machine" });
+					const id = await use(f, !!options.carried);
+					const next = f.kind === "ios" && !(await wda.built().catch(() => false)) ? "\nIt needs WebDriverAgent built on the Mac once: swarm test-machines setup-iphone." : "";
+					return { stdout: `${f.model} is in use as ${id}${options.carried ? ", the phone you carry" : ""}.${next}\n` };
+				},
+			}),
+			"stop-using": cliCommand({
+				summary: "Stop testing on a phone (yours alone)",
+				positionals: [{ name: "phone", required: true, description: "Its id, serial, UDID or model" }],
+				run: async ({ positionals }, io) => {
+					userOnly(io, "says which phones agents test on");
+					const f = await foundPhone(String(positionals.phone));
+					await stopUsing(f);
+					return { stdout: `Agents no longer test on ${f.model}.\n` };
+				},
+			}),
 			"setup-iphone": cliCommand({
 				summary: "Build WebDriverAgent on the Mac the iPhones are plugged into, signed with your Apple developer team, for the plugin to run on them (yours alone)",
 				options: { team: { type: "string", description: "Your Team ID; the settings' when left out" } },
 				run: async ({ options }, io) => {
 					userOnly(io, "builds WebDriverAgent with their Apple developer team");
-					const team = String(options.team || settings.get("wdaTeam") || "").trim();
+					let team = String(options.team || settings.get("wdaTeam") || "").trim();
+					// The team of the Mac's one Apple Development certificate, where none is given.
+					if (!team) {
+						const teams = await wda.teams().catch(() => []);
+						if (teams.length > 1) throw new PluginCliError(`The Mac has certificates of several teams: ${teams.map((t) => `${t.id} (${t.name})`).join(", ")}.`, { code: "usage", hint: "Give one with --team." });
+						team = teams[0]?.id ?? "";
+					}
+					if (team && !settings.get("wdaTeam")) settings.set({ wdaTeam: team });
 					if (options.team) settings.set({ wdaTeam: team });
 					return { stdout: (await wda.setup(team, (l) => io.print(l))) + "\n" };
 				},

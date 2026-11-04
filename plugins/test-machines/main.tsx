@@ -5,10 +5,15 @@
 // agents act through tools (tools.ts) and the command line (cli.ts), both
 // the same actions (ops.ts). A thread's turns end with its turn of the
 // conversation. The Machines panel (panel.tsx) shows who has what; the
-// Settings page (settingsPage.tsx) sets them up.
+// Settings page (settingsPage.tsx) sets them up. The row above a thread's
+// composer says what it does on them (composer.tsx), and a page on the
+// rail shows them all (machinesPage.tsx).
 import { hook, on, settings, ui } from "swarm";
 import { registerCli } from "./cli";
+import { registerComposer } from "./composer";
+import { discover } from "./discover";
 import { turnEnded } from "./ops";
+import { registerMachinesPage } from "./machinesPage";
 import { PAGE, registerPanel } from "./panel";
 import { settingsPage } from "./settingsPage";
 import { learnTitles, refresh } from "./state";
@@ -19,6 +24,8 @@ export function activate() {
 	registerTools();
 	registerCli();
 	registerPanel();
+	registerComposer();
+	registerMachinesPage();
 	ui.page({ id: PAGE, title: "Test machines", icon: "laptop-mobile", render: settingsPage });
 
 	hook("turnEnd", ({ thread, turn }) => turnEnded(thread, turn));
@@ -29,4 +36,7 @@ export function activate() {
 	settings.onChange(() => void refresh());
 	void refresh();
 	void learnTitles();
+	// The phones plugged in, for the panel to say when one's unused.
+	// and their models, which name an iPhone (refreshed once known).
+	void discover().then(() => refresh()).catch(() => {});
 }
