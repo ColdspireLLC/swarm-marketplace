@@ -80,7 +80,8 @@ the line. Open, it shows each machine's latest screen, its live view
 (or Watch, where it has none) and End turn.
 
 *Test machines* on the window's rail is every machine at once, Phones
-then Computers: its latest screen, who has it and who waits, the phones
+then Computers, each a tile shaped like its screen: its latest screen,
+who has it (and what it's doing there) and who waits, the phones
 plugged in and not used yet (each turned on from there), and a badge of
 how many machines agents are on. The Machines panel groups them the same
 way.

@@ -101,7 +101,7 @@ test("the user takes a machine: the agent on it is cut off, the rest wait until 
 	await w.see(`running while [ ! -e`);
 	await w.screenshot("test-machines-composer");
 	await w.click("Test machines");
-	await w.see("1 machine · 1 in use by agents");
+	await w.see("1 in use");
 	await w.screenshot("test-machines-page");
 	// An agent's shell can't take it for the user, nor end A's turn.
 	const b = await t.thread("say Hello.");

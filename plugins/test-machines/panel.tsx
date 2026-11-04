@@ -15,7 +15,7 @@ export const SETUP = `swarm://settings/test-machines/${PAGE}`;
 
 export const KIND_ICON: Record<string, IconName> = { mac: "laptop", linux: "computer", windows: "monitor", android: "mobile", ios: "mobile", demo: "terminal" };
 
-const looking = ui.store(new Map<string, string>());
+export const looking = ui.store(new Map<string, string>());
 
 /** The machines the panel watches: a screenshot every few seconds, for 5 minutes at most. */
 export const watching = ui.store(new Map<string, number>());
@@ -105,7 +105,7 @@ const STALE_MS = 10 * 60_000;
  * it's shown with none, or with one older than STALE_MS, and no more
  * often than that.
  */
-function lookIfStale(m: Machine) {
+export function lookIfStale(m: Machine) {
 	const k = shots.get(m.id);
 	const now = Date.now();
 	if (carried(m.id) || looking.has(m.id) || watching.has(m.id)) return;
