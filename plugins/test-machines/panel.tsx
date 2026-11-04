@@ -55,6 +55,27 @@ export async function look(m: Machine) {
 	}
 }
 
+/** When each machine was last looked at by itself, for a card shown with no screen, or an old one. */
+const lookedBy = new Map<string, number>();
+/** A screen older than this is looked at again as its card's shown. */
+const STALE_MS = 10 * 60_000;
+
+/**
+ * A card shows the machine's screen without a click: looked at once as
+ * it's shown with none, or with one older than STALE_MS, and no more
+ * often than that.
+ */
+function lookIfStale(m: Machine) {
+	const k = shots.get(m.id);
+	const now = Date.now();
+	if (carried(m.id) || looking.has(m.id) || watching.has(m.id)) return;
+	if (k && now - k.at < STALE_MS) return;
+	if (now - (lookedBy.get(m.id) ?? 0) < STALE_MS) return;
+	lookedBy.set(m.id, now);
+	// After the render: what the look writes (its shimmer, then the screen) isn't the render's to write.
+	setTimeout(() => void look(m), 0);
+}
+
 /** When, said anew each minute in a render (ui.now). */
 export function ago(at: number) {
 	const s = Math.max(0, (ui.now() - at) / 1000);
@@ -71,6 +92,7 @@ export function card(m: Machine, thread: string): Child {
 	const carry = carried(m.id);
 	const waiting = t.waiting.filter((w) => !w.kept).length;
 	const rec = recording.get(m.id);
+	lookIfStale(m);
 	const k = shots.get(m.id);
 	const busy = looking.has(m.id) && !looking.get(m.id);
 	const problem = looking.get(m.id);

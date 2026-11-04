@@ -66,7 +66,7 @@ test("one thread at a time on the screen; its turn ends with its turn", async (t
 	await b.see("Done on Demo machine.\nclicked 40,60\ntyped hello");
 });
 
-test("the Machines panel looks at a screen", async (t) => {
+test("the Machines panel shows a screen, and the user takes the machine", async (t) => {
 	await demo(t);
 	const th = await t.thread("say Hello.");
 	await th.idle();
@@ -74,7 +74,7 @@ test("the Machines panel looks at a screen", async (t) => {
 	await w.panel(th, "machines");
 	await w.see("Demo machine");
 	await w.see("Free: the next agent to use it gets it at once.");
-	await w.click("Look now");
+	// Its screen shows without a click: a card with none looks by itself.
 	await w.see("Screenshot of Demo machine");
 	await w.see("just now · by you");
 	// The picture, as the window has it once it comes.
