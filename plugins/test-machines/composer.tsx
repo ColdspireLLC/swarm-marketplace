@@ -1,8 +1,8 @@
 // The row above a thread's composer: each machine the thread uses, holds
 // or waits for, with what it does there and for how long, so the user
 // sees it without opening the Machines panel. Its end ends the thread's
-// turn there; open, each machine's latest screen, Watch, Open and End
-// turn.
+// turn there; open, each machine's latest screen, its live view (or
+// Watch, where it has none) and End turn.
 import { ui, type Child, type Color } from "swarm";
 import { ago, KIND_ICON, line, look, watch, watching } from "./panel";
 import { plainTitle, shots, turnsOf, usesOf, type Use } from "./state";
@@ -80,9 +80,12 @@ function detail(u: Use, thread: string): Child {
 				</ui.text>
 				<ui.text style={{ fontSize: "small", color: "text2" }}>{[...s.meta, k ? `screen ${ago(k.at)}` : ""].filter(Boolean).join(" · ")}</ui.text>
 				<ui.box style={{ flexDirection: "row", gap: 6, paddingTop: 4, flexWrap: "wrap" }}>
-					<ui.button size="sm" kind="ghost" icon={watching.has(u.m.id) ? "pause" : "play"} onClick={() => watch(u.m, !watching.has(u.m.id))}>{watching.has(u.m.id) ? "Stop watching" : "Watch"}</ui.button>
+					{u.m.screen ? (
+						<ui.button size="sm" kind="ghost" icon="monitor" href={u.m.screen}>Live view</ui.button>
+					) : (
+						<ui.button size="sm" kind="ghost" icon={watching.has(u.m.id) ? "pause" : "play"} onClick={() => watch(u.m, !watching.has(u.m.id))}>{watching.has(u.m.id) ? "Stop watching" : "Watch"}</ui.button>
+					)}
 					{!k ? <ui.button size="sm" kind="ghost" icon="eye" onClick={() => void look(u.m)}>Look now</ui.button> : null}
-					{u.m.screen ? <ui.button size="sm" kind="ghost" icon="monitor" href={u.m.screen}>Open</ui.button> : null}
 					{u.state !== "looking" ? (
 						<ui.button size="sm" kind="ghost" onClick={() => void turnsOf(u.m).release(thread)}>{u.state === "waiting" ? "Leave the line" : "End turn"}</ui.button>
 					) : null}

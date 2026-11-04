@@ -76,8 +76,8 @@ Above a thread's composer, a row says what the thread does on the
 machines: *Using iPhone 17 · tap 603 2166*, *Holding*, *Waiting for* (its
 place in line and who has it), or *Recording*, with how long, and a
 button at its end that ends the thread's turn there or takes it out of
-the line. Open, it shows each machine's latest screen, Watch, Open and
-End turn.
+the line. Open, it shows each machine's latest screen, its live view
+(or Watch, where it has none) and End turn.
 
 *Test machines* on the window's rail is every machine at once, Phones
 then Computers: its latest screen, who has it and who waits, the phones
@@ -86,7 +86,10 @@ how many machines agents are on. The Machines panel groups them the same
 way.
 
 The Machines panel beside a thread shows who has each machine, who's
-waiting, and a screenshot; *Watch* takes one every few seconds, for 5
+waiting, and a screenshot. *Live view* shows a computer or phone joined
+to Swarm live, in Swarm's window (Swarm's remote screen), without taking
+it: an agent on it keeps its turn. A machine with no live view (the demo,
+over ssh, bb's) has *Watch* instead, a screenshot every few seconds for 5
 minutes at most. An agent shows one in its reply as a Markdown
 image: Swarm keeps the picture with the thread (`KeepMedia`), wherever
 its agent runs, and it goes when the thread does. `machine_record` records a flow: bb's machines and Android
@@ -106,9 +109,9 @@ instructions (`rules.ts`):
   agent's recording there is thrown away. Until you give it back, input
   waits in line, and a look, a command or a copy beside you is refused.
   Agents can't take a machine for you, nor end another thread's turn.
-  A computer joined to Swarm has *Open* too: its screen live in Swarm's
-  window, to use as if at it (Swarm's remote screen), the machine yours
-  as it opens.
+  *Live view* shows a machine's screen without taking it: take it first
+  (*Use it myself*) to use it as if at it, so an agent's clicks don't land
+  among yours.
 - **Sensitive apps.** Passwords, banking and payments, mail, messages,
   photos, health, the car, social posting and shopping, and any you add:
   launching or focusing one is refused, a step that lands in one is

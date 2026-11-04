@@ -174,14 +174,15 @@ export function card(m: Machine, thread: string): Child {
 						{busy ? "Looking…" : "Look now"}
 					</ui.button>
 				)}
-				{!carry && (
+				{/* Watch: screenshots every few seconds, where there's no live view. */}
+				{!carry && !m.screen && (
 					<ui.button size="sm" kind="ghost" icon={watching.has(m.id) ? "pause" : "play"} tooltip={watching.has(m.id) ? `Stop watching ${m.name}` : `Watch ${m.name}: a screenshot every few seconds, for 5 minutes`} onClick={() => watch(m, !watching.has(m.id))}>
 						{watching.has(m.id) ? "Stop watching" : "Watch"}
 					</ui.button>
 				)}
 				{m.screen && !carry && (
-					<ui.button size="sm" kind="soft" icon="monitor" href={m.screen} tooltip={`Open ${m.name}'s screen in Swarm, live, and use it yourself: agents wait until you give it back`} onClick={() => void (yours || claim(m, true))}>
-						Open
+					<ui.button size="sm" kind="soft" icon="monitor" href={m.screen} tooltip={`${m.name}'s screen in Swarm, live. An agent on it keeps its turn: Use it myself to take it.`}>
+						Live view
 					</ui.button>
 				)}
 				{yours ? (
