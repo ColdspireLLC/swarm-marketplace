@@ -74,10 +74,11 @@ button at its end that ends the thread's turn there or takes it out of
 the line. Open, it shows each machine's latest screen, Watch, Open and
 End turn.
 
-*Test machines* on the window's rail is every machine at once: its latest
-screen, who has it and who waits, the phones plugged in and not used yet
-(each turned on from there), and a badge of how many machines agents are
-on.
+*Test machines* on the window's rail is every machine at once, Phones
+then Computers: its latest screen, who has it and who waits, the phones
+plugged in and not used yet (each turned on from there), and a badge of
+how many machines agents are on. The Machines panel groups them the same
+way.
 
 The Machines panel beside a thread shows who has each machine, who's
 waiting, and a screenshot; *Watch* takes one every few seconds, for 5

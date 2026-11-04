@@ -4,13 +4,34 @@
 // on. The Machines panel beside a thread shows the same cards; Settings
 // keeps how the machines are reached.
 import { ui, type Child } from "swarm";
-import { discover, found } from "./discover";
-import { card, SETUP } from "./panel";
+import { discover, found, type Found } from "./discover";
+import { card, group, isPhone, SETUP } from "./panel";
 import { phoneRow } from "./settingsPage";
 import { learnTitles, refresh, st, turnsOf } from "./state";
 import { USER } from "./turns";
 
 export const NAV = "test-machines";
+
+const COLUMNS = [
+	{ minWidth: 760, style: { gridTemplateColumns: 2 } },
+	{ minWidth: 1100, style: { gridTemplateColumns: 3 } },
+];
+
+/** Phones: those in use, as cards, then those plugged in and not used yet, each turned on from here. */
+function phonesGroup(unused: Found[]): Child {
+	const used = st.machines.filter(isPhone);
+	return (
+		<ui.box style={{ gap: 10 }}>
+			{group("Phones", used.length ? used.map((m) => card(m, "")) : unused.length ? null : <ui.text style={{ color: "text2", paddingLeft: 4 }}>No phones yet: plug one into a computer joined to Swarm.</ui.text>, COLUMNS)}
+			{unused.length ? (
+				<ui.box style={{ padding: "s5 s6", gap: 14, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }}>
+					<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2" }}>Plugged in, not in use</ui.text>
+					{unused.map(phoneRow)}
+				</ui.box>
+			) : null}
+		</ui.box>
+	);
+}
 
 async function again() {
 	await refresh();
@@ -51,16 +72,11 @@ function body(): Child {
 				{st.driverProblems.map((p, i) => (
 					<ui.text key={"dp" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
 				))}
-				{unused.length ? (
-					<ui.box style={{ gap: 8 }}>
-						<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2", paddingLeft: 4 }}>Plugged in, not in use</ui.text>
-						<ui.box style={{ padding: "s5 s6", gap: 14, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }}>{unused.map(phoneRow)}</ui.box>
-					</ui.box>
-				) : null}
-				{st.machines.length ? (
-					<ui.box style={{ display: "grid", gridTemplateColumns: 1, gap: 12, media: [{ minWidth: 760, style: { gridTemplateColumns: 2 } }, { minWidth: 1100, style: { gridTemplateColumns: 3 } }] }}>
-						{st.machines.map((m) => card(m, ""))}
-					</ui.box>
+				{st.machines.length || unused.length ? (
+					<>
+						{phonesGroup(unused)}
+						{st.machines.some((m) => !isPhone(m)) ? group("Computers", st.machines.filter((m) => !isPhone(m)).map((m) => card(m, "")), COLUMNS) : null}
+					</>
 				) : (
 					<ui.box style={{ alignSelf: "center", maxWidth: 360, padding: "s8 s4", gap: 6, alignItems: "center" }}>
 						<ui.text style={{ fontWeight: 500, textAlign: "center" }}>No test machines yet</ui.text>

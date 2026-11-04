@@ -169,6 +169,18 @@ export function unusedPhones(): Child {
 	);
 }
 
+export const isPhone = (m: Machine) => m.kind === "android" || m.kind === "ios";
+
+/** A group of cards under its heading: Phones, Computers. */
+export function group(title: string, children: Child, columns: { minWidth: number; style: { gridTemplateColumns: number } }[]): Child {
+	return (
+		<ui.box style={{ gap: 8 }}>
+			<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2", paddingLeft: 4 }}>{title}</ui.text>
+			<ui.box style={{ display: "grid", gridTemplateColumns: 1, gap: 10, media: columns }}>{children}</ui.box>
+		</ui.box>
+	);
+}
+
 export function registerPanel() {
 	ui.panel({
 		id: "machines",
@@ -186,11 +198,16 @@ export function registerPanel() {
 					{st.driverProblems.map((p, i) => (
 						<ui.text key={"dp" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
 					))}
-					{unusedPhones()}
-					{st.machines.length === 0 ? empty() : (
-						<ui.box style={{ display: "grid", gridTemplateColumns: 1, gap: 10, media: [{ minWidth: 760, style: { gridTemplateColumns: 2 } }] }}>
-							{st.machines.map((m) => card(m, thread))}
-						</ui.box>
+					{st.machines.length === 0 ? (
+						<>
+							{unusedPhones()}
+							{empty()}
+						</>
+					) : (
+						<>
+							{st.machines.some(isPhone) || unusedPhones() ? group("Phones", [unusedPhones(), ...st.machines.filter(isPhone).map((m) => card(m, thread))], [{ minWidth: 760, style: { gridTemplateColumns: 2 } }]) : null}
+							{st.machines.some((m) => !isPhone(m)) ? group("Computers", st.machines.filter((m) => !isPhone(m)).map((m) => card(m, thread)), [{ minWidth: 760, style: { gridTemplateColumns: 2 } }]) : null}
+						</>
 					)}
 				</ui.box>
 			</ui.scroll>
