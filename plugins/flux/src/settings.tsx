@@ -6,6 +6,7 @@ import { ConnectForm } from "./connect";
 import { hub } from "./hub";
 import type { Flux, State } from "./service";
 import { Avatar } from "./view";
+import { SpawnConfigs } from "./spawn";
 import { MarkPicker, confirmDelete, keyNote, markOf, openNewProject, openProjectSettings, setMark } from "./projects";
 
 /** The Fluxes whose Change form is open, and whether Add another is. */
@@ -62,6 +63,7 @@ export function FluxSettings() {
 				)}
 			</ui.box>
 			{connection.state === "ready" || active.projects().length > 0 ? <ProjectLinks flux={active} /> : null}
+			<SpawnConfigs />
 		</ui.box>
 	);
 }

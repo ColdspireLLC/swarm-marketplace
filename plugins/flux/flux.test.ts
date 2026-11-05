@@ -1173,6 +1173,58 @@ test("Start agent seeds bb's prompt, sends the issue's images, and remembers the
 	expect(await w.has("Swarm project for Alpha: Not linked")).toBe(false);
 });
 
+test("Start agent's configurations: Default opens it, others are saved and picked, and Settings keeps them", async (t) => {
+	await flux(t);
+	const w = await t.window();
+	await w.resize(1280, 800);
+	await w.click("Flux");
+	await w.click("All issues");
+	await w.click("Fix the login redirect");
+	await w.click("Start agent");
+	// A mode picked, Default is changed, and saved, it opens with it.
+	await w.click("Permission mode");
+	await w.click("Full access");
+	await w.click("Configuration: Default (changed)");
+	await w.click("Save to Default");
+	await w.see("Configuration: Default");
+	await w.key("Escape");
+	await w.click("Start agent");
+	await w.see("Configuration: Default");
+	await w.see("Full access");
+	// Another, saved as new under a name of its own.
+	await w.click("Permission mode");
+	await w.click("Auto-accept edits");
+	await w.click("Configuration: Default (changed)");
+	await w.click("Save as new configuration…");
+	await w.see("Save configuration");
+	await w.type("Careful");
+	await w.screenshot("flux-start-config-save");
+	await w.click("Save configuration");
+	await w.see("Configuration: Careful");
+	// Default and it, a click apart.
+	await w.click("Configuration: Careful");
+	await w.click("Default");
+	await w.see("Full access");
+	await w.click("Configuration: Default");
+	await w.screenshot("flux-start-config-menu");
+	await w.click("Careful");
+	await w.see("Auto-accept edits");
+	await w.click("Start");
+	await w.see("Agent started on ABC-1.");
+	// Its thread started with Careful's mode.
+	const started = await t.until(async () => (await t.call("Threads", {})).find((th) => th.title.startsWith("ABC-1")), { what: "the agent's thread" });
+	expect(started.approval).toBe("edits");
+	// Settings lists them, Default first, and deletes the others.
+	await w.settings("flux");
+	await w.see("Agent configurations");
+	await w.see("Configuration Careful");
+	await w.screenshot("flux-settings-configs");
+	await w.click("Actions for Careful");
+	await w.click("Delete");
+	await w.gone("Configuration Careful");
+	await w.see("Configuration Default");
+});
+
 test("the agent looks at an issue's images", async (t) => {
 	await flux(t);
 	const th = await t.thread('tool flux_issue_images {"issue": "ABC-1"}');

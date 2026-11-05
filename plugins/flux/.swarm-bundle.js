@@ -2459,8 +2459,8 @@ var require_select = __commonJS({
       // Non-standard, for compatibility purposes.
       ":contains": function(param) {
         return function(el) {
-          var text2 = el.innerText || el.textContent || el.value || "";
-          return text2.indexOf(param) !== -1;
+          var text3 = el.innerText || el.textContent || el.value || "";
+          return text3.indexOf(param) !== -1;
         };
       },
       ":has": function(param) {
@@ -3127,9 +3127,9 @@ var require_Element = __commonJS({
         position = utils.toASCIILowerCase(String(position));
         this._insertAdjacent(position, textNode);
       } },
-      insertAdjacentHTML: { value: function insertAdjacentHTML(position, text2) {
+      insertAdjacentHTML: { value: function insertAdjacentHTML(position, text3) {
         position = utils.toASCIILowerCase(String(position));
-        text2 = String(text2);
+        text3 = String(text3);
         var context2;
         switch (position) {
           case "beforebegin":
@@ -3153,7 +3153,7 @@ var require_Element = __commonJS({
           this.ownerDocument._address,
           context2
         );
-        parser.parse(text2, true);
+        parser.parse(text3, true);
         this._insertAdjacent(position, parser._asDocumentFragment());
       } },
       children: { get: function() {
@@ -5272,9 +5272,9 @@ var require_CSSStyleDeclaration = __commonJS({
       // Note that the styles don't get parsed until they're actually needed
       _parsed: { get: function() {
         if (!this._parsedStyles || this.cssText !== this._lastParsedText) {
-          var text2 = this.cssText;
-          this._parsedStyles = parseStyles(text2);
-          this._lastParsedText = text2;
+          var text3 = this.cssText;
+          this._parsedStyles = parseStyles(text3);
+          this._lastParsedText = text3;
           delete this._names;
         }
         return this._parsedStyles;
@@ -16778,8 +16778,8 @@ var require_core = __commonJS({
        * Adds texts to the output stream
        *
        * @param {string} text */
-      addText(text2) {
-        this.buffer += escapeHTML(text2);
+      addText(text3) {
+        this.buffer += escapeHTML(text3);
       }
       /**
        * Adds a node open to the output stream (if needed)
@@ -16901,11 +16901,11 @@ var require_core = __commonJS({
       /**
        * @param {string} text
        */
-      addText(text2) {
-        if (text2 === "") {
+      addText(text3) {
+        if (text3 === "") {
           return;
         }
-        this.add(text2);
+        this.add(text3);
       }
       /** @param {string} scope */
       startScope(scope) {
@@ -17747,11 +17747,11 @@ var require_core = __commonJS({
               continue;
             }
             const klass = language.classNameAliases[scope[i2]] || scope[i2];
-            const text2 = match2[i2];
+            const text3 = match2[i2];
             if (klass) {
-              emitKeyword(text2, klass);
+              emitKeyword(text3, klass);
             } else {
-              modeBuffer = text2;
+              modeBuffer = text3;
               processKeywords();
               modeBuffer = "";
             }
@@ -18064,8 +18064,8 @@ var require_core = __commonJS({
           }
         }
         node2 = element2;
-        const text2 = node2.textContent;
-        const result = language ? highlight2(text2, { language, ignoreIllegals: true }) : highlightAuto(text2);
+        const text3 = node2.textContent;
+        const result = language ? highlight2(text3, { language, ignoreIllegals: true }) : highlightAuto(text3);
         element2.innerHTML = result.value;
         element2.dataset.highlighted = "yes";
         updateClassName(element2, language, result.language);
@@ -18081,7 +18081,7 @@ var require_core = __commonJS({
             relevance: result.secondBest.relevance
           };
         }
-        fire("after:highlightElement", { el: element2, result, text: text2 });
+        fire("after:highlightElement", { el: element2, result, text: text3 });
       }
       function configure(userOptions) {
         options = inherit(options, userOptions);
@@ -18246,7 +18246,7 @@ var require_core = __commonJS({
 });
 
 // main.tsx
-import swarm3, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui16 } from "swarm";
+import swarm3, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui17 } from "swarm";
 
 // src/pictures.ts
 import { ui as ui3 } from "swarm";
@@ -27629,8 +27629,8 @@ function ko_default() {
 }
 
 // node_modules/zod/v4/locales/lt.js
-var capitalizeFirstCharacter = (text2) => {
-  return text2.charAt(0).toUpperCase() + text2.slice(1);
+var capitalizeFirstCharacter = (text3) => {
+  return text3.charAt(0).toUpperCase() + text3.slice(1);
 };
 function getUnitTypeFromNumber(number4) {
   const abs2 = Math.abs(number4);
@@ -38163,8 +38163,8 @@ var FluxClient = class {
       body: init2.body === void 0 ? void 0 : JSON.stringify(init2.body),
       signal: init2.signal
     });
-    const text2 = await response.text();
-    const parsed = parseJson(text2);
+    const text3 = await response.text();
+    const parsed = parseJson(text3);
     if (!response.ok) throw this.refused(response.status, parsed);
     if (response.status === 204 && path === "/user") {
       throw this.refused(401, null);
@@ -38173,7 +38173,7 @@ var FluxClient = class {
     if (result.success) return result.data;
     throw new FluxHttpError(
       response.status,
-      unexpected(this.baseUrl, `${init2.method ?? "GET"} ${path}`, response, text2, result.error),
+      unexpected(this.baseUrl, `${init2.method ?? "GET"} ${path}`, response, text3, result.error),
       parsed
     );
   }
@@ -38291,29 +38291,29 @@ var FluxClient = class {
       body: form,
       signal: signal ? AbortSignal.any([signal, timeout]) : timeout
     });
-    const text2 = await response.text();
-    const parsed = parseJson(text2);
+    const text3 = await response.text();
+    const parsed = parseJson(text3);
     if (!response.ok) throw this.refused(response.status, parsed);
     return uploadedAssetSchema.parse(parsed);
   }
 };
-function parseJson(text2) {
-  if (!text2) return null;
+function parseJson(text3) {
+  if (!text3) return null;
   try {
-    return JSON.parse(text2);
+    return JSON.parse(text3);
   } catch {
-    return text2;
+    return text3;
   }
 }
-function unexpected(baseUrl, request, response, text2, error62) {
+function unexpected(baseUrl, request, response, text3, error62) {
   const type = response.headers.get("content-type") ?? "";
-  if (type.includes("text/html") || /^\s*<(!doctype|html)/i.test(text2)) {
+  if (type.includes("text/html") || /^\s*<(!doctype|html)/i.test(text3)) {
     return `${baseUrl} answered ${request} with a web page, not Flux's API. Check the Flux URL: the address you open Flux at.`;
   }
   const issue2 = error62.issues[0];
   const where = issue2?.path.length ? `${issue2.path.join(".")}: ` : "";
-  const start = text2.replace(/\s+/g, " ").trim().slice(0, 80);
-  return `Flux answered ${request} with what Swarm's Flux can't read (${where}${issue2?.message ?? "not what it expected"})${start ? `: ${start}${text2.length > 80 ? "…" : ""}` : ", an empty body"}.`;
+  const start = text3.replace(/\s+/g, " ").trim().slice(0, 80);
+  return `Flux answered ${request} with what Swarm's Flux can't read (${where}${issue2?.message ?? "not what it expected"})${start ? `: ${start}${text3.length > 80 ? "…" : ""}` : ", an empty body"}.`;
 }
 function errorMessage(status, body) {
   if (status === 401) {
@@ -40011,15 +40011,15 @@ function collapseWhitespace(options) {
   var node2 = next(prev, element2, isPre);
   while (node2 !== element2) {
     if (node2.nodeType === 3 || node2.nodeType === 4) {
-      var text2 = node2.data.replace(/[ \r\n\t]+/g, " ");
-      if ((!prevText || / $/.test(prevText.data)) && !keepLeadingWs && text2[0] === " ") {
-        text2 = text2.substr(1);
+      var text3 = node2.data.replace(/[ \r\n\t]+/g, " ");
+      if ((!prevText || / $/.test(prevText.data)) && !keepLeadingWs && text3[0] === " ") {
+        text3 = text3.substr(1);
       }
-      if (!text2) {
+      if (!text3) {
         node2 = remove(node2);
         continue;
       }
-      node2.data = text2;
+      node2.data = text3;
       prevText = node2;
     } else if (node2.nodeType === 1) {
       if (isBlock2(node2) || node2.nodeName === "BR") {
@@ -40417,12 +40417,12 @@ function createMarked(baseUrl) {
       // Raw HTML from an agent is shown as text, never interpreted, but
       // for images of a size or alignment, as Swarm's editor writes them:
       // written anew, of what Flux's image node keeps.
-      html({ text: text2 }) {
-        if (/^\s*(<img\b(?:[^>"']|"[^"]*"|'[^']*')*>\s*)+$/i.test(text2)) {
-          const tags = [...text2.matchAll(HTML_IMAGE)].map((m) => readImageTag(m[0]));
+      html({ text: text3 }) {
+        if (/^\s*(<img\b(?:[^>"']|"[^"]*"|'[^']*')*>\s*)+$/i.test(text3)) {
+          const tags = [...text3.matchAll(HTML_IMAGE)].map((m) => readImageTag(m[0]));
           if (tags.every((tag) => tag !== null)) return tags.map((tag) => imageHtml(tag)).join("");
         }
-        return escapeHtml(text2);
+        return escapeHtml(text3);
       },
       // Task lists use TipTap's markup so they stay checkable in Flux.
       list(token) {
@@ -40436,13 +40436,13 @@ function createMarked(baseUrl) {
       },
       // Only web, mail, and in-app links; never `javascript:` and friends.
       link({ href, title, tokens }) {
-        const text2 = this.parser.parseInline(tokens);
-        if (!isSafeHref(href)) return text2;
+        const text3 = this.parser.parseInline(tokens);
+        if (!isSafeHref(href)) return text3;
         const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
-        return `<a href="${escapeHtml(href)}"${titleAttr}>${text2}</a>`;
+        return `<a href="${escapeHtml(href)}"${titleAttr}>${text3}</a>`;
       },
-      image({ href, title, text: text2 }) {
-        return imageHtml({ src: href, alt: text2 }, title);
+      image({ href, title, text: text3 }) {
+        return imageHtml({ src: href, alt: text3 }, title);
       }
     }
   });
@@ -40525,8 +40525,8 @@ function convertHtml(html, options) {
     filter: (node2) => node2.nodeName === "LI" && node2.parentElement?.getAttribute("data-type") === "taskList",
     replacement: (content, node2) => {
       const checked = node2.getAttribute("data-checked") === "true";
-      const text2 = content.replace(/^\n+|\n+$/g, "").replace(/\n/g, "\n  ");
-      return `- [${checked ? "x" : " "}] ${text2}
+      const text3 = content.replace(/^\n+|\n+$/g, "").replace(/\n/g, "\n  ");
+      return `- [${checked ? "x" : " "}] ${text3}
 `;
     }
   });
@@ -40823,18 +40823,18 @@ var Fragment = class _Fragment {
   [`Node`](https://prosemirror.net/docs/ref/#model.Node.textBetween).
   */
   textBetween(from4, to, blockSeparator, leafText) {
-    let text2 = "", first2 = true;
+    let text3 = "", first2 = true;
     this.nodesBetween(from4, to, (node2, pos) => {
       let nodeText = node2.isText ? node2.text.slice(Math.max(from4, pos) - pos, to - pos) : !node2.isLeaf ? "" : leafText ? typeof leafText === "function" ? leafText(node2) : leafText : node2.type.spec.leafText ? node2.type.spec.leafText(node2) : "";
       if (node2.isBlock && (node2.isLeaf && nodeText || node2.isTextblock) && blockSeparator) {
         if (first2)
           first2 = false;
         else
-          text2 += blockSeparator;
+          text3 += blockSeparator;
       }
-      text2 += nodeText;
+      text3 += nodeText;
     }, 0);
-    return text2;
+    return text3;
   }
   /**
   Create a new fragment containing the combined content of this
@@ -42190,10 +42190,10 @@ var TextNode = class _TextNode extends Node3 {
   mark(marks) {
     return marks == this.marks ? this : new _TextNode(this.type, this.attrs, this.text, marks);
   }
-  withText(text2) {
-    if (text2 == this.text)
+  withText(text3) {
+    if (text3 == this.text)
       return this;
-    return new _TextNode(this.type, this.attrs, text2, this.marks);
+    return new _TextNode(this.type, this.attrs, text3, this.marks);
   }
   cut(from4 = 0, to = this.text.length) {
     if (from4 == 0 && to == this.text.length)
@@ -42997,9 +42997,9 @@ var Schema = class {
   Create a text node in the schema. Empty text nodes are not
   allowed.
   */
-  text(text2, marks) {
+  text(text3, marks) {
     let type = this.nodes.text;
-    return new TextNode(type, type.defaultAttrs, text2, Mark.setFrom(marks));
+    return new TextNode(type, type.defaultAttrs, text3, Mark.setFrom(marks));
   }
   /**
   Create a mark with the given type and attributes.
@@ -43258,11 +43258,11 @@ var NodeContext = class {
     if (!(this.options & OPT_PRESERVE_WS)) {
       let last2 = this.content[this.content.length - 1], m;
       if (last2 && last2.isText && (m = /[ \t\r\n\u000c]+$/.exec(last2.text))) {
-        let text2 = last2;
+        let text3 = last2;
         if (last2.text.length == m[0].length)
           this.content.pop();
         else
-          this.content[this.content.length - 1] = text2.withText(text2.text.slice(0, text2.text.length - m[0].length));
+          this.content[this.content.length - 1] = text3.withText(text3.text.slice(0, text3.text.length - m[0].length));
       }
     }
     let content = Fragment.from(this.content);
@@ -43736,19 +43736,19 @@ var DOMSerializer = class _DOMSerializer {
     let top = target, active = [];
     fragment.forEach((node2) => {
       if (active.length || node2.marks.length) {
-        let keep = 0, rendered = 0;
-        while (keep < active.length && rendered < node2.marks.length) {
+        let keep2 = 0, rendered = 0;
+        while (keep2 < active.length && rendered < node2.marks.length) {
           let next2 = node2.marks[rendered];
           if (!this.marks[next2.type.name]) {
             rendered++;
             continue;
           }
-          if (!next2.eq(active[keep][0]) || next2.type.spec.spanning === false)
+          if (!next2.eq(active[keep2][0]) || next2.type.spec.spanning === false)
             break;
-          keep++;
+          keep2++;
           rendered++;
         }
-        while (keep < active.length)
+        while (keep2 < active.length)
           top = active.pop()[1];
         while (rendered < node2.marks.length) {
           let add = node2.marks[rendered++];
@@ -46254,16 +46254,16 @@ var AllBookmark = {
     return new AllSelection(doc4);
   }
 };
-function findSelectionIn(doc4, node2, pos, index, dir, text2 = false) {
+function findSelectionIn(doc4, node2, pos, index, dir, text3 = false) {
   if (node2.inlineContent)
     return TextSelection.create(doc4, pos);
   for (let i2 = index - (dir > 0 ? 0 : 1); dir > 0 ? i2 < node2.childCount : i2 >= 0; i2 += dir) {
     let child = node2.child(i2);
     if (!child.isAtom) {
-      let inner = findSelectionIn(doc4, child, pos + dir, dir < 0 ? child.childCount : 0, dir, text2);
+      let inner = findSelectionIn(doc4, child, pos + dir, dir < 0 ? child.childCount : 0, dir, text3);
       if (inner)
         return inner;
-    } else if (!text2 && NodeSelection.isSelectable(child)) {
+    } else if (!text3 && NodeSelection.isSelectable(child)) {
       return NodeSelection.create(doc4, pos - (dir < 0 ? child.nodeSize : 0));
     }
     pos += child.nodeSize * dir;
@@ -46413,24 +46413,24 @@ var Transaction = class extends Transform {
   Replace the given range, or the selection if no range is given,
   with a text node containing the given string.
   */
-  insertText(text2, from4, to) {
+  insertText(text3, from4, to) {
     let schema2 = this.doc.type.schema;
     if (from4 == null) {
-      if (!text2)
+      if (!text3)
         return this.deleteSelection();
-      return this.replaceSelectionWith(schema2.text(text2), true);
+      return this.replaceSelectionWith(schema2.text(text3), true);
     } else {
       if (to == null)
         to = from4;
-      if (!text2)
+      if (!text3)
         return this.deleteRange(from4, to);
       let marks = this.storedMarks;
       if (!marks) {
         let $from = this.doc.resolve(from4);
         marks = to == from4 ? $from.marks() : $from.marksAcross(this.doc.resolve(to));
       }
-      this.replaceRangeWith(from4, to, schema2.text(text2, marks));
-      if (!this.selection.empty && this.selection.to == from4 + text2.length)
+      this.replaceRangeWith(from4, to, schema2.text(text3, marks));
+      if (!this.selection.empty && this.selection.to == from4 + text3.length)
         this.setSelection(Selection.near(this.selection.$to));
       return this;
     }
@@ -47125,10 +47125,10 @@ function splitBlockAs(splitNode) {
 var splitBlock = splitBlockAs();
 var selectParentNode = (state, dispatch) => {
   let { $from, to } = state.selection, pos;
-  let same = $from.sharedDepth(to);
-  if (same == 0)
+  let same2 = $from.sharedDepth(to);
+  if (same2 == 0)
     return false;
-  pos = $from.before(same);
+  pos = $from.before(same2);
   if (dispatch)
     dispatch(state.tr.setSelection(NodeSelection.create(state.doc, pos)));
   return true;
@@ -48456,7 +48456,7 @@ var ViewDesc = class {
   get ignoreForSelection() {
     return false;
   }
-  isText(text2) {
+  isText(text3) {
     return false;
   }
 };
@@ -48513,10 +48513,10 @@ var WidgetViewDesc = class extends ViewDesc {
   }
 };
 var CompositionViewDesc = class extends ViewDesc {
-  constructor(parent, dom, textDOM, text2) {
+  constructor(parent, dom, textDOM, text3) {
     super(parent, [], dom, null);
     this.textDOM = textDOM;
-    this.text = text2;
+    this.text = text3;
   }
   get size() {
     return this.text.length;
@@ -48725,14 +48725,14 @@ var NodeViewDesc = class _NodeViewDesc extends ViewDesc {
     if (!textNode || !this.dom.contains(textNode.parentNode))
       return null;
     if (this.node.inlineContent) {
-      let text2 = textNode.nodeValue;
-      let textPos = findTextInFragment(this.node.content, text2, from4 - pos, to - pos);
-      return textPos < 0 ? null : { node: textNode, pos: textPos, text: text2 };
+      let text3 = textNode.nodeValue;
+      let textPos = findTextInFragment(this.node.content, text3, from4 - pos, to - pos);
+      return textPos < 0 ? null : { node: textNode, pos: textPos, text: text3 };
     } else {
       return { node: textNode, pos: -1, text: "" };
     }
   }
-  protectLocalComposition(view, { node: node2, pos, text: text2 }) {
+  protectLocalComposition(view, { node: node2, pos, text: text3 }) {
     if (this.getDesc(node2))
       return;
     let topNode = node2;
@@ -48746,9 +48746,9 @@ var NodeViewDesc = class _NodeViewDesc extends ViewDesc {
       if (topNode.pmViewDesc)
         topNode.pmViewDesc = void 0;
     }
-    let desc = new CompositionViewDesc(this, topNode, node2, text2);
+    let desc = new CompositionViewDesc(this, topNode, node2, text3);
     view.input.compositionNodes.push(desc);
-    this.children = replaceNodes(this.children, pos, pos + text2.length, view, desc);
+    this.children = replaceNodes(this.children, pos, pos + text3.length, view, desc);
   }
   // If this desc must be updated to match the given node decoration,
   // do so and return true.
@@ -48858,8 +48858,8 @@ var TextViewDesc = class _TextViewDesc extends NodeViewDesc {
   get domAtom() {
     return false;
   }
-  isText(text2) {
-    return this.node.text == text2;
+  isText(text3) {
+    return this.node.text == text3;
   }
 };
 var BufferHackViewDesc = class extends ViewDesc {
@@ -49072,11 +49072,11 @@ var ViewTreeUpdater = class {
   // Sync the current stack of mark descs with the given array of
   // marks, reusing existing mark descs when possible.
   syncToMarks(marks, inline2, view, parentIndex) {
-    let keep = 0, depth = this.stack.length >> 1;
+    let keep2 = 0, depth = this.stack.length >> 1;
     let maxKeep = Math.min(depth, marks.length);
-    while (keep < maxKeep && (keep == depth - 1 ? this.top : this.stack[keep + 1 << 1]).matchesMark(marks[keep]) && marks[keep].type.spec.spanning !== false)
-      keep++;
-    while (keep < depth) {
+    while (keep2 < maxKeep && (keep2 == depth - 1 ? this.top : this.stack[keep2 + 1 << 1]).matchesMark(marks[keep2]) && marks[keep2].type.spec.spanning !== false)
+      keep2++;
+    while (keep2 < depth) {
       this.destroyRest();
       this.top.dirty = NOT_DIRTY;
       this.index = this.stack.pop();
@@ -49387,7 +49387,7 @@ function iosHacks(dom) {
     dom.style.cssText = oldCSS;
   }
 }
-function findTextInFragment(frag, text2, from4, to) {
+function findTextInFragment(frag, text3, from4, to) {
   for (let i2 = 0, pos = 0; i2 < frag.childCount && pos <= to; ) {
     let child = frag.child(i2++), childStart = pos;
     pos += child.nodeSize;
@@ -49402,12 +49402,12 @@ function findTextInFragment(frag, text2, from4, to) {
       str2 += next2.text;
     }
     if (pos >= from4) {
-      if (pos >= to && str2.slice(to - text2.length - childStart, to - childStart) == text2)
-        return to - text2.length;
-      let found2 = childStart < to ? str2.lastIndexOf(text2, to - childStart - 1) : -1;
-      if (found2 >= 0 && found2 + text2.length + childStart >= from4)
+      if (pos >= to && str2.slice(to - text3.length - childStart, to - childStart) == text3)
+        return to - text3.length;
+      let found2 = childStart < to ? str2.lastIndexOf(text3, to - childStart - 1) : -1;
+      if (found2 >= 0 && found2 + text3.length + childStart >= from4)
         return childStart + found2;
-      if (from4 == to && str2.length >= to + text2.length - childStart && str2.slice(to - childStart, to - childStart + text2.length) == text2)
+      if (from4 == to && str2.length >= to + text3.length - childStart && str2.slice(to - childStart, to - childStart + text3.length) == text3)
         return to;
     }
   }
@@ -49980,34 +49980,34 @@ function serializeForClipboard(view, slice2) {
   }
   if (firstChild && isElt(firstChild))
     firstChild.setAttribute("data-pm-slice", `${openStart} ${openEnd}${wrappers ? ` -${wrappers}` : ""} ${JSON.stringify(context2)}`);
-  let text2 = view.someProp("clipboardTextSerializer", (f2) => f2(slice2, view)) || slice2.content.textBetween(0, slice2.content.size, "\n\n");
-  return { dom: wrap2, text: text2, slice: slice2 };
+  let text3 = view.someProp("clipboardTextSerializer", (f2) => f2(slice2, view)) || slice2.content.textBetween(0, slice2.content.size, "\n\n");
+  return { dom: wrap2, text: text3, slice: slice2 };
 }
-function parseFromClipboard(view, text2, html, plainText, $context) {
+function parseFromClipboard(view, text3, html, plainText, $context) {
   let inCode = $context.parent.type.spec.code;
   let dom, slice2;
-  if (!html && !text2)
+  if (!html && !text3)
     return null;
-  let asText = !!text2 && (plainText || inCode || !html);
+  let asText = !!text3 && (plainText || inCode || !html);
   if (asText) {
     view.someProp("transformPastedText", (f2) => {
-      text2 = f2(text2, inCode || plainText, view);
+      text3 = f2(text3, inCode || plainText, view);
     });
     if (inCode) {
-      slice2 = new Slice(Fragment.from(view.state.schema.text(text2.replace(/\r\n?/g, "\n"))), 0, 0);
+      slice2 = new Slice(Fragment.from(view.state.schema.text(text3.replace(/\r\n?/g, "\n"))), 0, 0);
       view.someProp("transformPasted", (f2) => {
         slice2 = f2(slice2, view, true);
       });
       return slice2;
     }
-    let parsed = view.someProp("clipboardTextParser", (f2) => f2(text2, $context, plainText, view));
+    let parsed = view.someProp("clipboardTextParser", (f2) => f2(text3, $context, plainText, view));
     if (parsed) {
       slice2 = parsed;
     } else {
       let marks = $context.marks();
       let { schema: schema2 } = view.state, serializer = DOMSerializer.fromSchema(schema2);
       dom = document.createElement("div");
-      text2.split(/(?:\r\n?|\n)+/).forEach((block) => {
+      text3.split(/(?:\r\n?|\n)+/).forEach((block) => {
         let p = dom.appendChild(document.createElement("p"));
         if (block)
           p.appendChild(serializer.serializeNode(schema2.text(block, marks)));
@@ -50339,9 +50339,9 @@ editHandlers.keypress = (view, _event) => {
   }
   let sel = view.state.selection;
   if (!(sel instanceof TextSelection) || !sel.$from.sameParent(sel.$to)) {
-    let text2 = String.fromCharCode(event.charCode);
-    let deflt = () => view.state.tr.insertText(text2).scrollIntoView();
-    if (!/[\r\n]/.test(text2) && !view.someProp("handleTextInput", (f2) => f2(view, sel.$from.pos, sel.$to.pos, text2, deflt)))
+    let text3 = String.fromCharCode(event.charCode);
+    let deflt = () => view.state.tr.insertText(text3).scrollIntoView();
+    if (!/[\r\n]/.test(text3) && !view.someProp("handleTextInput", (f2) => f2(view, sel.$from.pos, sel.$to.pos, text3, deflt)))
       view.dispatch(deflt());
     event.preventDefault();
   }
@@ -50765,12 +50765,12 @@ handlers.copy = editHandlers.cut = (view, _event) => {
   if (sel.empty)
     return;
   let data = brokenClipboardAPI ? null : event.clipboardData;
-  let slice2 = sel.content(), { dom, text: text2 } = serializeForClipboard(view, slice2);
+  let slice2 = sel.content(), { dom, text: text3 } = serializeForClipboard(view, slice2);
   if (data) {
     event.preventDefault();
     data.clearData();
     data.setData("text/html", dom.innerHTML);
-    data.setData("text/plain", text2);
+    data.setData("text/plain", text3);
   } else {
     captureCopy(view, dom);
   }
@@ -50800,8 +50800,8 @@ function capturePaste(view, event) {
       doPaste(view, target.textContent, target.innerHTML, plain, event);
   }, 50);
 }
-function doPaste(view, text2, html, preferPlain, event) {
-  let slice2 = parseFromClipboard(view, text2, html, preferPlain, view.state.selection.$from);
+function doPaste(view, text3, html, preferPlain, event) {
+  let slice2 = parseFromClipboard(view, text3, html, preferPlain, view.state.selection.$from);
   if (view.someProp("handlePaste", (f2) => f2(view, event, slice2 || Slice.empty)))
     return true;
   if (!slice2)
@@ -50812,9 +50812,9 @@ function doPaste(view, text2, html, preferPlain, event) {
   return true;
 }
 function getText(clipboardData) {
-  let text2 = clipboardData.getData("text/plain") || clipboardData.getData("Text");
-  if (text2)
-    return text2;
+  let text3 = clipboardData.getData("text/plain") || clipboardData.getData("Text");
+  if (text3)
+    return text3;
   let uris = clipboardData.getData("text/uri-list");
   return uris ? uris.replace(/\r?\n/g, " ") : "";
 }
@@ -50863,13 +50863,13 @@ handlers.dragstart = (view, _event) => {
       node2 = NodeSelection.create(view.state.doc, desc.posBefore);
   }
   let draggedSlice = (node2 || view.state.selection).content();
-  let { dom, text: text2, slice: slice2 } = serializeForClipboard(view, draggedSlice);
+  let { dom, text: text3, slice: slice2 } = serializeForClipboard(view, draggedSlice);
   if (!event.dataTransfer.files.length || !chrome || chrome_version > 120)
     event.dataTransfer.clearData();
   event.dataTransfer.setData(brokenClipboardAPI ? "Text" : "text/html", dom.innerHTML);
   event.dataTransfer.effectAllowed = "copyMove";
   if (!brokenClipboardAPI)
-    event.dataTransfer.setData("text/plain", text2);
+    event.dataTransfer.setData("text/plain", text3);
   view.dragging = new Dragging(slice2, dragMoves(view, event), node2);
 };
 handlers.dragend = (view) => {
@@ -52174,9 +52174,9 @@ function readDOMChange(view, from4, to, typeOver, addedNodes) {
         tr2.removeMark(chFrom, chTo, markChange.mark);
       view.dispatch(tr2);
     } else if ($from.parent.child($from.index()).isText && $from.index() == $to.index() - ($to.textOffset ? 0 : 1)) {
-      let text2 = $from.parent.textBetween($from.parentOffset, $to.parentOffset);
-      let deflt = () => mkTr(view.state.tr.insertText(text2, chFrom, chTo));
-      if (!view.someProp("handleTextInput", (f2) => f2(view, chFrom, chTo, text2, deflt)))
+      let text3 = $from.parent.textBetween($from.parentOffset, $to.parentOffset);
+      let deflt = () => mkTr(view.state.tr.insertText(text3, chFrom, chTo));
+      if (!view.someProp("handleTextInput", (f2) => f2(view, chFrom, chTo, text3, deflt)))
         view.dispatch(deflt());
     } else {
       view.dispatch(mkTr());
@@ -52658,8 +52658,8 @@ var EditorView = class {
   /**
   Run the editor's paste logic with the given plain-text input.
   */
-  pasteText(text2, event) {
-    return doPaste(this, text2, null, true, event || new ClipboardEvent("paste"));
+  pasteText(text3, event) {
+    return doPaste(this, text3, null, true, event || new ClipboardEvent("paste"));
   }
   /**
   Serialize the given slice as it would be if it was copied from
@@ -54900,12 +54900,12 @@ function getSchema(extensions, editor) {
 function getTextBetween(startNode, range, options) {
   const { from: from4, to } = range;
   const { blockSeparator = "\n\n", textSerializers = {} } = options || {};
-  let text2 = "";
+  let text3 = "";
   startNode.nodesBetween(from4, to, (node2, pos, parent, index) => {
-    if (node2.isBlock && pos > from4) text2 += blockSeparator;
+    if (node2.isBlock && pos > from4) text3 += blockSeparator;
     const textSerializer = textSerializers === null || textSerializers === void 0 ? void 0 : textSerializers[node2.type.name];
     if (textSerializer) {
-      if (parent) text2 += textSerializer({
+      if (parent) text3 += textSerializer({
         node: node2,
         pos,
         parent,
@@ -54916,10 +54916,10 @@ function getTextBetween(startNode, range, options) {
     }
     if (node2.isText) {
       var _node$text;
-      text2 += node2 === null || node2 === void 0 || (_node$text = node2.text) === null || _node$text === void 0 ? void 0 : _node$text.slice(Math.max(from4, pos) - pos, to - pos);
+      text3 += node2 === null || node2 === void 0 || (_node$text = node2.text) === null || _node$text === void 0 ? void 0 : _node$text.slice(Math.max(from4, pos) - pos, to - pos);
     }
   });
-  return text2;
+  return text3;
 }
 function getTextSerializersFromSchema(schema2) {
   return Object.fromEntries(Object.entries(schema2.nodes).filter(([, node2]) => node2.spec.toText).map(([name, node2]) => [name, node2.spec.toText]));
@@ -56574,9 +56574,9 @@ function parseIndentedBlocks(src, config2, lexer) {
   };
 }
 var TAB_STOP = 4;
-function columnWidth(text2) {
+function columnWidth(text3) {
   let width = 0;
-  for (const character of text2) width = character === "	" ? width + TAB_STOP - width % TAB_STOP : width + 1;
+  for (const character of text3) width = character === "	" ? width + TAB_STOP - width % TAB_STOP : width + 1;
   return width;
 }
 function renderNestedMarkdownContent(node2, h3, prefixOrGenerator, ctx, options) {
@@ -56647,13 +56647,13 @@ var InputRule = class {
     this.undoable = (_config$undoable = config2.undoable) !== null && _config$undoable !== void 0 ? _config$undoable : true;
   }
 };
-var inputRuleMatcherHandler = (text2, find3) => {
-  if (isRegExp(find3)) return find3.exec(text2);
-  const inputRuleMatch = find3(text2);
+var inputRuleMatcherHandler = (text3, find3) => {
+  if (isRegExp(find3)) return find3.exec(text3);
+  const inputRuleMatch = find3(text3);
   if (!inputRuleMatch) return null;
   const result = [inputRuleMatch.text];
   result.index = inputRuleMatch.index;
-  result.input = text2;
+  result.input = text3;
   result.data = inputRuleMatch.data;
   if (inputRuleMatch.replaceWith) {
     if (!inputRuleMatch.text.includes(inputRuleMatch.replaceWith)) console.warn('[tiptap warn]: "inputRuleMatch.replaceWith" must be part of "inputRuleMatch.text".');
@@ -56662,12 +56662,12 @@ var inputRuleMatcherHandler = (text2, find3) => {
   return result;
 };
 function createRuleTransaction(config2) {
-  const { editor, from: from4, to, text: text2, insertText: insertText2 } = config2;
+  const { editor, from: from4, to, text: text3, insertText: insertText2 } = config2;
   if (!insertText2) return {
     inputTransaction: null,
     tr: editor.view.state.tr
   };
-  const inputTransaction = editor.view.state.tr.insertText(text2, from4, to);
+  const inputTransaction = editor.view.state.tr.insertText(text3, from4, to);
   return {
     inputTransaction,
     tr: EditorState.create({
@@ -56678,22 +56678,22 @@ function createRuleTransaction(config2) {
   };
 }
 function applyRule(config2) {
-  const { editor, from: from4, to, text: text2, rule, match: match2, plugin, insertText: insertText2 } = config2;
+  const { editor, from: from4, to, text: text3, rule, match: match2, plugin, insertText: insertText2 } = config2;
   const { view } = editor;
   const { inputTransaction, tr: tr2 } = createRuleTransaction({
     editor,
     from: from4,
     to,
-    text: text2,
+    text: text3,
     insertText: insertText2
   });
-  const inputEnd = inputTransaction ? from4 + text2.length : to;
+  const inputEnd = inputTransaction ? from4 + text3.length : to;
   const state = createChainableState({
     state: view.state,
     transaction: tr2
   });
   const range = {
-    from: from4 - (match2[0].length - text2.length),
+    from: from4 - (match2[0].length - text3.length),
     to: inputEnd
   };
   const { commands, chain, can } = new CommandManager({
@@ -56718,33 +56718,33 @@ function applyRule(config2) {
     transform: tr2,
     from: from4,
     to: inputEnd,
-    text: text2
+    text: text3
   });
   view.dispatch(tr2);
   return true;
 }
-function matchesDocument($from, match2, text2) {
-  const matchedDocLength = match2[0].length - text2.length;
+function matchesDocument($from, match2, text3) {
+  const matchedDocLength = match2[0].length - text3.length;
   if (matchedDocLength <= 0) return true;
   const matchStartOffset = $from.parentOffset - matchedDocLength;
   return matchStartOffset >= 0 && $from.parent.textBetween(matchStartOffset, $from.parentOffset) === match2[0].slice(0, matchedDocLength);
 }
 function run$1(config2) {
   var _ref;
-  const { editor, from: from4, to, text: text2, rules: rules2, plugin, insertText: insertText2 } = config2;
+  const { editor, from: from4, to, text: text3, rules: rules2, plugin, insertText: insertText2 } = config2;
   const { view } = editor;
   if (view.composing) return false;
   const $from = view.state.doc.resolve(from4);
   if ($from.parent.type.spec.code || !!((_ref = $from.nodeBefore || $from.nodeAfter) === null || _ref === void 0 ? void 0 : _ref.marks.find((mark2) => mark2.type.spec.code))) return false;
-  const textBefore = getTextContentFromNodes($from) + text2;
+  const textBefore = getTextContentFromNodes($from) + text3;
   for (const rule of rules2) {
     const match2 = inputRuleMatcherHandler(textBefore, rule.find);
-    if (!match2 || !matchesDocument($from, match2, text2)) continue;
+    if (!match2 || !matchesDocument($from, match2, text3)) continue;
     if (applyRule({
       editor,
       from: from4,
       to,
-      text: text2,
+      text: text3,
       rule,
       match: match2,
       plugin,
@@ -56765,16 +56765,16 @@ function inputRulesPlugin(props) {
         if (stored) return stored;
         const simulatedInputMeta = tr2.getMeta("applyInputRules");
         if (!!simulatedInputMeta) setTimeout(() => {
-          let { text: text2 } = simulatedInputMeta;
-          if (typeof text2 === "string") text2 = text2;
-          else text2 = getHTMLFromFragment(Fragment.from(text2), state.schema);
+          let { text: text3 } = simulatedInputMeta;
+          if (typeof text3 === "string") text3 = text3;
+          else text3 = getHTMLFromFragment(Fragment.from(text3), state.schema);
           const { from: from4 } = simulatedInputMeta;
-          const to = from4 + text2.length;
+          const to = from4 + text3.length;
           run$1({
             editor,
             from: from4,
             to,
-            text: text2,
+            text: text3,
             rules: rules2,
             plugin
           });
@@ -56783,12 +56783,12 @@ function inputRulesPlugin(props) {
       }
     },
     props: {
-      handleTextInput(view, from4, to, text2) {
+      handleTextInput(view, from4, to, text3) {
         return run$1({
           editor,
           from: from4,
           to,
-          text: text2,
+          text: text3,
           rules: rules2,
           plugin,
           insertText: true
@@ -56912,14 +56912,14 @@ var PasteRule = class {
     this.handler = config2.handler;
   }
 };
-var pasteRuleMatcherHandler = (text2, find3, event) => {
-  if (isRegExp(find3)) return [...text2.matchAll(find3)];
-  const matches2 = find3(text2, event);
+var pasteRuleMatcherHandler = (text3, find3, event) => {
+  if (isRegExp(find3)) return [...text3.matchAll(find3)];
+  const matches2 = find3(text3, event);
   if (!matches2) return [];
   return matches2.map((pasteRuleMatch) => {
     const result = [pasteRuleMatch.text];
     result.index = pasteRuleMatch.index;
-    result.input = text2;
+    result.input = text3;
     result.data = pasteRuleMatch.data;
     if (pasteRuleMatch.replaceWith) {
       if (!pasteRuleMatch.text.includes(pasteRuleMatch.replaceWith)) console.warn('[tiptap warn]: "pasteRuleMatch.replaceWith" must be part of "pasteRuleMatch.text".');
@@ -56967,10 +56967,10 @@ function run(config2) {
   return handlers2.every((handler) => handler !== null);
 }
 var tiptapDragFromOtherEditor = null;
-var createClipboardPasteEvent = (text2) => {
+var createClipboardPasteEvent = (text3) => {
   var _event$clipboardData;
   const event = new ClipboardEvent("paste", { clipboardData: new DataTransfer() });
-  (_event$clipboardData = event.clipboardData) === null || _event$clipboardData === void 0 || _event$clipboardData.setData("text/html", text2);
+  (_event$clipboardData = event.clipboardData) === null || _event$clipboardData === void 0 || _event$clipboardData.setData("text/html", text3);
   return event;
 };
 function pasteRulesPlugin(props) {
@@ -57062,12 +57062,12 @@ function pasteRulesPlugin(props) {
         const isSimulatedPaste = !!simulatedPasteMeta;
         if (!isPaste && !isDrop && !isSimulatedPaste) return;
         if (isSimulatedPaste) {
-          let { text: text2 } = simulatedPasteMeta;
-          if (typeof text2 === "string") text2 = text2;
-          else text2 = getHTMLFromFragment(Fragment.from(text2), state.schema);
+          let { text: text3 } = simulatedPasteMeta;
+          if (typeof text3 === "string") text3 = text3;
+          else text3 = getHTMLFromFragment(Fragment.from(text3), state.schema);
           const { from: from5 } = simulatedPasteMeta;
-          const to2 = from5 + text2.length;
-          const pasteEvt = createClipboardPasteEvent(text2);
+          const to2 = from5 + text3.length;
+          const pasteEvt = createClipboardPasteEvent(text3);
           return processEvent({
             rule,
             state,
@@ -63698,7 +63698,7 @@ var insertAttributes = (transaction, parent, currPos, attributes) => {
   }
   return negatedAttributes;
 };
-var insertText = (transaction, parent, currPos, text2, attributes) => {
+var insertText = (transaction, parent, currPos, text3, attributes) => {
   currPos.currentAttributes.forEach((_val, key) => {
     if (attributes[key] === void 0) {
       attributes[key] = null;
@@ -63708,10 +63708,10 @@ var insertText = (transaction, parent, currPos, text2, attributes) => {
   const ownClientId = doc4.clientID;
   minimizeAttributeChanges(currPos, attributes);
   const negatedAttributes = insertAttributes(transaction, parent, currPos, attributes);
-  const content = text2.constructor === String ? new ContentString(
+  const content = text3.constructor === String ? new ContentString(
     /** @type {string} */
-    text2
-  ) : text2 instanceof AbstractType ? new ContentType(text2) : new ContentEmbed(text2);
+    text3
+  ) : text3 instanceof AbstractType ? new ContentType(text3) : new ContentEmbed(text3);
   let { left, right, index } = currPos;
   if (parent._searchMarker) {
     updateMarkerChanges(parent._searchMarker, currPos.index, content.getLength());
@@ -64237,9 +64237,9 @@ var YText = class _YText extends AbstractType {
    * @return {YText}
    */
   clone() {
-    const text2 = new _YText();
-    text2.applyDelta(this.toDelta());
-    return text2;
+    const text3 = new _YText();
+    text3.applyDelta(this.toDelta());
+    return text3;
   }
   /**
    * Creates YTextEvent and calls observers.
@@ -64434,8 +64434,8 @@ var YText = class _YText extends AbstractType {
    *                                    Text.
    * @public
    */
-  insert(index, text2, attributes) {
-    if (text2.length <= 0) {
+  insert(index, text3, attributes) {
+    if (text3.length <= 0) {
       return;
     }
     const y2 = this.doc;
@@ -64448,10 +64448,10 @@ var YText = class _YText extends AbstractType {
             attributes[k] = v2;
           });
         }
-        insertText(transaction, this, pos, text2, attributes);
+        insertText(transaction, this, pos, text3, attributes);
       });
     } else {
-      this._pending.push(() => this.insert(index, text2, attributes));
+      this._pending.push(() => this.insert(index, text3, attributes));
     }
   }
   /**
@@ -65297,9 +65297,9 @@ var YXmlText = class _YXmlText extends YText {
    * @return {YXmlText}
    */
   clone() {
-    const text2 = new _YXmlText();
-    text2.applyDelta(this.toDelta());
-    return text2;
+    const text3 = new _YXmlText();
+    text3.applyDelta(this.toDelta());
+    return text3;
   }
   /**
    * Creates a Dom Element that mirrors this YXmlText.
@@ -67557,13 +67557,13 @@ var CodeBlock = Node4.create({
       props: { handlePaste: (view, event) => {
         if (!event.clipboardData) return false;
         if (this.editor.isActive(this.type.name)) return false;
-        const text2 = event.clipboardData.getData("text/plain");
+        const text3 = event.clipboardData.getData("text/plain");
         const vscode = event.clipboardData.getData("vscode-editor-data");
         const vscodeData = vscode ? JSON.parse(vscode) : void 0;
         const language = vscodeData === null || vscodeData === void 0 ? void 0 : vscodeData.mode;
-        if (!text2 || !language) return false;
+        if (!text3 || !language) return false;
         const { tr: tr2, schema: schema2 } = view.state;
-        const textNode = schema2.text(text2.replace(/\r\n?/g, "\n"));
+        const textNode = schema2.text(text3.replace(/\r\n?/g, "\n"));
         tr2.replaceSelectionWith(this.type.create({ language }, textNode));
         if (tr2.selection.$from.parent.type !== this.type) tr2.setSelection(TextSelection.near(tr2.doc.resolve(Math.max(0, tr2.selection.from - 2))));
         tr2.setMeta("paste", true);
@@ -69112,17 +69112,17 @@ function findSuggestionMatch(config2) {
   const prefix = startOfLine ? "^" : "";
   const finalEscapedChar = allowToIncludeChar ? "" : escapedChar;
   const regexp = allowSpaces ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s${finalEscapedChar}|$)`, "gm") : new RegExp(`${prefix}(?:^)?${escapedChar}[^\\s${finalEscapedChar}]*`, "gm");
-  const text2 = ((_$position$nodeBefore = $position.nodeBefore) === null || _$position$nodeBefore === void 0 ? void 0 : _$position$nodeBefore.isText) && $position.nodeBefore.text;
-  if (!text2) return null;
-  const textFrom = $position.pos - text2.length;
-  const match2 = Array.from(text2.matchAll(regexp)).pop();
+  const text3 = ((_$position$nodeBefore = $position.nodeBefore) === null || _$position$nodeBefore === void 0 ? void 0 : _$position$nodeBefore.isText) && $position.nodeBefore.text;
+  if (!text3) return null;
+  const textFrom = $position.pos - text3.length;
+  const match2 = Array.from(text3.matchAll(regexp)).pop();
   if (!match2 || match2.input === void 0 || match2.index === void 0) return null;
   const matchPrefix = match2.input.slice(Math.max(0, match2.index - 1), match2.index);
   const matchPrefixIsAllowed = new RegExp(`^[${allowedPrefixes === null || allowedPrefixes === void 0 ? void 0 : allowedPrefixes.join("")}\0]?$`).test(matchPrefix);
   if (allowedPrefixes !== null && !matchPrefixIsAllowed) return null;
   const from4 = textFrom + match2.index;
   let to = from4 + match2[0].length;
-  if (allowSpaces && suffix.test(text2.slice(to - 1, to + 1))) {
+  if (allowSpaces && suffix.test(text3.slice(to - 1, to + 1))) {
     match2[0] += " ";
     to += 1;
   }
@@ -71943,8 +71943,8 @@ function replaceCellLineSeparator(value, cellLineSeparator) {
   if (!cellLineSeparator) return value;
   return value.split(cellLineSeparator).join("\n");
 }
-function escapePipesInCellText(text2) {
-  return text2.replace(/\\.|\|/g, (match2) => match2 === "|" ? "\\|" : match2);
+function escapePipesInCellText(text3) {
+  return text3.replace(/\\.|\|/g, (match2) => match2 === "|" ? "\\|" : match2);
 }
 function renderTableToMarkdown(node2, h3, options = {}) {
   if (!node2 || !node2.content || node2.content.length === 0) return "";
@@ -71955,11 +71955,11 @@ function renderTableToMarkdown(node2, h3, options = {}) {
       let raw = "";
       if (cellNode.content && Array.isArray(cellNode.content) && cellNode.content.length > 1) raw = cellNode.content.map((child) => replaceCellLineSeparator(h3.renderChildren(child), options.cellLineSeparator)).join("\n");
       else raw = replaceCellLineSeparator(cellNode.content ? h3.renderChildren(cellNode.content) : "", options.cellLineSeparator);
-      const text2 = escapePipesInCellText(collapseWhitespace2(raw.replace(/[ \t]*\r?\n[ \t]*/g, "<br>")));
+      const text3 = escapePipesInCellText(collapseWhitespace2(raw.replace(/[ \t]*\r?\n[ \t]*/g, "<br>")));
       const isHeader = cellNode.type === "tableHeader";
       const align = normalizeTableCellAlignFromAttributes(cellNode.attrs);
       cells.push({
-        text: text2,
+        text: text3,
         isHeader,
         align
       });
@@ -72562,12 +72562,12 @@ function isSameLineOrderedListToken(token) {
   const nestedToken = (_token$tokens = token.tokens) === null || _token$tokens === void 0 ? void 0 : _token$tokens[0];
   return Boolean(token.text && ((_token$tokens2 = token.tokens) === null || _token$tokens2 === void 0 ? void 0 : _token$tokens2.length) === 1 && (nestedToken === null || nestedToken === void 0 ? void 0 : nestedToken.type) === "list" && nestedToken.ordered && nestedToken.raw === token.text);
 }
-function parseSameLineOrderedListText(text2, helpers) {
-  if (helpers.tokenizeInline) return helpers.parseInline(helpers.tokenizeInline(text2));
+function parseSameLineOrderedListText(text3, helpers) {
+  if (helpers.tokenizeInline) return helpers.parseInline(helpers.tokenizeInline(text3));
   return helpers.parseInline([{
     type: "text",
-    raw: text2,
-    text: text2
+    raw: text3,
+    text: text3
   }]);
 }
 var ListItem = Node4.create({
@@ -72915,8 +72915,8 @@ function collectOrderedListItems(lines) {
   return [listItems, consumed];
 }
 var PLAIN_TEXT_ORDERED_LIST_LINE_REGEX = new RegExp(`^(${ORDERED_LIST_MARKER_PATTERN})([.)])\\s+(.+)$`);
-function parsePlainTextOrderedListPaste(text2) {
-  const lines = text2.split("\n").filter((l) => l.trim().length > 0);
+function parsePlainTextOrderedListPaste(text3) {
+  const lines = text3.split("\n").filter((l) => l.trim().length > 0);
   if (lines.length === 0) return null;
   const parsedItems = [];
   for (const line of lines) {
@@ -73187,9 +73187,9 @@ var OrderedList = Node4.create({
       var _event$clipboardData, _event$clipboardData2;
       const html = (_event$clipboardData = event.clipboardData) === null || _event$clipboardData === void 0 ? void 0 : _event$clipboardData.getData("text/html");
       if (html === null || html === void 0 ? void 0 : html.trim()) return false;
-      const text2 = (_event$clipboardData2 = event.clipboardData) === null || _event$clipboardData2 === void 0 ? void 0 : _event$clipboardData2.getData("text/plain");
-      if (!text2) return false;
-      const orderedListContent = parsePlainTextOrderedListPaste(text2);
+      const text3 = (_event$clipboardData2 = event.clipboardData) === null || _event$clipboardData2 === void 0 ? void 0 : _event$clipboardData2.getData("text/plain");
+      if (!text3) return false;
+      const orderedListContent = parsePlainTextOrderedListPaste(text3);
       if (!orderedListContent) return false;
       try {
         const orderedListNode = view.state.schema.nodeFromJSON(orderedListContent);
@@ -73758,22 +73758,22 @@ var Bold = Mark2.create({
 });
 
 // node_modules/@tiptap/extension-code/dist/index.js
-var inputRegexMatch = (text2) => {
-  const match2 = /`([^`]+)`(?!`)$/.exec(text2);
+var inputRegexMatch = (text3) => {
+  const match2 = /`([^`]+)`(?!`)$/.exec(text3);
   if (!match2) return null;
-  if (match2.index > 0 && text2[match2.index - 1] === "`") return null;
+  if (match2.index > 0 && text3[match2.index - 1] === "`") return null;
   return {
     index: match2.index,
     text: match2[0],
     replaceWith: match2[1]
   };
 };
-var pasteRegexMatch = (text2) => {
+var pasteRegexMatch = (text3) => {
   const regex = /`([^`]+)`(?!`)/g;
   const matches2 = [];
   let match2;
-  while ((match2 = regex.exec(text2)) !== null) {
-    if (match2.index > 0 && text2[match2.index - 1] === "`") continue;
+  while ((match2 = regex.exec(text3)) !== null) {
+    if (match2.index > 0 && text3[match2.index - 1] === "`") continue;
     matches2.push({
       index: match2.index,
       text: match2[0],
@@ -73782,8 +73782,8 @@ var pasteRegexMatch = (text2) => {
   }
   return matches2;
 };
-function shortestUnusedBacktickRun(text2) {
-  const runs = new Set((text2.match(/`+/g) || []).map((run4) => run4.length));
+function shortestUnusedBacktickRun(text3) {
+  const runs = new Set((text3.match(/`+/g) || []).map((run4) => run4.length));
   let length2 = 1;
   while (runs.has(length2)) length2 += 1;
   return length2;
@@ -75451,25 +75451,25 @@ function clickHandler(options) {
 }
 var MARKDOWN_LINK_INPUT_REGEX = /\[([^[\]]+)\]\(((?:[^\s()]|\([^\s()]*\))+)(?:\s+(?:(["'])(.*?)\3|“(.*?)”|‘(.*?)’))?\)$/;
 var MARKDOWN_LINK_PASTE_REGEX = /\[([^[\]]+)\]\(((?:[^\s()]|\([^\s()]*\))+)(?:\s+(?:(["'])(.*?)\3|“(.*?)”|‘(.*?)’))?\)/g;
-function isEscaped(text2, index) {
+function isEscaped(text3, index) {
   let backslashes = 0;
-  for (let position = index - 1; position >= 0 && text2[position] === "\\"; position -= 1) backslashes += 1;
+  for (let position = index - 1; position >= 0 && text3[position] === "\\"; position -= 1) backslashes += 1;
   return backslashes % 2 === 1;
 }
-function isInsideCodeSpan(text2, matchIndex) {
+function isInsideCodeSpan(text3, matchIndex) {
   let openRunLength = 0;
   let index = 0;
   while (index < matchIndex) {
-    if (text2[index] !== "`") {
+    if (text3[index] !== "`") {
       index += 1;
       continue;
     }
-    if (openRunLength === 0 && isEscaped(text2, index)) {
+    if (openRunLength === 0 && isEscaped(text3, index)) {
       index += 1;
       continue;
     }
     let runLength = 0;
-    while (index < matchIndex && text2[index] === "`") {
+    while (index < matchIndex && text3[index] === "`") {
       runLength += 1;
       index += 1;
     }
@@ -75478,11 +75478,11 @@ function isInsideCodeSpan(text2, matchIndex) {
   }
   return openRunLength > 0;
 }
-function isConvertibleLink(text2, match2, isAllowedHref) {
+function isConvertibleLink(text3, match2, isAllowedHref) {
   var _match$index, _match$index2;
   const [, linkText, href] = match2;
-  if ((match2.index ? text2[match2.index - 1] : void 0) === "!" || isEscaped(text2, (_match$index = match2.index) !== null && _match$index !== void 0 ? _match$index : 0)) return false;
-  if (isInsideCodeSpan(text2, (_match$index2 = match2.index) !== null && _match$index2 !== void 0 ? _match$index2 : 0)) return false;
+  if ((match2.index ? text3[match2.index - 1] : void 0) === "!" || isEscaped(text3, (_match$index = match2.index) !== null && _match$index !== void 0 ? _match$index : 0)) return false;
+  if (isInsideCodeSpan(text3, (_match$index2 = match2.index) !== null && _match$index2 !== void 0 ? _match$index2 : 0)) return false;
   return !!linkText.trim() && isAllowedHref(href);
 }
 function toRuleMatch(match2) {
@@ -75512,9 +75512,9 @@ function getMarkdownLinkAttributes(match2) {
 }
 function markdownLinkInputRule(config2) {
   const rule = markInputRule({
-    find: (text2) => {
-      const match2 = MARKDOWN_LINK_INPUT_REGEX.exec(text2);
-      if (!match2 || !isConvertibleLink(text2, match2, config2.isAllowedHref)) return null;
+    find: (text3) => {
+      const match2 = MARKDOWN_LINK_INPUT_REGEX.exec(text3);
+      if (!match2 || !isConvertibleLink(text3, match2, config2.isAllowedHref)) return null;
       return toRuleMatch(match2);
     },
     type: config2.type,
@@ -75531,11 +75531,11 @@ function markdownLinkInputRule(config2) {
 }
 function markdownLinkPasteRule(config2) {
   const rule = markPasteRule({
-    find: (text2) => {
+    find: (text3) => {
       var _config$findPlainUrls, _config$findPlainUrls2;
       const markdownMatches = [];
-      for (const match2 of text2.matchAll(MARKDOWN_LINK_PASTE_REGEX)) if (isConvertibleLink(text2, match2, config2.isAllowedHref)) markdownMatches.push(toRuleMatch(match2));
-      const plainUrlMatches = ((_config$findPlainUrls = (_config$findPlainUrls2 = config2.findPlainUrls) === null || _config$findPlainUrls2 === void 0 ? void 0 : _config$findPlainUrls2.call(config2, text2)) !== null && _config$findPlainUrls !== void 0 ? _config$findPlainUrls : []).filter((urlMatch) => !markdownMatches.some((markdownMatch) => matchesOverlap(markdownMatch, urlMatch)));
+      for (const match2 of text3.matchAll(MARKDOWN_LINK_PASTE_REGEX)) if (isConvertibleLink(text3, match2, config2.isAllowedHref)) markdownMatches.push(toRuleMatch(match2));
+      const plainUrlMatches = ((_config$findPlainUrls = (_config$findPlainUrls2 = config2.findPlainUrls) === null || _config$findPlainUrls2 === void 0 ? void 0 : _config$findPlainUrls2.call(config2, text3)) !== null && _config$findPlainUrls !== void 0 ? _config$findPlainUrls : []).filter((urlMatch) => !markdownMatches.some((markdownMatch) => matchesOverlap(markdownMatch, urlMatch)));
       return [...markdownMatches, ...plainUrlMatches];
     },
     type: config2.type,
@@ -75699,8 +75699,8 @@ var Link = Mark2.create({
     var _node$attrs$href, _node$attrs, _node$attrs$title, _node$attrs2;
     const href = (_node$attrs$href = (_node$attrs = node2.attrs) === null || _node$attrs === void 0 ? void 0 : _node$attrs.href) !== null && _node$attrs$href !== void 0 ? _node$attrs$href : "";
     const title = (_node$attrs$title = (_node$attrs2 = node2.attrs) === null || _node$attrs2 === void 0 ? void 0 : _node$attrs2.title) !== null && _node$attrs$title !== void 0 ? _node$attrs$title : "";
-    const text2 = h3.renderChildren(node2);
-    return title ? `[${text2}](${href} "${title}")` : `[${text2}](${href})`;
+    const text3 = h3.renderChildren(node2);
+    return title ? `[${text3}](${href} "${title}")` : `[${text3}](${href})`;
   },
   addCommands() {
     return {
@@ -75739,11 +75739,11 @@ var Link = Mark2.create({
     })];
   },
   addPasteRules() {
-    const findPlainUrls = (text2) => {
+    const findPlainUrls = (text3) => {
       const foundLinks = [];
-      if (text2) {
+      if (text3) {
         const { protocols, defaultProtocol } = this.options;
-        find2(text2).filter((item) => item.isLink && this.options.isAllowedUri(item.value, {
+        find2(text3).filter((item) => item.isLink && this.options.isAllowedUri(item.value, {
           defaultValidate: (href) => !!isAllowedUri(href, protocols),
           protocols,
           defaultProtocol
@@ -76364,8 +76364,8 @@ var CharacterCount = Extension.create({
       limit: null,
       autoTrim: true,
       mode: "textSize",
-      textCounter: (text2) => text2.length,
-      wordCounter: (text2) => text2.split(" ").filter((word2) => word2 !== "").length
+      textCounter: (text3) => text3.length,
+      wordCounter: (text3) => text3.split(" ").filter((word2) => word2 !== "").length
     };
   },
   addStorage() {
@@ -76378,15 +76378,15 @@ var CharacterCount = Extension.create({
     this.storage.characters = (options) => {
       const node2 = (options === null || options === void 0 ? void 0 : options.node) || this.editor.state.doc;
       if (((options === null || options === void 0 ? void 0 : options.mode) || this.options.mode) === "textSize") {
-        const text2 = node2.textBetween(0, node2.content.size, void 0, " ");
-        return this.options.textCounter(text2);
+        const text3 = node2.textBetween(0, node2.content.size, void 0, " ");
+        return this.options.textCounter(text3);
       }
       return node2.nodeSize;
     };
     this.storage.words = (options) => {
       const node2 = (options === null || options === void 0 ? void 0 : options.node) || this.editor.state.doc;
-      const text2 = node2.textBetween(0, node2.content.size, " ", " ");
-      return this.options.wordCounter(text2);
+      const text3 = node2.textBetween(0, node2.content.size, " ", " ");
+      return this.options.wordCounter(text3);
     };
   },
   addProseMirrorPlugins() {
@@ -78607,9 +78607,9 @@ ${ws.id}`;
     if (name.includes(",")) throw new Error("A label's name can't have a comma in it.");
     const used = new Map(COLORS.map((c) => [c, 0]));
     for (const l of this.labels()) used.set(l.color, (used.get(l.color) ?? 0) + 1);
-    const pick2 = color ?? [...used.entries()].sort((a3, b) => a3[1] - b[1])[0][0];
+    const pick3 = color ?? [...used.entries()].sort((a3, b) => a3[1] - b[1])[0][0];
     const id2 = crypto.randomUUID();
-    await this.change(`Label “${name.trim()}”`, { type: "label", id: id2, body: { type: "label", name: name.trim(), color: pick2 } });
+    await this.change(`Label “${name.trim()}”`, { type: "label", id: id2, body: { type: "label", name: name.trim(), color: pick3 } });
     return this.labels().find((l) => l.id === id2);
   }
   // ---- Projects ----
@@ -79069,8 +79069,8 @@ function imageIn(from4, src) {
 import { ui as ui4 } from "swarm";
 import { jsx, jsxs } from "swarm/jsx-runtime";
 var asking = ui4.state(null);
-function confirm(title, text2, action, run4, opts = {}) {
-  asking.value = { title, text: text2, action, run: run4, ...opts };
+function confirm(title, text3, action, run4, opts = {}) {
+  asking.value = { title, text: text3, action, run: run4, ...opts };
   ui4.showOverlay("flux-confirm");
 }
 function close2() {
@@ -79154,7 +79154,7 @@ function dueChoices(now = /* @__PURE__ */ new Date()) {
     ["End of week", endOfWorkWeek(today)],
     ["In one week", addDays(today, 7)],
     ["In two weeks", addDays(today, 14)]
-  ].map(([label, date5]) => ({ label, value: isoDay(date5), hint: dueHint(date5, today) })).filter((choice) => !seen.has(choice.value) && seen.add(choice.value));
+  ].map(([label, date5]) => ({ label, value: isoDay(date5), hint: dueHint(date5, today) })).filter((choice2) => !seen.has(choice2.value) && seen.add(choice2.value));
 }
 var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 var WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -79433,9 +79433,9 @@ var bytesOf = /* @__PURE__ */ new Map();
 function svgBytes(key, svg2) {
   let b = bytesOf.get(key);
   if (!b) {
-    const text2 = svg2();
-    if (!text2) return null;
-    bytesOf.set(key, b = new TextEncoder().encode(text2));
+    const text3 = svg2();
+    if (!text3) return null;
+    bytesOf.set(key, b = new TextEncoder().encode(text3));
   }
   return b;
 }
@@ -79715,10 +79715,10 @@ function memberName(lookup, id2) {
   const member2 = lookup.members.find((candidate) => candidate.id === id2);
   return member2 ? `${member2.name} (@${member2.username})` : "Former member";
 }
-function clip(text2, max3) {
-  return text2.length > max3 ? `${text2.slice(0, max3)}
+function clip(text3, max3) {
+  return text3.length > max3 ? `${text3.slice(0, max3)}
 
-…(truncated; ${text2.length - max3} more characters)` : text2;
+…(truncated; ${text3.length - max3} more characters)` : text3;
 }
 function issueFacts(detail2, lookup) {
   const { issue: issue2 } = detail2;
@@ -80306,7 +80306,7 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
 }
 
 // src/edit.tsx
-import swarm2, { call as call2, ui as ui9 } from "swarm";
+import swarm2, { call as call2, ui as ui10 } from "swarm";
 
 // src/view.tsx
 import { ui as ui7 } from "swarm";
@@ -80316,7 +80316,7 @@ import { ui as ui6 } from "swarm";
 import { jsx as jsx3 } from "swarm/jsx-runtime";
 function dueItems(current, set2) {
   return [
-    ...dueChoices().map((choice) => /* @__PURE__ */ jsx3(ui6.item, { icon: "calendar", detail: choice.hint, checked: current === choice.value, onClick: () => set2(choice.value), children: choice.label }, "due-" + choice.label)),
+    ...dueChoices().map((choice2) => /* @__PURE__ */ jsx3(ui6.item, { icon: "calendar", detail: choice2.hint, checked: current === choice2.value, onClick: () => set2(choice2.value), children: choice2.label }, "due-" + choice2.label)),
     /* @__PURE__ */ jsx3(ui6.calendar, { label: "Custom…", value: current ?? null, onChange: (day) => set2(day) }, "due-custom"),
     current ? /* @__PURE__ */ jsx3(ui6.separator, {}, "due-sep") : null,
     current ? /* @__PURE__ */ jsx3(ui6.item, { icon: "x", onClick: () => set2(null), children: "No due date" }, "due-clear") : null
@@ -80529,12 +80529,12 @@ function Properties({ issue: issue2, project, members: members2, labels, me: me2
   ] });
 }
 var mentionChip = { backgroundColor: "hover", borderRadius: 4, fontWeight: 500 };
-function inlineText(text2, mention) {
+function inlineText(text3, mention) {
   const out = [];
   const re2 = /`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(?<![\w*])\*([^*\n]+)\*(?!\w)|(?<![\w@])@([\w][\w.-]*[\w]|[\w])/g;
   let at3 = 0;
-  for (let m; m = re2.exec(text2); ) {
-    if (m.index > at3) out.push(text2.slice(at3, m.index));
+  for (let m; m = re2.exec(text3); ) {
+    if (m.index > at3) out.push(text3.slice(at3, m.index));
     if (m[1] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.text, { style: { fontFamily: "mono", fontSize: "small", backgroundColor: "hover", borderRadius: 4 }, children: m[1] }));
     else if (m[2] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.link, { href: m[3], children: m[2] }));
     else if (m[4] !== void 0) out.push(/* @__PURE__ */ jsx4(ui7.text, { style: { fontWeight: 600 }, children: m[4] }));
@@ -80547,12 +80547,12 @@ function inlineText(text2, mention) {
     }
     at3 = m.index + m[0].length;
   }
-  if (at3 < text2.length) out.push(text2.slice(at3));
+  if (at3 < text3.length) out.push(text3.slice(at3));
   return out;
 }
 var prose = { fontSize: "prose", lineHeight: 1.7, color: "text" };
 function Markdown({ md, onTask, image, mention }) {
-  const inline2 = (text2) => inlineText(text2, mention);
+  const inline2 = (text3) => inlineText(text3, mention);
   const blocks = [];
   const picture = (key, src, alt, tag) => {
     const got2 = image ? image(src) : src;
@@ -80867,7 +80867,7 @@ function drafted(key, server) {
 function setDraft(key, markdown) {
   drafts.set(key, markdown);
 }
-function editDraft(key, markdown, save, keep) {
+function editDraft(key, markdown, save, keep2) {
   drafts.set(key, markdown);
   if (markdown.includes("flux-local:")) return;
   const pending = timers.get(key);
@@ -80877,20 +80877,20 @@ function editDraft(key, markdown, save, keep) {
     const current = drafts.get(key);
     if (current === void 0 || current.includes("flux-local:")) return;
     void save(current).then(() => {
-      if (drafts.get(key) === current && !keep?.()) drafts.delete(key);
+      if (drafts.get(key) === current && !keep2?.()) drafts.delete(key);
     }, (error62) => {
       ui8.toast(error62 instanceof Error ? error62.message : String(error62));
     });
   }, 400));
 }
-async function finishUpload(key, fileId, url2, save, keep = false) {
+async function finishUpload(key, fileId, url2, save, keep2 = false) {
   const current = drafts.get(key);
   if (current === void 0 || !current.includes("flux-local:" + fileId)) return;
   const next2 = current.replaceAll("flux-local:" + fileId, url2);
   drafts.set(key, next2);
   if (next2.includes("flux-local:")) return;
   await save(next2);
-  if (!keep && drafts.get(key) === next2) drafts.delete(key);
+  if (!keep2 && drafts.get(key) === next2) drafts.delete(key);
 }
 function clearDraft(key) {
   drafts.delete(key);
@@ -80899,8 +80899,119 @@ function clearDraft(key) {
   timers.delete(key);
 }
 
-// src/edit.tsx
+// src/spawn.tsx
+import { storage as storage4, ui as ui9 } from "swarm";
 import { jsx as jsx5, jsxs as jsxs4 } from "swarm/jsx-runtime";
+var DEFAULT_ID = "default";
+var KEY = "spawnConfigs";
+function text2(value) {
+  return typeof value === "string" ? value : "";
+}
+function spawnConfigs() {
+  const raw = storage4.get(KEY);
+  const kept2 = (Array.isArray(raw) ? raw : []).flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const it2 = item;
+    const id2 = text2(it2.id);
+    if (!id2) return [];
+    return [{ id: id2, name: text2(it2.name).trim() || "Untitled", provider: text2(it2.provider), model: text2(it2.model), effort: text2(it2.effort), approval: text2(it2.approval) }];
+  });
+  const def = kept2.find((c) => c.id === DEFAULT_ID) ?? { id: DEFAULT_ID, name: "Default", provider: "", model: "", effort: "", approval: "" };
+  return [{ ...def, name: "Default" }, ...kept2.filter((c) => c.id !== DEFAULT_ID)];
+}
+function spawnConfig(id2) {
+  return spawnConfigs().find((c) => c.id === id2) ?? spawnConfigs()[0];
+}
+function keep(list2) {
+  storage4.set(KEY, list2);
+}
+function same(config2, choice2) {
+  return config2.provider === choice2.provider && config2.model === choice2.model && config2.effort === choice2.effort && config2.approval === choice2.approval;
+}
+function saveConfig(id2, choice2) {
+  keep(spawnConfigs().map((c) => c.id === id2 ? { ...c, ...pick2(choice2) } : c));
+}
+function addConfig(name, choice2) {
+  const id2 = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  keep([...spawnConfigs(), { id: id2, name: name.trim() || "Untitled", ...pick2(choice2) }]);
+  return id2;
+}
+function renameConfig(id2, name) {
+  if (id2 === DEFAULT_ID) return;
+  keep(spawnConfigs().map((c) => c.id === id2 ? { ...c, name } : c));
+}
+function deleteConfig(id2) {
+  if (id2 === DEFAULT_ID) return;
+  keep(spawnConfigs().filter((c) => c.id !== id2));
+}
+function pick2(choice2) {
+  return { provider: choice2.provider, model: choice2.model, effort: choice2.effort, approval: choice2.approval };
+}
+function freshName() {
+  const names = new Set(spawnConfigs().map((c) => c.name.trim().toLowerCase()));
+  for (let n = 1; ; n++) if (!names.has(`configuration ${n}`)) return `Configuration ${n}`;
+}
+var st3 = ui9.store({ renaming: "", name: "" });
+function SpawnConfigs() {
+  const list2 = spawnConfigs();
+  return /* @__PURE__ */ jsxs4(ui9.box, { style: { gap: 12 }, children: [
+    /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 12, alignItems: "flex-start" }, children: [
+      /* @__PURE__ */ jsxs4(ui9.box, { style: { flex: 1, minWidth: 0, gap: 4 }, children: [
+        /* @__PURE__ */ jsx5(ui9.text, { style: { fontWeight: 600 }, children: "Agent configurations" }),
+        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: "small", color: "text2" }, children: "The agent, model and mode Start agent starts with. It opens on Default; the others are a click away in its Configuration menu, which also saves what's picked." })
+      ] }),
+      /* @__PURE__ */ jsx5(
+        ui9.button,
+        {
+          kind: "secondary",
+          size: "sm",
+          icon: "plus",
+          onClick: () => {
+            const def = list2[0];
+            const id2 = addConfig(freshName(), def);
+            st3.renaming = id2;
+            st3.name = spawnConfig(id2).name;
+          },
+          children: "New configuration"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx5(ui9.box, { style: { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }, children: list2.map((config2, i2) => /* @__PURE__ */ jsxs4(ui9.box, { label: `Configuration ${config2.name}`, style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 12, paddingRight: 8, height: 44, borderTop: i2 === 0 ? "none" : "1px solid divider" }, children: [
+      st3.renaming === config2.id ? /* @__PURE__ */ jsx5(
+        ui9.field,
+        {
+          label: `Name of ${config2.name}`,
+          value: st3.name,
+          autoFocus: true,
+          onChange: (value) => {
+            st3.name = value;
+          },
+          onSubmit: () => finishRename(config2.id),
+          style: { flex: 1, minWidth: 140, height: 28 }
+        },
+        "rename-" + config2.id
+      ) : /* @__PURE__ */ jsx5(ui9.text, { style: { flex: 1, minWidth: 140, fontWeight: config2.id === DEFAULT_ID ? 500 : 400 }, maxLines: 1, children: config2.name }),
+      ui9.agentPicker({ provider: config2.provider, value: config2.model, effort: config2.effort, onChange: (value) => saveConfig(config2.id, { ...config2, provider: value.provider, model: value.model, effort: value.effort ?? "" }) }),
+      ui9.modePicker({ provider: config2.provider, value: config2.approval, onChange: (value) => saveConfig(config2.id, { ...config2, approval: value }) }),
+      config2.id === DEFAULT_ID ? /* @__PURE__ */ jsx5(ui9.box, { style: { width: 28 } }) : st3.renaming === config2.id ? /* @__PURE__ */ jsx5(ui9.iconButton, { icon: "check", label: `Save the name of ${config2.name}`, style: { width: 28, height: 28 }, onClick: () => finishRename(config2.id) }) : /* @__PURE__ */ jsxs4(ui9.menu, { label: `Actions for ${config2.name}`, tooltip: "Configuration actions", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+        /* @__PURE__ */ jsx5(ui9.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
+        /* @__PURE__ */ jsx5(ui9.item, { icon: "pencil", onClick: () => {
+          st3.renaming = config2.id;
+          st3.name = config2.name;
+        }, children: "Rename" }),
+        /* @__PURE__ */ jsx5(ui9.separator, {}),
+        /* @__PURE__ */ jsx5(ui9.item, { icon: "trash", danger: true, onClick: () => deleteConfig(config2.id), children: "Delete" })
+      ] })
+    ] }, config2.id)) })
+  ] });
+}
+function finishRename(id2) {
+  if (st3.name.trim()) renameConfig(id2, st3.name.trim());
+  st3.renaming = "";
+}
+
+// src/edit.tsx
+import { jsx as jsx6, jsxs as jsxs5 } from "swarm/jsx-runtime";
 function mentionOptions(flux2) {
   return [
     ...flux2.memberList().map((member2) => ({ value: member2.username, label: `${member2.name} (@${member2.username})` })),
@@ -80922,15 +81033,15 @@ function uploadInto(flux2, file2, entity, get2, set2) {
     (url2) => set2(get2().replaceAll(placeholder, url2)),
     (error62) => {
       set2(get2().replace(new RegExp(`!\\[[^\\]]*\\]\\(${placeholder}\\)`, "g"), ""));
-      ui9.toast(error62 instanceof Error ? error62.message : String(error62));
+      ui10.toast(error62 instanceof Error ? error62.message : String(error62));
     }
   );
 }
-function upload(flux2, key, file2, entity, save, keep = false) {
+function upload(flux2, key, file2, entity, save, keep2 = false) {
   const bytes = Uint8Array.fromBase64(file2.base64);
   void flux2.uploadImage(bytes, file2.type, file2.name, entity).then(
-    (url2) => finishUpload(key, file2.id, url2, save, keep),
-    (error62) => ui9.toast(error62 instanceof Error ? error62.message : String(error62))
+    (url2) => finishUpload(key, file2.id, url2, save, keep2),
+    (error62) => ui10.toast(error62 instanceof Error ? error62.message : String(error62))
   );
 }
 function unkept(html) {
@@ -80944,19 +81055,19 @@ function unkept(html) {
 function DescriptionEditor({ flux: flux2, issue: issue2, markdown, html = "", image }) {
   const has2 = unkept(html);
   if (has2) {
-    return /* @__PURE__ */ jsxs4(ui9.box, { style: { gap: 14, minHeight: "50vh" }, children: [
-      /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
-        /* @__PURE__ */ jsx5(ui9.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0, marginTop: 1 } }),
-        /* @__PURE__ */ jsx5(ui9.text, { style: { flex: 1, minWidth: 0, fontSize: "small", color: "text2" }, children: `This description has ${has2}, which Swarm can't edit without changing. Edit it in Flux.` }),
-        /* @__PURE__ */ jsx5(ui9.link, { label: "Edit in Flux", href: flux2.issueUrl(issue2), style: { fontSize: "small" } })
+    return /* @__PURE__ */ jsxs5(ui10.box, { style: { gap: 14, minHeight: "50vh" }, children: [
+      /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }, children: [
+        /* @__PURE__ */ jsx6(ui10.icon, { icon: "info", style: { width: 14, height: 14, color: "text2", flexShrink: 0, marginTop: 1 } }),
+        /* @__PURE__ */ jsx6(ui10.text, { style: { flex: 1, minWidth: 0, fontSize: "small", color: "text2" }, children: `This description has ${has2}, which Swarm can't edit without changing. Edit it in Flux.` }),
+        /* @__PURE__ */ jsx6(ui10.link, { label: "Edit in Flux", href: flux2.issueUrl(issue2), style: { fontSize: "small" } })
       ] }),
-      /* @__PURE__ */ jsx5(Markdown, { md: markdown, image })
+      /* @__PURE__ */ jsx6(Markdown, { md: markdown, image })
     ] });
   }
   const key = `desc:${flux2.id}:${issue2.id}`;
   const save = (md) => flux2.replaceDescription(issue2.id, md);
-  return /* @__PURE__ */ jsx5(
-    ui9.editor,
+  return /* @__PURE__ */ jsx6(
+    ui10.editor,
     {
       value: drafted(key, markdown),
       placeholder: "Add description…",
@@ -80975,20 +81086,20 @@ function CommentEditor({ flux: flux2, issue: issue2, image }) {
   const value = drafted(key, "");
   const me2 = flux2.me ? flux2.memberList().find((member2) => member2.id === flux2.me?.id) : void 0;
   const send = () => {
-    const text2 = drafted(key, "").trim();
-    if (!text2) return;
-    void flux2.addComment(issue2.id, text2).then(() => {
+    const text3 = drafted(key, "").trim();
+    if (!text3) return;
+    void flux2.addComment(issue2.id, text3).then(() => {
       clearDraft(key);
-    }, (error62) => ui9.toast(error62 instanceof Error ? error62.message : String(error62)));
+    }, (error62) => ui10.toast(error62 instanceof Error ? error62.message : String(error62)));
   };
-  const keep = async (markdown) => {
+  const keep2 = async (markdown) => {
     setDraft(key, markdown);
   };
-  return /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start" }, children: [
-    /* @__PURE__ */ jsx5(ui9.box, { style: { marginTop: 8, flexShrink: 0 }, children: /* @__PURE__ */ jsx5(Avatar, { member: me2, size: 20 }) }),
-    /* @__PURE__ */ jsxs4(ui9.box, { style: { flex: 1, minWidth: 0, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
-      /* @__PURE__ */ jsx5(ui9.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx5(
-        ui9.editor,
+  return /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start" }, children: [
+    /* @__PURE__ */ jsx6(ui10.box, { style: { marginTop: 8, flexShrink: 0 }, children: /* @__PURE__ */ jsx6(Avatar, { member: me2, size: 20 }) }),
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, gap: 0, borderRadius: "control", border: "1px solid border", backgroundColor: "raised" }, children: [
+      /* @__PURE__ */ jsx6(ui10.box, { style: { padding: 8 }, children: /* @__PURE__ */ jsx6(
+        ui10.editor,
         {
           value,
           placeholder: "Leave a comment…",
@@ -80997,20 +81108,22 @@ function CommentEditor({ flux: flux2, issue: issue2, image }) {
           images: editorImages(value, image),
           onChange: (next2) => setDraft(key, next2),
           onSubmit: send,
-          onUpload: (file2) => upload(flux2, key, file2, "comment_image", keep, true),
+          onUpload: (file2) => upload(flux2, key, file2, "comment_image", keep2, true),
           style: { padding: 0 }
         },
         key
       ) }),
-      /* @__PURE__ */ jsx5(ui9.box, { style: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 8, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: /* @__PURE__ */ jsx5(ui9.button, { size: "sm", kind: "secondary", label: "Comment", disabled: !value.trim(), onClick: send, children: "Comment  ⌘↵" }) })
+      /* @__PURE__ */ jsx6(ui10.box, { style: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 8, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }, children: /* @__PURE__ */ jsx6(ui10.button, { size: "sm", kind: "secondary", label: "Comment", disabled: !value.trim(), onClick: send, children: "Comment  ⌘↵" }) })
     ] })
   ] });
 }
-var st3 = ui9.store({
+var st4 = ui10.store({
   provider: "",
   model: "",
   effort: "",
   approval: "",
+  config: DEFAULT_ID,
+  naming: null,
   branch: "",
   prompt: "",
   seeded: "",
@@ -81023,7 +81136,7 @@ var st3 = ui9.store({
 function warmStart() {
   void call2("Projects", {}).then(
     (list2) => {
-      st3.swarmProjects = list2.map((p) => ({ id: p.id, name: p.name }));
+      st4.swarmProjects = list2.map((p) => ({ id: p.id, name: p.name }));
     },
     () => {
     }
@@ -81033,77 +81146,130 @@ function knownProject(flux2, issue2) {
   const linked = flux2.projects().find((project) => project.id === issue2.projectId);
   if (linked?.swarmProjectId) return linked.swarmProjectId;
   const name = linked?.name.trim().toLowerCase();
-  const match2 = name ? st3.swarmProjects?.find((project) => project.name.trim().toLowerCase() === name) : void 0;
-  return match2?.id ?? (st3.swarmProjects?.length === 1 ? st3.swarmProjects[0].id : "");
+  const match2 = name ? st4.swarmProjects?.find((project) => project.name.trim().toLowerCase() === name) : void 0;
+  return match2?.id ?? (st4.swarmProjects?.length === 1 ? st4.swarmProjects[0].id : "");
 }
 function startAgent(issueId) {
-  st3.starting = issueId;
-  st3.seeded = "";
-  ui9.showOverlay("flux-start");
+  st4.starting = issueId;
+  st4.seeded = "";
+  ui10.showOverlay("flux-start");
 }
 function closeStart() {
   forgetStart();
-  ui9.hideOverlay("flux-start");
+  ui10.hideOverlay("flux-start");
 }
 function forgetStart() {
-  st3.starting = null;
+  st4.starting = null;
 }
 function StartAgentDialog({ flux: flux2 }) {
-  const issue2 = st3.starting ? flux2.issue(st3.starting) : void 0;
+  const issue2 = st4.starting ? flux2.issue(st4.starting) : void 0;
   if (!issue2) return null;
-  return /* @__PURE__ */ jsx5(StartAgent, { flux: flux2, issue: issue2 });
+  return /* @__PURE__ */ jsx6(StartAgent, { flux: flux2, issue: issue2 });
 }
 function StartAgent({ flux: flux2, issue: issue2 }) {
-  if (st3.seeded !== issue2.id) {
-    st3.seeded = issue2.id;
+  if (st4.seeded !== issue2.id) {
+    st4.seeded = issue2.id;
+    useConfig(DEFAULT_ID);
     const start = startPrompt(flux2.detail(issue2.id), flux2.baseUrl);
-    st3.prompt = start.prompt;
-    st3.imageIds = start.imageIds;
-    st3.swarmProject = knownProject(flux2, issue2);
+    st4.prompt = start.prompt;
+    st4.imageIds = start.imageIds;
+    st4.swarmProject = knownProject(flux2, issue2);
     void loadProjects(flux2, issue2);
   }
   const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
-  const shown = st3.swarmProjects?.find((p) => p.id === st3.swarmProject)?.name ?? (st3.swarmProjects ? "Choose a project" : "…");
+  const shown = st4.swarmProjects?.find((p) => p.id === st4.swarmProject)?.name ?? (st4.swarmProjects ? "Choose a project" : "…");
   const moves = issue2.status === "backlog" || issue2.status === "todo";
-  const images = st3.imageIds.length;
-  return /* @__PURE__ */ jsxs4(ui9.box, { label: `Start an agent on ${issue2.key}`, style: { position: "relative", gap: 14, padding: 20 }, children: [
-    /* @__PURE__ */ jsx5(ui9.iconButton, { icon: "x", label: "Close", style: { position: "absolute", top: 14, right: 14, width: 28, height: 28 }, onClick: closeStart }),
-    /* @__PURE__ */ jsxs4(ui9.box, { style: { gap: 6 }, children: [
-      /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }, children: [
-        /* @__PURE__ */ jsx5(StatusIcon, { status: issue2.status, size: 16 }),
-        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }, maxLines: 1, children: issue2.title.trim() || "Untitled" })
+  const images = st4.imageIds.length;
+  return /* @__PURE__ */ jsxs5(ui10.box, { label: `Start an agent on ${issue2.key}`, style: { position: "relative", gap: 14, padding: 20 }, children: [
+    /* @__PURE__ */ jsx6(ui10.iconButton, { icon: "x", label: "Close", style: { position: "absolute", top: 14, right: 14, width: 28, height: 28 }, onClick: closeStart }),
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }, children: [
+        /* @__PURE__ */ jsx6(StatusIcon, { status: issue2.status, size: 16 }),
+        /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }, maxLines: 1, children: issue2.title.trim() || "Untitled" })
       ] }),
-      /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 14, color: "text2" }, children: `The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}` })
+      /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 14, color: "text2" }, children: `The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}` })
     ] }),
-    /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }, children: [
-      /* @__PURE__ */ jsxs4(ui9.menu, { label: `Swarm project: ${shown}`, tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
-        /* @__PURE__ */ jsx5(ui9.icon, { icon: "folder", style: { width: 14, height: 14, color: "currentColor" } }),
-        /* @__PURE__ */ jsx5(ui9.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
-        /* @__PURE__ */ jsx5(ui9.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
-        (st3.swarmProjects ?? []).map((p) => /* @__PURE__ */ jsx5(ui9.item, { checked: p.id === st3.swarmProject, onClick: () => {
-          st3.swarmProject = p.id;
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }, children: [
+      /* @__PURE__ */ jsxs5(ui10.menu, { label: `Swarm project: ${shown}`, tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+        /* @__PURE__ */ jsx6(ui10.icon, { icon: "folder", style: { width: 14, height: 14, color: "currentColor" } }),
+        /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
+        /* @__PURE__ */ jsx6(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+        (st4.swarmProjects ?? []).map((p) => /* @__PURE__ */ jsx6(ui10.item, { checked: p.id === st4.swarmProject, onClick: () => {
+          st4.swarmProject = p.id;
         }, children: p.name }, p.id))
       ] }),
-      ui9.agentPicker({ provider: st3.provider, value: st3.model, effort: st3.effort, onChange: (value) => {
-        st3.provider = value.provider;
-        st3.model = value.model;
-        st3.effort = value.effort ?? "";
+      /* @__PURE__ */ jsx6(ConfigMenu, {}),
+      ui10.agentPicker({ provider: st4.provider, value: st4.model, effort: st4.effort, onChange: (value) => {
+        st4.provider = value.provider;
+        st4.model = value.model;
+        st4.effort = value.effort ?? "";
       } }),
-      ui9.modePicker({ provider: st3.provider, value: st3.approval, onChange: (value) => {
-        st3.approval = value;
+      ui10.modePicker({ provider: st4.provider, value: st4.approval, onChange: (value) => {
+        st4.approval = value;
       } }),
-      ui9.branchPicker({ value: st3.branch, onChange: (value) => {
-        st3.branch = value;
+      ui10.branchPicker({ value: st4.branch, onChange: (value) => {
+        st4.branch = value;
       } })
     ] }),
-    /* @__PURE__ */ jsx5(ui9.field, { value: st3.prompt, multiline: true, autoFocus: true, placeholder: "What should the agent do?", keys: ["Mod+Enter"], onKeyDown: () => void run3(flux2, issue2), onChange: (value) => {
-      st3.prompt = value;
+    st4.naming !== null ? /* @__PURE__ */ jsx6(SaveConfig, {}) : null,
+    /* @__PURE__ */ jsx6(ui10.field, { value: st4.prompt, multiline: true, autoFocus: true, placeholder: "What should the agent do?", keys: ["Mod+Enter"], onKeyDown: () => void run3(flux2, issue2), onChange: (value) => {
+      st4.prompt = value;
     }, style: { minHeight: 160, maxHeight: "46vh", fontSize: 14 } }, "agent-prompt-" + issue2.id),
-    /* @__PURE__ */ jsxs4(ui9.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }, children: [
-      /* @__PURE__ */ jsx5(ui9.button, { kind: "ghost", size: "sm", onClick: closeStart, children: "Cancel" }),
-      /* @__PURE__ */ jsx5(ui9.button, { kind: "primary", size: "sm", icon: "bot", disabled: st3.busy || !st3.prompt.trim(), tooltip: "⌘ Enter", onClick: () => void run3(flux2, issue2), children: st3.busy ? "Starting…" : "Start" })
+    /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }, children: [
+      /* @__PURE__ */ jsx6(ui10.button, { kind: "ghost", size: "sm", onClick: closeStart, children: "Cancel" }),
+      /* @__PURE__ */ jsx6(ui10.button, { kind: "primary", size: "sm", icon: "bot", disabled: st4.busy || !st4.prompt.trim(), tooltip: "⌘ Enter", onClick: () => void run3(flux2, issue2), children: st4.busy ? "Starting…" : "Start" })
     ] })
+  ] });
+}
+function choice() {
+  return { provider: st4.provider, model: st4.model, effort: st4.effort, approval: st4.approval };
+}
+function useConfig(id2) {
+  const config2 = spawnConfig(id2);
+  st4.config = config2.id;
+  st4.provider = config2.provider;
+  st4.model = config2.model;
+  st4.effort = config2.effort;
+  st4.approval = config2.approval;
+  st4.naming = null;
+}
+function ConfigMenu() {
+  const config2 = spawnConfig(st4.config);
+  const changed = !same(config2, choice());
+  const shown = changed ? `${config2.name} (changed)` : config2.name;
+  return /* @__PURE__ */ jsxs5(ui10.menu, { label: `Configuration: ${shown}`, tooltip: "Agent configuration", wide: true, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+    /* @__PURE__ */ jsx6(ui10.icon, { icon: "sliders", style: { width: 14, height: 14, color: "currentColor" } }),
+    /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
+    /* @__PURE__ */ jsx6(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+    spawnConfigs().map((c) => /* @__PURE__ */ jsx6(ui10.item, { checked: c.id === config2.id, onClick: () => useConfig(c.id), children: c.name }, c.id)),
+    /* @__PURE__ */ jsx6(ui10.separator, {}),
+    /* @__PURE__ */ jsx6(ui10.item, { icon: "check", disabled: !changed, onClick: () => {
+      saveConfig(config2.id, choice());
+      ui10.toast(`Saved ${config2.name}.`);
+    }, children: `Save to ${config2.name}` }),
+    /* @__PURE__ */ jsx6(ui10.item, { icon: "plus", onClick: () => {
+      st4.naming = "";
+    }, children: "Save as new configuration…" }),
+    /* @__PURE__ */ jsx6(ui10.item, { icon: "settings", href: "swarm://settings/flux/flux", children: "Manage configurations" })
+  ] });
+}
+function SaveConfig() {
+  const fresh = freshName();
+  const save = () => {
+    const name = (st4.naming ?? "").trim() || fresh;
+    st4.config = addConfig(name, choice());
+    st4.naming = null;
+    ui10.toast(`Saved ${name}.`);
+  };
+  return /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+    /* @__PURE__ */ jsx6(ui10.field, { label: "Configuration name", value: st4.naming ?? "", autoFocus: true, placeholder: fresh, onChange: (value) => {
+      st4.naming = value;
+    }, onSubmit: save, style: { flex: 1, minWidth: 0, height: 28 } }, "config-name"),
+    /* @__PURE__ */ jsx6(ui10.button, { kind: "ghost", size: "sm", onClick: () => {
+      st4.naming = null;
+    }, children: "Cancel" }),
+    /* @__PURE__ */ jsx6(ui10.button, { kind: "secondary", size: "sm", onClick: save, children: "Save configuration" })
   ] });
 }
 async function loadProjects(flux2, issue2) {
@@ -81113,18 +81279,18 @@ async function loadProjects(flux2, issue2) {
   } catch {
   }
   const found2 = await projectFor(flux2, issue2) ?? "";
-  if (st3.seeded !== issue2.id) return;
-  st3.swarmProjects = projects;
-  if (!st3.swarmProject) st3.swarmProject = found2;
+  if (st4.seeded !== issue2.id) return;
+  st4.swarmProjects = projects;
+  if (!st4.swarmProject) st4.swarmProject = found2;
 }
 async function run3(flux2, issue2) {
-  if (st3.busy || !st3.prompt.trim()) return;
-  st3.busy = true;
+  if (st4.busy || !st4.prompt.trim()) return;
+  st4.busy = true;
   try {
-    const project = st3.swarmProject || await projectFor(flux2, issue2);
+    const project = st4.swarmProject || await projectFor(flux2, issue2);
     const pictures = [];
     const placed = /* @__PURE__ */ new Map();
-    for (const [i2, id2] of st3.imageIds.entries()) {
+    for (const [i2, id2] of st4.imageIds.entries()) {
       try {
         const asset = await flux2.requireClient().asset(id2);
         const type = asset.contentType.split(";")[0].trim().toLowerCase();
@@ -81134,39 +81300,39 @@ async function run3(flux2, issue2) {
       } catch {
       }
     }
-    const failed2 = st3.imageIds.length - pictures.length;
-    const text2 = st3.prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num) => {
+    const failed2 = st4.imageIds.length - pictures.length;
+    const text3 = st4.prompt.trim().replace(/\[Image (\d+)\]/g, (whole, num) => {
       const at3 = placed.get(Number(num));
       return at3 ? `[Image #${at3}]` : whole;
     });
     const spawned = await swarm2.threads.spawn({
       project,
-      provider: st3.provider || void 0,
-      model: st3.model || void 0,
-      effort: st3.effort || void 0,
-      approval: st3.approval || void 0,
+      provider: st4.provider || void 0,
+      model: st4.model || void 0,
+      effort: st4.effort || void 0,
+      approval: st4.approval || void 0,
       worktree: true,
-      branch: st3.branch || void 0,
+      branch: st4.branch || void 0,
       title: `${issue2.key} · ${issue2.title}`,
-      prompt: text2,
+      prompt: text3,
       images: pictures,
       metadata: { issueId: issue2.id, issueKey: issue2.key, connectionId: flux2.id }
     });
-    if (failed2) ui9.toast(failed2 === st3.imageIds.length ? `${issue2.key}'s images weren't attached.` : `${failed2} of ${issue2.key}'s images weren't attached.`);
+    if (failed2) ui10.toast(failed2 === st4.imageIds.length ? `${issue2.key}'s images weren't attached.` : `${failed2} of ${issue2.key}'s images weren't attached.`);
     try {
       await flux2.attach(issue2.id, spawned.id, true);
       const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
-      if (fluxProject && !fluxProject.swarmProjectId && project && st3.swarmProjects?.some((p) => p.id === project)) flux2.link(fluxProject.id, project);
+      if (fluxProject && !fluxProject.swarmProjectId && project && st4.swarmProjects?.some((p) => p.id === project)) flux2.link(fluxProject.id, project);
     } catch (e) {
-      ui9.toast(`The agent started, but ${issue2.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
+      ui10.toast(`The agent started, but ${issue2.key} wasn't updated: ${e instanceof Error ? e.message : String(e)}`);
     }
     closeStart();
-    ui9.openThread(spawned.id);
-    ui9.toast(`Agent started on ${issue2.key}.`);
+    ui10.openThread(spawned.id);
+    ui10.toast(`Agent started on ${issue2.key}.`);
   } catch (error62) {
-    ui9.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui10.toast(error62 instanceof Error ? error62.message : String(error62));
   } finally {
-    st3.busy = false;
+    st4.busy = false;
   }
 }
 async function projectFor(flux2, issue2) {
@@ -81238,7 +81404,7 @@ function watchMergeRequests(hub2) {
 
 // src/images.ts
 var IMAGES_PER_CALL = 5;
-var failure2 = (text2) => ({ content: [{ type: "text", text: text2 }], isError: true });
+var failure2 = (text3) => ({ content: [{ type: "text", text: text3 }], isError: true });
 async function issueImages(flux2, params2) {
   await flux2.whenReady();
   const issue2 = flux2.findIssue(params2.issue);
@@ -81277,88 +81443,88 @@ function base644(bytes) {
 }
 
 // src/skeleton.tsx
-import { ui as ui10 } from "swarm";
-import { jsx as jsx6, jsxs as jsxs5 } from "swarm/jsx-runtime";
+import { ui as ui11 } from "swarm";
+import { jsx as jsx7, jsxs as jsxs6 } from "swarm/jsx-runtime";
 var BONE = { borderRadius: 4, backgroundColor: "hover", animation: { name: "shimmer" }, flexShrink: 0 };
 function Bone({ width, height = 10, round: round2 = false, style }) {
-  return /* @__PURE__ */ jsx6(ui10.box, { style: { ...BONE, width, height, ...round2 ? { borderRadius: "full" } : null, ...style } });
+  return /* @__PURE__ */ jsx7(ui11.box, { style: { ...BONE, width, height, ...round2 ? { borderRadius: "full" } : null, ...style } });
 }
 var TITLES2 = ["78%", "56%", "88%", "64%", "72%", "48%"];
 function CardBones({ n = 0 }) {
-  return /* @__PURE__ */ jsxs5(ui10.box, { style: { width: "100%", flexDirection: "row", gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }, children: [
-    /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-      /* @__PURE__ */ jsx6(ui10.box, { style: { flexDirection: "row", alignItems: "center", height: 16 }, children: /* @__PURE__ */ jsx6(Bone, { width: 52, height: 8 }) }),
-      /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 20, marginTop: 4 }, children: [
-        /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
-        /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 12 })
+  return /* @__PURE__ */ jsxs6(ui11.box, { style: { width: "100%", flexDirection: "row", gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }, children: [
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+      /* @__PURE__ */ jsx7(ui11.box, { style: { flexDirection: "row", alignItems: "center", height: 16 }, children: /* @__PURE__ */ jsx7(Bone, { width: 52, height: 8 }) }),
+      /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 20, marginTop: 4 }, children: [
+        /* @__PURE__ */ jsx7(Bone, { width: 14, height: 14, round: true }),
+        /* @__PURE__ */ jsx7(Bone, { width: TITLES2[n % TITLES2.length], height: 12 })
       ] }),
-      /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 22, marginTop: 8 }, children: [
-        /* @__PURE__ */ jsx6(Bone, { width: 22, height: 20 }),
-        n % 3 !== 1 ? /* @__PURE__ */ jsx6(Bone, { width: 56, height: 20 }) : null,
-        n % 2 === 0 ? /* @__PURE__ */ jsx6(Bone, { width: 44, height: 20 }) : null
+      /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 22, marginTop: 8 }, children: [
+        /* @__PURE__ */ jsx7(Bone, { width: 22, height: 20 }),
+        n % 3 !== 1 ? /* @__PURE__ */ jsx7(Bone, { width: 56, height: 20 }) : null,
+        n % 2 === 0 ? /* @__PURE__ */ jsx7(Bone, { width: 44, height: 20 }) : null
       ] }),
-      /* @__PURE__ */ jsx6(ui10.box, { style: { flexDirection: "row", alignItems: "center", height: 16, marginTop: 8 }, children: /* @__PURE__ */ jsx6(Bone, { width: 72, height: 8 }) })
+      /* @__PURE__ */ jsx7(ui11.box, { style: { flexDirection: "row", alignItems: "center", height: 16, marginTop: 8 }, children: /* @__PURE__ */ jsx7(Bone, { width: 72, height: 8 }) })
     ] }),
-    /* @__PURE__ */ jsx6(ui10.box, { style: { flexShrink: 0, alignItems: "flex-end" }, children: /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true }) })
+    /* @__PURE__ */ jsx7(ui11.box, { style: { flexShrink: 0, alignItems: "flex-end" }, children: /* @__PURE__ */ jsx7(Bone, { width: 20, height: 20, round: true }) })
   ] });
 }
 function RowBones({ n = 0 }) {
-  return /* @__PURE__ */ jsxs5(ui10.box, { style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, paddingLeft: 8, paddingRight: 8 }, children: [
-    /* @__PURE__ */ jsx6(ui10.box, { style: { width: 16 } }),
-    /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14 }),
-    /* @__PURE__ */ jsx6(Bone, { width: 48, height: 8 }),
-    /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
-    /* @__PURE__ */ jsx6(ui10.box, { style: { flex: 1, minWidth: 0 }, children: /* @__PURE__ */ jsx6(Bone, { width: TITLES2[n % TITLES2.length], height: 10 }) }),
-    /* @__PURE__ */ jsx6(Bone, { width: 20, height: 20, round: true })
+  return /* @__PURE__ */ jsxs6(ui11.box, { style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, paddingLeft: 8, paddingRight: 8 }, children: [
+    /* @__PURE__ */ jsx7(ui11.box, { style: { width: 16 } }),
+    /* @__PURE__ */ jsx7(Bone, { width: 14, height: 14 }),
+    /* @__PURE__ */ jsx7(Bone, { width: 48, height: 8 }),
+    /* @__PURE__ */ jsx7(Bone, { width: 14, height: 14, round: true }),
+    /* @__PURE__ */ jsx7(ui11.box, { style: { flex: 1, minWidth: 0 }, children: /* @__PURE__ */ jsx7(Bone, { width: TITLES2[n % TITLES2.length], height: 10 }) }),
+    /* @__PURE__ */ jsx7(Bone, { width: 20, height: 20, round: true })
   ] });
 }
 function BoardBones({ edge }) {
-  return /* @__PURE__ */ jsx6(ui10.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, flexDirection: "row", gap: 20, overflow: "hidden", alignItems: "stretch", paddingLeft: edge, paddingRight: edge, paddingTop: 16, paddingBottom: 32, media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20 } }] }, children: [5, 3, 4, 2].map((cards, column) => /* @__PURE__ */ jsxs5(ui10.box, { style: { width: 346, flexShrink: 0, height: "100%", overflow: "hidden", gap: 6, padding: 8, borderRadius: 14, backgroundColor: "color-mix(in srgb, text 4%, bg)" }, children: [
-    /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, flexShrink: 0, paddingLeft: 8, paddingRight: 8 }, children: [
-      /* @__PURE__ */ jsx6(Bone, { width: 16, height: 16, round: true }),
-      /* @__PURE__ */ jsx6(Bone, { width: [72, 88, 64, 96][column], height: 12 }),
-      /* @__PURE__ */ jsx6(Bone, { width: 12, height: 12 })
+  return /* @__PURE__ */ jsx7(ui11.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, flexDirection: "row", gap: 20, overflow: "hidden", alignItems: "stretch", paddingLeft: edge, paddingRight: edge, paddingTop: 16, paddingBottom: 32, media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20 } }] }, children: [5, 3, 4, 2].map((cards, column) => /* @__PURE__ */ jsxs6(ui11.box, { style: { width: 346, flexShrink: 0, height: "100%", overflow: "hidden", gap: 6, padding: 8, borderRadius: 14, backgroundColor: "color-mix(in srgb, text 4%, bg)" }, children: [
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, flexShrink: 0, paddingLeft: 8, paddingRight: 8 }, children: [
+      /* @__PURE__ */ jsx7(Bone, { width: 16, height: 16, round: true }),
+      /* @__PURE__ */ jsx7(Bone, { width: [72, 88, 64, 96][column], height: 12 }),
+      /* @__PURE__ */ jsx7(Bone, { width: 12, height: 12 })
     ] }),
-    Array.from({ length: cards }, (_2, n) => /* @__PURE__ */ jsx6(CardBones, { n: column * 2 + n }, "card" + n))
+    Array.from({ length: cards }, (_2, n) => /* @__PURE__ */ jsx7(CardBones, { n: column * 2 + n }, "card" + n))
   ] }, "col" + column)) });
 }
 function ListBones({ edge }) {
-  return /* @__PURE__ */ jsxs5(ui10.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, overflow: "hidden", paddingLeft: edge, paddingRight: edge, paddingTop: 12 }, children: [
-    /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, borderRadius: "control", backgroundColor: "hover", marginBottom: 4 }, children: [
-      /* @__PURE__ */ jsx6(Bone, { width: 12, height: 12 }),
-      /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
-      /* @__PURE__ */ jsx6(Bone, { width: 80, height: 10 })
+  return /* @__PURE__ */ jsxs6(ui11.box, { label: "Loading Flux…", style: { flex: 1, minHeight: 0, overflow: "hidden", paddingLeft: edge, paddingRight: edge, paddingTop: 12 }, children: [
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, borderRadius: "control", backgroundColor: "hover", marginBottom: 4 }, children: [
+      /* @__PURE__ */ jsx7(Bone, { width: 12, height: 12 }),
+      /* @__PURE__ */ jsx7(Bone, { width: 14, height: 14, round: true }),
+      /* @__PURE__ */ jsx7(Bone, { width: 80, height: 10 })
     ] }),
-    Array.from({ length: 9 }, (_2, n) => /* @__PURE__ */ jsx6(RowBones, { n }, "row" + n))
+    Array.from({ length: 9 }, (_2, n) => /* @__PURE__ */ jsx7(RowBones, { n }, "row" + n))
   ] });
 }
 function IssueBones() {
-  return /* @__PURE__ */ jsx6(ui10.box, { label: "Loading the issue…", style: { flex: 1, minHeight: 0, overflow: "hidden" }, children: /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 40, width: "100%", maxWidth: 928, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }] }, children: [
-    /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, gap: 14 }, children: [
-      /* @__PURE__ */ jsx6(Bone, { width: "66%", height: 28, style: { borderRadius: 6 } }),
-      /* @__PURE__ */ jsx6(Bone, { width: "34%", height: 12 }),
-      /* @__PURE__ */ jsxs5(ui10.box, { style: { gap: 10, marginTop: 24 }, children: [
-        /* @__PURE__ */ jsx6(Bone, { width: "100%", height: 10 }),
-        /* @__PURE__ */ jsx6(Bone, { width: "94%", height: 10 }),
-        /* @__PURE__ */ jsx6(Bone, { width: "82%", height: 10 }),
-        /* @__PURE__ */ jsx6(Bone, { width: "58%", height: 10 })
+  return /* @__PURE__ */ jsx7(ui11.box, { label: "Loading the issue…", style: { flex: 1, minHeight: 0, overflow: "hidden" }, children: /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 40, width: "100%", maxWidth: 928, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }] }, children: [
+    /* @__PURE__ */ jsxs6(ui11.box, { style: { flex: 1, minWidth: 0, gap: 14 }, children: [
+      /* @__PURE__ */ jsx7(Bone, { width: "66%", height: 28, style: { borderRadius: 6 } }),
+      /* @__PURE__ */ jsx7(Bone, { width: "34%", height: 12 }),
+      /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 10, marginTop: 24 }, children: [
+        /* @__PURE__ */ jsx7(Bone, { width: "100%", height: 10 }),
+        /* @__PURE__ */ jsx7(Bone, { width: "94%", height: 10 }),
+        /* @__PURE__ */ jsx7(Bone, { width: "82%", height: 10 }),
+        /* @__PURE__ */ jsx7(Bone, { width: "58%", height: 10 })
       ] })
     ] }),
-    /* @__PURE__ */ jsx6(ui10.box, { style: { display: "none", width: 240, gap: 14, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: [64, 80, 56, 72, 48].map((w2, n) => /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 10, alignItems: "center" }, children: [
-      /* @__PURE__ */ jsx6(Bone, { width: 72, height: 8 }),
-      /* @__PURE__ */ jsx6(Bone, { width: 14, height: 14, round: true }),
-      /* @__PURE__ */ jsx6(Bone, { width: w2, height: 10 })
+    /* @__PURE__ */ jsx7(ui11.box, { style: { display: "none", width: 240, gap: 14, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: [64, 80, 56, 72, 48].map((w2, n) => /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 10, alignItems: "center" }, children: [
+      /* @__PURE__ */ jsx7(Bone, { width: 72, height: 8 }),
+      /* @__PURE__ */ jsx7(Bone, { width: 14, height: 14, round: true }),
+      /* @__PURE__ */ jsx7(Bone, { width: w2, height: 10 })
     ] }, "p" + n)) })
   ] }) });
 }
 
 // src/page.tsx
-import { storage as storage5, ui as ui14 } from "swarm";
+import { storage as storage6, ui as ui15 } from "swarm";
 
 // src/connect.tsx
-import { storage as storage4, ui as ui11 } from "swarm";
-import { jsx as jsx7, jsxs as jsxs6 } from "swarm/jsx-runtime";
-var forms = ui11.store(/* @__PURE__ */ new Map());
+import { storage as storage5, ui as ui12 } from "swarm";
+import { jsx as jsx8, jsxs as jsxs7 } from "swarm/jsx-runtime";
+var forms = ui12.store(/* @__PURE__ */ new Map());
 var sources = /* @__PURE__ */ new Map();
 function formOf(key, url2) {
   if (!forms.has(key)) forms.set(key, { url: url2, token: "", busy: false, error: "", pick: null });
@@ -81378,13 +81544,13 @@ function sameFlux(url2, baseUrl) {
     return false;
   }
 }
-function sourceOf(name, pick2, workspace) {
+function sourceOf(name, pick3, workspace) {
   const key = `${name}
-${pick2.baseUrl}
+${pick3.baseUrl}
 ${workspace}`;
   let source = sources.get(key);
   if (!source) {
-    const client = new FluxClient({ baseUrl: pick2.baseUrl, token: pick2.token, deviceId: storage4.get("deviceId") ?? "", workspaceId: workspace });
+    const client = new FluxClient({ baseUrl: pick3.baseUrl, token: pick3.token, deviceId: storage5.get("deviceId") ?? "", workspaceId: workspace });
     source = { baseUrl: client.baseUrl, requireClient: () => client };
     sources.set(key, source);
   }
@@ -81392,78 +81558,78 @@ ${workspace}`;
 }
 function ConnectForm({ name, target, url: url2 = "", done, cancel }) {
   const form = formOf(name, url2);
-  if (form.pick) return /* @__PURE__ */ jsx7(Picker, { name, form, pick: form.pick, done, cancel });
+  if (form.pick) return /* @__PURE__ */ jsx8(Picker, { name, form, pick: form.pick, done, cancel });
   const go = () => void connect(name, form, target, done);
   const tokens = /^https?:\/\/[^/\s]+/.exec(form.url.trim())?.[0];
-  return /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 14 }, children: [
-    /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 6 }, children: [
-      /* @__PURE__ */ jsx7(ui11.text, { style: { fontWeight: 500 }, children: "Flux URL" }),
-      /* @__PURE__ */ jsx7(ui11.field, { value: form.url, placeholder: "https://flux.example.com", onChange: (value) => {
+  return /* @__PURE__ */ jsxs7(ui12.box, { style: { gap: 14 }, children: [
+    /* @__PURE__ */ jsxs7(ui12.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsx8(ui12.text, { style: { fontWeight: 500 }, children: "Flux URL" }),
+      /* @__PURE__ */ jsx8(ui12.field, { value: form.url, placeholder: "https://flux.example.com", onChange: (value) => {
         form.url = value;
         form.error = "";
       }, onSubmit: go }, name + "-url")
     ] }),
-    /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 6 }, children: [
-      /* @__PURE__ */ jsx7(ui11.text, { style: { fontWeight: 500 }, children: "API token" }),
-      /* @__PURE__ */ jsx7(ui11.field, { secret: true, value: form.token, placeholder: "flux_…", onChange: (value) => {
+    /* @__PURE__ */ jsxs7(ui12.box, { style: { gap: 6 }, children: [
+      /* @__PURE__ */ jsx8(ui12.text, { style: { fontWeight: 500 }, children: "API token" }),
+      /* @__PURE__ */ jsx8(ui12.field, { secret: true, value: form.token, placeholder: "flux_…", onChange: (value) => {
         form.token = value;
         form.error = "";
       }, onSubmit: go, style: { fontFamily: "mono" } }, name + "-token"),
-      /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text3" }, children: "Make one in Flux, under" }),
-        tokens ? /* @__PURE__ */ jsx7(ui11.link, { label: "Settings, API tokens.", href: `${tokens}/settings/tokens`, style: { fontSize: "small" } }) : /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text3" }, children: "Settings, API tokens." })
+      /* @__PURE__ */ jsxs7(ui12.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx8(ui12.text, { style: { fontSize: "small", color: "text3" }, children: "Make one in Flux, under" }),
+        tokens ? /* @__PURE__ */ jsx8(ui12.link, { label: "Settings, API tokens.", href: `${tokens}/settings/tokens`, style: { fontSize: "small" } }) : /* @__PURE__ */ jsx8(ui12.text, { style: { fontSize: "small", color: "text3" }, children: "Settings, API tokens." })
       ] })
     ] }),
-    form.error ? /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx7(ui11.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 2 } }),
-      /* @__PURE__ */ jsx7(ui11.text, { style: { flex: 1, minWidth: 0 }, children: form.error })
+    form.error ? /* @__PURE__ */ jsxs7(ui12.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx8(ui12.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 2 } }),
+      /* @__PURE__ */ jsx8(ui12.text, { style: { flex: 1, minWidth: 0 }, children: form.error })
     ] }) : null,
-    /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
-      cancel ? /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
+    /* @__PURE__ */ jsxs7(ui12.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
+      cancel ? /* @__PURE__ */ jsx8(ui12.button, { kind: "ghost", onClick: () => {
         close4(name);
         cancel();
       }, children: "Cancel" }) : null,
-      /* @__PURE__ */ jsx7(ui11.button, { kind: "primary", disabled: form.busy, onClick: go, children: form.busy ? "Connecting…" : "Connect" })
+      /* @__PURE__ */ jsx8(ui12.button, { kind: "primary", disabled: form.busy, onClick: go, children: form.busy ? "Connecting…" : "Connect" })
     ] })
   ] });
 }
-function Picker({ name, form, pick: pick2, done, cancel }) {
-  const fresh = pick2.chosen.filter((id2) => !connectedTo(pick2.baseUrl, id2));
+function Picker({ name, form, pick: pick3, done, cancel }) {
+  const fresh = pick3.chosen.filter((id2) => !connectedTo(pick3.baseUrl, id2));
   const add = () => {
-    const picked = pick2.workspaces.filter((ws) => fresh.includes(ws.id));
+    const picked = pick3.workspaces.filter((ws) => fresh.includes(ws.id));
     if (picked.length === 0) return;
-    const ids = picked.map((ws) => hub.save(null, pick2.url, pick2.token, ws.id));
+    const ids = picked.map((ws) => hub.save(null, pick3.url, pick3.token, ws.id));
     hub.use(ids[0]);
     close4(name);
-    ui11.toast(picked.length === 1 ? `Connected to ${picked[0].name} as ${pick2.account}.` : `Connected to ${picked.length} workspaces as ${pick2.account}.`);
+    ui12.toast(picked.length === 1 ? `Connected to ${picked[0].name} as ${pick3.account}.` : `Connected to ${picked.length} workspaces as ${pick3.account}.`);
     done?.();
   };
-  return /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 14 }, children: [
-    /* @__PURE__ */ jsxs6(ui11.box, { style: { gap: 4 }, children: [
-      /* @__PURE__ */ jsx7(ui11.text, { style: { fontWeight: 500 }, children: "Workspaces" }),
-      /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: "small", color: "text2" }, children: `${pick2.account}'s token reaches ${pick2.workspaces.length} workspaces. Each one ticked is added on its own, with this token.` })
+  return /* @__PURE__ */ jsxs7(ui12.box, { style: { gap: 14 }, children: [
+    /* @__PURE__ */ jsxs7(ui12.box, { style: { gap: 4 }, children: [
+      /* @__PURE__ */ jsx8(ui12.text, { style: { fontWeight: 500 }, children: "Workspaces" }),
+      /* @__PURE__ */ jsx8(ui12.text, { style: { fontSize: "small", color: "text2" }, children: `${pick3.account}'s token reaches ${pick3.workspaces.length} workspaces. Each one ticked is added on its own, with this token.` })
     ] }),
-    /* @__PURE__ */ jsx7(ui11.box, { style: { gap: 2 }, children: pick2.workspaces.map((ws) => {
-      const already = connectedTo(pick2.baseUrl, ws.id);
-      const on3 = already || pick2.chosen.includes(ws.id);
-      return /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control" }, children: [
-        /* @__PURE__ */ jsx7(ui11.checkbox, { tooltip: already ? `${ws.name} is connected already` : `Add ${ws.name}`, checked: on3, disabled: already, onChange: (value) => {
-          pick2.chosen = value ? [...pick2.chosen.filter((id2) => id2 !== ws.id), ws.id] : pick2.chosen.filter((id2) => id2 !== ws.id);
+    /* @__PURE__ */ jsx8(ui12.box, { style: { gap: 2 }, children: pick3.workspaces.map((ws) => {
+      const already = connectedTo(pick3.baseUrl, ws.id);
+      const on3 = already || pick3.chosen.includes(ws.id);
+      return /* @__PURE__ */ jsxs7(ui12.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control" }, children: [
+        /* @__PURE__ */ jsx8(ui12.checkbox, { tooltip: already ? `${ws.name} is connected already` : `Add ${ws.name}`, checked: on3, disabled: already, onChange: (value) => {
+          pick3.chosen = value ? [...pick3.chosen.filter((id2) => id2 !== ws.id), ws.id] : pick3.chosen.filter((id2) => id2 !== ws.id);
         } }),
-        /* @__PURE__ */ jsx7(WorkspaceLogo, { workspace: ws, fallback: pick2.baseUrl, from: sourceOf(name, pick2, ws.id), size: 20 }),
-        /* @__PURE__ */ jsx7(ui11.text, { style: { flex: 1, minWidth: 0, color: already ? "text2" : "text" }, maxLines: 1, children: ws.name }),
-        already ? /* @__PURE__ */ jsx7(ui11.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover", flexShrink: 0 }, children: /* @__PURE__ */ jsx7(ui11.text, { style: { fontSize: 11, color: "text2" }, children: "Connected" }) }) : null
+        /* @__PURE__ */ jsx8(WorkspaceLogo, { workspace: ws, fallback: pick3.baseUrl, from: sourceOf(name, pick3, ws.id), size: 20 }),
+        /* @__PURE__ */ jsx8(ui12.text, { style: { flex: 1, minWidth: 0, color: already ? "text2" : "text" }, maxLines: 1, children: ws.name }),
+        already ? /* @__PURE__ */ jsx8(ui12.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover", flexShrink: 0 }, children: /* @__PURE__ */ jsx8(ui12.text, { style: { fontSize: 11, color: "text2" }, children: "Connected" }) }) : null
       ] }, ws.id);
     }) }),
-    /* @__PURE__ */ jsxs6(ui11.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
-      /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
+    /* @__PURE__ */ jsxs7(ui12.box, { style: { flexDirection: "row", gap: 8, justifyContent: "flex-end" }, children: [
+      /* @__PURE__ */ jsx8(ui12.button, { kind: "ghost", onClick: () => {
         form.pick = null;
       }, children: "Back" }),
-      cancel ? /* @__PURE__ */ jsx7(ui11.button, { kind: "ghost", onClick: () => {
+      cancel ? /* @__PURE__ */ jsx8(ui12.button, { kind: "ghost", onClick: () => {
         close4(name);
         cancel();
       }, children: "Cancel" }) : null,
-      /* @__PURE__ */ jsx7(ui11.button, { kind: "primary", disabled: fresh.length === 0, onClick: add, children: fresh.length > 1 ? `Add ${fresh.length} workspaces` : fresh.length === 1 ? "Add 1 workspace" : "Add" })
+      /* @__PURE__ */ jsx8(ui12.button, { kind: "primary", disabled: fresh.length === 0, onClick: add, children: fresh.length > 1 ? `Add ${fresh.length} workspaces` : fresh.length === 1 ? "Add 1 workspace" : "Add" })
     ] })
   ] });
 }
@@ -81489,7 +81655,7 @@ async function connect(name, form, target, done) {
     if (connectedTo(found2.baseUrl, found2.workspace.id, target)) throw new Error(`${found2.workspace.name} at ${found2.baseUrl} is connected already: change its token there.`);
     hub.save(target, url2, token, found2.workspace.id);
     close4(name);
-    ui11.toast(`Connected to ${found2.workspace.name} as ${found2.account}.`);
+    ui12.toast(`Connected to ${found2.workspace.name} as ${found2.account}.`);
     done?.();
   } catch (e) {
     form.error = describe3(e);
@@ -81499,24 +81665,24 @@ async function connect(name, form, target, done) {
 }
 
 // src/threads.ts
-import { ui as ui12 } from "swarm";
-var known = ui12.state(/* @__PURE__ */ new Map());
+import { ui as ui13 } from "swarm";
+var known = ui13.state(/* @__PURE__ */ new Map());
 function threadInfo(id2) {
   return known.value.get(id2);
 }
 function setThreads(list2) {
   const next2 = new Map(list2.map((t) => [t.id, { title: t.title, working: t.status === "running" }]));
   const had = known.peek();
-  const same = next2.size === had.size && [...next2].every(([id2, t]) => {
+  const same2 = next2.size === had.size && [...next2].every(([id2, t]) => {
     const was = had.get(id2);
     return was && was.title === t.title && was.working === t.working;
   });
-  if (!same) known.value = next2;
-  return !same;
+  if (!same2) known.value = next2;
+  return !same2;
 }
 
 // src/projects.tsx
-import { ui as ui13 } from "swarm";
+import { ui as ui14 } from "swarm";
 
 // src/gallery.ts
 var GALLERY = [
@@ -81707,31 +81873,31 @@ var COLOR_NAMES = {
 var GALLERY_COLORS = COLORS.map((id2) => ({ id: id2, name: COLOR_NAMES[id2], color: MARK_HEX[id2] }));
 
 // src/projects.tsx
-import { jsx as jsx8, jsxs as jsxs7 } from "swarm/jsx-runtime";
+import { jsx as jsx9, jsxs as jsxs8 } from "swarm/jsx-runtime";
 var DEFAULT_MARK = { type: "icon", value: "folder", color: "gray" };
-var st4 = ui13.store({ open: null, name: "", keyDraft: "", mark: DEFAULT_MARK, busy: false });
+var st5 = ui14.store({ open: null, name: "", keyDraft: "", mark: DEFAULT_MARK, busy: false });
 function openNewProject() {
-  st4.open = { id: null, follow: true };
-  st4.name = "";
-  st4.keyDraft = "";
-  st4.mark = DEFAULT_MARK;
-  st4.busy = false;
-  ui13.showOverlay("flux-project");
+  st5.open = { id: null, follow: true };
+  st5.name = "";
+  st5.keyDraft = "";
+  st5.mark = DEFAULT_MARK;
+  st5.busy = false;
+  ui14.showOverlay("flux-project");
 }
 function openProjectSettings(project, follow = false) {
-  st4.open = { id: project.id, follow };
-  st4.name = project.name;
-  st4.keyDraft = project.key;
-  st4.mark = markOf2(project);
-  st4.busy = false;
-  ui13.showOverlay("flux-project");
+  st5.open = { id: project.id, follow };
+  st5.name = project.name;
+  st5.keyDraft = project.key;
+  st5.mark = markOf2(project);
+  st5.busy = false;
+  ui14.showOverlay("flux-project");
 }
 function close5() {
   closeProject();
-  ui13.hideOverlay("flux-project");
+  ui14.hideOverlay("flux-project");
 }
 function closeProject() {
-  st4.open = null;
+  st5.open = null;
 }
 function markOf2(project) {
   if (project.emoji) return { type: "emoji", value: project.emoji };
@@ -81748,8 +81914,8 @@ function fromPicked(m) {
   return { type: "icon", value: m.icon ?? "folder", color };
 }
 function MarkPicker({ value, label, size: size3 = 28, bordered = false, onChange }) {
-  return /* @__PURE__ */ jsx8(
-    ui13.iconPicker,
+  return /* @__PURE__ */ jsx9(
+    ui14.iconPicker,
     {
       label,
       value: asPicked(value),
@@ -81775,9 +81941,9 @@ function projectAt(flux2, key) {
 }
 function projectMenuItems(project) {
   return [
-    /* @__PURE__ */ jsx8(ui13.separator, {}, "projects-sep"),
-    /* @__PURE__ */ jsx8(ui13.item, { icon: "plus", onClick: openNewProject, children: "New project…" }, "new-project"),
-    project ? /* @__PURE__ */ jsx8(ui13.item, { icon: "settings", onClick: () => openProjectSettings(project, true), children: "Project settings…" }, "project-settings") : null
+    /* @__PURE__ */ jsx9(ui14.separator, {}, "projects-sep"),
+    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: openNewProject, children: "New project…" }, "new-project"),
+    project ? /* @__PURE__ */ jsx9(ui14.item, { icon: "settings", onClick: () => openProjectSettings(project, true), children: "Project settings…" }, "project-settings") : null
   ];
 }
 function confirmDelete(flux2, project, after) {
@@ -81786,58 +81952,58 @@ function confirmDelete(flux2, project, after) {
   confirm(`Delete ${project.name}?`, `${issues} This can't be undone.`, "Delete", async () => {
     await flux2.deleteProject(project.id);
     after?.();
-    ui13.toast(`Deleted ${project.name}.`);
+    ui14.toast(`Deleted ${project.name}.`);
   });
 }
 async function duplicateProject(flux2, project) {
   try {
     const copy3 = await flux2.createProject({ name: `${project.name} copy`.slice(0, 60), keyFrom: project.key, mark: markOf2(project) ?? void 0 });
-    ui13.navTo("flux", `p/${copy3.key}`);
+    ui14.navTo("flux", `p/${copy3.key}`);
   } catch (e) {
-    ui13.toast(`Couldn't duplicate ${project.name}: ${e instanceof Error ? e.message : String(e)}`);
+    ui14.toast(`Couldn't duplicate ${project.name}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 function moveProject(flux2, project, to) {
-  void flux2.moveProject(project.id, to).catch((e) => ui13.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
+  void flux2.moveProject(project.id, to).catch((e) => ui14.toast(`Couldn't move ${project.name}: ${e instanceof Error ? e.message : String(e)}`));
 }
 function setMark2(flux2, project, next2) {
-  void flux2.updateProject(project.id, { mark: next2 }).catch((e) => ui13.toast(`Couldn't change ${project.name}'s icon: ${e instanceof Error ? e.message : String(e)}`));
+  void flux2.updateProject(project.id, { mark: next2 }).catch((e) => ui14.toast(`Couldn't change ${project.name}'s icon: ${e instanceof Error ? e.message : String(e)}`));
 }
 function ProjectDialog({ flux: flux2 }) {
-  const o = st4.open;
+  const o = st5.open;
   if (!o) return null;
   const projects = flux2.projects();
   const editing2 = o.id ? projects.find((p) => p.id === o.id) : void 0;
   if (o.id && !editing2) return null;
   const keyed = flux2.keyed();
-  const derived2 = st4.name.trim() ? uniqueProjectKey(keyed, st4.name, o.id ?? void 0) : "";
-  const key = st4.keyDraft || derived2;
-  const problem = st4.keyDraft ? flux2.keyProblem(st4.keyDraft, o.id ?? void 0) : null;
-  const ready = !!st4.name.trim() && !problem && !st4.busy && (!editing2 || key.length >= 2);
+  const derived2 = st5.name.trim() ? uniqueProjectKey(keyed, st5.name, o.id ?? void 0) : "";
+  const key = st5.keyDraft || derived2;
+  const problem = st5.keyDraft ? flux2.keyProblem(st5.keyDraft, o.id ?? void 0) : null;
+  const ready = !!st5.name.trim() && !problem && !st5.busy && (!editing2 || key.length >= 2);
   const changes = editing2 && key !== editing2.key;
   const hint = !key ? "" : changes ? `Issues become ${key}-1, ${key}-2, …; ${editing2.key}-1 still finds its issue` : `Issues numbered ${key}-1, ${key}-2, …`;
   const old = editing2 ? keyed.find((p) => p.id === editing2.id)?.aliases ?? [] : [];
-  return /* @__PURE__ */ jsxs7(
-    ui13.box,
+  return /* @__PURE__ */ jsxs8(
+    ui14.box,
     {
       label: editing2 ? `Settings of ${editing2.name}` : "New project",
       keys: ["Mod+Enter"],
       onKeyDown: () => void submit(flux2),
       style: { gap: 0 },
       children: [
-        /* @__PURE__ */ jsx8(ui13.box, { style: { gap: 4, paddingLeft: 20, paddingRight: 20, paddingTop: 16 }, children: /* @__PURE__ */ jsx8(ui13.text, { style: { fontSize: 12, fontWeight: 500, color: "text3" }, children: editing2 ? "Project settings" : "New project" }) }),
-        /* @__PURE__ */ jsxs7(ui13.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 18 }, children: [
-          /* @__PURE__ */ jsx8(MarkPicker, { label: "Project icon", value: st4.mark, size: 36, bordered: true, onChange: (next2) => {
-            st4.mark = next2;
+        /* @__PURE__ */ jsx9(ui14.box, { style: { gap: 4, paddingLeft: 20, paddingRight: 20, paddingTop: 16 }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "text3" }, children: editing2 ? "Project settings" : "New project" }) }),
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 18 }, children: [
+          /* @__PURE__ */ jsx9(MarkPicker, { label: "Project icon", value: st5.mark, size: 36, bordered: true, onChange: (next2) => {
+            st5.mark = next2;
           } }),
-          /* @__PURE__ */ jsx8(
-            ui13.field,
+          /* @__PURE__ */ jsx9(
+            ui14.field,
             {
               autoFocus: true,
-              value: st4.name,
+              value: st5.name,
               placeholder: "Project name",
               onChange: (value) => {
-                st4.name = value.slice(0, PROJECT_NAME_MAX);
+                st5.name = value.slice(0, PROJECT_NAME_MAX);
               },
               onSubmit: () => void submit(flux2),
               style: { flex: 1, minWidth: 0, fontSize: 18, fontWeight: 500, lineHeight: "28px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }
@@ -81845,23 +82011,23 @@ function ProjectDialog({ flux: flux2 }) {
             "project-name-" + (o.id ?? "new")
           )
         ] }),
-        /* @__PURE__ */ jsx8(ui13.box, { style: { height: 1, backgroundColor: "divider" } }),
-        /* @__PURE__ */ jsxs7(ui13.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
-          /* @__PURE__ */ jsxs7(
-            ui13.box,
+        /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider" } }),
+        /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
+          /* @__PURE__ */ jsxs8(
+            ui14.box,
             {
               label: "Project key",
               tooltip: old.length ? `Old ${old.length === 1 ? "key" : "keys"}, which still find ${editing2.name}'s issues: ${old.join(", ")}` : void 0,
               style: { flexDirection: "row", gap: 4, alignItems: "center", height: 28, flexShrink: 0, paddingLeft: 7, paddingRight: 6, borderRadius: "control", backgroundColor: "field", border: problem ? "1px solid red" : "1px solid border", boxShadow: problem ? "0 0 0 3px redSoft" : "none", transition: { duration: 120, colors: true } },
               children: [
-                /* @__PURE__ */ jsx8(ui13.text, { style: { width: 10, fontFamily: "mono", fontSize: 12, color: "text3", textAlign: "center" }, children: "#" }),
-                /* @__PURE__ */ jsx8(
-                  ui13.field,
+                /* @__PURE__ */ jsx9(ui14.text, { style: { width: 10, fontFamily: "mono", fontSize: 12, color: "text3", textAlign: "center" }, children: "#" }),
+                /* @__PURE__ */ jsx9(
+                  ui14.field,
                   {
                     value: key,
                     placeholder: "KEY",
                     onChange: (value) => {
-                      st4.keyDraft = normalizeProjectKey(value);
+                      st5.keyDraft = normalizeProjectKey(value);
                     },
                     onSubmit: () => void submit(flux2),
                     style: { width: 52, fontFamily: "mono", fontSize: 12, letterSpacing: 0.5, backgroundColor: "transparent", boxShadow: "none", padding: 0 }
@@ -81871,45 +82037,45 @@ function ProjectDialog({ flux: flux2 }) {
               ]
             }
           ),
-          /* @__PURE__ */ jsx8(ui13.text, { style: { flex: 1, minWidth: 0, fontSize: 12, color: problem ? "red" : "text2" }, maxLines: 1, tooltip: problem ?? hint, children: problem ?? hint }),
-          editing2 ? /* @__PURE__ */ jsx8(ui13.button, { kind: "ghost", size: "sm", onClick: () => {
+          /* @__PURE__ */ jsx9(ui14.text, { style: { flex: 1, minWidth: 0, fontSize: 12, color: problem ? "red" : "text2" }, maxLines: 1, tooltip: problem ?? hint, children: problem ?? hint }),
+          editing2 ? /* @__PURE__ */ jsx9(ui14.button, { kind: "ghost", size: "sm", onClick: () => {
             close5();
-            confirmDelete(flux2, editing2, o.follow ? () => ui13.navTo("flux", "") : void 0);
+            confirmDelete(flux2, editing2, o.follow ? () => ui14.navTo("flux", "") : void 0);
           }, style: { color: "red" }, children: "Delete…" }) : null,
-          /* @__PURE__ */ jsx8(ui13.button, { kind: "primary", disabled: !ready, onClick: () => void submit(flux2), children: `${st4.busy ? editing2 ? "Saving…" : "Creating…" : editing2 ? "Save" : "Create"}  ⌘↵` })
+          /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", disabled: !ready, onClick: () => void submit(flux2), children: `${st5.busy ? editing2 ? "Saving…" : "Creating…" : editing2 ? "Save" : "Create"}  ⌘↵` })
         ] })
       ]
     }
   );
 }
 async function submit(flux2) {
-  const o = st4.open;
-  if (!o || st4.busy) return;
-  if (!st4.name.trim()) {
-    ui13.toast("Give the project a name.");
+  const o = st5.open;
+  if (!o || st5.busy) return;
+  if (!st5.name.trim()) {
+    ui14.toast("Give the project a name.");
     return;
   }
-  st4.busy = true;
+  st5.busy = true;
   try {
     if (o.id) {
       const before = flux2.projects().find((p) => p.id === o.id);
       if (!before) return close5();
       const was = markOf2(before);
-      const marked = st4.mark && JSON.stringify(st4.mark) !== JSON.stringify(was) ? st4.mark : void 0;
-      const project = await flux2.updateProject(o.id, { name: st4.name, key: st4.keyDraft || before.key, mark: marked });
+      const marked = st5.mark && JSON.stringify(st5.mark) !== JSON.stringify(was) ? st5.mark : void 0;
+      const project = await flux2.updateProject(o.id, { name: st5.name, key: st5.keyDraft || before.key, mark: marked });
       close5();
-      if (o.follow && project.key !== before.key) ui13.navTo("flux", `p/${project.key}`);
-      ui13.toast(project.key !== before.key ? `${project.name} is ${project.key} now. ${before.key}-… still finds its issues.` : `Saved ${project.name}.`);
+      if (o.follow && project.key !== before.key) ui14.navTo("flux", `p/${project.key}`);
+      ui14.toast(project.key !== before.key ? `${project.name} is ${project.key} now. ${before.key}-… still finds its issues.` : `Saved ${project.name}.`);
     } else {
-      const project = await flux2.createProject({ name: st4.name, key: st4.keyDraft || void 0, mark: st4.mark ?? DEFAULT_MARK });
+      const project = await flux2.createProject({ name: st5.name, key: st5.keyDraft || void 0, mark: st5.mark ?? DEFAULT_MARK });
       close5();
-      ui13.navTo("flux", `p/${project.key}`);
-      ui13.toast(`Created ${project.name}.`);
+      ui14.navTo("flux", `p/${project.key}`);
+      ui14.toast(`Created ${project.name}.`);
     }
   } catch (e) {
-    ui13.toast(e instanceof Error ? e.message : String(e));
+    ui14.toast(e instanceof Error ? e.message : String(e));
   } finally {
-    st4.busy = false;
+    st5.busy = false;
   }
 }
 function keyNote(flux2, project) {
@@ -82133,8 +82299,8 @@ function scopeOf(path) {
 }
 
 // src/page.tsx
-import { Fragment as Fragment2, jsx as jsx9, jsxs as jsxs8 } from "swarm/jsx-runtime";
-var st5 = ui14.store({
+import { Fragment as Fragment2, jsx as jsx10, jsxs as jsxs9 } from "swarm/jsx-runtime";
+var st6 = ui15.store({
   query: "",
   selected: /* @__PURE__ */ new Set(),
   cursor: "",
@@ -82216,16 +82382,16 @@ var PAGE_KEYS = [
 ];
 var BAR_KEYS = PAGE_KEYS.filter((key) => key !== "Escape");
 function displayOf() {
-  return parseDisplay(storage5.get("display"));
+  return parseDisplay(storage6.get("display"));
 }
 function setDisplay(next2) {
-  storage5.set("display", next2);
+  storage6.set("display", next2);
 }
 function openIssue(key) {
-  ui14.navTo("flux", `issues/${encodeURIComponent(key)}`);
+  ui15.navTo("flux", `issues/${encodeURIComponent(key)}`);
 }
 function openList(path) {
-  ui14.navTo("flux", path);
+  ui15.navTo("flux", path);
 }
 function navItems(flux2) {
   const open3 = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status));
@@ -82247,13 +82413,13 @@ function syncNav(flux2) {
   const me2 = flux2.me?.id;
   const mine = flux2.issues().filter((issue2) => !CLOSED_STATUSES.has(issue2.status) && me2 && issue2.assigneeIds.includes(me2)).length;
   try {
-    ui14.navItems("flux", navItems(flux2));
-    ui14.navBadge("flux", { text: mine ? String(mine) : "" });
+    ui15.navItems("flux", navItems(flux2));
+    ui15.navBadge("flux", { text: mine ? String(mine) : "" });
   } catch {
   }
 }
 function scopeNow() {
-  return scopeOf(storage5.get("scope") ?? "mine");
+  return scopeOf(storage6.get("scope") ?? "mine");
 }
 function parsePath(path) {
   const parts = path.split("/").filter(Boolean);
@@ -82263,32 +82429,32 @@ function parsePath(path) {
 }
 function FluxPage({ path, slot, item, section, image }) {
   const flux2 = hub.active;
-  if (!slot) st5.shownPath = path;
-  if (slot === "section") return section === "Projects" ? /* @__PURE__ */ jsx9(NewProjectButton, {}) : null;
-  if (slot === "item") return /* @__PURE__ */ jsx9(SidebarProjectMenu, { flux: flux2, project: flux2.projects().find((p) => "p-" + p.id === item) });
+  if (!slot) st6.shownPath = path;
+  if (slot === "section") return section === "Projects" ? /* @__PURE__ */ jsx10(NewProjectButton, {}) : null;
+  if (slot === "item") return /* @__PURE__ */ jsx10(SidebarProjectMenu, { flux: flux2, project: flux2.projects().find((p) => "p-" + p.id === item) });
   const route = parsePath(path);
   const connection = flux2.connection();
   const unset = connection.state === "unconfigured" || connection.state === "unauthorized";
   const cantLoad = (connection.state === "error" || connection.state === "offline") && connection.issueCount === 0;
-  if (slot === "side") return unset ? null : /* @__PURE__ */ jsx9(WorkspaceSwitcher, {});
+  if (slot === "side") return unset ? null : /* @__PURE__ */ jsx10(WorkspaceSwitcher, {});
   if (slot === "head") {
-    if (unset || cantLoad) return /* @__PURE__ */ jsx9(HeadTitle, {});
-    if (route.kind === "issue") return /* @__PURE__ */ jsx9(IssueHead, { flux: flux2, issueKey: route.key });
+    if (unset || cantLoad) return /* @__PURE__ */ jsx10(HeadTitle, {});
+    if (route.kind === "issue") return /* @__PURE__ */ jsx10(IssueHead, { flux: flux2, issueKey: route.key });
     const project = projectAt(flux2, route.project);
-    return /* @__PURE__ */ jsx9(Toolbar, { flux: flux2, project, scope: scopeNow(), options: displayOf() });
+    return /* @__PURE__ */ jsx10(Toolbar, { flux: flux2, project, scope: scopeNow(), options: displayOf() });
   }
-  if (unset) return /* @__PURE__ */ jsx9(Setup, { flux: flux2 });
-  if (cantLoad) return /* @__PURE__ */ jsx9(CantLoad, { flux: flux2 });
+  if (unset) return /* @__PURE__ */ jsx10(Setup, { flux: flux2 });
+  if (cantLoad) return /* @__PURE__ */ jsx10(CantLoad, { flux: flux2 });
   if (connection.state === "connecting" && connection.issueCount === 0 && route.kind === "list") {
     const options = displayOf();
     const project = projectAt(flux2, route.project);
-    return /* @__PURE__ */ jsxs8(ui14.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: [
-      options.layout === "list" ? /* @__PURE__ */ jsx9(ListBones, { edge: EDGE }) : /* @__PURE__ */ jsx9(BoardBones, { edge: EDGE }),
-      st5.displayOpen ? displayPanel(options, !!project) : null
+    return /* @__PURE__ */ jsxs9(ui15.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: [
+      options.layout === "list" ? /* @__PURE__ */ jsx10(ListBones, { edge: EDGE }) : /* @__PURE__ */ jsx10(BoardBones, { edge: EDGE }),
+      st6.displayOpen ? displayPanel(options, !!project) : null
     ] });
   }
-  if (route.kind === "issue") return /* @__PURE__ */ jsx9(IssuePage, { flux: flux2, issueKey: route.key, image });
-  return /* @__PURE__ */ jsx9(ListScreen, { flux: flux2, scope: scopeNow(), projectKey: route.project });
+  if (route.kind === "issue") return /* @__PURE__ */ jsx10(IssuePage, { flux: flux2, issueKey: route.key, image });
+  return /* @__PURE__ */ jsx10(ListScreen, { flux: flux2, scope: scopeNow(), projectKey: route.project });
 }
 function ListScreen({ flux: flux2, scope, projectKey }) {
   const options = displayOf();
@@ -82303,7 +82469,7 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
     if (!options.showSubIssues && issue2.parentId) return false;
     if (!options.showClosed && CLOSED_STATUSES.has(issue2.status)) return false;
     if (!matchesScope(issue2, scope, me2)) return false;
-    return matchesQuery(issue2, st5.query);
+    return matchesQuery(issue2, st6.query);
   });
   const groups = buildGroups({ issues, grouping, ordering: options.ordering, showEmptyGroups: options.showEmptyGroups, showClosed: options.showClosed, members: members2, labels, projects, me: me2 });
   const flat = groups.flatMap((group) => group.issues);
@@ -82311,17 +82477,17 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
   shownGroups = groups;
   shownProject = project?.id;
   const connection = flux2.connection();
-  return /* @__PURE__ */ jsxs8(
-    ui14.box,
+  return /* @__PURE__ */ jsxs9(
+    ui15.box,
     {
       style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 },
       keys: PAGE_KEYS,
       onKeyDown: (key) => onListKey(flux2, key, flat, groups, options),
       children: [
-        /* @__PURE__ */ jsx9(SyncBars, { flux: flux2 }),
-        flat.length === 0 ? /* @__PURE__ */ jsx9(Empty, { flux: flux2, scope, inProject: !!project, onCreate: () => openCreate(flux2, project?.id) }) : options.layout === "list" ? /* @__PURE__ */ jsx9(IssueList, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }) : /* @__PURE__ */ jsx9(Board, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }),
-        st5.selected.size > 0 ? /* @__PURE__ */ jsx9(SelectionBar, { flux: flux2 }) : null,
-        st5.displayOpen ? displayPanel(options, !!project) : null
+        /* @__PURE__ */ jsx10(SyncBars, { flux: flux2 }),
+        flat.length === 0 ? /* @__PURE__ */ jsx10(Empty, { flux: flux2, scope, inProject: !!project, onCreate: () => openCreate(flux2, project?.id) }) : options.layout === "list" ? /* @__PURE__ */ jsx10(IssueList, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }) : /* @__PURE__ */ jsx10(Board, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }),
+        st6.selected.size > 0 ? /* @__PURE__ */ jsx10(SelectionBar, { flux: flux2 }) : null,
+        st6.displayOpen ? displayPanel(options, !!project) : null
       ]
     }
   );
@@ -82333,7 +82499,7 @@ function offline(message, copy3 = true) {
 }
 function since(iso) {
   if (!iso) return "a while ago";
-  const minutes = Math.max(0, Math.round((ui14.now() - new Date(iso).getTime()) / 6e4));
+  const minutes = Math.max(0, Math.round((ui15.now() - new Date(iso).getTime()) / 6e4));
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.round(minutes / 60);
@@ -82343,9 +82509,9 @@ function retryNow(flux2) {
   flux2.reconnect();
   setTimeout(() => {
     if (flux2.connection().state === "offline") {
-      st5.retryFailed = true;
+      st6.retryFailed = true;
       setTimeout(() => {
-        st5.retryFailed = false;
+        st6.retryFailed = false;
       }, 4e3);
     }
   }, 2e3);
@@ -82356,108 +82522,108 @@ function SyncBars({ flux: flux2 }) {
   const away = (c.state === "offline" || c.state === "connecting" && c.issueCount > 0) && c.issueCount > 0;
   const bar2 = { flexDirection: "row", gap: 8, alignItems: "center", minHeight: 32, paddingLeft: EDGE, paddingRight: EDGE - 6, paddingTop: 4, paddingBottom: 4, borderBottom: "1px solid border", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 14 } }] };
   const barButton = { height: 24, paddingLeft: 6, paddingRight: 6, justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text", hover: { backgroundColor: "hover" } };
-  const failed2 = st5.retryFailed;
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 0, flexShrink: 0 }, children: [
-    away ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Offline", style: bar2, children: [
-      /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "amber", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row" }, children: /* @__PURE__ */ jsxs8(ui14.text, { style: { fontSize: 12, minWidth: 0, color: "text2" }, maxLines: 1, tooltip: c.message || void 0, children: [
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontWeight: 500, color: "text" }, children: "Offline" }),
+  const failed2 = st6.retryFailed;
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 0, flexShrink: 0 }, children: [
+    away ? /* @__PURE__ */ jsxs9(ui15.box, { label: "Offline", style: bar2, children: [
+      /* @__PURE__ */ jsx10(ui15.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "amber", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1, minWidth: 0, flexDirection: "row" }, children: /* @__PURE__ */ jsxs9(ui15.text, { style: { fontSize: 12, minWidth: 0, color: "text2" }, maxLines: 1, tooltip: c.message || void 0, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 500, color: "text" }, children: "Offline" }),
         ` · Can't reach ${host}, so this is the copy synced ${since(c.syncedAt)}. Changes you make are sent when it's back.`
       ] }) }),
-      c.queued ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: `${c.queued} waiting to send` }) : null,
-      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Retry now", disabled: c.state === "connecting", onClick: () => retryNow(flux2), style: { ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: c.state === "connecting" ? "Retrying…" : failed2 ? "Still can't reach it" : "Retry now" }) })
-    ] }) : c.state === "error" && c.message ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Flux couldn't sync", style: bar2, children: [
-      /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "red", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flex: 1, minWidth: 0 }, maxLines: 1, tooltip: c.message, children: c.message }),
-      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Try again", onClick: () => flux2.reconnect(), style: barButton, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Try again" }) })
+      c.queued ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: `${c.queued} waiting to send` }) : null,
+      /* @__PURE__ */ jsx10(ui15.pressable, { label: "Retry now", disabled: c.state === "connecting", onClick: () => retryNow(flux2), style: { ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: c.state === "connecting" ? "Retrying…" : failed2 ? "Still can't reach it" : "Retry now" }) })
+    ] }) : c.state === "error" && c.message ? /* @__PURE__ */ jsxs9(ui15.box, { label: "Flux couldn't sync", style: bar2, children: [
+      /* @__PURE__ */ jsx10(ui15.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", flex: 1, minWidth: 0 }, maxLines: 1, tooltip: c.message, children: c.message }),
+      /* @__PURE__ */ jsx10(ui15.pressable, { label: "Try again", onClick: () => flux2.reconnect(), style: barButton, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Try again" }) })
     ] }) : null,
-    c.dropped.length ? /* @__PURE__ */ jsxs8(ui14.box, { style: { ...bar2, alignItems: "flex-start", paddingTop: 8, paddingBottom: 8, backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx9(ui14.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 1 } }),
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500 }, children: c.dropped.length === 1 ? "A change made offline wasn't sent" : `${c.dropped.length} changes made offline weren't sent` }),
-        c.dropped.slice(-5).map((d) => /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: `${d.label}: ${d.reason}` }, d.id))
+    c.dropped.length ? /* @__PURE__ */ jsxs9(ui15.box, { style: { ...bar2, alignItems: "flex-start", paddingTop: 8, paddingBottom: 8, backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx10(ui15.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 1 } }),
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500 }, children: c.dropped.length === 1 ? "A change made offline wasn't sent" : `${c.dropped.length} changes made offline weren't sent` }),
+        c.dropped.slice(-5).map((d) => /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: `${d.label}: ${d.reason}` }, d.id))
       ] }),
-      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Dismiss", onClick: () => flux2.dismissDropped(), style: barButton, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Dismiss" }) })
+      /* @__PURE__ */ jsx10(ui15.pressable, { label: "Dismiss", onClick: () => flux2.dismissDropped(), style: barButton, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Dismiss" }) })
     ] }) : null
   ] });
 }
 function NewProjectButton() {
-  return /* @__PURE__ */ jsx9(ui14.pressable, { label: "New project", tooltip: "New project", onClick: openNewProject, style: { width: 20, height: 20, marginTop: -4, marginBottom: -4, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text3", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "plus", style: { width: 13, height: 13, color: "currentColor" } }) });
+  return /* @__PURE__ */ jsx10(ui15.pressable, { label: "New project", tooltip: "New project", onClick: openNewProject, style: { width: 20, height: 20, marginTop: -4, marginBottom: -4, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text3", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.icon, { icon: "plus", style: { width: 13, height: 13, color: "currentColor" } }) });
 }
 function SidebarProjectMenu({ flux: flux2, project }) {
   if (!project) return null;
-  const route = parsePath(st5.shownPath);
+  const route = parsePath(st6.shownPath);
   const here = route.kind === "list" && route.project === project.key;
-  return /* @__PURE__ */ jsx9(ui14.menu, { context: true, label: `${project.name} actions`, children: () => [
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: () => openCreate(flux2, project.id), children: "New issue" }, "new"),
-    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep1"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "pencil", onClick: () => openProjectSettings(project, here), children: "Edit" }, "edit"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "external", onClick: () => {
-      ui14.copy(flux2.projectUrl(project));
-      ui14.toast(`Copied ${project.name}'s link.`);
+  return /* @__PURE__ */ jsx10(ui15.menu, { context: true, label: `${project.name} actions`, children: () => [
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", onClick: () => openCreate(flux2, project.id), children: "New issue" }, "new"),
+    /* @__PURE__ */ jsx10(ui15.separator, {}, "sep1"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "pencil", onClick: () => openProjectSettings(project, here), children: "Edit" }, "edit"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "external", onClick: () => {
+      ui15.copy(flux2.projectUrl(project));
+      ui15.toast(`Copied ${project.name}'s link.`);
     }, children: "Copy link" }, "link"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => void duplicateProject(flux2, project), children: "Duplicate" }, "dup"),
-    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep2"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project, here ? () => openList("") : void 0), children: "Delete" }, "del")
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", onClick: () => void duplicateProject(flux2, project), children: "Duplicate" }, "dup"),
+    /* @__PURE__ */ jsx10(ui15.separator, {}, "sep2"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project, here ? () => openList("") : void 0), children: "Delete" }, "del")
   ] });
 }
 function HeadTitle() {
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { ...bar, gap: 8, paddingLeft: EDGE, media: [{ minWidth: 768, style: { paddingLeft: 20 } }] }, children: [
-    /* @__PURE__ */ jsx9(FluxMark, { size: 16, color: "text" }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 600 }, children: "Flux" })
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { ...bar, gap: 8, paddingLeft: EDGE, media: [{ minWidth: 768, style: { paddingLeft: 20 } }] }, children: [
+    /* @__PURE__ */ jsx10(FluxMark, { size: 16, color: "text" }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 600 }, children: "Flux" })
   ] });
 }
 function BarEnd({ onCreate }) {
-  return /* @__PURE__ */ jsx9(Fragment2, { children: [
-    /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", size: "sm", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) }, "new"),
-    /* @__PURE__ */ jsx9(ui14.box, { style: { flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui14.pressable, { label: "New issue", tooltip: "New issue (C)", onClick: onCreate, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", backgroundColor: "accent", transition: { duration: 120, colors: true }, hover: { backgroundColor: "color-mix(in srgb, text 12%, accent)" } }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "plus", style: { width: 14, height: 14, color: "accentText" } }) }) }, "new-narrow")
+  return /* @__PURE__ */ jsx10(Fragment2, { children: [
+    /* @__PURE__ */ jsx10(ui15.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx10(ui15.button, { kind: "primary", size: "sm", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) }, "new"),
+    /* @__PURE__ */ jsx10(ui15.box, { style: { flexShrink: 0, media: [{ minWidth: NEW_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx10(ui15.pressable, { label: "New issue", tooltip: "New issue (C)", onClick: onCreate, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", backgroundColor: "accent", transition: { duration: 120, colors: true }, hover: { backgroundColor: "color-mix(in srgb, text 12%, accent)" } }, children: /* @__PURE__ */ jsx10(ui15.icon, { icon: "plus", style: { width: 14, height: 14, color: "accentText" } }) }) }, "new-narrow")
   ] });
 }
 function Toolbar({ flux: flux2, project, scope, options }) {
   const projects = flux2.projects();
-  const narrowSearch = st5.searching || st5.query !== "";
-  const filter = (wide) => /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field", ...wide ? { flex: 1, minWidth: 0 } : { width: 208, flexShrink: 0 }, focus: { borderColor: "borderStrong" } }, children: [
-    /* @__PURE__ */ jsx9(ui14.icon, { icon: "search", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
-    /* @__PURE__ */ jsx9(ui14.field, { autoFocus: st5.filterFocus > 0 || wide && st5.searching, value: st5.query, placeholder: "Filter issues", onChange: (value) => {
-      st5.query = value;
-    }, style: { flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" } }, "flux-filter-" + (wide ? "n" : "w") + st5.filterFocus)
+  const narrowSearch = st6.searching || st6.query !== "";
+  const filter = (wide) => /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 4, borderRadius: "control", border: "1px solid border", backgroundColor: "field", ...wide ? { flex: 1, minWidth: 0 } : { width: 208, flexShrink: 0 }, focus: { borderColor: "borderStrong" } }, children: [
+    /* @__PURE__ */ jsx10(ui15.icon, { icon: "search", style: { width: 14, height: 14, color: "text2", flexShrink: 0 } }),
+    /* @__PURE__ */ jsx10(ui15.field, { autoFocus: st6.filterFocus > 0 || wide && st6.searching, value: st6.query, placeholder: "Filter issues", onChange: (value) => {
+      st6.query = value;
+    }, style: { flex: 1, height: 26, padding: 0, fontSize: 14, backgroundColor: "transparent", boxShadow: "none" } }, "flux-filter-" + (wide ? "n" : "w") + st6.filterFocus)
   ] });
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: bar, keys: BAR_KEYS, onKeyDown: (key) => onListKey(flux2, key, shownFlat, shownGroups, options), children: [
-    narrowSearch ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: [
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: bar, keys: BAR_KEYS, onKeyDown: (key) => onListKey(flux2, key, shownFlat, shownGroups, options), children: [
+    narrowSearch ? /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: ghostChip.paddingLeft, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: [
       filter(true),
-      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Cancel", onClick: () => {
-        st5.query = "";
-        st5.searching = false;
-      }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14 }, children: "Cancel" }) })
+      /* @__PURE__ */ jsx10(ui15.pressable, { label: "Cancel", onClick: () => {
+        st6.query = "";
+        st6.searching = false;
+      }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14 }, children: "Cancel" }) })
     ] }, "search") : null,
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
-        project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx9(FluxMark, { size: 16 }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "icon.svg", checked: !project, badge: String(flux2.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(""), children: "All projects" }),
-        projects.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(item), checked: item.key === project?.key, badge: String(flux2.issues().filter((i2) => i2.projectId === item.id && !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(`p/${item.key}`), children: item.name }, item.id)),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
+        project ? /* @__PURE__ */ jsx10(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx10(FluxMark, { size: 16 }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "icon.svg", checked: !project, badge: String(flux2.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(""), children: "All projects" }),
+        projects.map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(item), checked: item.key === project?.key, badge: String(flux2.issues().filter((i2) => i2.projectId === item.id && !CLOSED_STATUSES.has(i2.status)).length), onClick: () => openList(`p/${item.key}`), children: item.name }, item.id)),
         projectMenuItems(project)
       ] }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] } }),
-      /* @__PURE__ */ jsx9(ui14.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage5.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs8(ui14.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
-        SCOPES.map((item) => /* @__PURE__ */ jsx9(ui14.item, { checked: scope === item, onClick: () => storage5.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
+      /* @__PURE__ */ jsx10(ui15.box, { style: { display: "none", width: 1, height: 16, flexShrink: 0, marginLeft: 4, marginRight: 4, backgroundColor: "border", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] } }),
+      /* @__PURE__ */ jsx10(ui15.box, { label: "Issues", style: { display: "none", flexDirection: "row", flexShrink: 0, gap: 2, alignItems: "center", media: [{ minWidth: TABS_AT, style: { display: "flex" } }] }, children: SCOPES.map((item) => /* @__PURE__ */ jsx10(ui15.pressable, { label: SCOPE_LABELS[item], role: "tab", checked: scope === item, onClick: () => storage6.set("scope", item), style: { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, justifyContent: "center", borderRadius: "control", color: scope === item ? "text" : "text2", backgroundColor: scope === item ? "press" : "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: scope === item ? "press" : "hover", color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "currentColor" }, maxLines: 1, children: SCOPE_LABELS[item] }) }, item)) }),
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flexShrink: 0, media: [{ minWidth: TABS_AT, style: { display: "none" } }] }, children: /* @__PURE__ */ jsxs9(ui15.menu, { label: `Issues: ${SCOPE_LABELS[scope]}`, style: ghostChip, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14 }, children: SCOPE_LABELS[scope] }),
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+        SCOPES.map((item) => /* @__PURE__ */ jsx10(ui15.item, { checked: scope === item, onClick: () => storage6.set("scope", item), children: SCOPE_LABELS[item] }, "scope-" + item))
       ] }) }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minWidth: 8 } }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
-      /* @__PURE__ */ jsx9(ui14.pressable, { label: "Filter issues", tooltip: "Filter issues (/)", onClick: () => {
-        st5.searching = true;
-      }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "search", style: { width: 14, height: 14, color: "currentColor" } }) }),
-      /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Display", role: "button", tooltip: "Display options (⇧V)", checked: st5.displayOpen, onClick: () => {
-        st5.displayOpen = !st5.displayOpen;
-      }, style: { position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: st5.displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }, children: [
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "sliders", style: { width: 14, height: 14, color: "currentColor" } }),
-        customized(options) ? /* @__PURE__ */ jsx9(ui14.box, { style: { position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1, minWidth: 8 } }),
+      /* @__PURE__ */ jsx10(ui15.box, { style: { display: "none", flexShrink: 0, media: [{ minWidth: WIDE, style: { display: "flex" } }] }, children: filter(false) }),
+      /* @__PURE__ */ jsx10(ui15.pressable, { label: "Filter issues", tooltip: "Filter issues (/)", onClick: () => {
+        st6.searching = true;
+      }, style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, media: [{ minWidth: WIDE, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx10(ui15.icon, { icon: "search", style: { width: 14, height: 14, color: "currentColor" } }) }),
+      /* @__PURE__ */ jsxs9(ui15.pressable, { label: "Display", role: "button", tooltip: "Display options (⇧V)", checked: st6.displayOpen, onClick: () => {
+        st6.displayOpen = !st6.displayOpen;
+      }, style: { position: "relative", width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", border: "1px solid border", color: "text2", backgroundColor: st6.displayOpen ? "press" : "transparent", hover: { backgroundColor: "hover", color: "text" } }, children: [
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "sliders", style: { width: 14, height: 14, color: "currentColor" } }),
+        customized(options) ? /* @__PURE__ */ jsx10(ui15.box, { style: { position: "absolute", top: -2, right: -2, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
       ] }),
-      /* @__PURE__ */ jsx9(BarEnd, { onCreate: () => openCreate(flux2, project?.id) })
+      /* @__PURE__ */ jsx10(BarEnd, { onCreate: () => openCreate(flux2, project?.id) })
     ] }, "bar")
   ] });
 }
@@ -82481,48 +82647,48 @@ function displayPanel(options, singleProject) {
     if (properties.length > 0) set2({ properties });
   };
   const close6 = () => {
-    st5.displayOpen = false;
+    st6.displayOpen = false;
   };
   const picked = (on3) => ({ borderRadius: "control", border: on3 ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on3 ? "press" : "transparent", color: on3 ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "press" : "hover", color: "text" } });
   return [
-    /* @__PURE__ */ jsx9(ui14.pressable, { label: "Close display options", onClick: close6, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
-    /* @__PURE__ */ jsxs8(ui14.box, { label: "Display options", style: { position: "absolute", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs8(ui14.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
+    /* @__PURE__ */ jsx10(ui15.pressable, { label: "Close display options", onClick: close6, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
+    /* @__PURE__ */ jsxs9(ui15.box, { label: "Display options", style: { position: "absolute", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs9(ui15.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
       ] }, "layout-" + layout)) }),
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 2, paddingLeft: 4, paddingRight: 4, paddingTop: 8 }, children: [
-        /* @__PURE__ */ jsx9(DisplayRow, { label: "Grouping", value: GROUPING_LABELS[options.grouping], children: GROUPINGS.filter((grouping) => (grouping !== "project" || !singleProject) && (grouping !== "none" || options.layout === "list")).map((grouping) => /* @__PURE__ */ jsx9(ui14.item, { checked: options.grouping === grouping, onClick: () => set2({ grouping }), children: GROUPING_LABELS[grouping] }, "group-" + grouping)) }),
-        /* @__PURE__ */ jsx9(DisplayRow, { label: "Ordering", value: ORDERING_LABELS[options.ordering], children: ORDERINGS.map((ordering) => /* @__PURE__ */ jsx9(ui14.item, { checked: options.ordering === ordering, onClick: () => set2({ ordering }), children: ORDERING_LABELS[ordering] }, "order-" + ordering)) })
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 2, paddingLeft: 4, paddingRight: 4, paddingTop: 8 }, children: [
+        /* @__PURE__ */ jsx10(DisplayRow, { label: "Grouping", value: GROUPING_LABELS[options.grouping], children: GROUPINGS.filter((grouping) => (grouping !== "project" || !singleProject) && (grouping !== "none" || options.layout === "list")).map((grouping) => /* @__PURE__ */ jsx10(ui15.item, { checked: options.grouping === grouping, onClick: () => set2({ grouping }), children: GROUPING_LABELS[grouping] }, "group-" + grouping)) }),
+        /* @__PURE__ */ jsx10(DisplayRow, { label: "Ordering", value: ORDERING_LABELS[options.ordering], children: ORDERINGS.map((ordering) => /* @__PURE__ */ jsx10(ui15.item, { checked: options.ordering === ordering, onClick: () => set2({ ordering }), children: ORDERING_LABELS[ordering] }, "order-" + ordering)) })
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 6, paddingLeft: 4, paddingRight: 4, paddingTop: 12 }, children: [
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "text2" }, children: "Display properties" }),
-        /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4 }, children: PROPERTIES.map((property) => {
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 6, paddingLeft: 4, paddingRight: 4, paddingTop: 12 }, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "text2" }, children: "Display properties" }),
+        /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4 }, children: PROPERTIES.map((property) => {
           const on3 = options.properties.includes(property);
-          return /* @__PURE__ */ jsx9(ui14.pressable, { label: PROPERTY_LABELS[property], role: "checkbox", checked: on3, onClick: () => toggle(property), style: { ...picked(on3), height: 22, paddingLeft: 6, paddingRight: 6, justifyContent: "center" }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: PROPERTY_LABELS[property] }) }, "prop-" + property);
+          return /* @__PURE__ */ jsx10(ui15.pressable, { label: PROPERTY_LABELS[property], role: "checkbox", checked: on3, onClick: () => toggle(property), style: { ...picked(on3), height: 22, paddingLeft: 6, paddingRight: 6, justifyContent: "center" }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: PROPERTY_LABELS[property] }) }, "prop-" + property);
         }) })
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { paddingTop: 12 }, children: [
-        /* @__PURE__ */ jsx9(DisplaySwitch, { label: "Show completed issues", on: options.showClosed, set: (on3) => set2({ showClosed: on3 }) }),
-        /* @__PURE__ */ jsx9(DisplaySwitch, { label: "Show empty groups", on: options.showEmptyGroups, set: (on3) => set2({ showEmptyGroups: on3 }) }),
-        /* @__PURE__ */ jsx9(DisplaySwitch, { label: "Show sub-issues", on: options.showSubIssues, set: (on3) => set2({ showSubIssues: on3 }) })
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { paddingTop: 12 }, children: [
+        /* @__PURE__ */ jsx10(DisplaySwitch, { label: "Show completed issues", on: options.showClosed, set: (on3) => set2({ showClosed: on3 }) }),
+        /* @__PURE__ */ jsx10(DisplaySwitch, { label: "Show empty groups", on: options.showEmptyGroups, set: (on3) => set2({ showEmptyGroups: on3 }) }),
+        /* @__PURE__ */ jsx10(DisplaySwitch, { label: "Show sub-issues", on: options.showSubIssues, set: (on3) => set2({ showSubIssues: on3 }) })
       ] }),
-      customized(options) ? /* @__PURE__ */ jsx9(ui14.pressable, { label: "Reset to default", onClick: () => setDisplay({ ...DEFAULT_DISPLAY, layout: options.layout }), style: { marginTop: 4, height: 30, paddingLeft: 4, justifyContent: "center", borderRadius: "control", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, children: "Reset to default" }) }) : null
+      customized(options) ? /* @__PURE__ */ jsx10(ui15.pressable, { label: "Reset to default", onClick: () => setDisplay({ ...DEFAULT_DISPLAY, layout: options.layout }), style: { marginTop: 4, height: 30, paddingLeft: 4, justifyContent: "center", borderRadius: "control", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "currentColor" }, children: "Reset to default" }) }) : null
     ] }, "display-panel")
   ];
 }
 function DisplaySwitch({ label, on: on3, set: set2 }) {
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32, paddingLeft: 4, paddingRight: 4 }, children: [
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
-    /* @__PURE__ */ jsx9(ui14.toggle, { tooltip: label, checked: on3, onChange: set2 })
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32, paddingLeft: 4, paddingRight: 4 }, children: [
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
+    /* @__PURE__ */ jsx10(ui15.toggle, { tooltip: label, checked: on3, onChange: set2 })
   ] });
 }
 function DisplayRow({ label, value, children }) {
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32 }, children: [
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
-    /* @__PURE__ */ jsxs8(ui14.menu, { label: `${label}: ${value}`, style: { ...ghostChip, height: 26, paddingLeft: 6, paddingRight: 6, gap: 4 }, children: [
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: value }),
-      /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", alignItems: "center", gap: 12, height: 32 }, children: [
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2", flex: 1 }, children: label }),
+    /* @__PURE__ */ jsxs9(ui15.menu, { label: `${label}: ${value}`, style: { ...ghostChip, height: 26, paddingLeft: 6, paddingRight: 6, gap: 4 }, children: [
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500 }, children: value }),
+      /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
       children
     ] })
   ] });
@@ -82531,25 +82697,25 @@ function Board({ flux: flux2, groups, options, showProject, scrollKey }) {
   const manual = options.ordering === "manual";
   const hint = (group) => manual ? void 0 : `${group.title}
 Board ordered by ${ORDERING_LABELS[options.ordering]}`;
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, minWidth: 0, width: "100%", flexDirection: "row", gap: 20, overflowX: "auto", overflowY: "hidden", alignItems: "stretch", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 16, paddingBottom: 32, scrollSnapType: "x mandatory", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20, scrollSnapType: "none" } }] }, children: groups.map((group) => /* @__PURE__ */ jsxs8(ui14.box, { label: group.title, style: { width: 346, flexShrink: 0, minHeight: 0, height: "100%", gap: 6, padding: 8, borderRadius: 14, backgroundColor: COLUMN_BG, boxShadow: "inset 0 0 0 1px transparent", transition: { duration: 200, colors: true }, dragOver: { boxShadow: "inset 0 0 0 1px color-mix(in srgb, text 10%, transparent)" } }, onDrop: (event) => dropOn(flux2, group, event, options), dropHint: hint(group), children: [
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6, flexShrink: 0 }, children: [
-      /* @__PURE__ */ jsx9(GroupMark, { group, flux: flux2, size: 16 }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: String(group.issues.length) }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, shownProject, group.key) })
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, minWidth: 0, width: "100%", flexDirection: "row", gap: 20, overflowX: "auto", overflowY: "hidden", alignItems: "stretch", paddingLeft: EDGE, paddingRight: EDGE, paddingTop: 16, paddingBottom: 32, scrollSnapType: "x mandatory", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 20, scrollSnapType: "none" } }] }, children: groups.map((group) => /* @__PURE__ */ jsxs9(ui15.box, { label: group.title, style: { width: 346, flexShrink: 0, minHeight: 0, height: "100%", gap: 6, padding: 8, borderRadius: 14, backgroundColor: COLUMN_BG, boxShadow: "inset 0 0 0 1px transparent", transition: { duration: 200, colors: true }, dragOver: { boxShadow: "inset 0 0 0 1px color-mix(in srgb, text 10%, transparent)" } }, onDrop: (event) => dropOn(flux2, group, event, options), dropHint: hint(group), children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 8, paddingRight: 8, paddingTop: 6, paddingBottom: 6, flexShrink: 0 }, children: [
+      /* @__PURE__ */ jsx10(GroupMark, { group, flux: flux2, size: 16 }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 1, children: group.title }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2" }, children: String(group.issues.length) }),
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx10(ui15.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 28, height: 28, marginTop: -6, marginBottom: -6 }, onClick: () => openCreate(flux2, shownProject, group.key) })
     ] }),
-    /* @__PURE__ */ jsx9(
-      ui14.list,
+    /* @__PURE__ */ jsx10(
+      ui15.list,
       {
         count: group.issues.length,
         rowHeight: 40,
         rowKey: (n) => group.issues[n].id,
-        row: (n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: "100%", paddingBottom: n < group.issues.length - 1 ? 6 : 0 }, children: /* @__PURE__ */ jsx9(Card, { flux: flux2, issue: group.issues[n], group, index: n, options, showProject }) }),
+        row: (n) => /* @__PURE__ */ jsx10(ui15.box, { style: { width: "100%", paddingBottom: n < group.issues.length - 1 ? 6 : 0 }, children: /* @__PURE__ */ jsx10(Card, { flux: flux2, issue: group.issues[n], group, index: n, options, showProject }) }),
         style: { flex: 1, minHeight: 0 },
-        placeholder: /* @__PURE__ */ jsx9(ui14.box, { style: { width: "100%", paddingBottom: 6 }, children: /* @__PURE__ */ jsx9(CardBones, {}) }),
+        placeholder: /* @__PURE__ */ jsx10(ui15.box, { style: { width: "100%", paddingBottom: 6 }, children: /* @__PURE__ */ jsx10(CardBones, {}) }),
         dropGap: manual,
-        reveal: st5.keyed && group.issues.some((issue2) => issue2.id === st5.cursor) ? st5.cursor : void 0,
+        reveal: st6.keyed && group.issues.some((issue2) => issue2.id === st6.cursor) ? st6.cursor : void 0,
         onDrop: manual ? (event) => dropAt(flux2, group, group.issues, event, options) : void 0
       },
       `cards-${scrollKey}-${group.id}`
@@ -82578,53 +82744,53 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
   const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
   const assignees = flux2.memberList().filter((member2) => issue2.assigneeIds.includes(member2.id));
   const marks = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
-  const on3 = st5.selected.has(issue2.id);
+  const on3 = st6.selected.has(issue2.id);
   const fields = shows(options, "priority") || shows(options, "dueDate") && !!issue2.dueDate || issue2.subIssueCount > 0 || shows(options, "labels") && marks.length > 0 || shows(options, "agents") && issue2.threadIds.length > 0;
-  return /* @__PURE__ */ jsxs8(
-    ui14.box,
+  return /* @__PURE__ */ jsxs9(
+    ui15.box,
     {
       label: issue2.title,
       drag: { id: issue2.id, index },
       onClick: (event) => clickIssue(issue2, event),
-      style: { ...CARD, ...on3 ? CARD_ON : null, ...st5.keyed && st5.cursor === issue2.id ? { border: "1px solid accent" } : null },
+      style: { ...CARD, ...on3 ? CARD_ON : null, ...st6.keyed && st6.cursor === issue2.id ? { border: "1px solid accent" } : null },
       children: [
-        /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: issue2 }),
-        /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-          shows(options, "id") || parent || project ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 16 }, children: [
-            project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }) : null,
-            /* @__PURE__ */ jsx9(KeyLine, { issue: issue2, parent: parent ?? void 0, showKey: shows(options, "id") })
+        /* @__PURE__ */ jsx10(IssueContextMenu, { flux: flux2, issue: issue2 }),
+        /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+          shows(options, "id") || parent || project ? /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", height: 16 }, children: [
+            project ? /* @__PURE__ */ jsx10(ProjectMark, { project, size: 14 }) : null,
+            /* @__PURE__ */ jsx10(KeyLine, { issue: issue2, parent: parent ?? void 0, showKey: shows(options, "id") })
           ] }) : null,
-          /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: shows(options, "id") || parent || project ? 4 : 0 }, children: [
-            shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 4, backgroundColor: "transparent" }, children: [
-              /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status, size: 14 }),
+          /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "flex-start", marginTop: shows(options, "id") || parent || project ? 4 : 0 }, children: [
+            shows(options, "status") ? /* @__PURE__ */ jsxs9(Picker2, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: { height: 20, width: 20, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 4, backgroundColor: "transparent" }, children: [
+              /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status, size: 14 }),
               () => pickerItems(flux2, issue2, "status")
             ] }) : null,
-            /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text2" : "text" }, maxLines: 2, children: issue2.title })
+            /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, lineHeight: "20px", fontWeight: 500, flex: 1, minWidth: 0, paddingTop: 1, color: CLOSED_STATUSES.has(issue2.status) ? "text2" : "text" }, maxLines: 2, children: issue2.title })
           ] }),
-          fields ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
-            shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }, children: [
-              /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority, size: 12 }),
+          fields ? /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", marginTop: 8 }, children: [
+            shows(options, "priority") ? /* @__PURE__ */ jsxs9(Picker2, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: { ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }, children: [
+              /* @__PURE__ */ jsx10(PriorityIcon, { priority: issue2.priority, size: 12 }),
               () => pickerItems(flux2, issue2, "priority")
             ] }) : null,
-            shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsxs8(Picker2, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+            shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsxs9(Picker2, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
               dueContent(issue2.dueDate),
               () => pickerItems(flux2, issue2, "due")
             ] }) : null,
-            issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null,
-            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs8(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+            issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx10(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null,
+            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs9(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
               tagContent(item),
               () => pickerItems(flux2, issue2, "labels")
             ] }, item.id)) : null,
-            shows(options, "agents") && issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx9(AgentChip, { issue: issue2 }) : null
+            shows(options, "agents") && issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx10(AgentChip, { issue: issue2 }) : null
           ] }) : null,
-          shows(options, "created") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
+          shows(options, "created") ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
         ] }),
-        /* @__PURE__ */ jsxs8(ui14.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
-          shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
-            assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 20, ring: "overlay" }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
+        /* @__PURE__ */ jsxs9(ui15.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
+          shows(options, "assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
+            assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 20, ring: "overlay" }) : /* @__PURE__ */ jsx10(Unassigned, { size: 20 }),
             () => pickerItems(flux2, issue2, "assignees")
-          ] }) : /* @__PURE__ */ jsx9(ui14.box, {}),
-          issue2.threadIds.length === 0 && !CLOSED_STATUSES.has(issue2.status) ? /* @__PURE__ */ jsx9(StartAgentButton, { issue: issue2, bordered: true }) : null
+          ] }) : /* @__PURE__ */ jsx10(ui15.box, {}),
+          issue2.threadIds.length === 0 && !CLOSED_STATUSES.has(issue2.status) ? /* @__PURE__ */ jsx10(StartAgentButton, { issue: issue2, bordered: true }) : null
         ] })
       ]
     }
@@ -82635,33 +82801,33 @@ function pickerItems(flux2, issue2, kind) {
   const toggle = (list2, id2) => list2.includes(id2) ? list2.filter((x2) => x2 !== id2) : [...list2, id2];
   switch (kind) {
     case "status":
-      return STATUSES.map((status) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(status), checked: issue2.status === status, onClick: () => set2({ status }), children: STATUS_LABELS[status] }, status));
+      return STATUSES.map((status) => /* @__PURE__ */ jsx10(ui15.item, { ...statusMark(status), checked: issue2.status === status, onClick: () => set2({ status }), children: STATUS_LABELS[status] }, status));
     case "priority":
-      return [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((priority) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(priority), checked: issue2.priority === priority, onClick: () => set2({ priority }), children: PRIORITY_LABELS[priority] }, priority));
+      return [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((priority) => /* @__PURE__ */ jsx10(ui15.item, { ...priorityMark(priority), checked: issue2.priority === priority, onClick: () => set2({ priority }), children: PRIORITY_LABELS[priority] }, priority));
     case "due":
       return dueItems(issue2.dueDate, (dueDate) => set2({ dueDate }));
     case "labels":
       return [
-        ...flux2.labels().map((label) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(label.color), checked: issue2.labelIds.includes(label.id), onClick: () => set2({ labelIds: toggle(issue2.labelIds, label.id) }), children: label.name }, label.id)),
-        flux2.labels().length ? /* @__PURE__ */ jsx9(ui14.separator, {}, "sep") : null,
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: () => openPalette("label", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "New label…" }, "new")
+        ...flux2.labels().map((label) => /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(label.color), checked: issue2.labelIds.includes(label.id), onClick: () => set2({ labelIds: toggle(issue2.labelIds, label.id) }), children: label.name }, label.id)),
+        flux2.labels().length ? /* @__PURE__ */ jsx10(ui15.separator, {}, "sep") : null,
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", onClick: () => openPalette("label", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "New label…" }, "new")
       ];
     case "assignees": {
       const me2 = flux2.me?.id;
-      return [...flux2.memberList()].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(member2), detail: "@" + member2.username, checked: issue2.assigneeIds.includes(member2.id), onClick: () => set2({ assigneeIds: toggle(issue2.assigneeIds, member2.id) }), children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id));
+      return [...flux2.memberList()].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(member2), detail: "@" + member2.username, checked: issue2.assigneeIds.includes(member2.id), onClick: () => set2({ assigneeIds: toggle(issue2.assigneeIds, member2.id) }), children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id));
     }
   }
 }
 function Picker2({ label, style, children }) {
-  return /* @__PURE__ */ jsx9(ui14.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
+  return /* @__PURE__ */ jsx10(ui15.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
 }
 var field = { flexDirection: "row", gap: 4, alignItems: "center", justifyContent: "center", height: 22, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: 4, border: "1px solid border" };
 function KeyLine({ issue: issue2, parent, showKey }) {
   if (!showKey && !parent) return null;
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minWidth: 0 }, children: [
-    parent ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: parent.key }) : null,
-    parent && showKey ? /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }) : null,
-    showKey ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: issue2.key }) : null
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minWidth: 0 }, children: [
+    parent ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: parent.key }) : null,
+    parent && showKey ? /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }) : null,
+    showKey ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: issue2.key }) : null
   ] });
 }
 function gapRing(surface) {
@@ -82670,9 +82836,9 @@ function gapRing(surface) {
 }
 function AvatarStack({ members: members2, size: size3, ring = "bg" }) {
   const overlap = Math.round(size3 * 0.3);
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => (
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row", flexShrink: 0, alignItems: "center" }, children: members2.slice(0, 4).map((member2, n) => (
     // The ring takes the avatar's shape, a rounded square's (Avatar).
-    /* @__PURE__ */ jsx9(ui14.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: size3 >= 28 ? 6 : 4, flexShrink: 0, ...n === 0 ? {} : gapRing(ring) }, children: /* @__PURE__ */ jsx9(Avatar, { member: member2, size: size3 }) }, member2.id)
+    /* @__PURE__ */ jsx10(ui15.box, { style: { marginLeft: n === 0 ? 0 : -overlap, borderRadius: size3 >= 28 ? 6 : 4, flexShrink: 0, ...n === 0 ? {} : gapRing(ring) }, children: /* @__PURE__ */ jsx10(Avatar, { member: member2, size: size3 }) }, member2.id)
   )) });
 }
 function dueTone(date5) {
@@ -82683,26 +82849,26 @@ function dueTone(date5) {
 function dueContent(date5) {
   const tone = dueTone(date5);
   return [
-    /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 12, height: 12, color: tone } }, "icon"),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: tone }, children: dueLabel(date5) }, "text")
+    /* @__PURE__ */ jsx10(ui15.icon, { icon: "calendar", style: { width: 12, height: 12, color: tone } }, "icon"),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: tone }, children: dueLabel(date5) }, "text")
   ];
 }
 function SubIssueChip({ done, total }) {
   const color = done >= total ? "green" : "text2";
-  return /* @__PURE__ */ jsxs8(ui14.box, { label: `${done} of ${total} sub-issues done`, style: field, children: [
-    /* @__PURE__ */ jsx9(ui14.canvas, { width: 14, height: 14, label: "", style: { width: 14, height: 14, flexShrink: 0 }, draw: (g) => {
+  return /* @__PURE__ */ jsxs9(ui15.box, { label: `${done} of ${total} sub-issues done`, style: field, children: [
+    /* @__PURE__ */ jsx10(ui15.canvas, { width: 14, height: 14, label: "", style: { width: 14, height: 14, flexShrink: 0 }, draw: (g) => {
       g.circle(7, 7, 5, { stroke: "borderStrong", lineWidth: 2 });
       if (done > 0) g.arc(7, 7, 5, -90, -90 + 360 * Math.min(done, total) / total, { stroke: color, lineWidth: 2 });
     } }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color }, children: `${done}/${total}` })
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color }, children: `${done}/${total}` })
   ] });
 }
 function AgentChip({ issue: issue2 }) {
   const busy = issue2.threadIds.some((id2) => threadInfo(id2)?.working);
   const count = issue2.threadIds.length;
-  return /* @__PURE__ */ jsxs8(ui14.box, { label: busy ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
-    /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy ? "green" : "text3", ...busy ? { animation: { name: "pulse" } } : {} } }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500, color: busy ? "text" : "text2" }, children: busy ? "Working" : count === 1 ? "Agent" : `${count} agents` })
+  return /* @__PURE__ */ jsxs9(ui15.box, { label: busy ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
+    /* @__PURE__ */ jsx10(ui15.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy ? "green" : "text3", ...busy ? { animation: { name: "pulse" } } : {} } }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: busy ? "text" : "text2" }, children: busy ? "Working" : count === 1 ? "Agent" : `${count} agents` })
   ] });
 }
 function createdOn(iso) {
@@ -82716,7 +82882,7 @@ function monthDay(iso) {
   return `${months[date5.getUTCMonth()]} ${date5.getUTCDate()}`;
 }
 function ago2(iso) {
-  const minutes = (ui14.now() - new Date(iso).getTime()) / 6e4;
+  const minutes = (ui15.now() - new Date(iso).getTime()) / 6e4;
   if (!Number.isFinite(minutes) || minutes < 1) return "now";
   if (minutes < 60) return `${Math.round(minutes)}m`;
   const hours = minutes / 60;
@@ -82727,7 +82893,7 @@ function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
   const headed = effectiveGrouping(options, !showProject) !== "none";
   const rows2 = [];
   const headers = [];
-  const folded = new Set(storage5.get("folded") ?? []);
+  const folded = new Set(storage6.get("folded") ?? []);
   for (const group of groups) {
     if (headed) {
       headers.push(rows2.length);
@@ -82738,8 +82904,8 @@ function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
     group.issues.forEach((issue2, index) => rows2.push({ group, issue: issue2, index }));
   }
   const keyWidth = 8 * Math.max(5, ...groups.flatMap((group) => group.issues.map((issue2) => issue2.key.length))) + 4;
-  return /* @__PURE__ */ jsx9(
-    ui14.list,
+  return /* @__PURE__ */ jsx10(
+    ui15.list,
     {
       count: rows2.length,
       rowHeight: 40,
@@ -82750,14 +82916,14 @@ function IssueList({ flux: flux2, groups, options, showProject, scrollKey }) {
       },
       row: (n) => {
         const row = rows2[n];
-        if ("issue" in row) return /* @__PURE__ */ jsx9(ListRow, { flux: flux2, issue: row.issue, group: row.group, index: row.index, options, showProject, keyWidth });
-        if ("empty" in row) return /* @__PURE__ */ jsx9(ui14.box, { style: { width: "100%", height: 32 }, onDrop: (event) => dropOn(flux2, row.group, event, options) });
-        return /* @__PURE__ */ jsx9(ListHeading, { flux: flux2, group: row.group, options, first: n === 0 });
+        if ("issue" in row) return /* @__PURE__ */ jsx10(ListRow, { flux: flux2, issue: row.issue, group: row.group, index: row.index, options, showProject, keyWidth });
+        if ("empty" in row) return /* @__PURE__ */ jsx10(ui15.box, { style: { width: "100%", height: 32 }, onDrop: (event) => dropOn(flux2, row.group, event, options) });
+        return /* @__PURE__ */ jsx10(ListHeading, { flux: flux2, group: row.group, options, first: n === 0 });
       },
       style: { animation: { name: "fadeIn" }, flex: 1, minHeight: 0, paddingLeft: EDGE - 4, paddingRight: EDGE - 4, paddingTop: 12, paddingBottom: 32 },
-      placeholder: /* @__PURE__ */ jsx9(RowBones, {}),
+      placeholder: /* @__PURE__ */ jsx10(RowBones, {}),
       dropGap: options.ordering === "manual",
-      reveal: st5.keyed ? st5.cursor : void 0,
+      reveal: st6.keyed ? st6.cursor : void 0,
       onDrop: options.ordering === "manual" ? (event) => listDrop(flux2, rows2, event, options) : void 0
     },
     "issue-list-" + scrollKey
@@ -82776,24 +82942,24 @@ function listDrop(flux2, rows2, event, options) {
   dropAt(flux2, group, group.issues, { data: event.data, index: next2 >= 0 ? next2 : inGroup.length }, options);
 }
 function foldedGroup(group) {
-  return (storage5.get("folded") ?? []).includes(group.id);
+  return (storage6.get("folded") ?? []).includes(group.id);
 }
 function foldGroup(group) {
-  const folded = new Set(storage5.get("folded") ?? []);
+  const folded = new Set(storage6.get("folded") ?? []);
   if (folded.has(group.id)) folded.delete(group.id);
   else folded.add(group.id);
-  storage5.set("folded", [...folded]);
+  storage6.set("folded", [...folded]);
 }
 function ListHeading({ flux: flux2, group, options, first: first2 }) {
   const open3 = !foldedGroup(group);
-  return /* @__PURE__ */ jsx9(ui14.box, { label: group.title, onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", paddingTop: first2 ? 0 : 12, paddingBottom: 4, backgroundColor: "bg" }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", height: 32, paddingRight: 4, borderRadius: 6, backgroundColor: HEADING_BG }, children: [
-    /* @__PURE__ */ jsxs8(ui14.pressable, { label: `${open3 ? "Fold" : "Unfold"} ${group.title}`, role: "button", checked: open3, onClick: () => foldGroup(group), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 8, borderRadius: 6, hover: { backgroundColor: "hover" } }, children: [
-      /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: open3 ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
-      /* @__PURE__ */ jsx9(GroupMark, { group, flux: flux2 }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0 }, maxLines: 1, children: group.title }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: String(group.issues.length) })
+  return /* @__PURE__ */ jsx10(ui15.box, { label: group.title, onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", paddingTop: first2 ? 0 : 12, paddingBottom: 4, backgroundColor: "bg" }, children: /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", alignItems: "center", height: 32, paddingRight: 4, borderRadius: 6, backgroundColor: HEADING_BG }, children: [
+    /* @__PURE__ */ jsxs9(ui15.pressable, { label: `${open3 ? "Fold" : "Unfold"} ${group.title}`, role: "button", checked: open3, onClick: () => foldGroup(group), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 8, paddingRight: 8, borderRadius: 6, hover: { backgroundColor: "hover" } }, children: [
+      /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: open3 ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
+      /* @__PURE__ */ jsx10(GroupMark, { group, flux: flux2 }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0 }, maxLines: 1, children: group.title }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, children: String(group.issues.length) })
     ] }),
-    /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, shownProject, group.key) })
+    /* @__PURE__ */ jsx10(ui15.iconButton, { icon: "plus", label: `New issue in ${group.title}`, style: { width: 24, height: 24 }, onClick: () => openCreate(flux2, shownProject, group.key) })
   ] }) });
 }
 var HEADING_BG = "color-mix(in srgb, text 5%, bg)";
@@ -82805,62 +82971,62 @@ function ListRow({ flux: flux2, issue: issue2, group, index, options, showProjec
   const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
   const assignees = flux2.memberList().filter((member2) => issue2.assigneeIds.includes(member2.id));
   const marks = flux2.labels().filter((item) => issue2.labelIds.includes(item.id));
-  const on3 = st5.selected.has(issue2.id);
+  const on3 = st6.selected.has(issue2.id);
   const closed = CLOSED_STATUSES.has(issue2.status);
   const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
-  return /* @__PURE__ */ jsxs8(ui14.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on3 ? "selected" : st5.keyed && st5.cursor === issue2.id ? "hover" : "transparent", boxShadow: st5.keyed && st5.cursor === issue2.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "selected" : "hover" } }, children: [
-    /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: issue2 }),
-    /* @__PURE__ */ jsx9(ui14.box, { label: `Select ${issue2.key}`, onClick: (event) => event?.shift ? clickIssue(issue2, event) : toggleSelected(issue2.id, !on3), style: { width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on3 ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on3 ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on3 || st5.selected.size > 0 || st5.keyed && st5.cursor === issue2.id ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }, children: on3 ? /* @__PURE__ */ jsx9(ui14.icon, { icon: "check", style: { width: 10, height: 10, color: "white" } }) : null }),
-    shows(options, "priority") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: cell, children: [
-      /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority, size: 14 }),
+  return /* @__PURE__ */ jsxs9(ui15.box, { label: issue2.title, drag: { id: issue2.id, index }, onClick: (event) => clickIssue(issue2, event), onDrop: options.ordering === "manual" ? void 0 : (event) => dropOn(flux2, group, event, options), style: { width: "100%", flexDirection: "row", gap: 8, alignItems: "center", height: 40, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, backgroundColor: on3 ? "selected" : st6.keyed && st6.cursor === issue2.id ? "hover" : "transparent", boxShadow: st6.keyed && st6.cursor === issue2.id ? "inset 0 0 0 1px color-mix(in srgb, accent 60%, transparent)" : "none", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "selected" : "hover" } }, children: [
+    /* @__PURE__ */ jsx10(IssueContextMenu, { flux: flux2, issue: issue2 }),
+    /* @__PURE__ */ jsx10(ui15.box, { label: `Select ${issue2.key}`, onClick: (event) => event?.shift ? clickIssue(issue2, event) : toggleSelected(issue2.id, !on3), style: { width: 16, height: 16, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: 4, border: on3 ? "1px solid accent" : "1px solid color-mix(in srgb, text 30%, transparent)", backgroundColor: on3 ? "accent" : "color-mix(in srgb, bg 80%, transparent)", opacity: on3 || st6.selected.size > 0 || st6.keyed && st6.cursor === issue2.id ? 1 : 0, transition: { duration: 100 }, groupHover: { opacity: 1 } }, children: on3 ? /* @__PURE__ */ jsx10(ui15.icon, { icon: "check", style: { width: 10, height: 10, color: "white" } }) : null }),
+    shows(options, "priority") ? /* @__PURE__ */ jsxs9(Picker2, { label: `Priority: ${PRIORITY_LABELS[issue2.priority]}`, style: cell, children: [
+      /* @__PURE__ */ jsx10(PriorityIcon, { priority: issue2.priority, size: 14 }),
       () => pickerItems(flux2, issue2, "priority")
     ] }) : null,
-    shows(options, "id") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", width: keyWidth, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
-    shows(options, "status") ? /* @__PURE__ */ jsxs8(Picker2, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: cell, children: [
-      /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status, size: 14 }),
+    shows(options, "id") ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", width: keyWidth, flexShrink: 0 }, maxLines: 1, children: issue2.key }) : null,
+    shows(options, "status") ? /* @__PURE__ */ jsxs9(Picker2, { label: `Status: ${STATUS_LABELS[issue2.status]}`, style: cell, children: [
+      /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status, size: 14 }),
       () => pickerItems(flux2, issue2, "status")
     ] }) : null,
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-      showProject ? /* @__PURE__ */ jsx9(ui14.box, { style: from3(SM), children: /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }) }) : null,
-      parent ? /* @__PURE__ */ jsxs8(ui14.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, alignItems: "center", flexShrink: 0 }, children: [
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2" }, children: parent.key }),
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } })
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+      showProject ? /* @__PURE__ */ jsx10(ui15.box, { style: from3(SM), children: /* @__PURE__ */ jsx10(ProjectMark, { project, size: 14 }) }) : null,
+      parent ? /* @__PURE__ */ jsxs9(ui15.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, alignItems: "center", flexShrink: 0 }, children: [
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2" }, children: parent.key }),
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } })
       ] }) : null,
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0, flexShrink: 1, color: closed ? "text2" : "text" }, maxLines: 1, children: issue2.title }),
-      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500, minWidth: 0, flexShrink: 1, color: closed ? "text2" : "text" }, maxLines: 1, children: issue2.title }),
+      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx10(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null
     ] }),
-    shows(options, "agents") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 24, justifyContent: "center", flexShrink: 0 }, children: issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx9(AgentChip, { issue: issue2 }) : closed ? null : /* @__PURE__ */ jsx9(StartAgentButton, { issue: issue2 }) }) : null,
-    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs8(Picker2, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
+    shows(options, "agents") ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(SM), width: 24, justifyContent: "center", flexShrink: 0 }, children: issue2.threadIds.length > 0 ? /* @__PURE__ */ jsx10(AgentChip, { issue: issue2 }) : closed ? null : /* @__PURE__ */ jsx10(StartAgentButton, { issue: issue2 }) }) : null,
+    shows(options, "dueDate") && issue2.dueDate ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(MD), flexShrink: 0 }, children: /* @__PURE__ */ jsxs9(Picker2, { label: `Due ${dueLabel(issue2.dueDate)}`, style: { ...field, backgroundColor: "transparent" }, children: [
       dueContent(issue2.dueDate),
       () => pickerItems(flux2, issue2, "due")
     ] }) }) : null,
-    shows(options, "labels") ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs8(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+    shows(options, "labels") ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs9(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
       tagContent(item),
       () => pickerItems(flux2, issue2, "labels")
     ] }, item.id)) }) : null,
-    shows(options, "assignee") ? /* @__PURE__ */ jsxs8(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
-      assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
+    shows(options, "assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
+      assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx10(Unassigned, { size: 20 }),
       () => pickerItems(flux2, issue2, "assignees")
     ] }) : null,
-    shows(options, "created") ? /* @__PURE__ */ jsx9(ui14.text, { style: { ...from3(MD), fontSize: 12, color: "text2", width: 48, textAlign: "right", flexShrink: 0 }, tooltip: `Created ${new Date(issue2.createdAt).toLocaleString()}`, children: monthDay(issue2.createdAt) }) : null,
-    shows(options, "updated") ? /* @__PURE__ */ jsx9(ui14.text, { style: { ...from3(SM), fontSize: 12, color: "text2", width: 40, textAlign: "right", flexShrink: 0 }, tooltip: `Updated ${new Date(issue2.updatedAt).toLocaleString()}`, children: ago2(issue2.updatedAt) }) : null
+    shows(options, "created") ? /* @__PURE__ */ jsx10(ui15.text, { style: { ...from3(MD), fontSize: 12, color: "text2", width: 48, textAlign: "right", flexShrink: 0 }, tooltip: `Created ${new Date(issue2.createdAt).toLocaleString()}`, children: monthDay(issue2.createdAt) }) : null,
+    shows(options, "updated") ? /* @__PURE__ */ jsx10(ui15.text, { style: { ...from3(SM), fontSize: 12, color: "text2", width: 40, textAlign: "right", flexShrink: 0 }, tooltip: `Updated ${new Date(issue2.updatedAt).toLocaleString()}`, children: ago2(issue2.updatedAt) }) : null
   ] }, issue2.id);
 }
 function StartAgentButton({ issue: issue2, bordered = false }) {
-  return /* @__PURE__ */ jsx9(ui14.pressable, { label: `Start an agent on ${issue2.key}`, tooltip: "Start an agent on this issue", onClick: () => startAgent(issue2.id), style: { width: bordered ? 22 : 24, height: bordered ? 22 : 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: bordered ? 4 : 6, border: bordered ? "1px solid border" : "none", color: "text2", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "press", color: "text" } }, children: /* @__PURE__ */ jsx9(ui14.icon, { icon: "bot", style: { width: 14, height: 14, color: "currentColor" } }) });
+  return /* @__PURE__ */ jsx10(ui15.pressable, { label: `Start an agent on ${issue2.key}`, tooltip: "Start an agent on this issue", onClick: () => startAgent(issue2.id), style: { width: bordered ? 22 : 24, height: bordered ? 22 : 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: bordered ? 4 : 6, border: bordered ? "1px solid border" : "none", color: "text2", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "press", color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.icon, { icon: "bot", style: { width: 14, height: 14, color: "currentColor" } }) });
 }
 function GroupMark({ group, flux: flux2, size: size3 = 14 }) {
-  if (group.key.kind === "status") return /* @__PURE__ */ jsx9(StatusIcon, { status: group.key.status, size: size3 });
-  if (group.key.kind === "priority") return /* @__PURE__ */ jsx9(PriorityIcon, { priority: group.key.priority, size: size3 });
+  if (group.key.kind === "status") return /* @__PURE__ */ jsx10(StatusIcon, { status: group.key.status, size: size3 });
+  if (group.key.kind === "priority") return /* @__PURE__ */ jsx10(PriorityIcon, { priority: group.key.priority, size: size3 });
   const key = group.key;
-  if (key.kind === "project") return /* @__PURE__ */ jsx9(ProjectMark, { project: flux2.projects().find((item) => item.id === key.projectId), size: size3 });
-  if (key.kind === "assignee" && key.memberId) return /* @__PURE__ */ jsx9(Avatar, { member: flux2.memberList().find((item) => item.id === key.memberId), size: 16 });
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: "text3" } });
+  if (key.kind === "project") return /* @__PURE__ */ jsx10(ProjectMark, { project: flux2.projects().find((item) => item.id === key.projectId), size: size3 });
+  if (key.kind === "assignee" && key.memberId) return /* @__PURE__ */ jsx10(Avatar, { member: flux2.memberList().find((item) => item.id === key.memberId), size: 16 });
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: "text3" } });
 }
 function tagContent(label) {
   return [
-    /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3", flexShrink: 0 } }, "dot"),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: label.name }, "name")
+    /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3", flexShrink: 0 } }, "dot"),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: label.name }, "name")
   ];
 }
 function dropOn(flux2, group, event, options) {
@@ -82895,7 +83061,7 @@ function askDelete(flux2, ids, done) {
   confirm(one ? "Delete this issue?" : `Delete ${ids.length} issues?`, "This cannot be undone.", "Delete", async () => {
     done();
     const failed2 = (await Promise.allSettled(ids.map((id2) => flux2.deleteIssue(id2)))).filter((r) => r.status === "rejected");
-    if (failed2.length) ui14.toast(one ? "Couldn't delete the issue." : `Couldn't delete ${failed2.length} of the issues.`);
+    if (failed2.length) ui15.toast(one ? "Couldn't delete the issue." : `Couldn't delete ${failed2.length} of the issues.`);
   });
 }
 function dragged(event) {
@@ -82924,64 +83090,64 @@ function apply2(flux2, id2, patch) {
 }
 function failed(what, error62) {
   const why = error62 instanceof Error ? error62.message : String(error62);
-  ui14.toast(why ? `${what}: ${why}` : `${what}.`);
+  ui15.toast(why ? `${what}: ${why}` : `${what}.`);
 }
 function duplicate(flux2, id2, then) {
   void flux2.duplicateIssue(id2).then((copy3) => then?.(copy3), (error62) => failed(`Couldn't duplicate ${flux2.issue(id2)?.key ?? "the issue"}`, error62));
 }
 function toggleSelected(id2, on3) {
-  const next2 = new Set(st5.selected);
+  const next2 = new Set(st6.selected);
   if (on3) next2.add(id2);
   else next2.delete(id2);
-  st5.selected = next2;
-  st5.cursor = id2;
+  st6.selected = next2;
+  st6.cursor = id2;
   anchor2 = id2;
 }
 function openCard(issue2) {
-  st5.cursor = issue2.id;
+  st6.cursor = issue2.id;
   openIssue(issue2.key);
 }
 var shownFlat = [];
 var shownGroups = [];
 var shownProject;
 function clickIssue(issue2, event) {
-  st5.keyed = false;
+  st6.keyed = false;
   if (event?.shift && anchor2) {
     selectRange(shownFlat, anchor2, issue2.id);
     return;
   }
-  if (event?.mod || event?.shift || st5.selected.size > 0) {
-    toggleSelected(issue2.id, !st5.selected.has(issue2.id));
+  if (event?.mod || event?.shift || st6.selected.size > 0) {
+    toggleSelected(issue2.id, !st6.selected.has(issue2.id));
     return;
   }
   openCard(issue2);
 }
 function SelectionBar({ flux: flux2 }) {
-  const issues = flux2.issues().filter((issue2) => st5.selected.has(issue2.id));
+  const issues = flux2.issues().filter((issue2) => st6.selected.has(issue2.id));
   const ids = issues.map((issue2) => issue2.id);
   const clear = () => {
-    st5.selected = /* @__PURE__ */ new Set();
+    st6.selected = /* @__PURE__ */ new Set();
   };
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }, children: /* @__PURE__ */ jsxs8(ui14.box, { label: "Selected issues", style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }, children: [
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }, children: `${issues.length} selected` }),
-    /* @__PURE__ */ jsx9(ui14.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
-    /* @__PURE__ */ jsxs8(ui14.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: [
-      /* @__PURE__ */ jsx9(ui14.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { position: "absolute", bottom: 16, left: 16, right: 16, alignItems: "center", zIndex: 10, transition: { duration: 220, enter: { y: 8, opacity: 0 }, exit: { y: 8, opacity: 0 } } }, children: /* @__PURE__ */ jsxs9(ui15.box, { label: "Selected issues", style: { flexDirection: "row", gap: 2, alignItems: "center", height: 40, paddingLeft: 12, paddingRight: 4, borderRadius: "full", backgroundColor: "raised", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", transition: { duration: 220, size: true } }, children: [
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, color: "text2", paddingRight: 8, fontVariantNumeric: "tabular-nums" }, children: `${issues.length} selected` }),
+    /* @__PURE__ */ jsx10(ui15.pressable, { label: "Move to…", tooltip: "Change status (S)", onClick: () => openPalette("status", ids, (id2, patch) => apply2(flux2, id2, patch)), style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Move to…" }) }),
+    /* @__PURE__ */ jsxs9(ui15.menu, { label: "Actions", style: { ...ghostChip, height: 32, paddingLeft: 10, paddingRight: 10, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER }, checked: { backgroundColor: RAISED_HOVER } }, children: [
+      /* @__PURE__ */ jsx10(ui15.icon, { icon: "command", style: { width: 13, height: 13, color: "text2" } }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Actions" }),
       () => [
         propertyMenus(flux2, issues, false),
-        /* @__PURE__ */ jsx9(ui14.separator, {}, "sep1"),
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }, "me"),
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => {
+        /* @__PURE__ */ jsx10(ui15.separator, {}, "sep1"),
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "user", onClick: () => assignToMe(flux2, issues), children: "Assign to me" }, "me"),
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", onClick: () => {
           for (const issue2 of issues) duplicate(flux2, issue2.id);
         }, children: "Duplicate" }, "dup"),
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "external", onClick: () => ui14.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }, "link"),
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => ui14.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }, "id"),
-        /* @__PURE__ */ jsx9(ui14.separator, {}, "sep2"),
-        /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, ids, clear), children: "Delete" }, "del")
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "external", onClick: () => ui15.copy(issues.map((issue2) => flux2.issueUrl(issue2)).join("\n")), children: "Copy link" }, "link"),
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", onClick: () => ui15.copy(issues.map((issue2) => issue2.key).join("\n")), children: "Copy ID" }, "id"),
+        /* @__PURE__ */ jsx10(ui15.separator, {}, "sep2"),
+        /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, onClick: () => askDelete(flux2, ids, clear), children: "Delete" }, "del")
       ]
     ] }),
-    /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER } } })
+    /* @__PURE__ */ jsx10(ui15.iconButton, { icon: "x", label: "Clear selection", tooltip: "Clear selection (Esc)", onClick: clear, style: { width: 28, height: 28, borderRadius: "full", hover: { backgroundColor: RAISED_HOVER } } })
   ] }) }, "selection-bar");
 }
 function assignToMe(flux2, issues) {
@@ -82997,43 +83163,43 @@ function propertyMenus(flux2, issues, shortcuts) {
   const toggled = (list2, id2, on3) => on3 ? list2.filter((item) => item !== id2) : list2.includes(id2) ? list2 : [...list2, id2];
   const projects = flux2.projects();
   return [
-    /* @__PURE__ */ jsx9(ui14.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: () => STATUSES.map((status) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
-    /* @__PURE__ */ jsx9(ui14.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: () => PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
-    /* @__PURE__ */ jsx9(ui14.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: () => STATUSES.map((status) => /* @__PURE__ */ jsx10(ui15.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: () => PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx10(ui15.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
       const on3 = all2((issue2) => issue2.assigneeIds.includes(member2.id));
-      return /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
+      return /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
     }) }, "assignee"),
-    /* @__PURE__ */ jsx9(ui14.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: () => dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
-    /* @__PURE__ */ jsx9(ui14.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx9(ui14.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: () => dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx10(ui15.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
       const on3 = all2((issue2) => issue2.labelIds.includes(label.id));
-      return /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
+      return /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
     }) }, "labels"),
-    projects.length >= 2 ? /* @__PURE__ */ jsx9(ui14.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
+    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
   ];
 }
 function IssueContextMenu({ flux: flux2, issue: issue2 }) {
   const me2 = flux2.me?.id;
   const url2 = flux2.issueUrl(issue2);
-  return /* @__PURE__ */ jsx9(ui14.menu, { context: true, label: `${issue2.key} actions`, children: () => [
-    /* @__PURE__ */ jsx9(ui14.item, { shortcut: "Enter", onClick: () => openCard(issue2), children: "Open" }, "open"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "external", href: url2, disabled: !url2, children: "Open in Flux" }, "flux"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "bot", onClick: () => startAgent(issue2.id), children: "Start agent" }, "agent"),
-    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep0"),
-    /* @__PURE__ */ jsxs8(ui14.menu, { label: "Copy", icon: "copy", children: [
-      /* @__PURE__ */ jsx9(ui14.item, { onClick: () => ui14.copy(issue2.key), children: "Copy ID" }),
-      /* @__PURE__ */ jsx9(ui14.item, { shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui14.copy(url2), children: "Copy link" }),
-      /* @__PURE__ */ jsx9(ui14.item, { disabled: !issue2.title.trim(), onClick: () => ui14.copy(issue2.title), children: "Copy title" })
+  return /* @__PURE__ */ jsx10(ui15.menu, { context: true, label: `${issue2.key} actions`, children: () => [
+    /* @__PURE__ */ jsx10(ui15.item, { shortcut: "Enter", onClick: () => openCard(issue2), children: "Open" }, "open"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "external", href: url2, disabled: !url2, children: "Open in Flux" }, "flux"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "bot", onClick: () => startAgent(issue2.id), children: "Start agent" }, "agent"),
+    /* @__PURE__ */ jsx10(ui15.separator, {}, "sep0"),
+    /* @__PURE__ */ jsxs9(ui15.menu, { label: "Copy", icon: "copy", children: [
+      /* @__PURE__ */ jsx10(ui15.item, { onClick: () => ui15.copy(issue2.key), children: "Copy ID" }),
+      /* @__PURE__ */ jsx10(ui15.item, { shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui15.copy(url2), children: "Copy link" }),
+      /* @__PURE__ */ jsx10(ui15.item, { disabled: !issue2.title.trim(), onClick: () => ui15.copy(issue2.title), children: "Copy title" })
     ] }, "copy"),
-    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep1"),
+    /* @__PURE__ */ jsx10(ui15.separator, {}, "sep1"),
     propertyMenus(flux2, [issue2], true),
-    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep2"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "user", shortcut: "I", disabled: !me2 || issue2.assigneeIds.includes(me2), onClick: () => assignToMe(flux2, [issue2]), children: "Assign to me" }, "me"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id), children: "Duplicate" }, "duplicate"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }, "sub"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }, "parent"),
-    issue2.parentId ? /* @__PURE__ */ jsx9(ui14.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }, "unparent") : null,
-    /* @__PURE__ */ jsx9(ui14.separator, {}, "sep3"),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], () => st5.selected.delete(issue2.id)), children: "Delete" }, "delete")
+    /* @__PURE__ */ jsx10(ui15.separator, {}, "sep2"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "user", shortcut: "I", disabled: !me2 || issue2.assigneeIds.includes(me2), onClick: () => assignToMe(flux2, [issue2]), children: "Assign to me" }, "me"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id), children: "Duplicate" }, "duplicate"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => openCreate(flux2, issue2.projectId, void 0, issue2.id), children: "Add sub-issue" }, "sub"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }, "parent"),
+    issue2.parentId ? /* @__PURE__ */ jsx10(ui15.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }, "unparent") : null,
+    /* @__PURE__ */ jsx10(ui15.separator, {}, "sep3"),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], () => st6.selected.delete(issue2.id)), children: "Delete" }, "delete")
   ] });
 }
 var ISSUE_KEYS = [
@@ -83070,21 +83236,21 @@ var ISSUE_KEYS = [
 ];
 function onIssueKey(flux2, issue2, key) {
   const k = key.key.toLowerCase();
-  const pick2 = (kind) => openPalette(kind, [issue2.id], (id2, patch) => apply2(flux2, id2, patch));
-  if (key.mod && key.shift && k === "p") pick2("parent");
+  const pick3 = (kind) => openPalette(kind, [issue2.id], (id2, patch) => apply2(flux2, id2, patch));
+  if (key.mod && key.shift && k === "p") pick3("parent");
   else if (key.mod && key.shift && k === "o") composeSub(flux2, issue2);
   else if (key.mod && key.shift && key.key === ",") {
-    ui14.copy(flux2.issueUrl(issue2));
-    ui14.toast(`Copied ${issue2.key}'s link.`);
+    ui15.copy(flux2.issueUrl(issue2));
+    ui15.toast(`Copied ${issue2.key}'s link.`);
   } else if (key.mod && key.key === "Backspace") askDelete(flux2, [issue2.id], () => openList(""));
   else if (key.mod) return;
-  else if (k === "e" && st5.editingTitle !== issue2.id) st5.editingTitle = issue2.id;
-  else if (k === "s") pick2("status");
-  else if (k === "p" && key.shift) pick2("project");
-  else if (k === "p") pick2("priority");
-  else if (k === "a") pick2("assignee");
-  else if (k === "l") pick2("label");
-  else if (k === "d" && key.shift) pick2("due");
+  else if (k === "e" && st6.editingTitle !== issue2.id) st6.editingTitle = issue2.id;
+  else if (k === "s") pick3("status");
+  else if (k === "p" && key.shift) pick3("project");
+  else if (k === "p") pick3("priority");
+  else if (k === "a") pick3("assignee");
+  else if (k === "l") pick3("label");
+  else if (k === "d" && key.shift) pick3("due");
   else if (k === "d") duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key));
   else if (k === "i") {
     const me2 = flux2.me?.id;
@@ -83096,57 +83262,57 @@ function onIssueKey(flux2, issue2, key) {
   }
 }
 function targets(flux2, current) {
-  if (st5.selected.size) return [...st5.selected].map((id2) => flux2.issue(id2)).filter((issue2) => !!issue2);
+  if (st6.selected.size) return [...st6.selected].map((id2) => flux2.issue(id2)).filter((issue2) => !!issue2);
   return current ? [current] : [];
 }
 function onListKey(flux2, key, flat, groups, options) {
-  const index = Math.max(0, flat.findIndex((issue2) => issue2.id === st5.cursor));
-  const current = flat.find((issue2) => issue2.id === st5.cursor);
+  const index = Math.max(0, flat.findIndex((issue2) => issue2.id === st6.cursor));
+  const current = flat.find((issue2) => issue2.id === st6.cursor);
   const on3 = targets(flux2, current);
   const ids = on3.map((issue2) => issue2.id);
   const change = (patch) => {
     for (const issue2 of on3) apply2(flux2, issue2.id, patch(issue2));
   };
-  const pick2 = (kind) => openPalette(kind, ids, (id2, patch) => apply2(flux2, id2, patch));
-  if (key.key === "Escape" && st5.selected.size > 0) {
-    st5.selected = /* @__PURE__ */ new Set();
+  const pick3 = (kind) => openPalette(kind, ids, (id2, patch) => apply2(flux2, id2, patch));
+  if (key.key === "Escape" && st6.selected.size > 0) {
+    st6.selected = /* @__PURE__ */ new Set();
     return;
   }
   const move = (next2) => {
     const issue2 = flat[Math.max(0, Math.min(flat.length - 1, next2))];
     if (!issue2) return;
-    st5.cursor = issue2.id;
-    st5.keyed = true;
+    st6.cursor = issue2.id;
+    st6.keyed = true;
     if (key.shift) toggleSelected(issue2.id, true);
   };
   const k = key.key.toLowerCase();
   if (k === "j" || key.key === "ArrowDown") move(current ? index + 1 : 0);
   else if (k === "k" || key.key === "ArrowUp") move(current ? index - 1 : 0);
   else if (key.key === "ArrowRight" || key.key === "ArrowLeft") {
-    const at3 = groups.findIndex((group) => group.issues.some((issue2) => issue2.id === st5.cursor));
+    const at3 = groups.findIndex((group) => group.issues.some((issue2) => issue2.id === st6.cursor));
     const next2 = groups[at3 + (key.key === "ArrowRight" ? 1 : -1)];
     if (next2?.issues[0]) {
-      st5.cursor = next2.issues[0].id;
-      st5.keyed = true;
+      st6.cursor = next2.issues[0].id;
+      st6.keyed = true;
     }
   } else if (key.key === "Enter" && current) openIssue(current.key);
-  else if (key.mod && k === "a") st5.selected = new Set(flat.map((issue2) => issue2.id));
+  else if (key.mod && k === "a") st6.selected = new Set(flat.map((issue2) => issue2.id));
   else if (key.mod && key.key === "Backspace") {
     if (ids.length) askDelete(flux2, ids, () => {
-      st5.selected = /* @__PURE__ */ new Set();
+      st6.selected = /* @__PURE__ */ new Set();
     });
   } else if (key.mod && k === "b") setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
   else if (key.mod) return;
   else if (k === "c" && !key.shift) openCreate(flux2, shownProject);
   else if (key.key === "/") {
-    st5.filterFocus++;
-    st5.searching = true;
-  } else if (k === "s" && !key.shift) pick2("status");
-  else if (k === "p" && !key.shift) pick2("priority");
-  else if (k === "p" && key.shift) pick2("project");
-  else if (k === "a") pick2("assignee");
-  else if (k === "l") pick2("label");
-  else if (k === "d" && key.shift) pick2("due");
+    st6.filterFocus++;
+    st6.searching = true;
+  } else if (k === "s" && !key.shift) pick3("status");
+  else if (k === "p" && !key.shift) pick3("priority");
+  else if (k === "p" && key.shift) pick3("project");
+  else if (k === "a") pick3("assignee");
+  else if (k === "l") pick3("label");
+  else if (k === "d" && key.shift) pick3("due");
   else if (k === "v" && key.shift) setDisplay({ ...options, layout: options.layout === "board" ? "list" : "board" });
   else if (k === "i") {
     const me2 = flux2.me?.id;
@@ -83154,7 +83320,7 @@ function onListKey(flux2, key, flat, groups, options) {
   } else if (k === "d") for (const id2 of ids) duplicate(flux2, id2);
   else if (k === "x" && current) {
     if (key.shift && anchor2) selectRange(flat, anchor2, current.id);
-    else toggleSelected(current.id, !st5.selected.has(current.id));
+    else toggleSelected(current.id, !st6.selected.has(current.id));
   } else if (key.key === "." && lastPatch) {
     const patch = lastPatch;
     change(() => patch);
@@ -83162,190 +83328,190 @@ function onListKey(flux2, key, flat, groups, options) {
     const priority = { "1": "urgent", "2": "high", "3": "medium", "4": "low", "0": "none" }[key.key];
     if (priority) change(() => ({ priority }));
   } else if (key.key === "Escape") {
-    st5.displayOpen = false;
-    st5.keyed = false;
-    if (st5.selected.size) st5.selected = /* @__PURE__ */ new Set();
-    else if (st5.query) st5.query = "";
+    st6.displayOpen = false;
+    st6.keyed = false;
+    if (st6.selected.size) st6.selected = /* @__PURE__ */ new Set();
+    else if (st6.query) st6.query = "";
   }
 }
 function selectRange(flat, from4, to) {
   const a3 = flat.findIndex((issue2) => issue2.id === from4);
   const b = flat.findIndex((issue2) => issue2.id === to);
   if (a3 < 0 || b < 0) return;
-  const next2 = new Set(st5.selected);
+  const next2 = new Set(st6.selected);
   for (let i2 = Math.min(a3, b); i2 <= Math.max(a3, b); i2++) next2.add(flat[i2].id);
-  st5.selected = next2;
-  st5.cursor = to;
+  st6.selected = next2;
+  st6.cursor = to;
 }
 function Empty({ flux: flux2, scope, inProject, onCreate }) {
-  const filtered = st5.query.trim() !== "";
+  const filtered = st6.query.trim() !== "";
   const title = filtered ? "No matching issues" : scope === "active" ? "Nothing in progress" : scope === "mine" ? "No issues assigned to you" : inProject ? "Add issues to the project" : "No issues yet";
-  const text2 = filtered ? `Nothing here matches “${st5.query.trim()}”.` : scope === "active" ? "Issues show up here once someone starts them or hands them to an agent." : scope === "mine" ? "Issues assigned to you will show up here." : "Start building your project by creating an issue.";
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
-    filtered || scope === "active" ? /* @__PURE__ */ jsx9(TrayArt, {}) : /* @__PURE__ */ jsx9(IssuesArt, {}),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: title }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 384 }, children: text2 }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, marginTop: 24 }, children: [
-      filtered ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => {
-        st5.query = "";
+  const text3 = filtered ? `Nothing here matches “${st6.query.trim()}”.` : scope === "active" ? "Issues show up here once someone starts them or hands them to an agent." : scope === "mine" ? "Issues assigned to you will show up here." : "Start building your project by creating an issue.";
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs9(ui15.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
+    filtered || scope === "active" ? /* @__PURE__ */ jsx10(TrayArt, {}) : /* @__PURE__ */ jsx10(IssuesArt, {}),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: title }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 384 }, children: text3 }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8, marginTop: 24 }, children: [
+      filtered ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", onClick: () => {
+        st6.query = "";
       }, children: "Clear filter" }) : null,
-      !filtered && scope !== "all" ? /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => storage5.set("scope", "all"), children: "Show all issues" }) : null,
-      !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) : null
+      !filtered && scope !== "all" ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", onClick: () => storage6.set("scope", "all"), children: "Show all issues" }) : null,
+      !filtered && scope !== "active" && flux2.projects().length > 0 ? /* @__PURE__ */ jsx10(ui15.button, { kind: "primary", icon: "plus", tooltip: "New issue (C)", onClick: onCreate, children: "New issue" }) : null
     ] })
   ] }, filtered ? "tray-q" : scope) });
 }
 function openCreate(flux2, projectId, key, parentId) {
   const seeded = key ? draftForGroup(key) : {};
   const me2 = flux2.me?.id;
-  st5.creating = true;
-  const kept2 = (st5.draftTitle.trim() || st5.draftBody.trim()) && st5.draftParent === (parentId ?? null);
+  st6.creating = true;
+  const kept2 = (st6.draftTitle.trim() || st6.draftBody.trim()) && st6.draftParent === (parentId ?? null);
   if (kept2) {
-    ui14.showOverlay("flux-new");
+    ui15.showOverlay("flux-new");
     return;
   }
-  st5.draftTitle = "";
-  st5.draftBody = "";
-  st5.draftStatus = seeded.status ?? "todo";
-  st5.draftPriority = seeded.priority ?? "none";
-  st5.draftAssignees = seeded.assigneeIds ?? (scopeNow() === "mine" && me2 ? [me2] : []);
-  st5.draftLabels = seeded.labelIds ?? [];
-  st5.draftProject = seeded.projectId ?? projectId ?? flux2.projects()[0]?.id ?? "";
-  st5.draftDue = null;
-  st5.draftParent = parentId ?? null;
-  ui14.showOverlay("flux-new");
+  st6.draftTitle = "";
+  st6.draftBody = "";
+  st6.draftStatus = seeded.status ?? "todo";
+  st6.draftPriority = seeded.priority ?? "none";
+  st6.draftAssignees = seeded.assigneeIds ?? (scopeNow() === "mine" && me2 ? [me2] : []);
+  st6.draftLabels = seeded.labelIds ?? [];
+  st6.draftProject = seeded.projectId ?? projectId ?? flux2.projects()[0]?.id ?? "";
+  st6.draftDue = null;
+  st6.draftParent = parentId ?? null;
+  ui15.showOverlay("flux-new");
 }
 function closeCreate() {
-  st5.creating = false;
-  if (!st5.draftTitle.trim() && !st5.draftBody.trim()) return;
+  st6.creating = false;
+  if (!st6.draftTitle.trim() && !st6.draftBody.trim()) return;
   confirm("Discard issue?", "Your work will be lost.", "Discard", () => {
-    st5.draftTitle = "";
-    st5.draftBody = "";
-    st5.draftDue = null;
-    st5.draftParent = null;
+    st6.draftTitle = "";
+    st6.draftBody = "";
+    st6.draftDue = null;
+    st6.draftParent = null;
   }, {
     cancel: "Keep editing",
     onCancel: () => {
-      st5.creating = true;
-      ui14.showOverlay("flux-new");
+      st6.creating = true;
+      ui15.showOverlay("flux-new");
     }
   });
 }
 function NewIssue({ flux: flux2 }) {
   const projects = flux2.projects();
-  const project = projects.find((item) => item.id === st5.draftProject);
+  const project = projects.find((item) => item.id === st6.draftProject);
   const members2 = flux2.memberList();
   const me2 = flux2.me?.id;
-  const chosenPeople = members2.filter((member2) => st5.draftAssignees.includes(member2.id));
+  const chosenPeople = members2.filter((member2) => st6.draftAssignees.includes(member2.id));
   const labels = flux2.labels();
-  const chosenLabels = labels.filter((label) => st5.draftLabels.includes(label.id));
-  const typed = st5.labelQuery.trim();
+  const chosenLabels = labels.filter((label) => st6.draftLabels.includes(label.id));
+  const typed = st6.labelQuery.trim();
   const newLabel = typed && !labels.some((label) => label.name.toLowerCase() === typed.toLowerCase()) ? typed : "";
-  const parent = st5.draftParent ? flux2.issue(st5.draftParent) : void 0;
+  const parent = st6.draftParent ? flux2.issue(st6.draftParent) : void 0;
   const chip2 = { ...ghostChip, height: 28, border: "1px solid border", gap: 6 };
   const chipText = { fontSize: 12, fontWeight: 500, minWidth: 0 };
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsxs8(ui14.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
-          /* @__PURE__ */ jsx9(ProjectMark, { project, size: 14 }),
-          /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
-          projects.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(item), checked: item.id === st5.draftProject, onClick: () => {
-            st5.draftProject = item.id;
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsxs9(ui15.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
+          /* @__PURE__ */ jsx10(ProjectMark, { project, size: 14 }),
+          /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
+          projects.map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(item), checked: item.id === st6.draftProject, onClick: () => {
+            st6.draftProject = item.id;
           }, children: item.name }, item.id))
         ] }),
-        parent ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }),
-          /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
+        parent ? /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2" } }),
+          /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue" })
         ] }) : null
       ] }),
-      /* @__PURE__ */ jsx9(ui14.field, { autoFocus: true, multiline: true, value: st5.draftTitle, placeholder: "Issue title", keys: ["Enter"], onKeyDown: () => void submitNew(flux2), onChange: (value) => {
-        st5.draftTitle = value.replace(/\n/g, "");
+      /* @__PURE__ */ jsx10(ui15.field, { autoFocus: true, multiline: true, value: st6.draftTitle, placeholder: "Issue title", keys: ["Enter"], onKeyDown: () => void submitNew(flux2), onChange: (value) => {
+        st6.draftTitle = value.replace(/\n/g, "");
       }, style: { fontSize: 18, fontWeight: 500, lineHeight: "28px", minHeight: 0, backgroundColor: "transparent", boxShadow: "none", padding: 0 } }, "new-title"),
-      /* @__PURE__ */ jsx9(ui14.editor, { value: st5.draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), images: editorImages(st5.draftBody, imageOf2), onChange: (value) => {
-        st5.draftBody = value;
-      }, onSubmit: () => void submitNew(flux2), onUpload: (file2) => uploadInto(flux2, file2, "issue_image", () => st5.draftBody, (md) => {
-        st5.draftBody = md;
+      /* @__PURE__ */ jsx10(ui15.editor, { value: st6.draftBody, placeholder: "Add description…", label: "Description", options: mentionOptions(flux2), images: editorImages(st6.draftBody, imageOf2), onChange: (value) => {
+        st6.draftBody = value;
+      }, onSubmit: () => void submitNew(flux2), onUpload: (file2) => uploadInto(flux2, file2, "issue_image", () => st6.draftBody, (md) => {
+        st6.draftBody = md;
       }), style: { minHeight: 144, boxShadow: "none" } }, "new-body")
     ] }),
-    /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider" } }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Status: ${STATUS_LABELS[st5.draftStatus]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx9(StatusIcon, { status: st5.draftStatus, size: 14 }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: chipText, children: STATUS_LABELS[st5.draftStatus] }),
-        STATUSES.map((status) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(status), checked: st5.draftStatus === status, onClick: () => {
-          st5.draftStatus = status;
+    /* @__PURE__ */ jsx10(ui15.box, { style: { height: 1, backgroundColor: "divider" } }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingLeft: 16, paddingRight: 16, paddingTop: 12 }, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Status: ${STATUS_LABELS[st6.draftStatus]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx10(StatusIcon, { status: st6.draftStatus, size: 14 }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: chipText, children: STATUS_LABELS[st6.draftStatus] }),
+        STATUSES.map((status) => /* @__PURE__ */ jsx10(ui15.item, { ...statusMark(status), checked: st6.draftStatus === status, onClick: () => {
+          st6.draftStatus = status;
         }, children: STATUS_LABELS[status] }, status))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Priority: ${PRIORITY_LABELS[st5.draftPriority]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx9(PriorityIcon, { priority: st5.draftPriority, size: 14 }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: st5.draftPriority === "none" ? "text2" : "text" }, children: st5.draftPriority === "none" ? "Priority" : PRIORITY_LABELS[st5.draftPriority] }),
-        PRIORITIES.map((priority) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(priority), checked: st5.draftPriority === priority, onClick: () => {
-          st5.draftPriority = priority;
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Priority: ${PRIORITY_LABELS[st6.draftPriority]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx10(PriorityIcon, { priority: st6.draftPriority, size: 14 }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...chipText, color: st6.draftPriority === "none" ? "text2" : "text" }, children: st6.draftPriority === "none" ? "Priority" : PRIORITY_LABELS[st6.draftPriority] }),
+        PRIORITIES.map((priority) => /* @__PURE__ */ jsx10(ui15.item, { ...priorityMark(priority), checked: st6.draftPriority === priority, onClick: () => {
+          st6.draftPriority = priority;
         }, children: PRIORITY_LABELS[priority] }, priority))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
-        chosenPeople.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: chosenPeople, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }, maxLines: 1, children: chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee" }),
-        [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(member2), detail: "@" + member2.username, checked: st5.draftAssignees.includes(member2.id), onClick: () => {
-          st5.draftAssignees = st5.draftAssignees.includes(member2.id) ? st5.draftAssignees.filter((id2) => id2 !== member2.id) : [...st5.draftAssignees, member2.id];
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+        chosenPeople.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: chosenPeople, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }, maxLines: 1, children: chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee" }),
+        [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(member2), detail: "@" + member2.username, checked: st6.draftAssignees.includes(member2.id), onClick: () => {
+          st6.draftAssignees = st6.draftAssignees.includes(member2.id) ? st6.draftAssignees.filter((id2) => id2 !== member2.id) : [...st6.draftAssignees, member2.id];
         }, children: member2.id === me2 ? `${member2.name} (you)` : member2.name }, member2.id))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", search: "Change or add labels…", onChange: (query) => {
-        st5.labelQuery = query;
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosenLabels.length ? `Label: ${chosenLabels.map((l) => l.name).join(", ")}` : "Labels", search: "Change or add labels…", onChange: (query) => {
+        st6.labelQuery = query;
       }, style: chip2, children: [
-        chosenLabels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: chosenLabels.length ? "text" : "text2" }, children: chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels" }),
-        labels.map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(item.color), keepOpen: true, checked: st5.draftLabels.includes(item.id), onClick: () => {
-          st5.draftLabels = st5.draftLabels.includes(item.id) ? st5.draftLabels.filter((id2) => id2 !== item.id) : [...st5.draftLabels, item.id];
+        chosenLabels.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row", alignItems: "center" }, children: chosenLabels.map((l, n) => /* @__PURE__ */ jsx10(ui15.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...chipText, color: chosenLabels.length ? "text" : "text2" }, children: chosenLabels.length ? `${chosenLabels.length} ${chosenLabels.length === 1 ? "label" : "labels"}` : "Labels" }),
+        labels.map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(item.color), keepOpen: true, checked: st6.draftLabels.includes(item.id), onClick: () => {
+          st6.draftLabels = st6.draftLabels.includes(item.id) ? st6.draftLabels.filter((id2) => id2 !== item.id) : [...st6.draftLabels, item.id];
         }, children: item.name }, item.id)),
-        newLabel ? /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", onClick: () => void createDraftLabel(flux2, newLabel), children: `Create “${newLabel}”` }, "create") : null
+        newLabel ? /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", onClick: () => void createDraftLabel(flux2, newLabel), children: `Create “${newLabel}”` }, "create") : null
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: st5.draftDue ? `Due ${dueLabel(st5.draftDue)}` : "Due date", style: chip2, children: [
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 14, height: 14, color: st5.draftDue ? dueTone(st5.draftDue) : "text2" } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { ...chipText, color: st5.draftDue ? "text" : "text2" }, children: st5.draftDue ? dueLabel(st5.draftDue) : "Due date" }),
-        dueItems(st5.draftDue, (value) => {
-          st5.draftDue = value;
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: st6.draftDue ? `Due ${dueLabel(st6.draftDue)}` : "Due date", style: chip2, children: [
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "calendar", style: { width: 14, height: 14, color: st6.draftDue ? dueTone(st6.draftDue) : "text2" } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { ...chipText, color: st6.draftDue ? "text" : "text2" }, children: st6.draftDue ? dueLabel(st6.draftDue) : "Due date" }),
+        dueItems(st6.draftDue, (value) => {
+          st6.draftDue = value;
         })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
-      /* @__PURE__ */ jsx9(ui14.toggle, { label: "Create more", checked: st5.createMore, onChange: (checked) => {
-        st5.createMore = checked;
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end", paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }, children: [
+      /* @__PURE__ */ jsx10(ui15.toggle, { label: "Create more", checked: st6.createMore, onChange: (checked) => {
+        st6.createMore = checked;
       } }),
-      /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", disabled: !st5.draftTitle.trim(), onClick: () => void submitNew(flux2), children: "Create  ⌘↵" })
+      /* @__PURE__ */ jsx10(ui15.button, { kind: "primary", disabled: !st6.draftTitle.trim(), onClick: () => void submitNew(flux2), children: "Create  ⌘↵" })
     ] })
   ] });
 }
 async function createDraftLabel(flux2, name) {
   try {
     const label = await flux2.createLabel(name);
-    if (!st5.draftLabels.includes(label.id)) st5.draftLabels = [...st5.draftLabels, label.id];
+    if (!st6.draftLabels.includes(label.id)) st6.draftLabels = [...st6.draftLabels, label.id];
   } catch (error62) {
-    ui14.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui15.toast(error62 instanceof Error ? error62.message : String(error62));
   }
 }
 async function submitNew(flux2) {
-  const title = st5.draftTitle.trim();
-  if (!title || !st5.draftProject) {
-    ui14.toast(title ? "Pick a project." : "Give the issue a title.");
+  const title = st6.draftTitle.trim();
+  if (!title || !st6.draftProject) {
+    ui15.toast(title ? "Pick a project." : "Give the issue a title.");
     return;
   }
-  if (uploading(st5.draftBody)) {
-    ui14.toast("A picture is still uploading.");
+  if (uploading(st6.draftBody)) {
+    ui15.toast("A picture is still uploading.");
     return;
   }
   try {
-    const issue2 = await flux2.createIssue({ projectId: st5.draftProject, title, descriptionMarkdown: st5.draftBody, status: st5.draftStatus, priority: st5.draftPriority, assigneeIds: st5.draftAssignees, labelIds: st5.draftLabels, parentId: st5.draftParent, dueDate: st5.draftDue });
-    ui14.toast(`Created ${issue2.key} · ${issue2.title}`, { action: "Open", href: `swarm://plugin/flux/issues/${encodeURIComponent(issue2.key)}` });
-    st5.draftTitle = "";
-    st5.draftBody = "";
-    st5.draftDue = null;
-    if (!st5.createMore) {
-      st5.creating = false;
-      ui14.hideOverlay("flux-new");
+    const issue2 = await flux2.createIssue({ projectId: st6.draftProject, title, descriptionMarkdown: st6.draftBody, status: st6.draftStatus, priority: st6.draftPriority, assigneeIds: st6.draftAssignees, labelIds: st6.draftLabels, parentId: st6.draftParent, dueDate: st6.draftDue });
+    ui15.toast(`Created ${issue2.key} · ${issue2.title}`, { action: "Open", href: `swarm://plugin/flux/issues/${encodeURIComponent(issue2.key)}` });
+    st6.draftTitle = "";
+    st6.draftBody = "";
+    st6.draftDue = null;
+    if (!st6.createMore) {
+      st6.creating = false;
+      ui15.hideOverlay("flux-new");
     }
   } catch (error62) {
-    ui14.toast(error62 instanceof Error ? error62.message : String(error62));
+    ui15.toast(error62 instanceof Error ? error62.message : String(error62));
   }
 }
 var shownIds = /* @__PURE__ */ new Map();
@@ -83363,14 +83529,14 @@ function IssuePage({ flux: flux2, issueKey, image }) {
   if (!issue2) {
     const connection = flux2.connection();
     const waiting = connection.state !== "ready";
-    if (waiting && !connection.message) return /* @__PURE__ */ jsx9(IssueBones, {});
-    return /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minHeight: 0 }, children: [
-      /* @__PURE__ */ jsx9(SyncBars, { flux: flux2 }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
-        /* @__PURE__ */ jsx9(TrayArt, {}),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: waiting ? `Can't load ${issueKey} yet` : `No issue ${issueKey}` }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center" }, children: waiting ? connection.message ? offline(connection.message, false) : "Syncing with Flux." : "It was deleted, or moved to another project." }),
-        /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", marginTop: 24 }, children: /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => openList(""), children: "Back to the board" }) })
+    if (waiting && !connection.message) return /* @__PURE__ */ jsx10(IssueBones, {});
+    return /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minHeight: 0 }, children: [
+      /* @__PURE__ */ jsx10(SyncBars, { flux: flux2 }),
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs9(ui15.box, { style: { alignItems: "center", maxWidth: 384, animation: { name: "slideIn", duration: 300 } }, children: [
+        /* @__PURE__ */ jsx10(TrayArt, {}),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: waiting ? `Can't load ${issueKey} yet` : `No issue ${issueKey}` }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center" }, children: waiting ? connection.message ? offline(connection.message, false) : "Syncing with Flux." : "It was deleted, or moved to another project." }),
+        /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row", marginTop: 24 }, children: /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", onClick: () => openList(""), children: "Back to the board" }) })
       ] }) })
     ] });
   }
@@ -83379,12 +83545,12 @@ function IssuePage({ flux: flux2, issueKey, image }) {
   const members2 = flux2.memberList();
   const titleKey = `title:${flux2.id}:${issue2.id}`;
   const edits = { update: (patch) => apply2(flux2, issue2.id, patch) };
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, keys: ISSUE_KEYS, onKeyDown: (key) => onIssueKey(flux2, issue2, key), children: [
-    /* @__PURE__ */ jsx9(SyncBars, { flux: flux2 }),
-    /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, minHeight: 0, overflowY: "auto" }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "flex-start", width: "100%", maxWidth: 672, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }, { minWidth: 900, style: { maxWidth: 928 } }] }, children: [
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
-        st5.editingTitle === issue2.id && (titleBefore?.id === issue2.id || (titleBefore = { id: issue2.id, title: issue2.title })) ? /* @__PURE__ */ jsx9(
-          ui14.field,
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, keys: ISSUE_KEYS, onKeyDown: (key) => onIssueKey(flux2, issue2, key), children: [
+    /* @__PURE__ */ jsx10(SyncBars, { flux: flux2 }),
+    /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1, minHeight: 0, overflowY: "auto" }, children: /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", alignItems: "flex-start", width: "100%", maxWidth: 672, alignSelf: "center", paddingLeft: 16, paddingRight: 16, paddingTop: 24, paddingBottom: 96, media: [{ minWidth: 700, style: { paddingLeft: 32, paddingRight: 32, paddingTop: 40 } }, { minWidth: 900, style: { maxWidth: 928 } }] }, children: [
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 0 }, children: [
+        st6.editingTitle === issue2.id && (titleBefore?.id === issue2.id || (titleBefore = { id: issue2.id, title: issue2.title })) ? /* @__PURE__ */ jsx10(
+          ui15.field,
           {
             multiline: true,
             value: drafted(titleKey, issue2.title),
@@ -83399,32 +83565,32 @@ function IssuePage({ flux: flux2, issueKey, image }) {
               } else {
                 const typed = drafted(titleKey, issue2.title);
                 void saveTitle(flux2, issue2, typed).then(() => {
-                  if (st5.editingTitle !== issue2.id && drafted(titleKey, typed) === typed) clearDraft(titleKey);
-                }, (error62) => ui14.toast(error62 instanceof Error ? error62.message : String(error62)));
+                  if (st6.editingTitle !== issue2.id && drafted(titleKey, typed) === typed) clearDraft(titleKey);
+                }, (error62) => ui15.toast(error62 instanceof Error ? error62.message : String(error62)));
               }
-              st5.editingTitle = "";
+              st6.editingTitle = "";
               titleBefore = null;
             },
-            onChange: (value) => editDraft(titleKey, value.replace(/\n/g, " "), (next2) => saveTitle(flux2, issue2, next2), () => st5.editingTitle === issue2.id),
+            onChange: (value) => editDraft(titleKey, value.replace(/\n/g, " "), (next2) => saveTitle(flux2, issue2, next2), () => st6.editingTitle === issue2.id),
             style: { ...titleStyle, minHeight: 0, padding: 0, backgroundColor: "transparent", boxShadow: "none" }
           },
           titleKey
-        ) : /* @__PURE__ */ jsx9(ui14.pressable, { label: "Title", tooltip: "Edit the title (E)", onClick: () => {
-          st5.editingTitle = issue2.id;
-        }, style: { cursor: "text" }, children: /* @__PURE__ */ jsx9(ui14.text, { style: titleStyle, children: drafted(titleKey, issue2.title).trim() || "Untitled" }) }),
-        detail2.parent ? /* @__PURE__ */ jsx9(ParentLine, { parent: detail2.parent }) : null,
-        /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 16, media: [{ minWidth: 900, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx9(Properties, { issue: issue2, project, members: members2, labels: flux2.labels(), me: flux2.me?.id, edits, start: () => startAgent(issue2.id) }) }),
-        /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 24 }, children: /* @__PURE__ */ jsx9(DescriptionEditor, { flux: flux2, issue: issue2, markdown: detail2.descriptionMarkdown, html: detail2.descriptionHtml, image }) }),
-        /* @__PURE__ */ jsx9(SubIssues, { flux: flux2, issue: issue2, subs: detail2.subIssues }),
-        /* @__PURE__ */ jsx9(ui14.box, { style: { height: 1, backgroundColor: "divider", marginTop: 32 } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, marginTop: 24 }, children: "Activity" }),
-        /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 20, marginTop: 20 }, children: [
-          /* @__PURE__ */ jsx9(ActivityRow, { member: members2.find((member2) => member2.id === issue2.creatorId), when: issue2.createdAt, text: "created the issue" }),
-          detail2.comments.map((comment) => /* @__PURE__ */ jsx9(Comment, { flux: flux2, comment, members: members2, image }, comment.id)),
-          /* @__PURE__ */ jsx9(CommentEditor, { flux: flux2, issue: issue2, image })
+        ) : /* @__PURE__ */ jsx10(ui15.pressable, { label: "Title", tooltip: "Edit the title (E)", onClick: () => {
+          st6.editingTitle = issue2.id;
+        }, style: { cursor: "text" }, children: /* @__PURE__ */ jsx10(ui15.text, { style: titleStyle, children: drafted(titleKey, issue2.title).trim() || "Untitled" }) }),
+        detail2.parent ? /* @__PURE__ */ jsx10(ParentLine, { parent: detail2.parent }) : null,
+        /* @__PURE__ */ jsx10(ui15.box, { style: { marginTop: 16, media: [{ minWidth: 900, style: { display: "none" } }] }, children: /* @__PURE__ */ jsx10(Properties, { issue: issue2, project, members: members2, labels: flux2.labels(), me: flux2.me?.id, edits, start: () => startAgent(issue2.id) }) }),
+        /* @__PURE__ */ jsx10(ui15.box, { style: { marginTop: 24 }, children: /* @__PURE__ */ jsx10(DescriptionEditor, { flux: flux2, issue: issue2, markdown: detail2.descriptionMarkdown, html: detail2.descriptionHtml, image }) }),
+        /* @__PURE__ */ jsx10(SubIssues, { flux: flux2, issue: issue2, subs: detail2.subIssues }),
+        /* @__PURE__ */ jsx10(ui15.box, { style: { height: 1, backgroundColor: "divider", marginTop: 32 } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500, marginTop: 24 }, children: "Activity" }),
+        /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 20, marginTop: 20 }, children: [
+          /* @__PURE__ */ jsx10(ActivityRow, { member: members2.find((member2) => member2.id === issue2.creatorId), when: issue2.createdAt, text: "created the issue" }),
+          detail2.comments.map((comment) => /* @__PURE__ */ jsx10(Comment, { flux: flux2, comment, members: members2, image }, comment.id)),
+          /* @__PURE__ */ jsx10(CommentEditor, { flux: flux2, issue: issue2, image })
         ] })
       ] }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { display: "none", position: "sticky", top: 0, width: 240, flexShrink: 0, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx9(PropertyRail, { flux: flux2, issue: issue2, project, members: members2 }) })
+      /* @__PURE__ */ jsx10(ui15.box, { style: { display: "none", position: "sticky", top: 0, width: 240, flexShrink: 0, media: [{ minWidth: 900, style: { display: "flex" } }] }, children: /* @__PURE__ */ jsx10(PropertyRail, { flux: flux2, issue: issue2, project, members: members2 }) })
     ] }) })
   ] });
 }
@@ -83432,17 +83598,17 @@ function IssueHead({ flux: flux2, issueKey }) {
   const issue2 = flux2.findIssue(issueKey) ?? flux2.issue(shownIds.get(issueKey) ?? "") ?? void 0;
   const project = issue2 ? flux2.projects().find((item) => item.id === issue2.projectId) : void 0;
   const back = () => openList(project ? `p/${project.key}` : "");
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: bar, keys: issue2 ? ISSUE_KEYS : void 0, onKeyDown: issue2 ? (key) => onIssueKey(flux2, issue2, key) : void 0, children: [
-    /* @__PURE__ */ jsxs8(ui14.pressable, { label: `Back to ${project?.name ?? "All projects"}`, tooltip: `Back to ${project?.name ?? "All projects"}`, onClick: back, style: { ...ghostChip, minWidth: 0, flexShrink: 1, color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
-      project ? /* @__PURE__ */ jsx9(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx9(FluxMark, { size: 16 }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0, color: "currentColor" }, maxLines: 1, children: project?.name ?? "All projects" })
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: bar, keys: issue2 ? ISSUE_KEYS : void 0, onKeyDown: issue2 ? (key) => onIssueKey(flux2, issue2, key) : void 0, children: [
+    /* @__PURE__ */ jsxs9(ui15.pressable, { label: `Back to ${project?.name ?? "All projects"}`, tooltip: `Back to ${project?.name ?? "All projects"}`, onClick: back, style: { ...ghostChip, minWidth: 0, flexShrink: 1, color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
+      project ? /* @__PURE__ */ jsx10(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx10(FluxMark, { size: 16 }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, minWidth: 0, color: "currentColor" }, maxLines: 1, children: project?.name ?? "All projects" })
     ] }),
-    /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text3", flexShrink: 0 } }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0, paddingLeft: 2 }, children: issueKey }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2 ? issue2.title.trim() || "Untitled" : "" }),
-    issue2 ? /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: 28, height: 28 } }) : null,
-    issue2 ? /* @__PURE__ */ jsx9(IssueMenu, { flux: flux2, issue: issue2, onDelete: back }) : null,
-    /* @__PURE__ */ jsx9(BarEnd, { onCreate: () => openCreate(flux2, issue2?.projectId ?? project?.id) })
+    /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text3", flexShrink: 0 } }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2", flexShrink: 0, paddingLeft: 2 }, children: issueKey }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2 ? issue2.title.trim() || "Untitled" : "" }),
+    issue2 ? /* @__PURE__ */ jsx10(ui15.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: 28, height: 28 } }) : null,
+    issue2 ? /* @__PURE__ */ jsx10(IssueMenu, { flux: flux2, issue: issue2, onDelete: back }) : null,
+    /* @__PURE__ */ jsx10(BarEnd, { onCreate: () => openCreate(flux2, issue2?.projectId ?? project?.id) })
   ] });
 }
 var titleBefore = null;
@@ -83453,13 +83619,13 @@ async function saveTitle(flux2, issue2, value) {
   if (next2 && next2 !== now) await flux2.updateIssue(issue2.id, { title: next2 });
 }
 function ParentLine({ parent }) {
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }, children: [
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue of" }),
-    /* @__PURE__ */ jsxs8(ui14.pressable, { label: `${parent.key} ${parent.title}`, onClick: () => openIssue(parent.key), style: { flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexShrink: 1 }, children: [
-      /* @__PURE__ */ jsx9(StatusIcon, { status: parent.status, size: 14 }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, minWidth: 0 }, maxLines: 1, children: `${parent.key} ${parent.title.trim() || "Untitled"}` })
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: 8 }, children: [
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, color: "text2" }, children: "Sub-issue of" }),
+    /* @__PURE__ */ jsxs9(ui15.pressable, { label: `${parent.key} ${parent.title}`, onClick: () => openIssue(parent.key), style: { flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexShrink: 1 }, children: [
+      /* @__PURE__ */ jsx10(StatusIcon, { status: parent.status, size: 14 }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, minWidth: 0 }, maxLines: 1, children: `${parent.key} ${parent.title.trim() || "Untitled"}` })
     ] }),
-    parent.subIssueCount > 0 ? /* @__PURE__ */ jsx9(SubIssueChip, { done: parent.subIssueDoneCount, total: parent.subIssueCount }) : null
+    parent.subIssueCount > 0 ? /* @__PURE__ */ jsx10(SubIssueChip, { done: parent.subIssueDoneCount, total: parent.subIssueCount }) : null
   ] });
 }
 var SUB_ORDERINGS = ["created", "priority", "status"];
@@ -83467,7 +83633,7 @@ var SUB_PROPERTIES = ["id", "priority", "assignee", "labels"];
 var SUB_ORDERING_LABELS = { created: "Created", priority: "Priority", status: "Status" };
 var SUB_PROPERTY_LABELS = { id: "ID", priority: "Priority", assignee: "Assignee", labels: "Labels" };
 function subDisplay() {
-  const raw = storage5.get("subDisplay") ?? {};
+  const raw = storage6.get("subDisplay") ?? {};
   const ordering = SUB_ORDERINGS.includes(raw.ordering) ? raw.ordering : "created";
   const properties = Array.isArray(raw.properties) ? SUB_PROPERTIES.filter((p) => raw.properties.includes(p)) : ["assignee"];
   return { ordering, properties };
@@ -83481,16 +83647,16 @@ function orderSubs(subs, ordering) {
 }
 var filing = Promise.resolve();
 function composeSub(flux2, parent) {
-  st5.subsOpen = true;
-  if (st5.composing?.parent === parent.id) return;
+  st6.subsOpen = true;
+  if (st6.composing?.parent === parent.id) return;
   const me2 = flux2.me?.id;
   const siblings = flux2.issues().filter((i2) => i2.parentId === parent.id);
-  const same = (ids) => ids.length === parent.assigneeIds.length && ids.every((id2) => parent.assigneeIds.includes(id2));
-  const inherit = parent.assigneeIds.length > 0 && (!!me2 && parent.assigneeIds.includes(me2) || siblings.length > 0 && siblings.every((s) => same(s.assigneeIds)));
-  st5.composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
+  const same2 = (ids) => ids.length === parent.assigneeIds.length && ids.every((id2) => parent.assigneeIds.includes(id2));
+  const inherit = parent.assigneeIds.length > 0 && (!!me2 && parent.assigneeIds.includes(me2) || siblings.length > 0 && siblings.every((s) => same2(s.assigneeIds)));
+  st6.composing = { parent: parent.id, title: "", status: "todo", priority: parent.priority, assigneeIds: inherit ? [...parent.assigneeIds] : [], labelIds: [] };
 }
 function fileSub(flux2, parent, title) {
-  const c = st5.composing;
+  const c = st6.composing;
   const trimmed = title.trim();
   if (!c || !trimmed) return false;
   const input2 = { projectId: parent.projectId, parentId: parent.id, title: trimmed, status: c.status, priority: c.priority, assigneeIds: c.assigneeIds, labelIds: c.labelIds };
@@ -83502,35 +83668,35 @@ function SubIssues({ flux: flux2, issue: issue2, subs }) {
   const display = subDisplay();
   const ordered = orderSubs(subs, display.ordering);
   const done = subs.filter((sub) => CLOSED_STATUSES.has(sub.status)).length;
-  const open3 = st5.composing?.parent === issue2.id;
-  const setDisplay2 = (patch) => storage5.set("subDisplay", { ...display, ...patch });
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { marginTop: 32, gap: 0 }, children: [
-    subs.length > 0 ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
-      /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Sub-issues", checked: st5.subsOpen, onClick: () => {
-        st5.subsOpen = !st5.subsOpen;
+  const open3 = st6.composing?.parent === issue2.id;
+  const setDisplay2 = (patch) => storage6.set("subDisplay", { ...display, ...patch });
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { marginTop: 32, gap: 0 }, children: [
+    subs.length > 0 ? /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", height: 32 }, children: [
+      /* @__PURE__ */ jsxs9(ui15.pressable, { label: "Sub-issues", checked: st6.subsOpen, onClick: () => {
+        st6.subsOpen = !st6.subsOpen;
       }, style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: st5.subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: "Sub-issues" }),
-        /* @__PURE__ */ jsx9(SubIssueChip, { done, total: subs.length })
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text2", transform: st6.subsOpen ? "rotate(90deg)" : "none", transition: { duration: 150 } } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500 }, children: "Sub-issues" }),
+        /* @__PURE__ */ jsx10(SubIssueChip, { done, total: subs.length })
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: "Sub-issue display options", tooltip: "Display options", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "sliders", style: { width: 16, height: 16, color: "currentColor" } }),
-        /* @__PURE__ */ jsx9(ui14.heading, { children: "Ordering" }),
-        SUB_ORDERINGS.map((o) => /* @__PURE__ */ jsx9(ui14.item, { checked: display.ordering === o, onClick: () => setDisplay2({ ordering: o }), children: SUB_ORDERING_LABELS[o] }, "o-" + o)),
-        /* @__PURE__ */ jsx9(ui14.separator, {}),
-        /* @__PURE__ */ jsx9(ui14.heading, { children: "Display properties" }),
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: "Sub-issue display options", tooltip: "Display options", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "sliders", style: { width: 16, height: 16, color: "currentColor" } }),
+        /* @__PURE__ */ jsx10(ui15.heading, { children: "Ordering" }),
+        SUB_ORDERINGS.map((o) => /* @__PURE__ */ jsx10(ui15.item, { checked: display.ordering === o, onClick: () => setDisplay2({ ordering: o }), children: SUB_ORDERING_LABELS[o] }, "o-" + o)),
+        /* @__PURE__ */ jsx10(ui15.separator, {}),
+        /* @__PURE__ */ jsx10(ui15.heading, { children: "Display properties" }),
         SUB_PROPERTIES.map((p) => {
           const on3 = display.properties.includes(p);
-          return /* @__PURE__ */ jsx9(ui14.item, { checked: on3, onClick: () => setDisplay2({ properties: on3 ? display.properties.filter((x2) => x2 !== p) : SUB_PROPERTIES.filter((x2) => x2 === p || display.properties.includes(x2)) }), children: SUB_PROPERTY_LABELS[p] }, "p-" + p);
+          return /* @__PURE__ */ jsx10(ui15.item, { checked: on3, onClick: () => setDisplay2({ properties: on3 ? display.properties.filter((x2) => x2 !== p) : SUB_PROPERTIES.filter((x2) => x2 === p || display.properties.includes(x2)) }), children: SUB_PROPERTY_LABELS[p] }, "p-" + p);
         })
       ] }),
-      /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "plus", label: "Add sub-issue", tooltip: "Add sub-issue (⌘⇧O)", style: { width: 28, height: 28 }, onClick: () => composeSub(flux2, issue2) })
-    ] }) : !open3 ? /* @__PURE__ */ jsxs8(ui14.pressable, { label: "Add sub-issues", onClick: () => composeSub(flux2, issue2), style: { flexDirection: "row", gap: 8, alignItems: "center", alignSelf: "flex-start", height: 32, paddingLeft: 6, paddingRight: 8, borderRadius: "control", color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
-      /* @__PURE__ */ jsx9(ui14.icon, { icon: "plus", style: { width: 14, height: 14, color: "currentColor" } }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "currentColor" }, children: "Add sub-issues" })
+      /* @__PURE__ */ jsx10(ui15.iconButton, { icon: "plus", label: "Add sub-issue", tooltip: "Add sub-issue (⌘⇧O)", style: { width: 28, height: 28 }, onClick: () => composeSub(flux2, issue2) })
+    ] }) : !open3 ? /* @__PURE__ */ jsxs9(ui15.pressable, { label: "Add sub-issues", onClick: () => composeSub(flux2, issue2), style: { flexDirection: "row", gap: 8, alignItems: "center", alignSelf: "flex-start", height: 32, paddingLeft: 6, paddingRight: 8, borderRadius: "control", color: "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" } }, children: [
+      /* @__PURE__ */ jsx10(ui15.icon, { icon: "plus", style: { width: 14, height: 14, color: "currentColor" } }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "currentColor" }, children: "Add sub-issues" })
     ] }) : null,
-    st5.subsOpen && subs.length > 0 ? /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 4 }, children: ordered.map((sub) => /* @__PURE__ */ jsx9(SubRow, { flux: flux2, sub, members: members2, properties: display.properties }, sub.id)) }) : null,
-    open3 ? /* @__PURE__ */ jsx9(SubComposer, { flux: flux2, parent: issue2 }) : null
+    st6.subsOpen && subs.length > 0 ? /* @__PURE__ */ jsx10(ui15.box, { style: { marginTop: 4 }, children: ordered.map((sub) => /* @__PURE__ */ jsx10(SubRow, { flux: flux2, sub, members: members2, properties: display.properties }, sub.id)) }) : null,
+    open3 ? /* @__PURE__ */ jsx10(SubComposer, { flux: flux2, parent: issue2 }) : null
   ] });
 }
 function SubRow({ flux: flux2, sub, members: members2, properties }) {
@@ -83539,28 +83705,28 @@ function SubRow({ flux: flux2, sub, members: members2, properties }) {
   const who = members2.filter((member2) => sub.assigneeIds.includes(member2.id));
   const labels = flux2.labels().filter((l) => sub.labelIds.includes(l.id)).slice(0, 2);
   const cell = { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" };
-  return /* @__PURE__ */ jsxs8(ui14.box, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
-    /* @__PURE__ */ jsx9(IssueContextMenu, { flux: flux2, issue: sub }),
-    /* @__PURE__ */ jsxs8(Picker2, { label: `Status: ${STATUS_LABELS[sub.status]}`, style: cell, children: [
-      /* @__PURE__ */ jsx9(StatusIcon, { status: sub.status, size: 14 }),
+  return /* @__PURE__ */ jsxs9(ui15.box, { label: `${sub.key} ${sub.title}`, onClick: () => openIssue(sub.key), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 6, paddingRight: 6, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }, children: [
+    /* @__PURE__ */ jsx10(IssueContextMenu, { flux: flux2, issue: sub }),
+    /* @__PURE__ */ jsxs9(Picker2, { label: `Status: ${STATUS_LABELS[sub.status]}`, style: cell, children: [
+      /* @__PURE__ */ jsx10(StatusIcon, { status: sub.status, size: 14 }),
       pickerItems(flux2, sub, "status")
     ] }),
-    shown("id") ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: sub.key }) : null,
-    shown("priority") && sub.priority !== "none" ? /* @__PURE__ */ jsx9(PriorityIcon, { priority: sub.priority, size: 14 }) : null,
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
-    shown("labels") && labels.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx9(ui14.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
-    shown("assignee") ? /* @__PURE__ */ jsxs8(Picker2, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
-      who.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: who, size: 20 }) : /* @__PURE__ */ jsx9(Unassigned, { size: 20 }),
+    shown("id") ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: sub.key }) : null,
+    shown("priority") && sub.priority !== "none" ? /* @__PURE__ */ jsx10(PriorityIcon, { priority: sub.priority, size: 14 }) : null,
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
+    shown("labels") && labels.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx10(ui15.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
+    shown("assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
+      who.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: who, size: 20 }) : /* @__PURE__ */ jsx10(Unassigned, { size: 20 }),
       pickerItems(flux2, sub, "assignees")
     ] }) : null
   ] });
 }
 function SubComposer({ flux: flux2, parent }) {
-  const c = st5.composing;
+  const c = st6.composing;
   const members2 = flux2.memberList();
   const me2 = flux2.me?.id;
   const close6 = () => {
-    st5.composing = null;
+    st6.composing = null;
   };
   const submit2 = (andClose) => {
     if (!fileSub(flux2, parent, c.title)) return;
@@ -83571,10 +83737,10 @@ function SubComposer({ flux: flux2, parent }) {
   const who = members2.filter((m) => c.assigneeIds.includes(m.id));
   const chosen = flux2.labels().filter((l) => c.labelIds.includes(l.id));
   const chip2 = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, maxWidth: 224, minWidth: 0, flexShrink: 0, paddingLeft: 8, paddingRight: 8, borderRadius: 6, border: "1px solid border", backgroundColor: "overlay", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } };
-  const chipText = (text2, muted) => /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: text2 });
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs8(ui14.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close6, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
-    /* @__PURE__ */ jsx9(
-      ui14.field,
+  const chipText = (text3, muted) => /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: text3 });
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { paddingTop: 8, animation: { name: "slideIn" } }, children: /* @__PURE__ */ jsxs9(ui15.box, { label: "New sub-issue", keys: ["Escape"], onKeyDown: close6, style: { padding: 8, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }, children: [
+    /* @__PURE__ */ jsx10(
+      ui15.field,
       {
         multiline: true,
         autoFocus: true,
@@ -83596,55 +83762,55 @@ function SubComposer({ flux: flux2, parent }) {
       },
       "sub-title-" + parent.id
     ),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 4 }, children: [
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Status: ${STATUS_LABELS[c.status]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx9(StatusIcon, { status: c.status, size: 14 }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Status: ${STATUS_LABELS[c.status]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx10(StatusIcon, { status: c.status, size: 14 }),
         chipText(STATUS_LABELS[c.status], false),
-        STATUSES.map((st7) => /* @__PURE__ */ jsx9(ui14.item, { ...statusMark(st7), checked: c.status === st7, onClick: () => {
-          c.status = st7;
-        }, children: STATUS_LABELS[st7] }, st7))
+        STATUSES.map((st8) => /* @__PURE__ */ jsx10(ui15.item, { ...statusMark(st8), checked: c.status === st8, onClick: () => {
+          c.status = st8;
+        }, children: STATUS_LABELS[st8] }, st8))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: `Priority: ${PRIORITY_LABELS[c.priority]}`, style: chip2, children: [
-        /* @__PURE__ */ jsx9(PriorityIcon, { priority: c.priority, size: 14 }),
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Priority: ${PRIORITY_LABELS[c.priority]}`, style: chip2, children: [
+        /* @__PURE__ */ jsx10(PriorityIcon, { priority: c.priority, size: 14 }),
         chipText(c.priority === "none" ? "Priority" : PRIORITY_LABELS[c.priority], c.priority === "none"),
-        [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => /* @__PURE__ */ jsx9(ui14.item, { ...priorityMark(p), checked: c.priority === p, onClick: () => {
+        [...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => /* @__PURE__ */ jsx10(ui15.item, { ...priorityMark(p), checked: c.priority === p, onClick: () => {
           c.priority = p;
         }, children: PRIORITY_LABELS[p] }, p))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
-        who.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: who, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+        who.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: who, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
         chipText(who.length ? who.map((m) => m.name).join(", ") : "Assignee", who.length === 0),
-        () => [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((m) => /* @__PURE__ */ jsx9(ui14.item, { ...memberMark(m), detail: "@" + m.username, checked: c.assigneeIds.includes(m.id), onClick: () => {
+        () => [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((m) => /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(m), detail: "@" + m.username, checked: c.assigneeIds.includes(m.id), onClick: () => {
           c.assigneeIds = toggle(c.assigneeIds, m.id);
         }, children: m.id === me2 ? `${m.name} (you)` : m.name }, m.id))
       ] }),
-      /* @__PURE__ */ jsxs8(ui14.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
-        chosen.length ? /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx9(ui14.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
+        chosen.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx10(ui15.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
         chipText(chosen.length ? `${chosen.length} ${chosen.length === 1 ? "label" : "labels"}` : "Labels", chosen.length === 0),
-        () => flux2.labels().map((l) => /* @__PURE__ */ jsx9(ui14.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
+        () => flux2.labels().map((l) => /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
           c.labelIds = toggle(c.labelIds, l.id);
         }, children: l.name }, l.id))
       ] }),
-      /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1 } }),
-      /* @__PURE__ */ jsx9(ui14.button, { kind: "ghost", size: "sm", onClick: close6, children: "Cancel" }),
-      /* @__PURE__ */ jsx9(ui14.button, { kind: "primary", size: "sm", disabled: !c.title.trim(), tooltip: "⌘ Enter to submit and draft a similar issue\n⌘ ⇧ Enter to submit issue", onClick: () => submit2(false), children: "Create" })
+      /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1 } }),
+      /* @__PURE__ */ jsx10(ui15.button, { kind: "ghost", size: "sm", onClick: close6, children: "Cancel" }),
+      /* @__PURE__ */ jsx10(ui15.button, { kind: "primary", size: "sm", disabled: !c.title.trim(), tooltip: "⌘ Enter to submit and draft a similar issue\n⌘ ⇧ Enter to submit issue", onClick: () => submit2(false), children: "Create" })
     ] })
   ] }) });
 }
 function IssueMenu({ flux: flux2, issue: issue2, onDelete }) {
   const projects = flux2.projects();
   const url2 = flux2.issueUrl(issue2);
-  return /* @__PURE__ */ jsxs8(ui14.menu, { label: "", icon: "more", tooltip: "Issue actions", children: [
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui14.copy(url2), children: "Copy link" }),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "copy", onClick: () => ui14.copy(issue2.key), children: "Copy ID" }),
-    projects.length >= 2 ? /* @__PURE__ */ jsx9(ui14.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
-    /* @__PURE__ */ jsx9(ui14.separator, {}),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
-    issue2.parentId ? /* @__PURE__ */ jsx9(ui14.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
-    /* @__PURE__ */ jsx9(ui14.separator, {}),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], onDelete), children: "Delete" })
+  return /* @__PURE__ */ jsxs9(ui15.menu, { label: "", icon: "more", tooltip: "Issue actions", children: [
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui15.copy(url2), children: "Copy link" }),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", onClick: () => ui15.copy(issue2.key), children: "Copy ID" }),
+    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
+    /* @__PURE__ */ jsx10(ui15.separator, {}),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
+    issue2.parentId ? /* @__PURE__ */ jsx10(ui15.item, { onClick: () => apply2(flux2, issue2.id, { parentId: null }), children: "Remove parent" }) : null,
+    /* @__PURE__ */ jsx10(ui15.separator, {}),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, shortcut: "Mod+Backspace", onClick: () => askDelete(flux2, [issue2.id], onDelete), children: "Delete" })
   ] });
 }
 function mentionOf(flux2) {
@@ -83656,69 +83822,69 @@ function mentionOf(flux2) {
   };
 }
 function When({ iso, prefix = " · " }) {
-  return /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, tooltip: new Date(iso).toLocaleString(), children: prefix + ago2(iso) });
+  return /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2", flexShrink: 0 }, tooltip: new Date(iso).toLocaleString(), children: prefix + ago2(iso) });
 }
 function Comment({ flux: flux2, comment, members: members2, image }) {
   const author = members2.find((member2) => member2.id === comment.authorId);
   const mine = comment.authorId === flux2.me?.id && !comment.agent;
-  const editing2 = st5.editingComment === comment.id;
+  const editing2 = st6.editingComment === comment.id;
   const edited = new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1e3;
   const agent2 = comment.agent;
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start", hover: { backgroundColor: "transparent" } }, children: [
-    agent2 ? /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx9(AgentAvatar, { agent: agent2, size: 20 }) }) : /* @__PURE__ */ jsx9(ui14.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx9(Avatar, { member: author, size: 20 }) }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
-      /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minHeight: 24 }, children: [
-        /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", flexWrap: "wrap" }, children: [
-          agent2?.threadId ? /* @__PURE__ */ jsx9(ui14.pressable, { label: agent2.name, tooltip: "Open the agent's thread", onClick: () => ui14.openThread(agent2.threadId), style: { hover: { textDecoration: "underline" } }, children: /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2.name }) }) : /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2?.name ?? author?.name ?? "Someone" }),
-          agent2 ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: ` for ${author?.name ?? "someone"}` }) : null,
-          /* @__PURE__ */ jsx9(When, { iso: comment.createdAt }),
-          edited ? /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, tooltip: `Edited ${new Date(comment.updatedAt).toLocaleString()}`, children: " · Edited" }) : null
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 10, alignItems: "flex-start", hover: { backgroundColor: "transparent" } }, children: [
+    agent2 ? /* @__PURE__ */ jsx10(ui15.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx10(AgentAvatar, { agent: agent2, size: 20 }) }) : /* @__PURE__ */ jsx10(ui15.box, { style: { marginTop: 2 }, children: /* @__PURE__ */ jsx10(Avatar, { member: author, size: 20 }) }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
+      /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", minHeight: 24 }, children: [
+        /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", flexWrap: "wrap" }, children: [
+          agent2?.threadId ? /* @__PURE__ */ jsx10(ui15.pressable, { label: agent2.name, tooltip: "Open the agent's thread", onClick: () => ui15.openThread(agent2.threadId), style: { hover: { textDecoration: "underline" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2.name }) }) : /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500 }, children: agent2?.name ?? author?.name ?? "Someone" }),
+          agent2 ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2" }, children: ` for ${author?.name ?? "someone"}` }) : null,
+          /* @__PURE__ */ jsx10(When, { iso: comment.createdAt }),
+          edited ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2" }, tooltip: `Edited ${new Date(comment.updatedAt).toLocaleString()}`, children: " · Edited" }) : null
         ] }),
-        mine && !editing2 ? /* @__PURE__ */ jsxs8(ui14.menu, { label: "Comment actions", tooltip: "Comment actions", style: { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "hover", color: "text" }, checked: { opacity: 1, backgroundColor: "press" } }, children: [
-          /* @__PURE__ */ jsx9(ui14.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
-          /* @__PURE__ */ jsx9(ui14.item, { icon: "pencil", onClick: () => {
-            st5.editingComment = comment.id;
-            st5.commentBody = comment.markdown;
+        mine && !editing2 ? /* @__PURE__ */ jsxs9(ui15.menu, { label: "Comment actions", tooltip: "Comment actions", style: { width: 24, height: 24, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 }, focus: { opacity: 1 }, hover: { backgroundColor: "hover", color: "text" }, checked: { opacity: 1, backgroundColor: "press" } }, children: [
+          /* @__PURE__ */ jsx10(ui15.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
+          /* @__PURE__ */ jsx10(ui15.item, { icon: "pencil", onClick: () => {
+            st6.editingComment = comment.id;
+            st6.commentBody = comment.markdown;
           }, children: "Edit" }),
-          /* @__PURE__ */ jsx9(ui14.separator, {}),
-          /* @__PURE__ */ jsx9(ui14.item, { icon: "trash", danger: true, onClick: () => confirm("Delete this comment?", "This cannot be undone.", "Delete", () => flux2.deleteComment(comment.id)), children: "Delete" })
+          /* @__PURE__ */ jsx10(ui15.separator, {}),
+          /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, onClick: () => confirm("Delete this comment?", "This cannot be undone.", "Delete", () => flux2.deleteComment(comment.id)), children: "Delete" })
         ] }) : null
       ] }),
-      editing2 ? /* @__PURE__ */ jsxs8(ui14.box, { label: "Edit comment", keys: ["Escape"], onKeyDown: () => {
-        st5.editingComment = "";
+      editing2 ? /* @__PURE__ */ jsxs9(ui15.box, { label: "Edit comment", keys: ["Escape"], onKeyDown: () => {
+        st6.editingComment = "";
       }, style: { marginTop: 4, gap: 0, borderRadius: 8, border: "1px solid border", backgroundColor: "overlay", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", focus: { borderColor: "borderStrong" } }, children: [
-        /* @__PURE__ */ jsx9(ui14.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx9(ui14.editor, { value: st5.commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), images: editorImages(st5.commentBody, image), onChange: (value) => {
-          st5.commentBody = value;
-        }, onSubmit: () => saveComment(flux2, comment.id), onUpload: (file2) => uploadInto(flux2, file2, "comment_image", () => st5.commentBody, (md) => {
-          st5.commentBody = md;
+        /* @__PURE__ */ jsx10(ui15.box, { style: { paddingLeft: 8, paddingRight: 8, paddingTop: 6 }, children: /* @__PURE__ */ jsx10(ui15.editor, { value: st6.commentBody, label: "Edit comment", placeholder: "Edit comment…", options: mentionOptions(flux2), images: editorImages(st6.commentBody, image), onChange: (value) => {
+          st6.commentBody = value;
+        }, onSubmit: () => saveComment(flux2, comment.id), onUpload: (file2) => uploadInto(flux2, file2, "comment_image", () => st6.commentBody, (md) => {
+          st6.commentBody = md;
         }), style: { padding: 0 } }, "edit-" + comment.id) }),
-        /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }, children: [
-          /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: "ghost", onClick: () => {
-            st5.editingComment = "";
+        /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, justifyContent: "flex-end", paddingLeft: 6, paddingRight: 6, paddingBottom: 6 }, children: [
+          /* @__PURE__ */ jsx10(ui15.button, { size: "sm", kind: "ghost", onClick: () => {
+            st6.editingComment = "";
           }, children: "Cancel" }),
-          /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: "primary", disabled: !st5.commentBody.trim(), onClick: () => saveComment(flux2, comment.id), children: "Save" })
+          /* @__PURE__ */ jsx10(ui15.button, { size: "sm", kind: "primary", disabled: !st6.commentBody.trim(), onClick: () => saveComment(flux2, comment.id), children: "Save" })
         ] })
-      ] }) : /* @__PURE__ */ jsx9(Markdown, { md: comment.markdown, image, mention: mentionOf(flux2) })
+      ] }) : /* @__PURE__ */ jsx10(Markdown, { md: comment.markdown, image, mention: mentionOf(flux2) })
     ] })
   ] });
 }
 function saveComment(flux2, id2) {
-  const body = st5.commentBody.trim();
+  const body = st6.commentBody.trim();
   if (!body) return;
   if (uploading(body)) {
-    ui14.toast("A picture is still uploading.");
+    ui15.toast("A picture is still uploading.");
     return;
   }
-  st5.editingComment = "";
-  void flux2.updateComment(id2, body).catch((error62) => ui14.toast(error62 instanceof Error ? error62.message : String(error62)));
+  st6.editingComment = "";
+  void flux2.updateComment(id2, body).catch((error62) => ui15.toast(error62 instanceof Error ? error62.message : String(error62)));
 }
-function ActivityRow({ member: member2, when, text: text2 }) {
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", minHeight: 24 }, children: [
-    /* @__PURE__ */ jsx9(Avatar, { member: member2, size: 20 }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", minWidth: 0 }, children: [
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500 }, children: member2?.name ?? "Someone" }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: ` ${text2}` }),
-      /* @__PURE__ */ jsx9(When, { iso: when })
+function ActivityRow({ member: member2, when, text: text3 }) {
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 10, alignItems: "center", minHeight: 24 }, children: [
+    /* @__PURE__ */ jsx10(Avatar, { member: member2, size: 20 }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", minWidth: 0 }, children: [
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, fontWeight: 500 }, children: member2?.name ?? "Someone" }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2" }, children: ` ${text3}` }),
+      /* @__PURE__ */ jsx10(When, { iso: when })
     ] })
   ] });
 }
@@ -83729,58 +83895,58 @@ function PropertyRail({ flux: flux2, issue: issue2, project, members: members2 }
   const edits = { update: (patch) => apply2(flux2, issue2.id, patch) };
   const labelItems = () => pickerItems(flux2, issue2, "labels");
   const another = issue2.threadIds.length > 0;
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 2 }, children: [
-      /* @__PURE__ */ jsx9(ui14.text, { style: railHeading, children: "Properties" }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: () => flux2.projects().map((item) => /* @__PURE__ */ jsx9(ui14.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(StatusIcon, { status: issue2.status }), label: "Status", value: STATUS_LABELS[issue2.status], menu: "Status: " + STATUS_LABELS[issue2.status], children: () => pickerItems(flux2, issue2, "status") }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(PriorityIcon, { priority: issue2.priority }), label: "Priority", value: issue2.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue2.priority], muted: issue2.priority === "none", menu: "Priority: " + PRIORITY_LABELS[issue2.priority], children: () => pickerItems(flux2, issue2, "priority") }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx9(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx9(ui14.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: () => pickerItems(flux2, issue2, "assignees") }),
-      /* @__PURE__ */ jsx9(RailRow, { icon: /* @__PURE__ */ jsx9(ui14.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: () => dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate })) })
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx10(ui15.text, { style: railHeading, children: "Properties" }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: () => flux2.projects().map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status }), label: "Status", value: STATUS_LABELS[issue2.status], menu: "Status: " + STATUS_LABELS[issue2.status], children: () => pickerItems(flux2, issue2, "status") }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(PriorityIcon, { priority: issue2.priority }), label: "Priority", value: issue2.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue2.priority], muted: issue2.priority === "none", menu: "Priority: " + PRIORITY_LABELS[issue2.priority], children: () => pickerItems(flux2, issue2, "priority") }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: () => pickerItems(flux2, issue2, "assignees") }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(ui15.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: () => dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate })) })
     ] }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 2 }, children: [
-      /* @__PURE__ */ jsx9(ui14.text, { style: railHeading, children: "Labels" }),
-      labels.length === 0 ? /* @__PURE__ */ jsxs8(ui14.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx9(ui14.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
-        /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 2 }, children: [
+      /* @__PURE__ */ jsx10(ui15.text, { style: railHeading, children: "Labels" }),
+      labels.length === 0 ? /* @__PURE__ */ jsxs9(ui15.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx10(ui15.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
+        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
         labelItems
-      ] }) : /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
-        labels.map((item) => /* @__PURE__ */ jsxs8(ui14.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
-          /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
-          /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
+      ] }) : /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
+        labels.map((item) => /* @__PURE__ */ jsxs9(ui15.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+          /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
+          /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
           labelItems
         ] }, item.id)),
-        /* @__PURE__ */ jsx9(ui14.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
+        /* @__PURE__ */ jsx10(ui15.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { gap: 4 }, children: [
-      /* @__PURE__ */ jsx9(ui14.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 4 }, children: [
+      /* @__PURE__ */ jsx10(ui15.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
       issue2.threadIds.map((id2) => {
         const thread = threadInfo(id2);
-        return /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxs8(ui14.pressable, { label: thread?.title || "Archived thread", onClick: () => ui14.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-            /* @__PURE__ */ jsx9(ui14.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx9(ui14.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
-            /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: thread ? thread.title || "Untitled thread" : "Archived thread" })
+        return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsxs9(ui15.pressable, { label: thread?.title || "Archived thread", onClick: () => ui15.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
+            /* @__PURE__ */ jsx10(ui15.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
+            /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: thread ? thread.title || "Untitled thread" : "Archived thread" })
           ] }),
-          /* @__PURE__ */ jsx9(ui14.iconButton, { icon: "x", label: "Detach thread", onClick: () => {
+          /* @__PURE__ */ jsx10(ui15.iconButton, { icon: "x", label: "Detach thread", onClick: () => {
             flux2.detach(issue2.id, id2);
-            ui14.toast(`Detached from ${issue2.key}.`);
+            ui15.toast(`Detached from ${issue2.key}.`);
           } })
         ] }, id2);
       }),
-      /* @__PURE__ */ jsx9(ui14.button, { size: "sm", kind: another ? "secondary" : "primary", icon: "bot", onClick: () => startAgent(issue2.id), style: { marginTop: 4, width: "100%" }, children: another ? "Start another agent" : "Start agent" })
+      /* @__PURE__ */ jsx10(ui15.button, { size: "sm", kind: another ? "secondary" : "primary", icon: "bot", onClick: () => startAgent(issue2.id), style: { marginTop: 4, width: "100%" }, children: another ? "Start another agent" : "Start agent" })
     ] })
   ] });
 }
 function RailRow({ icon, value, menu, muted, children }) {
-  return /* @__PURE__ */ jsxs8(ui14.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
+  return /* @__PURE__ */ jsxs9(ui15.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
     icon,
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: value }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: value }),
     children
   ] });
 }
 function WorkspaceMark({ flux: flux2, size: size3 }) {
-  return /* @__PURE__ */ jsx9(WorkspaceLogo, { workspace: flux2.workspace, fallback: flux2.baseUrl, from: flux2, size: size3 });
+  return /* @__PURE__ */ jsx10(WorkspaceLogo, { workspace: flux2.workspace, fallback: flux2.baseUrl, from: flux2, size: size3 });
 }
 function workspaceMark(flux2) {
   return workspaceMenuMark(flux2.workspace, flux2.baseUrl, flux2);
@@ -83790,48 +83956,48 @@ function WorkspaceSwitcher() {
   const active = hub.active;
   const name = active.workspace?.name || active.baseUrl || "Flux";
   const ready = active.connection().state === "ready";
-  return /* @__PURE__ */ jsxs8(ui14.menu, { label: `Workspace: ${name}${ready ? "" : " (offline)"}`, tooltip: ready ? `Workspace: ${name}` : `${name} can't be reached`, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 24, minWidth: 0, maxWidth: "100%", paddingLeft: 4, paddingRight: 4, borderRadius: "control", color: "text2", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
-    /* @__PURE__ */ jsx9(WorkspaceMark, { flux: active, size: 16 }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 13, minWidth: 0, color: "currentColor" }, maxLines: 1, children: name }),
-    ready ? null : /* @__PURE__ */ jsx9(ui14.box, { style: { width: 6, height: 6, flexShrink: 0, borderRadius: "full", backgroundColor: "amber" } }),
-    /* @__PURE__ */ jsx9(ui14.icon, { icon: "chevron-down", style: { width: 12, height: 12, flexShrink: 0, color: "text3" } }),
+  return /* @__PURE__ */ jsxs9(ui15.menu, { label: `Workspace: ${name}${ready ? "" : " (offline)"}`, tooltip: ready ? `Workspace: ${name}` : `${name} can't be reached`, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 24, minWidth: 0, maxWidth: "100%", paddingLeft: 4, paddingRight: 4, borderRadius: "control", color: "text2", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+    /* @__PURE__ */ jsx10(WorkspaceMark, { flux: active, size: 16 }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13, minWidth: 0, color: "currentColor" }, maxLines: 1, children: name }),
+    ready ? null : /* @__PURE__ */ jsx10(ui15.box, { style: { width: 6, height: 6, flexShrink: 0, borderRadius: "full", backgroundColor: "amber" } }),
+    /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, flexShrink: 0, color: "text3" } }),
     list2.map((item) => {
       const connection = item.connection();
       const title = connection.workspace?.name || connection.baseUrl || item.url || "Not connected";
-      return /* @__PURE__ */ jsx9(ui14.item, { ...workspaceMark(item), checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
+      return /* @__PURE__ */ jsx10(ui15.item, { ...workspaceMark(item), checked: item.id === active.id, onClick: () => hub.use(item.id), children: title }, item.id);
     }),
-    /* @__PURE__ */ jsx9(ui14.separator, {}),
-    /* @__PURE__ */ jsx9(ui14.item, { icon: "settings", href: SETTINGS, children: "Flux settings…" })
+    /* @__PURE__ */ jsx10(ui15.separator, {}),
+    /* @__PURE__ */ jsx10(ui15.item, { icon: "settings", href: SETTINGS, children: "Flux settings…" })
   ] });
 }
 var SETTINGS = "swarm://settings/flux/flux";
 function CantLoad({ flux: flux2 }) {
   const connection = flux2.connection();
-  return /* @__PURE__ */ jsxs8(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: [
-    /* @__PURE__ */ jsx9(IssuesArt, {}),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux" }),
-    /* @__PURE__ */ jsx9(ui14.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }, selectable: true, children: connection.state === "offline" ? offline(connection.message, false) : connection.message }),
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }, children: [
-      /* @__PURE__ */ jsx9(ui14.button, { kind: "secondary", onClick: () => void flux2.resync().catch(() => {
+  return /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: [
+    /* @__PURE__ */ jsx10(IssuesArt, {}),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux" }),
+    /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }, selectable: true, children: connection.state === "offline" ? offline(connection.message, false) : connection.message }),
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }, children: [
+      /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", onClick: () => void flux2.resync().catch(() => {
       }), children: "Try again" }),
-      /* @__PURE__ */ jsx9(ui14.link, { label: "Flux settings", href: SETTINGS })
+      /* @__PURE__ */ jsx10(ui15.link, { label: "Flux settings", href: SETTINGS })
     ] })
   ] });
 }
 function Setup({ flux: flux2 }) {
   const connection = flux2.connection();
   const refused = connection.state === "unauthorized";
-  return /* @__PURE__ */ jsx9(ui14.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs8(ui14.box, { style: { width: "100%", maxWidth: 420, gap: 20 }, children: [
-    /* @__PURE__ */ jsxs8(ui14.box, { style: { alignItems: "center", gap: 10 }, children: [
-      /* @__PURE__ */ jsx9(ui14.box, { style: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx9(FluxMark, { size: 24, color: "text" }) }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 18, fontWeight: 600 }, children: "Connect Flux" }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { color: "text2", textAlign: "center" }, children: "See your issues here, start a thread from one, and keep its status in step as the thread works on it." })
+  return /* @__PURE__ */ jsx10(ui15.box, { style: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 }, children: /* @__PURE__ */ jsxs9(ui15.box, { style: { width: "100%", maxWidth: 420, gap: 20 }, children: [
+    /* @__PURE__ */ jsxs9(ui15.box, { style: { alignItems: "center", gap: 10 }, children: [
+      /* @__PURE__ */ jsx10(ui15.box, { style: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx10(FluxMark, { size: 24, color: "text" }) }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 18, fontWeight: 600 }, children: "Connect Flux" }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { color: "text2", textAlign: "center" }, children: "See your issues here, start a thread from one, and keep its status in step as the thread works on it." })
     ] }),
-    refused ? /* @__PURE__ */ jsxs8(ui14.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
-      /* @__PURE__ */ jsx9(ui14.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx9(ui14.text, { style: { color: "text", flex: 1 }, children: connection.message || "Flux didn't take that token: make another." })
+    refused ? /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8, alignItems: "center", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }, children: [
+      /* @__PURE__ */ jsx10(ui15.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0 } }),
+      /* @__PURE__ */ jsx10(ui15.text, { style: { color: "text", flex: 1 }, children: connection.message || "Flux didn't take that token: make another." })
     ] }) : null,
-    /* @__PURE__ */ jsx9(ui14.box, { style: { padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx9(ConnectForm, { name: "setup", target: refused ? flux2.id : null, url: flux2.url }) })
+    /* @__PURE__ */ jsx10(ui15.box, { style: { padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }, children: /* @__PURE__ */ jsx10(ConnectForm, { name: "setup", target: refused ? flux2.id : null, url: flux2.url }) })
   ] }) });
 }
 function unstarted(flux2, projectId) {
@@ -83840,51 +84006,52 @@ function unstarted(flux2, projectId) {
 }
 
 // src/settings.tsx
-import { call as call4, ui as ui15 } from "swarm";
-import { jsx as jsx10, jsxs as jsxs9 } from "swarm/jsx-runtime";
-var editing = ui15.store(/* @__PURE__ */ new Set());
-var st6 = ui15.store({ adding: false, swarmProjects: null, reading: false });
+import { call as call4, ui as ui16 } from "swarm";
+import { jsx as jsx11, jsxs as jsxs10 } from "swarm/jsx-runtime";
+var editing = ui16.store(/* @__PURE__ */ new Set());
+var st7 = ui16.store({ adding: false, swarmProjects: null, reading: false });
 function refreshProjects() {
-  if (st6.reading) return;
-  st6.reading = true;
+  if (st7.reading) return;
+  st7.reading = true;
   call4("Projects", {}).then((projects) => {
-    st6.swarmProjects = projects.map((project) => ({ id: project.id, name: project.name }));
+    st7.swarmProjects = projects.map((project) => ({ id: project.id, name: project.name }));
   }).catch(() => {
-    st6.swarmProjects = [];
+    st7.swarmProjects = [];
   }).finally(() => {
-    st6.reading = false;
+    st7.reading = false;
   });
 }
 var card = { gap: 14, padding: 16, borderRadius: "card", backgroundColor: "raised", border: "1px solid border" };
 function FluxSettings() {
   const list2 = hub.connected();
   if (list2.length === 0) {
-    return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 16, maxWidth: 640 }, children: [
-      /* @__PURE__ */ jsx10(ui15.text, { style: { color: "text2" }, children: "Flux issues in Swarm: agents read and update them with swarm flux, and a thread started on an issue keeps it current." }),
-      /* @__PURE__ */ jsxs9(ui15.box, { style: card, children: [
-        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 600 }, children: "Connect Flux" }),
-        /* @__PURE__ */ jsx10(ConnectForm, { name: "first", target: null })
+    return /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 16, maxWidth: 640 }, children: [
+      /* @__PURE__ */ jsx11(ui16.text, { style: { color: "text2" }, children: "Flux issues in Swarm: agents read and update them with swarm flux, and a thread started on an issue keeps it current." }),
+      /* @__PURE__ */ jsxs10(ui16.box, { style: card, children: [
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontWeight: 600 }, children: "Connect Flux" }),
+        /* @__PURE__ */ jsx11(ConnectForm, { name: "first", target: null })
       ] })
     ] });
   }
   const active = hub.active;
   const several = list2.length > 1;
   const connection = active.connection();
-  return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 24, maxWidth: 640 }, children: [
-    /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 12 }, children: [
-      list2.map((flux2) => /* @__PURE__ */ jsx10(ConnectionCard, { flux: flux2, active: several ? flux2.id === active.id : null }, flux2.id)),
-      st6.adding ? /* @__PURE__ */ jsxs9(ui15.box, { style: card, children: [
-        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 600 }, children: "Add another Flux" }),
-        /* @__PURE__ */ jsx10(ConnectForm, { name: "another", target: null, done: () => {
-          st6.adding = false;
+  return /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 24, maxWidth: 640 }, children: [
+    /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 12 }, children: [
+      list2.map((flux2) => /* @__PURE__ */ jsx11(ConnectionCard, { flux: flux2, active: several ? flux2.id === active.id : null }, flux2.id)),
+      st7.adding ? /* @__PURE__ */ jsxs10(ui16.box, { style: card, children: [
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontWeight: 600 }, children: "Add another Flux" }),
+        /* @__PURE__ */ jsx11(ConnectForm, { name: "another", target: null, done: () => {
+          st7.adding = false;
         }, cancel: () => {
-          st6.adding = false;
+          st7.adding = false;
         } })
-      ] }) : /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", icon: "plus", onClick: () => {
-        st6.adding = true;
+      ] }) : /* @__PURE__ */ jsx11(ui16.button, { kind: "secondary", size: "sm", icon: "plus", onClick: () => {
+        st7.adding = true;
       }, style: { alignSelf: "flex-start" }, children: "Add another Flux" })
     ] }),
-    connection.state === "ready" || active.projects().length > 0 ? /* @__PURE__ */ jsx10(ProjectLinks, { flux: active }) : null
+    connection.state === "ready" || active.projects().length > 0 ? /* @__PURE__ */ jsx11(ProjectLinks, { flux: active }) : null,
+    /* @__PURE__ */ jsx11(SpawnConfigs, {})
   ] });
 }
 var DOT2 = {
@@ -83934,32 +84101,32 @@ function ConnectionCard({ flux: flux2, active }) {
   const mustAct = c.state === "unauthorized" || c.state === "error";
   const open3 = mustAct || editing.has(flux2.id);
   const name = `${headline(flux2)}, ${detail(flux2)}`;
-  return /* @__PURE__ */ jsxs9(ui15.box, { label: name, style: card, children: [
-    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", flexWrap: "wrap" }, children: [
-      c.me ? /* @__PURE__ */ jsx10(Avatar, { member: { id: c.me.id, name: c.me.name, username: c.me.username, email: c.me.email, avatarUrl: c.me.avatarUrl ?? null, avatarColor: "gray" }, size: 32 }) : null,
-      /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 160, gap: 2 }, children: [
-        /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", flexShrink: 0, backgroundColor: DOT2[c.state], ...c.state === "connecting" ? { animation: { name: "pulse" } } : {} } }),
-          /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 500, minWidth: 0 }, maxLines: 1, children: headline(flux2) }),
-          active ? /* @__PURE__ */ jsx10(ui15.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover" }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 11, color: "text2" }, children: "Active" }) }) : null
+  return /* @__PURE__ */ jsxs10(ui16.box, { label: name, style: card, children: [
+    /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", flexWrap: "wrap" }, children: [
+      c.me ? /* @__PURE__ */ jsx11(Avatar, { member: { id: c.me.id, name: c.me.name, username: c.me.username, email: c.me.email, avatarUrl: c.me.avatarUrl ?? null, avatarColor: "gray" }, size: 32 }) : null,
+      /* @__PURE__ */ jsxs10(ui16.box, { style: { flex: 1, minWidth: 160, gap: 2 }, children: [
+        /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx11(ui16.box, { style: { width: 8, height: 8, borderRadius: "full", flexShrink: 0, backgroundColor: DOT2[c.state], ...c.state === "connecting" ? { animation: { name: "pulse" } } : {} } }),
+          /* @__PURE__ */ jsx11(ui16.text, { style: { fontWeight: 500, minWidth: 0 }, maxLines: 1, children: headline(flux2) }),
+          active ? /* @__PURE__ */ jsx11(ui16.box, { style: { paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 4, backgroundColor: "hover" }, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 11, color: "text2" }, children: "Active" }) }) : null
         ] }),
-        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", color: "text2" }, maxLines: 2, children: detail(flux2) })
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", color: "text2" }, maxLines: 2, children: detail(flux2) })
       ] }),
-      /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 8 }, children: [
-        active === false ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: `Use ${nameOf2(flux2)} for the board and swarm flux`, onClick: () => {
+      /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8 }, children: [
+        active === false ? /* @__PURE__ */ jsx11(ui16.button, { kind: "secondary", size: "sm", tooltip: `Use ${nameOf2(flux2)} for the board and swarm flux`, onClick: () => {
           hub.use(flux2.id);
-          ui15.toast(`Switched to ${c.workspace?.name ?? hostOf(flux2)}.`);
+          ui16.toast(`Switched to ${c.workspace?.name ?? hostOf(flux2)}.`);
         }, children: "Use" }) : null,
-        c.state === "ready" || c.state === "error" ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: "Pull everything from Flux again", onClick: () => resync(flux2), children: "Resync" }) : null,
-        c.state === "ready" || c.state === "offline" ? /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", tooltip: editing.has(flux2.id) ? void 0 : "Change its URL or token", onClick: () => void (editing.has(flux2.id) ? editing.delete(flux2.id) : editing.add(flux2.id)), children: editing.has(flux2.id) ? "Cancel" : "Change" }) : null
+        c.state === "ready" || c.state === "error" ? /* @__PURE__ */ jsx11(ui16.button, { kind: "secondary", size: "sm", tooltip: "Pull everything from Flux again", onClick: () => resync(flux2), children: "Resync" }) : null,
+        c.state === "ready" || c.state === "offline" ? /* @__PURE__ */ jsx11(ui16.button, { kind: "secondary", size: "sm", tooltip: editing.has(flux2.id) ? void 0 : "Change its URL or token", onClick: () => void (editing.has(flux2.id) ? editing.delete(flux2.id) : editing.add(flux2.id)), children: editing.has(flux2.id) ? "Cancel" : "Change" }) : null
       ] })
     ] }),
-    open3 ? /* @__PURE__ */ jsx10(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
-    /* @__PURE__ */ jsx10(ui15.pressable, { label: `Disconnect ${nameOf2(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
+    open3 ? /* @__PURE__ */ jsx11(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
+    /* @__PURE__ */ jsx11(ui16.pressable, { label: `Disconnect ${nameOf2(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
   ] });
 }
 function resync(flux2) {
-  ui15.toast("Resyncing from Flux.");
+  ui16.toast("Resyncing from Flux.");
   flux2.resync().catch(() => {
   });
 }
@@ -83967,46 +84134,46 @@ function disconnect(flux2) {
   const was = flux2.connection().workspace?.name ?? hostOf(flux2);
   editing.delete(flux2.id);
   hub.disconnect(flux2.id);
-  ui15.toast(`Disconnected from ${was}.`);
+  ui16.toast(`Disconnected from ${was}.`);
 }
 function ProjectLinks({ flux: flux2 }) {
-  if (st6.swarmProjects === null) refreshProjects();
+  if (st7.swarmProjects === null) refreshProjects();
   const projects = flux2.projects();
-  const known2 = st6.swarmProjects ?? [];
+  const known2 = st7.swarmProjects ?? [];
   const column = { fontSize: 12, fontWeight: 500, color: "text3" };
-  return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 12 }, children: [
-    /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "flex-start" }, children: [
-      /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 4 }, children: [
-        /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 600 }, children: "Projects" }),
-        /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: "small", color: "text2" }, children: "Each project's icon, name and key, as Flux shows them. An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none." })
+  return /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 12 }, children: [
+    /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 12, alignItems: "flex-start" }, children: [
+      /* @__PURE__ */ jsxs10(ui16.box, { style: { flex: 1, minWidth: 0, gap: 4 }, children: [
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontWeight: 600 }, children: "Projects" }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", color: "text2" }, children: "Each project's icon, name and key, as Flux shows them. An agent started on an issue works in its project's Swarm project, and swarm flux in that Swarm project's threads uses that Flux project when a command names none." })
       ] }),
-      /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", size: "sm", icon: "plus", onClick: openNewProject, children: "New project" })
+      /* @__PURE__ */ jsx11(ui16.button, { kind: "secondary", size: "sm", icon: "plus", onClick: openNewProject, children: "New project" })
     ] }),
-    projects.length === 0 ? /* @__PURE__ */ jsx10(ui15.text, { style: { color: "text3" }, children: `${flux2.connection().workspace?.name ?? "This Flux"} has no projects yet.` }) : /* @__PURE__ */ jsxs9(ui15.box, { style: { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }, children: [
-      /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 32, borderBottom: "1px solid divider" }, children: [
-        /* @__PURE__ */ jsx10(ui15.text, { style: { ...column, flex: 1, paddingLeft: 40 }, children: "Name" }),
-        /* @__PURE__ */ jsx10(ui15.text, { style: { ...column, width: 52 }, children: "Key" }),
-        /* @__PURE__ */ jsx10(ui15.text, { style: { ...column, width: 240 }, children: "Where agents work" })
+    projects.length === 0 ? /* @__PURE__ */ jsx11(ui16.text, { style: { color: "text3" }, children: `${flux2.connection().workspace?.name ?? "This Flux"} has no projects yet.` }) : /* @__PURE__ */ jsxs10(ui16.box, { style: { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }, children: [
+      /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 32, borderBottom: "1px solid divider" }, children: [
+        /* @__PURE__ */ jsx11(ui16.text, { style: { ...column, flex: 1, paddingLeft: 40 }, children: "Name" }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { ...column, width: 52 }, children: "Key" }),
+        /* @__PURE__ */ jsx11(ui16.text, { style: { ...column, width: 240 }, children: "Where agents work" })
       ] }),
       projects.map((project, i2) => {
         const linked = project.swarmProjectId;
-        const shown = linked ? known2.find((p) => p.id === linked)?.name ?? (st6.swarmProjects ? "A removed project" : "…") : "Not linked";
-        return /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 44, borderTop: i2 === 0 ? "none" : "1px solid divider" }, children: [
-          /* @__PURE__ */ jsx10(MarkPicker, { label: `Icon of ${project.name}`, value: markOf2(project), onChange: (next2) => setMark2(flux2, project, next2) }),
-          /* @__PURE__ */ jsx10(ui15.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: project.name }),
-          /* @__PURE__ */ jsx10(ui15.text, { style: { width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }, tooltip: keyNote(flux2, project), children: project.key }),
-          /* @__PURE__ */ jsxs9(ui15.menu, { label: `Swarm project for ${project.name}: ${shown}`, style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
-            /* @__PURE__ */ jsx10(ui15.text, { style: { flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }, maxLines: 1, children: shown }),
-            /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
-            /* @__PURE__ */ jsx10(ui15.item, { checked: !linked, onClick: () => flux2.link(project.id, null), children: "Not linked" }),
-            known2.length ? /* @__PURE__ */ jsx10(ui15.separator, {}) : null,
-            known2.map((p) => /* @__PURE__ */ jsx10(ui15.item, { checked: p.id === linked, onClick: () => flux2.link(project.id, p.id), children: p.name }, p.id))
+        const shown = linked ? known2.find((p) => p.id === linked)?.name ?? (st7.swarmProjects ? "A removed project" : "…") : "Not linked";
+        return /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 10, paddingRight: 8, height: 44, borderTop: i2 === 0 ? "none" : "1px solid divider" }, children: [
+          /* @__PURE__ */ jsx11(MarkPicker, { label: `Icon of ${project.name}`, value: markOf2(project), onChange: (next2) => setMark2(flux2, project, next2) }),
+          /* @__PURE__ */ jsx11(ui16.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: project.name }),
+          /* @__PURE__ */ jsx11(ui16.text, { style: { width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }, tooltip: keyNote(flux2, project), children: project.key }),
+          /* @__PURE__ */ jsxs10(ui16.menu, { label: `Swarm project for ${project.name}: ${shown}`, style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+            /* @__PURE__ */ jsx11(ui16.text, { style: { flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }, maxLines: 1, children: shown }),
+            /* @__PURE__ */ jsx11(ui16.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
+            /* @__PURE__ */ jsx11(ui16.item, { checked: !linked, onClick: () => flux2.link(project.id, null), children: "Not linked" }),
+            known2.length ? /* @__PURE__ */ jsx11(ui16.separator, {}) : null,
+            known2.map((p) => /* @__PURE__ */ jsx11(ui16.item, { checked: p.id === linked, onClick: () => flux2.link(project.id, p.id), children: p.name }, p.id))
           ] }),
-          /* @__PURE__ */ jsxs9(ui15.menu, { label: `Actions for ${project.name}`, tooltip: "Project actions", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
-            /* @__PURE__ */ jsx10(ui15.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
-            /* @__PURE__ */ jsx10(ui15.item, { icon: "settings", onClick: () => openProjectSettings(project), children: "Project settings…" }),
-            /* @__PURE__ */ jsx10(ui15.separator, {}),
-            /* @__PURE__ */ jsx10(ui15.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project), children: "Delete project…" })
+          /* @__PURE__ */ jsxs10(ui16.menu, { label: `Actions for ${project.name}`, tooltip: "Project actions", style: { width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+            /* @__PURE__ */ jsx11(ui16.icon, { icon: "more", style: { width: 14, height: 14, color: "currentColor" } }),
+            /* @__PURE__ */ jsx11(ui16.item, { icon: "settings", onClick: () => openProjectSettings(project), children: "Project settings…" }),
+            /* @__PURE__ */ jsx11(ui16.separator, {}),
+            /* @__PURE__ */ jsx11(ui16.item, { icon: "trash", danger: true, onClick: () => confirmDelete(flux2, project), children: "Delete project…" })
           ] })
         ] }, project.id);
       })
@@ -84015,7 +84182,7 @@ function ProjectLinks({ flux: flux2 }) {
 }
 
 // main.tsx
-import { jsx as jsx11, jsxs as jsxs10 } from "swarm/jsx-runtime";
+import { jsx as jsx12, jsxs as jsxs11 } from "swarm/jsx-runtime";
 var flux = new Proxy({}, {
   get(_target, prop) {
     const current = hub.active;
@@ -84038,9 +84205,9 @@ function badges() {
   for (const [thread, issue2] of links) {
     if (seen.has(thread)) continue;
     seen.add(thread);
-    ui16.badge(thread, { text: issue2.key, tone: TONE[issue2.status] === "faint" ? "muted" : TONE[issue2.status], tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})` });
+    ui17.badge(thread, { text: issue2.key, tone: TONE[issue2.status] === "faint" ? "muted" : TONE[issue2.status], tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})` });
   }
-  for (const t of shownBadges) if (!seen.has(t)) ui16.badge(t, null);
+  for (const t of shownBadges) if (!seen.has(t)) ui17.badge(t, null);
   shownBadges = seen;
 }
 var shownBadges = /* @__PURE__ */ new Set();
@@ -84053,12 +84220,12 @@ async function refreshWorking() {
   } catch {
   }
 }
-var viewing = ui16.store(/* @__PURE__ */ new Map());
+var viewing = ui17.store(/* @__PURE__ */ new Map());
 function issueView(flux2, issue2, thread) {
   const imageOf3 = imageFrom(flux2);
   const d = flux2.detail(issue2.id);
   const project = flux2.projects().find((p) => p.id === issue2.projectId);
-  return /* @__PURE__ */ jsx11(
+  return /* @__PURE__ */ jsx12(
     IssueView,
     {
       detail: d,
@@ -84074,8 +84241,8 @@ function issueView(flux2, issue2, thread) {
       start: thread && !issue2.threadIds.includes(thread) ? async () => void await flux2.attach(issue2.id, thread, true) : void 0,
       open: thread ? (other) => void viewing.set(thread, other.id) : void 0,
       image: imageOf3,
-      description: /* @__PURE__ */ jsx11(DescriptionEditor, { flux: flux2, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf3 }),
-      comment: /* @__PURE__ */ jsx11(CommentEditor, { flux: flux2, issue: issue2, image: imageOf3 })
+      description: /* @__PURE__ */ jsx12(DescriptionEditor, { flux: flux2, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf3 }),
+      comment: /* @__PURE__ */ jsx12(CommentEditor, { flux: flux2, issue: issue2, image: imageOf3 })
     },
     issue2.id
   );
@@ -84086,37 +84253,37 @@ function issueCard(flux2, issue2) {
   const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
   const labels = flux2.labels().filter((label) => issue2.labelIds.includes(label.id));
   const chip2 = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" };
-  return /* @__PURE__ */ jsxs10(ui16.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui16.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
-    /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
-      /* @__PURE__ */ jsx11(ProjectMark, { project, size: 13 }),
-      parent ? /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
-      /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 11, color: "text3", flex: 1 }, children: issue2.key }),
-      /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 12 }),
-      /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2" }, children: STATUS_LABELS[issue2.status] })
+  return /* @__PURE__ */ jsxs11(ui17.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui17.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
+    /* @__PURE__ */ jsxs11(ui17.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
+      /* @__PURE__ */ jsx12(ProjectMark, { project, size: 13 }),
+      parent ? /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 11, color: "text3" }, children: `${parent.key} ›` }) : null,
+      /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 11, color: "text3", flex: 1 }, children: issue2.key }),
+      /* @__PURE__ */ jsx12(StatusIcon, { status: issue2.status, size: 12 }),
+      /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, color: "text2" }, children: STATUS_LABELS[issue2.status] })
     ] }),
-    /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
-    /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", flexWrap: "wrap", marginTop: 4 }, children: [
-      /* @__PURE__ */ jsx11(ui16.box, { style: { ...chip2, width: 22, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }, children: /* @__PURE__ */ jsx11(PriorityIcon, { priority: issue2.priority, size: 12 }) }),
-      issue2.dueDate ? /* @__PURE__ */ jsxs10(ui16.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx11(ui16.icon, { icon: "calendar", style: { width: 11, height: 11, color: "text2" } }),
-        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: issue2.dueDate })
+    /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 14, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
+    /* @__PURE__ */ jsxs11(ui17.box, { style: { flexDirection: "row", gap: 4, alignItems: "center", flexWrap: "wrap", marginTop: 4 }, children: [
+      /* @__PURE__ */ jsx12(ui17.box, { style: { ...chip2, width: 22, paddingLeft: 0, paddingRight: 0, justifyContent: "center" }, children: /* @__PURE__ */ jsx12(PriorityIcon, { priority: issue2.priority, size: 12 }) }),
+      issue2.dueDate ? /* @__PURE__ */ jsxs11(ui17.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx12(ui17.icon, { icon: "calendar", style: { width: 11, height: 11, color: "text2" } }),
+        /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12 }, children: issue2.dueDate })
       ] }) : null,
-      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx11(ui16.box, { style: chip2, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` }) }) : null,
-      labels.map((label) => /* @__PURE__ */ jsxs10(ui16.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx11(ui16.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3" } }),
-        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: label.name })
+      issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx12(ui17.box, { style: chip2, children: /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12 }, children: `${issue2.subIssueDoneCount}/${issue2.subIssueCount}` }) }) : null,
+      labels.map((label) => /* @__PURE__ */ jsxs11(ui17.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx12(ui17.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: colorOf[label.color] ?? "text3" } }),
+        /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12 }, children: label.name })
       ] }, label.id)),
-      issue2.threadIds.length > 0 ? /* @__PURE__ */ jsxs10(ui16.box, { style: chip2, children: [
-        /* @__PURE__ */ jsx11(ui16.icon, { icon: "bot", style: { width: 11, height: 11, color: "text2" } }),
-        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12 }, children: issue2.threadIds.length === 1 ? "Agent" : `${issue2.threadIds.length} agents` })
+      issue2.threadIds.length > 0 ? /* @__PURE__ */ jsxs11(ui17.box, { style: chip2, children: [
+        /* @__PURE__ */ jsx12(ui17.icon, { icon: "bot", style: { width: 11, height: 11, color: "text2" } }),
+        /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12 }, children: issue2.threadIds.length === 1 ? "Agent" : `${issue2.threadIds.length} agents` })
       ] }) : null,
-      /* @__PURE__ */ jsx11(ui16.box, { style: { flex: 1 } }),
-      issue2.assigneeIds.map((id2) => /* @__PURE__ */ jsx11(Avatar, { member: members2.find((m) => m.id === id2), size: 20 }, id2))
+      /* @__PURE__ */ jsx12(ui17.box, { style: { flex: 1 } }),
+      issue2.assigneeIds.map((id2) => /* @__PURE__ */ jsx12(Avatar, { member: members2.find((m) => m.id === id2), size: 20 }, id2))
     ] })
   ] }, issue2.id);
 }
 function activate() {
-  ui16.tracked();
+  ui17.tracked();
   hub.onChange = () => {
     badges();
     syncNav(flux);
@@ -84147,9 +84314,9 @@ function activate() {
     if (e.type !== "thread.deleted" || !e.thread) return;
     for (const a3 of hub.issuesOfThread(e.thread)) a3.flux.detach(a3.issue.id, e.thread);
   });
-  ui16.shareIcon({ id: "mark", path: "icon.svg" });
-  ui16.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => /* @__PURE__ */ jsx11(FluxSettings, {}) });
-  ui16.nav({
+  ui17.shareIcon({ id: "mark", path: "icon.svg" });
+  ui17.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => /* @__PURE__ */ jsx12(FluxSettings, {}) });
+  ui17.nav({
     id: "flux",
     title: "Flux",
     icon: "flux:mark",
@@ -84168,67 +84335,67 @@ function activate() {
       const project = flux.projects().find((p) => "p-" + p.id === item);
       if (project) moveProject(flux, project, index);
     },
-    render: ({ args: args2 }) => /* @__PURE__ */ jsx11(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", item: args2.item, section: args2.section, image: imageOf2 })
+    render: ({ args: args2 }) => /* @__PURE__ */ jsx12(FluxPage, { path: args2.path ?? "", slot: args2.slot ?? "", item: args2.item, section: args2.section, image: imageOf2 })
   });
   syncNav(flux);
   warmStart();
-  ui16.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: () => /* @__PURE__ */ jsx11(Palette, {}) });
-  ui16.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: () => /* @__PURE__ */ jsx11(Confirm, {}) });
-  ui16.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: () => /* @__PURE__ */ jsx11(StartAgentDialog, { flux }) });
-  ui16.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: () => /* @__PURE__ */ jsx11(ProjectDialog, { flux }) });
-  ui16.command({ id: "flux-new-project", title: "New Flux project", detail: "Its name, key and icon, then its board", icon: "folder-add", run: () => openNewProject() });
-  ui16.overlay({
+  ui17.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: () => /* @__PURE__ */ jsx12(Palette, {}) });
+  ui17.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: () => /* @__PURE__ */ jsx12(Confirm, {}) });
+  ui17.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: () => /* @__PURE__ */ jsx12(StartAgentDialog, { flux }) });
+  ui17.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: () => /* @__PURE__ */ jsx12(ProjectDialog, { flux }) });
+  ui17.command({ id: "flux-new-project", title: "New Flux project", detail: "Its name, key and icon, then its board", icon: "folder-add", run: () => openNewProject() });
+  ui17.overlay({
     id: "flux-new",
     title: "New issue",
     width: 672,
     bare: true,
     onClose: closeCreate,
-    render: () => /* @__PURE__ */ jsx11(NewIssue, { flux })
+    render: () => /* @__PURE__ */ jsx12(NewIssue, { flux })
   });
-  ui16.header({
+  ui17.header({
     id: "flux-issue",
     render: ({ thread }) => {
       const issue2 = thread ? hub.issuesOfThread(thread)[0]?.issue : void 0;
       if (!issue2) return null;
-      return /* @__PURE__ */ jsxs10(ui16.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
-        /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 12 }),
-        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, fontWeight: 500, color: "text2", flexShrink: 0 }, children: issue2.key }),
-        /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", maxWidth: 144, minWidth: 0 }, maxLines: 1, children: issue2.title })
+      return /* @__PURE__ */ jsxs11(ui17.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
+        /* @__PURE__ */ jsx12(StatusIcon, { status: issue2.status, size: 12 }),
+        /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, fontWeight: 500, color: "text2", flexShrink: 0 }, children: issue2.key }),
+        /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, color: "text2", maxWidth: 144, minWidth: 0 }, maxLines: 1, children: issue2.title })
       ] });
     }
   });
-  ui16.home({
+  ui17.home({
     id: "flux-open",
     title: "Flux issues",
     icon: "flux:mark",
     // Open issues nobody's agent has started, yours first, one click from the prompt; the form's project's, where it's linked to one.
     render: (context2) => {
       if (flux.projects().length === 0) {
-        return /* @__PURE__ */ jsx11(ui16.pressable, { label: "Connect Flux", onClick: () => ui16.navTo("flux", ""), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, color: "currentColor" }, children: "Connect Flux to pick up issues from here →" }) });
+        return /* @__PURE__ */ jsx12(ui17.pressable, { label: "Connect Flux", onClick: () => ui17.navTo("flux", ""), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 14, color: "currentColor" }, children: "Connect Flux to pick up issues from here →" }) });
       }
       const linked = context2.args.project ? flux.projectOfSwarm(context2.args.project) : null;
       const open3 = unstarted(flux, linked?.id);
       const me2 = flux.me?.id;
       if (open3.length === 0) {
-        return /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 4, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, color: "text2" }, children: `Nothing waiting${linked ? ` in ${linked.name}` : ""}.` }),
-          /* @__PURE__ */ jsx11(ui16.link, { label: "Browse Flux", href: linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux" })
+        return /* @__PURE__ */ jsxs11(ui17.box, { style: { flexDirection: "row", gap: 4, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 14, color: "text2" }, children: `Nothing waiting${linked ? ` in ${linked.name}` : ""}.` }),
+          /* @__PURE__ */ jsx12(ui17.link, { label: "Browse Flux", href: linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux" })
         ] });
       }
-      return /* @__PURE__ */ jsx11(ui16.box, { style: { gap: 0, marginLeft: -4, marginRight: -4 }, children: open3.map((issue2) => /* @__PURE__ */ jsxs10(
-        ui16.pressable,
+      return /* @__PURE__ */ jsx12(ui17.box, { style: { gap: 0, marginLeft: -4, marginRight: -4 }, children: open3.map((issue2) => /* @__PURE__ */ jsxs11(
+        ui17.pressable,
         {
           label: `${issue2.key} ${issue2.title}`,
           tooltip: "Add to the prompt",
-          onClick: () => ui16.prefill({ append: true, prompt: `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }),
+          onClick: () => ui17.prefill({ append: true, prompt: `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }),
           style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } },
           children: [
-            /* @__PURE__ */ jsx11(PriorityIcon, { priority: issue2.priority, size: 14 }),
-            /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 14 }),
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", flexShrink: 0, minWidth: 56 }, children: issue2.key }),
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title }),
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned" }),
-            /* @__PURE__ */ jsx11(ui16.icon, { icon: "external", style: { width: 14, height: 14, color: "text2", flexShrink: 0, opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 } } })
+            /* @__PURE__ */ jsx12(PriorityIcon, { priority: issue2.priority, size: 14 }),
+            /* @__PURE__ */ jsx12(StatusIcon, { status: issue2.status, size: 14 }),
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, color: "text2", flexShrink: 0, minWidth: 56 }, children: issue2.key }),
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 14, flex: 1, minWidth: 0 }, maxLines: 1, children: issue2.title }),
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned" }),
+            /* @__PURE__ */ jsx12(ui17.icon, { icon: "external", style: { width: 14, height: 14, color: "text2", flexShrink: 0, opacity: 0, transition: { duration: 100 }, groupHover: { opacity: 1 } } })
           ]
         },
         issue2.id
@@ -84251,15 +84418,15 @@ function activate() {
     });
   } catch {
   }
-  ui16.directive({
+  ui17.directive({
     name: "flux",
     render: ({ args: args2 }) => {
       const found2 = args2.key ? hub.findIssue(args2.key) : null;
-      return found2 ? issueCard(found2.flux, found2.issue) : /* @__PURE__ */ jsx11(ui16.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
+      return found2 ? issueCard(found2.flux, found2.issue) : /* @__PURE__ */ jsx12(ui17.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
     }
   });
-  const search = ui16.state("");
-  ui16.panel({
+  const search = ui17.state("");
+  ui17.panel({
     id: "flux",
     title: "Flux issue",
     icon: "list",
@@ -84268,47 +84435,47 @@ function activate() {
       const own2 = attached[0]?.flux ?? hub.active;
       const c = own2.connection();
       if (c.state === "unconfigured" || c.state === "unauthorized" || c.state !== "ready" && c.issueCount === 0) {
-        return /* @__PURE__ */ jsxs10(ui16.column, { gap: "s3", padding: "s4", children: [
-          /* @__PURE__ */ jsx11(ui16.text, { weight: 600, children: "Flux" }),
-          c.state !== "unconfigured" && /* @__PURE__ */ jsx11(ui16.text, { tone: "muted", children: c.message || `Flux is ${c.state}.` }),
-          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui16.text, { tone: "faint", children: "Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux." }),
-          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui16.link, { label: "Open Flux settings", href: "swarm://settings/flux/flux" })
+        return /* @__PURE__ */ jsxs11(ui17.column, { gap: "s3", padding: "s4", children: [
+          /* @__PURE__ */ jsx12(ui17.text, { weight: 600, children: "Flux" }),
+          c.state !== "unconfigured" && /* @__PURE__ */ jsx12(ui17.text, { tone: "muted", children: c.message || `Flux is ${c.state}.` }),
+          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx12(ui17.text, { tone: "faint", children: "Set Flux's URL and an API token (Flux: Settings, API tokens) in Settings, Plugins, Flux." }),
+          (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx12(ui17.link, { label: "Open Flux settings", href: "swarm://settings/flux/flux" })
         ] });
       }
       const shown = viewing.has(thread) ? hub.findIssue(viewing.get(thread)) : null;
       const needle = search.value.trim().toLowerCase();
       const me2 = flux.me?.id ?? "";
       const open3 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.issue.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
-      return /* @__PURE__ */ jsx11(ui16.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs10(ui16.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
-        c.state !== "ready" && /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
-          /* @__PURE__ */ jsx11(ui16.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 } }),
-          /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
+      return /* @__PURE__ */ jsx12(ui17.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs11(ui17.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
+        c.state !== "ready" && /* @__PURE__ */ jsxs11(ui17.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
+          /* @__PURE__ */ jsx12(ui17.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 } }),
+          /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
         ] }),
-        shown ? /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 12 }, children: [
-          /* @__PURE__ */ jsxs10(ui16.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
-            /* @__PURE__ */ jsx11(ui16.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].issue.key : "Back" })
+        shown ? /* @__PURE__ */ jsxs11(ui17.box, { style: { gap: 12 }, children: [
+          /* @__PURE__ */ jsxs11(ui17.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
+            /* @__PURE__ */ jsx12(ui17.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].issue.key : "Back" })
           ] }),
           issueView(shown.flux, shown.issue, thread)
         ] }) : attached.map((a3) => issueView(a3.flux, a3.issue, thread)),
-        attached.length || shown ? null : /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 10 }, children: [
-          /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 2 }, children: [
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2" }, children: "The agent in this thread will report progress to it." })
+        attached.length || shown ? null : /* @__PURE__ */ jsxs11(ui17.box, { style: { gap: 10 }, children: [
+          /* @__PURE__ */ jsxs11(ui17.box, { style: { gap: 2 }, children: [
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, color: "text2" }, children: "The agent in this thread will report progress to it." })
           ] }),
-          /* @__PURE__ */ jsx11(ui16.field, { value: search.value, placeholder: "Search issues", onChange: (v2) => void (search.value = v2) }, "search"),
-          /* @__PURE__ */ jsx11(
-            ui16.list,
+          /* @__PURE__ */ jsx12(ui17.field, { value: search.value, placeholder: "Search issues", onChange: (v2) => void (search.value = v2) }, "search"),
+          /* @__PURE__ */ jsx12(
+            ui17.list,
             {
               count: open3.length,
               rowHeight: 36,
               rowKey: (n) => open3[n].id,
               row: (n) => {
                 const i2 = open3[n];
-                return /* @__PURE__ */ jsxs10(ui16.pressable, { label: `Attach ${i2.key} ${i2.title}`, onClick: () => void flux.attach(i2.id, thread, false).then(() => ui16.toast(`Attached to ${i2.key}.`), (e) => ui16.toast(`Couldn't attach ${i2.key}: ${e instanceof Error ? e.message : String(e)}`)), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
-                  /* @__PURE__ */ jsx11(StatusIcon, { status: i2.status, size: 13 }),
-                  /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 12, color: "text2", width: 72 }, children: i2.key }),
-                  /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 13, flex: 1, minWidth: 0 }, maxLines: 1, children: i2.title })
+                return /* @__PURE__ */ jsxs11(ui17.pressable, { label: `Attach ${i2.key} ${i2.title}`, onClick: () => void flux.attach(i2.id, thread, false).then(() => ui17.toast(`Attached to ${i2.key}.`), (e) => ui17.toast(`Couldn't attach ${i2.key}: ${e instanceof Error ? e.message : String(e)}`)), style: { flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
+                  /* @__PURE__ */ jsx12(StatusIcon, { status: i2.status, size: 13 }),
+                  /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 12, color: "text2", width: 72 }, children: i2.key }),
+                  /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: 13, flex: 1, minWidth: 0 }, maxLines: 1, children: i2.title })
                 ] });
               }
             },
