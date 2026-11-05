@@ -679,7 +679,13 @@ test("a column of 300 cards, of 30 labels and 10 members, draws: their menus' it
 	// No card in view has it: the menu's item, not a chip.
 	await w.see("Label 29");
 	await w.screenshot("flux-crowd-context-labels");
-	await w.click("Label 29");
+	// Its search, as the chips' menus have: typed, the other 29 go, and Enter picks it.
+	const named = async () => (await w.texts()).filter((s) => /^Label \d+$/.test(s)).length;
+	const all = await named();
+	await w.type("29");
+	await t.until(async () => (await named()) <= all - 29, { what: "the submenu searched" });
+	await w.screenshot("flux-crowd-context-labels-searched");
+	await w.key("Enter");
 	await t.until(() => labels() !== was, { what: "a label pushed from the right-click menu" });
 	expect((await w.texts()).join("\n")).not.toContain("couldn't draw");
 }, { timeout: 120_000 });

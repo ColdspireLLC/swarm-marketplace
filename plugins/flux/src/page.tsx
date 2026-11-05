@@ -1126,7 +1126,7 @@ function propertyMenus(flux: Flux, issues: Issue[], shortcuts: boolean): Child {
 		<ui.menu key="priority" label="Priority" icon="rows" shortcut={shortcuts ? "P" : undefined}>
 			{() => PRIORITIES.map((priority, index) => <ui.item key={priority} {...priorityMark(priority)} shortcut={shortcuts ? `Shift+${(index + 1) % 5}` : undefined} checked={all((issue) => issue.priority === priority)} onClick={() => each(() => ({ priority }))}>{PRIORITY_LABELS[priority]}</ui.item>)}
 		</ui.menu>,
-		<ui.menu key="assignee" label="Assignee" icon="user" shortcut={shortcuts ? "A" : undefined}>
+		<ui.menu key="assignee" label="Assignee" icon="user" search={SEARCH.assignees} shortcut={shortcuts ? "A" : undefined}>
 			{() => flux.memberList().map((member) => {
 				const on = all((issue) => issue.assigneeIds.includes(member.id));
 				return <ui.item key={member.id} {...memberMark(member)} checked={on} onClick={() => each((issue) => ({ assigneeIds: toggled(issue.assigneeIds, member.id, on) }))}>{member.name}</ui.item>;
@@ -1135,14 +1135,14 @@ function propertyMenus(flux: Flux, issues: Issue[], shortcuts: boolean): Child {
 		<ui.menu key="due" label="Due date" icon="calendar" shortcut={shortcuts ? "Shift+D" : undefined}>
 			{() => dueItems(issues.find((issue) => issue.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate })))}
 		</ui.menu>,
-		<ui.menu key="labels" label="Labels" icon="tag" shortcut={shortcuts ? "L" : undefined}>
+		<ui.menu key="labels" label="Labels" icon="tag" search={SEARCH.labels} shortcut={shortcuts ? "L" : undefined}>
 			{() => flux.labels().length === 0 ? <ui.item disabled>No labels</ui.item> : flux.labels().map((label) => {
 				const on = all((issue) => issue.labelIds.includes(label.id));
 				return <ui.item key={label.id} {...labelMark(label.color)} checked={on} onClick={() => each((issue) => ({ labelIds: toggled(issue.labelIds, label.id, on) }))}>{label.name}</ui.item>;
 			})}
 		</ui.menu>,
 		projects.length >= 2 ? (
-			<ui.menu key="project" label="Move to project" icon="folder" shortcut={shortcuts ? "Shift+P" : undefined}>
+			<ui.menu key="project" label="Move to project" icon="folder" search={SEARCH.project} shortcut={shortcuts ? "Shift+P" : undefined}>
 				{() => projects.map((project) => <ui.item key={project.id} {...navMark(project)} checked={all((issue) => issue.projectId === project.id)} onClick={() => each(() => ({ projectId: project.id }))}>{project.name}</ui.item>)}
 			</ui.menu>
 		) : null,
@@ -1834,7 +1834,7 @@ function IssueMenu({ flux, issue, onDelete }: { flux: Flux; issue: Issue; onDele
 			<ui.item icon="external" shortcut="Mod+Shift+," disabled={!url} onClick={() => ui.copy(url)}>Copy link</ui.item>
 			<ui.item icon="copy" onClick={() => ui.copy(issue.key)}>Copy ID</ui.item>
 			{projects.length >= 2 ? (
-				<ui.menu label="Move to project" icon="folder" shortcut="Shift+P">
+				<ui.menu label="Move to project" icon="folder" shortcut="Shift+P" search={SEARCH.project}>
 					{projects.map((project) => <ui.item key={project.id} {...navMark(project)} checked={issue.projectId === project.id} onClick={() => apply(flux, issue.id, { projectId: project.id })}>{project.name}</ui.item>)}
 				</ui.menu>
 			) : null}

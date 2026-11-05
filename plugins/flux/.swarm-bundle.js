@@ -83166,16 +83166,16 @@ function propertyMenus(flux2, issues, shortcuts) {
   return [
     /* @__PURE__ */ jsx10(ui15.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: () => STATUSES.map((status) => /* @__PURE__ */ jsx10(ui15.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
     /* @__PURE__ */ jsx10(ui15.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: () => PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx10(ui15.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
-    /* @__PURE__ */ jsx10(ui15.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Assignee", icon: "user", search: SEARCH.assignees, shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
       const on3 = all2((issue2) => issue2.assigneeIds.includes(member2.id));
       return /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
     }) }, "assignee"),
     /* @__PURE__ */ jsx10(ui15.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: () => dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
-    /* @__PURE__ */ jsx10(ui15.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx10(ui15.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Labels", icon: "tag", search: SEARCH.labels, shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx10(ui15.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
       const on3 = all2((issue2) => issue2.labelIds.includes(label.id));
       return /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
     }) }, "labels"),
-    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
+    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", search: SEARCH.project, shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
   ];
 }
 function IssueContextMenu({ flux: flux2, issue: issue2 }) {
@@ -83805,7 +83805,7 @@ function IssueMenu({ flux: flux2, issue: issue2, onDelete }) {
     /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui15.copy(url2), children: "Copy link" }),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", onClick: () => ui15.copy(issue2.key), children: "Copy ID" }),
-    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
+    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", search: SEARCH.project, children: projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
     /* @__PURE__ */ jsx10(ui15.separator, {}),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
