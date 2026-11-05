@@ -5,7 +5,7 @@
 // panel to attach one, see it and move it along; ::flux{key="ABC-12"} in
 // a reply shows an issue's card.
 import swarm, { call, hook, on, settings, tool, ui, type Child } from "swarm";
-import { imageOf } from "./src/pictures";
+import { imageFrom, imageOf } from "./src/pictures";
 import { Confirm, closeConfirm } from "./src/confirm";
 import { Palette, closePalette } from "./src/palette";
 import { registerCli } from "./src/cli";
@@ -23,7 +23,8 @@ import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
 import { Avatar, IssueView, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
 
-// The page and the commands use whichever Flux is active.
+// The page and the commands use whichever Flux is active. What shows in a
+// thread is its issue's Flux, whichever is active: hub.issuesOfThread.
 const flux = new Proxy({} as Flux, {
 	get(_target, prop) {
 		const current = hub.active;
@@ -45,7 +46,8 @@ const TONE: Record<Status, "muted" | "faint" | "accent" | "amber" | "green" | "v
 const told = new Set<string>();
 
 function badges() {
-	const links = flux.issues().flatMap((i) => i.threadIds.map((t) => [t, i] as const));
+	// Every Flux's, not the active one's alone: a thread keeps its badge as another is made active.
+	const links = hub.all().flatMap((f) => f.issues().flatMap((i) => i.threadIds.map((t) => [t, i] as const)));
 	const seen = new Set<string>();
 	for (const [thread, issue] of links) {
 		if (seen.has(thread)) continue;
@@ -74,8 +76,9 @@ async function refreshWorking() {
 /** The issue each thread's panel shows, when the user went to another (a parent, a sub-issue). */
 const viewing = ui.store(new Map<string, string>());
 
-/** An issue as bb's panel shows it, in Swarm's look. */
-function issueView(issue: Issue, thread?: string): Child {
+/** An issue as bb's panel shows it, in Swarm's look, from flux, the Flux it's in. */
+function issueView(flux: Flux, issue: Issue, thread?: string): Child {
+	const imageOf = imageFrom(flux);
 	const d = flux.detail(issue.id);
 	const project = flux.projects().find((p) => p.id === issue.projectId);
 	return (
@@ -101,7 +104,7 @@ function issueView(issue: Issue, thread?: string): Child {
 }
 
 /** An issue as a card in a reply: its project, key and status, its title, and its properties as chips. */
-function issueCard(issue: Issue): Child {
+function issueCard(flux: Flux, issue: Issue): Child {
 	const members = flux.memberList();
 	const project = flux.projects().find((p) => p.id === issue.projectId);
 	const parent = issue.parentId ? flux.issue(issue.parentId) : undefined;
@@ -143,14 +146,15 @@ export function activate() {
 	setInterval(() => void refreshWorking(), 5000);
 	connect();
 	settings.onChange(connect);
-	registerCli((name) => hub.get(name));
+	registerCli((name) => hub.get(name), { ofThread: (thread) => hub.ofThread(thread)?.id, ofIssue: (ref) => hub.findIssue(ref)?.flux.id });
 
-	tool<{ issue: string; images?: number[] }>("issue_images", (params) => issueImages(flux, params));
+	// The issue's own Flux, which needn't be the active one: a thread's may be another's.
+	tool<{ issue: string; images?: number[] }>("issue_images", (params) => issueImages(hub.findIssue(params.issue)?.flux ?? hub.active, params));
 
 	// A thread attached to an issue is told to keep it current, with its
 	// next message after it's attached.
 	hook("message", ({ thread }) => {
-		const issues = flux.issuesOfThread(thread);
+		const issues = hub.issuesOfThread(thread).map((a) => a.issue);
 		const fresh = issues.filter((i) => !told.has(`${thread} ${i.id}`));
 		if (fresh.length === 0) return;
 		for (const i of fresh) told.add(`${thread} ${i.id}`);
@@ -160,7 +164,7 @@ export function activate() {
 	on("event", (e) => {
 		if (e.type === "project.added" || e.type === "project.renamed" || e.type === "project.removed") refreshProjects();
 		if (e.type !== "thread.deleted" || !e.thread) return;
-		for (const i of flux.issuesOfThread(e.thread)) flux.detach(i.id, e.thread);
+		for (const a of hub.issuesOfThread(e.thread)) a.flux.detach(a.issue.id, e.thread);
 	});
 
 	// ::flux{key="ABC-12"}: an issue's card in a reply.
@@ -212,7 +216,7 @@ export function activate() {
 	ui.header({
 		id: "flux-issue",
 		render: ({ thread }) => {
-			const issue = thread ? flux.issuesOfThread(thread)[0] : undefined;
+			const issue = thread ? hub.issuesOfThread(thread)[0]?.issue : undefined;
 			if (!issue) return null;
 			return (
 				<ui.pressable label={`Flux issue ${issue.key}, ${STATUS_LABELS[issue.status]}`} tooltip={`${issue.key} · ${issue.title} (${STATUS_LABELS[issue.status]})`} href="swarm://panel/flux/flux" style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }}>
@@ -284,7 +288,7 @@ export function activate() {
 					.map((issue) => ({ id: issue.key, title: `${issue.key} ${issue.title}`, subtitle: STATUS_LABELS[issue.status] }));
 			},
 			resolve: (id) => {
-				const issue = flux.findIssue(id);
+				const issue = hub.findIssue(id)?.issue;
 				if (!issue) return null;
 				return { context: `Flux issue ${issue.key}: ${issue.title} (${STATUS_LABELS[issue.status]}).` };
 			},
@@ -296,8 +300,8 @@ export function activate() {
 	ui.directive({
 		name: "flux",
 		render: ({ args }) => {
-			const issue = args.key ? flux.findIssue(args.key) : null;
-			return issue ? issueCard(issue) : <ui.text tone="faint">{`No Flux issue ${args.key ?? ""}.`}</ui.text>;
+			const found = args.key ? hub.findIssue(args.key) : null;
+			return found ? issueCard(found.flux, found.issue) : <ui.text tone="faint">{`No Flux issue ${args.key ?? ""}.`}</ui.text>;
 		},
 	});
 
@@ -308,7 +312,10 @@ export function activate() {
 		title: "Flux issue",
 		icon: "list",
 		render: ({ thread }) => {
-			const c = flux.connection();
+			// Its issues' Flux, else the active one's, to attach one of.
+			const attached = hub.issuesOfThread(thread);
+			const own = attached[0]?.flux ?? hub.active;
+			const c = own.connection();
 			if (c.state === "unconfigured" || c.state === "unauthorized" || (c.state !== "ready" && c.issueCount === 0)) {
 				return (
 					<ui.column gap="s3" padding="s4">
@@ -319,13 +326,12 @@ export function activate() {
 					</ui.column>
 				);
 			}
-			const attached = flux.issuesOfThread(thread);
-			const shown = viewing.has(thread) ? flux.issue(viewing.get(thread)!) : null;
+			const shown = viewing.has(thread) ? hub.findIssue(viewing.get(thread)!) : null;
 			const needle = search.value.trim().toLowerCase();
 			const me = flux.me?.id ?? "";
 			const open = flux
 				.issues()
-				.filter((i) => !CLOSED_STATUSES.has(i.status) && !attached.some((a) => a.id === i.id))
+				.filter((i) => !CLOSED_STATUSES.has(i.status) && !attached.some((a) => a.issue.id === i.id))
 				.filter((i) => !needle || i.key.toLowerCase().includes(needle) || i.title.toLowerCase().includes(needle))
 				.sort((a, b) => Number(b.assigneeIds.includes(me)) - Number(a.assigneeIds.includes(me)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a.priority] || b.updatedAt.localeCompare(a.updatedAt))
 				.slice(0, 30);
@@ -342,12 +348,12 @@ export function activate() {
 							<ui.box style={{ gap: 12 }}>
 								<ui.pressable label="Back" onClick={() => void viewing.delete(thread)} style={{ flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
 									<ui.icon icon="chevron-right" style={{ width: 12, height: 12, transform: "rotate(180deg)" }} />
-									<ui.text style={{ fontSize: "small" }}>{attached.length ? "Back to " + attached[0]!.key : "Back"}</ui.text>
+									<ui.text style={{ fontSize: "small" }}>{attached.length ? "Back to " + attached[0]!.issue.key : "Back"}</ui.text>
 								</ui.pressable>
-								{issueView(shown, thread)}
+								{issueView(shown.flux, shown.issue, thread)}
 							</ui.box>
 						) : (
-							attached.map((i) => issueView(i, thread))
+							attached.map((a) => issueView(a.flux, a.issue, thread))
 						)}
 						{attached.length || shown ? null : (
 							<ui.box style={{ gap: 10 }}>

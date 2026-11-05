@@ -53,10 +53,25 @@ export function pictureBytes(src: string | null | undefined, from: PictureSource
 	return null;
 }
 
-/** An image's src for Markdown: Flux's uploads as bytes once read, others as they are. */
+/** An image's src for Markdown: Flux's uploads as bytes once read, others as they are. The active Flux's. */
 export function imageOf(src: string): string | Uint8Array | null {
-	if (!fluxAssetId(src, hub.active.baseUrl)) return src;
-	const bytes = pictureBytes(src);
+	return imageIn(hub.active, src);
+}
+
+const imageOfs = new WeakMap<PictureSource, (src: string) => string | Uint8Array | null>();
+
+/** imageOf for one Flux's uploads: an issue's, shown in a thread while another is active. */
+export function imageFrom(from: PictureSource): (src: string) => string | Uint8Array | null {
+	if (from === hub.active) return imageOf;
+	let of = imageOfs.get(from);
+	if (!of) imageOfs.set(from, (of = (src) => imageIn(from, src)));
+	return of;
+}
+
+function imageIn(from: PictureSource, src: string): string | Uint8Array | null {
+	const id = fluxAssetId(src, from.baseUrl);
+	if (!id) return src;
+	const bytes = pictureBytes(src, from);
 	if (bytes) return bytes;
-	return got.get(`asset:${hub.active.baseUrl}#${fluxAssetId(src, hub.active.baseUrl)}`) === "failed" ? src : null;
+	return got.get(`asset:${from.baseUrl}#${id}`) === "failed" ? src : null;
 }

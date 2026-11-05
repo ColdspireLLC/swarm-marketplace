@@ -2,9 +2,11 @@
 // and workspace settings. The others are a JSON list in the connections
 // secret. Each is on one workspace, by its id, kept as it first connects:
 // a token for all its account's workspaces makes one of each workspace
-// picked, and stays on it as the account joins others. One is active: the page and `swarm flux` use it
-// unless a command says --flux.
+// picked, and stays on it as the account joins others. One is active: the
+// page and `swarm flux` use it unless a command says --flux. A thread's
+// issue shows from its own Flux, active or not, and its commands use it.
 import { settings, storage, ui } from "swarm";
+import type { Issue } from "./contract";
 import { Flux, FluxNotFoundError } from "./service";
 
 interface Extra {
@@ -86,6 +88,30 @@ export class Hub {
 		});
 		if (!found) throw new FluxNotFoundError(`No Flux connection ${name}.`);
 		return found;
+	}
+
+	/**
+	 * The issues a thread is attached to, in whichever Flux each is: a
+	 * thread keeps its issue as another workspace is made active.
+	 */
+	issuesOfThread(thread: string): { flux: Flux; issue: Issue }[] {
+		return this.all().flatMap((flux) => flux.issuesOfThread(thread).map((issue) => ({ flux, issue })));
+	}
+
+	/** The Flux a thread's issues are in, when it's attached to some: the active one first. */
+	ofThread(thread: string): Flux | undefined {
+		const attached = this.issuesOfThread(thread);
+		return attached.find((a) => a.flux === this.active)?.flux ?? attached[0]?.flux;
+	}
+
+	/** An issue by key or id, and its Flux: the active one's first, then the others'. */
+	findIssue(ref: string): { flux: Flux; issue: Issue } | null {
+		const active = this.active;
+		for (const flux of [active, ...this.all().filter((f) => f !== active)]) {
+			const issue = flux.findIssue(ref);
+			if (issue) return { flux, issue };
+		}
+		return null;
 	}
 
 	use(id: string) {

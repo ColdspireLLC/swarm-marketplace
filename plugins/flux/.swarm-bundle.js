@@ -78896,6 +78896,27 @@ var Hub = class {
     if (!found2) throw new FluxNotFoundError(`No Flux connection ${name}.`);
     return found2;
   }
+  /**
+   * The issues a thread is attached to, in whichever Flux each is: a
+   * thread keeps its issue as another workspace is made active.
+   */
+  issuesOfThread(thread) {
+    return this.all().flatMap((flux2) => flux2.issuesOfThread(thread).map((issue2) => ({ flux: flux2, issue: issue2 })));
+  }
+  /** The Flux a thread's issues are in, when it's attached to some: the active one first. */
+  ofThread(thread) {
+    const attached = this.issuesOfThread(thread);
+    return attached.find((a3) => a3.flux === this.active)?.flux ?? attached[0]?.flux;
+  }
+  /** An issue by key or id, and its Flux: the active one's first, then the others'. */
+  findIssue(ref) {
+    const active = this.active;
+    for (const flux2 of [active, ...this.all().filter((f2) => f2 !== active)]) {
+      const issue2 = flux2.findIssue(ref);
+      if (issue2) return { flux: flux2, issue: issue2 };
+    }
+    return null;
+  }
   use(id2) {
     this.activeId = id2;
     storage3.set("activeConnection", id2);
@@ -79017,10 +79038,21 @@ function pictureBytes(src, from4 = hub.active) {
   return null;
 }
 function imageOf2(src) {
-  if (!fluxAssetId(src, hub.active.baseUrl)) return src;
-  const bytes = pictureBytes(src);
+  return imageIn(hub.active, src);
+}
+var imageOfs = /* @__PURE__ */ new WeakMap();
+function imageFrom(from4) {
+  if (from4 === hub.active) return imageOf2;
+  let of = imageOfs.get(from4);
+  if (!of) imageOfs.set(from4, of = (src) => imageIn(from4, src));
+  return of;
+}
+function imageIn(from4, src) {
+  const id2 = fluxAssetId(src, from4.baseUrl);
+  if (!id2) return src;
+  const bytes = pictureBytes(src, from4);
   if (bytes) return bytes;
-  return got.get(`asset:${hub.active.baseUrl}#${fluxAssetId(src, hub.active.baseUrl)}`) === "failed" ? src : null;
+  return got.get(`asset:${from4.baseUrl}#${id2}`) === "failed" ? src : null;
 }
 
 // src/confirm.tsx
@@ -79911,9 +79943,11 @@ Commands:
   swarm flux members            Workspace members and their @usernames
   swarm flux open [ISSUE]       Print an issue's link in Flux
 
-Every command takes --json, and --flux NAME to use one connection.`;
-function registerCli(resolve) {
+Every command takes --json, and --flux NAME to use one connection. Run
+from a thread attached to an issue, they use that issue's connection.`;
+function registerCli(resolve, owners = { ofThread: () => void 0, ofIssue: () => void 0 }) {
   let picked;
+  let chosen = false;
   const flux2 = new Proxy({}, {
     get(_target, prop) {
       const current = resolve(picked);
@@ -79927,8 +79961,10 @@ function registerCli(resolve) {
       try {
         const taken = takeFlux(args2);
         picked = taken.name;
+        chosen = picked !== void 0;
         args2 = taken.args;
         const ctx = await context(io);
+        if (!chosen && ctx.thread) picked = owners.ofThread(ctx.thread);
         if (name !== "status") await flux2.whenReady();
         return await fn(args2, io, ctx);
       } catch (e) {
@@ -79944,6 +79980,7 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
         return 1;
       } finally {
         picked = void 0;
+        chosen = false;
       }
     });
   };
@@ -79966,8 +80003,15 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
     return { name, args: rest };
   }
   const lookup = () => ({ baseUrl: flux2.baseUrl, members: flux2.memberList(), labels: flux2.labels(), projects: flux2.projects() });
+  const issueByRef = (ref) => {
+    if (!chosen && !flux2.findIssue(ref)) {
+      const owner = owners.ofIssue(ref);
+      if (owner) picked = owner;
+    }
+    return flux2.requireIssue(ref);
+  };
   const issueFromArg = (ref, ctx) => {
-    if (ref) return flux2.requireIssue(ref);
+    if (ref) return issueByRef(ref);
     const attached = ctx.thread ? flux2.issuesOfThread(ctx.thread) : [];
     if (attached.length === 1) return attached[0];
     throw new CliError(attached.length > 1 ? `this thread is attached to ${attached.map((i2) => i2.key).join(", ")}; say which one` : "missing issue key", "Pass an issue key such as ABC-12.");
@@ -80173,7 +80217,7 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
     const { values: o, positionals } = parse3(args2, { "keep-status": { type: "boolean" }, json: { type: "boolean" } });
     if (!ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or attach from the thread's Flux panel.");
     if (!positionals[0]) throw new CliError("missing issue key", "Pass an issue key such as ABC-12.");
-    const issue2 = flux2.requireIssue(positionals[0]);
+    const issue2 = issueByRef(positionals[0]);
     const updated = await flux2.attach(issue2.id, ctx.thread, !o["keep-status"]);
     if (o.json) return json2(io, updated);
     io.print(`Attached this thread to ${updated.key} (${STATUS_LABELS[updated.status]}). Run \`swarm flux show\` to read it.`);
@@ -80182,7 +80226,8 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
     const { values: o, positionals } = parse3(args2, { thread: { type: "string" } });
     const thread = str(o.thread) ?? ctx.thread;
     if (!thread) throw new CliError("which thread?", "Run this from the thread, or pass --thread ID.");
-    const issue2 = positionals[0] ? flux2.requireIssue(positionals[0]) : issueFromArg(void 0, { ...ctx, thread });
+    if (!chosen && thread !== ctx.thread) picked = owners.ofThread(thread) ?? picked;
+    const issue2 = positionals[0] ? issueByRef(positionals[0]) : issueFromArg(void 0, { ...ctx, thread });
     flux2.detach(issue2.id, thread);
     io.print(`Detached ${thread} from ${issue2.key}.`);
   });
@@ -83956,7 +84001,7 @@ var TONE = {
 };
 var told = /* @__PURE__ */ new Set();
 function badges() {
-  const links = flux.issues().flatMap((i2) => i2.threadIds.map((t) => [t, i2]));
+  const links = hub.all().flatMap((f2) => f2.issues().flatMap((i2) => i2.threadIds.map((t) => [t, i2])));
   const seen = /* @__PURE__ */ new Set();
   for (const [thread, issue2] of links) {
     if (seen.has(thread)) continue;
@@ -83977,36 +84022,37 @@ async function refreshWorking() {
   }
 }
 var viewing = ui16.store(/* @__PURE__ */ new Map());
-function issueView(issue2, thread) {
-  const d = flux.detail(issue2.id);
-  const project = flux.projects().find((p) => p.id === issue2.projectId);
+function issueView(flux2, issue2, thread) {
+  const imageOf3 = imageFrom(flux2);
+  const d = flux2.detail(issue2.id);
+  const project = flux2.projects().find((p) => p.id === issue2.projectId);
   return /* @__PURE__ */ jsx11(
     IssueView,
     {
       detail: d,
       project,
-      members: flux.memberList(),
-      labels: flux.labels(),
-      me: flux.me?.id,
-      url: flux.issueUrl(issue2),
+      members: flux2.memberList(),
+      labels: flux2.labels(),
+      me: flux2.me?.id,
+      url: flux2.issueUrl(issue2),
       working: issue2.threadIds.some((t) => threadInfo(t)?.working),
-      edits: { update: (patch) => flux.updateIssue(issue2.id, patch) },
-      onTask: (n, done) => flux.replaceDescription(issue2.id, tickTask(d.descriptionMarkdown, n, done)),
-      detach: thread && issue2.threadIds.includes(thread) ? () => flux.detach(issue2.id, thread) : void 0,
-      start: thread && !issue2.threadIds.includes(thread) ? async () => void await flux.attach(issue2.id, thread, true) : void 0,
+      edits: { update: (patch) => flux2.updateIssue(issue2.id, patch) },
+      onTask: (n, done) => flux2.replaceDescription(issue2.id, tickTask(d.descriptionMarkdown, n, done)),
+      detach: thread && issue2.threadIds.includes(thread) ? () => flux2.detach(issue2.id, thread) : void 0,
+      start: thread && !issue2.threadIds.includes(thread) ? async () => void await flux2.attach(issue2.id, thread, true) : void 0,
       open: thread ? (other) => void viewing.set(thread, other.id) : void 0,
-      image: imageOf2,
-      description: /* @__PURE__ */ jsx11(DescriptionEditor, { flux, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf2 }),
-      comment: /* @__PURE__ */ jsx11(CommentEditor, { flux, issue: issue2, image: imageOf2 })
+      image: imageOf3,
+      description: /* @__PURE__ */ jsx11(DescriptionEditor, { flux: flux2, issue: issue2, markdown: d.descriptionMarkdown, html: d.descriptionHtml, image: imageOf3 }),
+      comment: /* @__PURE__ */ jsx11(CommentEditor, { flux: flux2, issue: issue2, image: imageOf3 })
     },
     issue2.id
   );
 }
-function issueCard(issue2) {
-  const members2 = flux.memberList();
-  const project = flux.projects().find((p) => p.id === issue2.projectId);
-  const parent = issue2.parentId ? flux.issue(issue2.parentId) : void 0;
-  const labels = flux.labels().filter((label) => issue2.labelIds.includes(label.id));
+function issueCard(flux2, issue2) {
+  const members2 = flux2.memberList();
+  const project = flux2.projects().find((p) => p.id === issue2.projectId);
+  const parent = issue2.parentId ? flux2.issue(issue2.parentId) : void 0;
+  const labels = flux2.labels().filter((label) => issue2.labelIds.includes(label.id));
   const chip2 = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" };
   return /* @__PURE__ */ jsxs10(ui16.box, { label: `${issue2.key} ${issue2.title}`, onClick: () => ui16.navTo("flux", `issues/${encodeURIComponent(issue2.key)}`), style: { padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }, children: [
     /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", alignItems: "center", gap: 6 }, children: [
@@ -84048,10 +84094,10 @@ function activate() {
   setInterval(() => void refreshWorking(), 5e3);
   connect2();
   settings2.onChange(connect2);
-  registerCli((name) => hub.get(name));
-  tool("issue_images", (params2) => issueImages(flux, params2));
+  registerCli((name) => hub.get(name), { ofThread: (thread) => hub.ofThread(thread)?.id, ofIssue: (ref) => hub.findIssue(ref)?.flux.id });
+  tool("issue_images", (params2) => issueImages(hub.findIssue(params2.issue)?.flux ?? hub.active, params2));
   hook("message", ({ thread }) => {
-    const issues = flux.issuesOfThread(thread);
+    const issues = hub.issuesOfThread(thread).map((a3) => a3.issue);
     const fresh = issues.filter((i2) => !told.has(`${thread} ${i2.id}`));
     if (fresh.length === 0) return;
     for (const i2 of fresh) told.add(`${thread} ${i2.id}`);
@@ -84060,7 +84106,7 @@ function activate() {
   on2("event", (e) => {
     if (e.type === "project.added" || e.type === "project.renamed" || e.type === "project.removed") refreshProjects();
     if (e.type !== "thread.deleted" || !e.thread) return;
-    for (const i2 of flux.issuesOfThread(e.thread)) flux.detach(i2.id, e.thread);
+    for (const a3 of hub.issuesOfThread(e.thread)) a3.flux.detach(a3.issue.id, e.thread);
   });
   ui16.shareIcon({ id: "mark", path: "icon.svg" });
   ui16.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => /* @__PURE__ */ jsx11(FluxSettings, {}) });
@@ -84103,7 +84149,7 @@ function activate() {
   ui16.header({
     id: "flux-issue",
     render: ({ thread }) => {
-      const issue2 = thread ? flux.issuesOfThread(thread)[0] : void 0;
+      const issue2 = thread ? hub.issuesOfThread(thread)[0]?.issue : void 0;
       if (!issue2) return null;
       return /* @__PURE__ */ jsxs10(ui16.pressable, { label: `Flux issue ${issue2.key}, ${STATUS_LABELS[issue2.status]}`, tooltip: `${issue2.key} · ${issue2.title} (${STATUS_LABELS[issue2.status]})`, href: "swarm://panel/flux/flux", style: { flexDirection: "row", gap: 6, alignItems: "center", height: 26, maxWidth: 240, paddingLeft: 8, paddingRight: 8, borderRadius: "control", border: "1px solid border", hover: { backgroundColor: "hover" } }, children: [
         /* @__PURE__ */ jsx11(StatusIcon, { status: issue2.status, size: 12 }),
@@ -84159,7 +84205,7 @@ function activate() {
         return flux.issues().filter((issue2) => !needle || issue2.key.toLowerCase().includes(needle) || issue2.title.toLowerCase().includes(needle)).slice(0, 8).map((issue2) => ({ id: issue2.key, title: `${issue2.key} ${issue2.title}`, subtitle: STATUS_LABELS[issue2.status] }));
       },
       resolve: (id2) => {
-        const issue2 = flux.findIssue(id2);
+        const issue2 = hub.findIssue(id2)?.issue;
         if (!issue2) return null;
         return { context: `Flux issue ${issue2.key}: ${issue2.title} (${STATUS_LABELS[issue2.status]}).` };
       }
@@ -84169,8 +84215,8 @@ function activate() {
   ui16.directive({
     name: "flux",
     render: ({ args: args2 }) => {
-      const issue2 = args2.key ? flux.findIssue(args2.key) : null;
-      return issue2 ? issueCard(issue2) : /* @__PURE__ */ jsx11(ui16.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
+      const found2 = args2.key ? hub.findIssue(args2.key) : null;
+      return found2 ? issueCard(found2.flux, found2.issue) : /* @__PURE__ */ jsx11(ui16.text, { tone: "faint", children: `No Flux issue ${args2.key ?? ""}.` });
     }
   });
   const search = ui16.state("");
@@ -84179,7 +84225,9 @@ function activate() {
     title: "Flux issue",
     icon: "list",
     render: ({ thread }) => {
-      const c = flux.connection();
+      const attached = hub.issuesOfThread(thread);
+      const own2 = attached[0]?.flux ?? hub.active;
+      const c = own2.connection();
       if (c.state === "unconfigured" || c.state === "unauthorized" || c.state !== "ready" && c.issueCount === 0) {
         return /* @__PURE__ */ jsxs10(ui16.column, { gap: "s3", padding: "s4", children: [
           /* @__PURE__ */ jsx11(ui16.text, { weight: 600, children: "Flux" }),
@@ -84188,11 +84236,10 @@ function activate() {
           (c.state === "unconfigured" || c.state === "unauthorized") && /* @__PURE__ */ jsx11(ui16.link, { label: "Open Flux settings", href: "swarm://settings/flux/flux" })
         ] });
       }
-      const attached = flux.issuesOfThread(thread);
-      const shown = viewing.has(thread) ? flux.issue(viewing.get(thread)) : null;
+      const shown = viewing.has(thread) ? hub.findIssue(viewing.get(thread)) : null;
       const needle = search.value.trim().toLowerCase();
       const me2 = flux.me?.id ?? "";
-      const open3 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
+      const open3 = flux.issues().filter((i2) => !CLOSED_STATUSES.has(i2.status) && !attached.some((a3) => a3.issue.id === i2.id)).filter((i2) => !needle || i2.key.toLowerCase().includes(needle) || i2.title.toLowerCase().includes(needle)).sort((a3, b) => Number(b.assigneeIds.includes(me2)) - Number(a3.assigneeIds.includes(me2)) || PRIORITY_LEVEL[b.priority] - PRIORITY_LEVEL[a3.priority] || b.updatedAt.localeCompare(a3.updatedAt)).slice(0, 30);
       return /* @__PURE__ */ jsx11(ui16.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs10(ui16.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
         c.state !== "ready" && /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
           /* @__PURE__ */ jsx11(ui16.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 } }),
@@ -84201,10 +84248,10 @@ function activate() {
         shown ? /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 12 }, children: [
           /* @__PURE__ */ jsxs10(ui16.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
             /* @__PURE__ */ jsx11(ui16.icon, { icon: "chevron-right", style: { width: 12, height: 12, transform: "rotate(180deg)" } }),
-            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].key : "Back" })
+            /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small" }, children: attached.length ? "Back to " + attached[0].issue.key : "Back" })
           ] }),
-          issueView(shown, thread)
-        ] }) : attached.map((i2) => issueView(i2, thread)),
+          issueView(shown.flux, shown.issue, thread)
+        ] }) : attached.map((a3) => issueView(a3.flux, a3.issue, thread)),
         attached.length || shown ? null : /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 10 }, children: [
           /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 2 }, children: [
             /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 13, fontWeight: 500 }, children: "Attach a Flux issue" }),
