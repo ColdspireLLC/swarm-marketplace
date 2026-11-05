@@ -16,6 +16,17 @@ import { USER } from "./turns";
 
 export const NAV = "test-machines";
 
+/**
+ * The link that opens m's live view: only watching while an agent has its
+ * turn, so nothing the user does there lands among the agent's steps
+ * unless they choose to use it (in the view, or by taking the machine).
+ */
+export function liveLink(m: Machine): string | undefined {
+	const h = turnsOf(m).holder;
+	if (!m.screen || !h || h.thread === USER) return m.screen;
+	return `${m.screen}${m.screen.includes("?") ? "&" : "?"}watch=${encodeURIComponent(plainTitle(h.thread))}`;
+}
+
 /** The user opened a machine's live view: a phone's screen isn't turned off under them for a while. */
 export function watchingLive(m: Machine) {
 	viewing.set(m.id, Date.now() + VIEWING_MS);
@@ -117,9 +128,9 @@ export function tile(m: Machine, thread = ""): Child {
 				<ui.box style={{ flexDirection: "row", gap: 2, alignItems: "center" }}>
 					{m.screen && !carry ? (
 						phone ? (
-							<ui.iconButton icon="monitor" label={`Live view: ${m.name}'s screen in Swarm, live. An agent on it keeps its turn.`} href={m.screen} onClick={() => watchingLive(m)} />
+							<ui.iconButton icon="monitor" label={`Live view: ${m.name}'s screen in Swarm, live. While an agent has it, you only watch.`} href={liveLink(m)} onClick={() => watchingLive(m)} />
 						) : (
-							<ui.button size="sm" kind="soft" icon="monitor" href={m.screen} onClick={() => watchingLive(m)} tooltip={`${m.name}'s screen in Swarm, live. An agent on it keeps its turn: take it to use it.`}>
+							<ui.button size="sm" kind="soft" icon="monitor" href={liveLink(m)} onClick={() => watchingLive(m)} tooltip={`${m.name}'s screen in Swarm, live. While an agent has it, you only watch: take it to use it.`}>
 								Live view
 							</ui.button>
 						)
