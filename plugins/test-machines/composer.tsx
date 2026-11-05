@@ -108,15 +108,10 @@ export function registerComposer() {
 			const u = uses[0]!;
 			const s = said(u);
 			const now = ui.now(1000);
-			const live = u.state === "using" || !!u.recording;
 			return (
 				<ui.box label={s.label} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
-					{/* Swarm draws the row's laptop-mobile icon before it: a machine's own would say it twice. */}
-					{live ? (
-						<ui.box style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: s.tone, flexShrink: 0, animation: { name: "pulse" } }} />
-					) : u.state === "waiting" ? (
-						<ui.icon icon="clock" style={{ width: 13, height: 13, color: "text3", flexShrink: 0 }} />
-					) : null}
+					{/* Swarm draws the row's laptop-mobile icon before it, the live dot on its corner (badge): a machine's own icon would say it twice. */}
+					{u.state === "waiting" ? <ui.icon icon="clock" style={{ width: 13, height: 13, color: "text3", flexShrink: 0 }} /> : null}
 					<ui.text style={{ fontWeight: 500, color: s.tone, flexShrink: 0 }}>{s.verb}</ui.text>
 					<ui.text style={{ fontWeight: 500, flexShrink: 0 }}>{u.m.name}</ui.text>
 					{s.meta.length ? <ui.text style={{ ...line, color: "text2" }}>{s.meta.join(" · ")}</ui.text> : null}
@@ -124,6 +119,11 @@ export function registerComposer() {
 					{uses.length > 1 ? <ui.text style={{ color: "text3", flexShrink: 0 }}>{`+${uses.length - 1}`}</ui.text> : null}
 				</ui.box>
 			);
+		},
+		badge: ({ thread }) => {
+			const u = ranked(thread)[0];
+			if (!u || (u.state !== "using" && !u.recording)) return null;
+			return <ui.box label={u.recording ? "Recording" : "Live"} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: said(u).tone, animation: { name: "pulse" } }} />;
 		},
 		action: ({ thread }) => {
 			const uses = ranked(thread);

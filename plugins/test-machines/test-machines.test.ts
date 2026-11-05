@@ -97,6 +97,7 @@ test("the user takes a machine: the agent on it is cut off, the rest wait until 
 	const w = await t.window();
 	await w.show(a);
 	await w.see("Using");
+	await w.see("Live"); // the dot on the row's icon
 	await w.see(`running while [ ! -e`);
 	await w.screenshot("test-machines-composer");
 	await w.click("Test machines");
