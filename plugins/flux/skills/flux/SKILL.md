@@ -55,8 +55,11 @@ whose output another command or script will read. `swarm flux help` lists the co
    swarm flux update ABC-12 --status review
    ```
 
-   Use `--status complete` only when nothing is left to check. If you can't
-   finish, leave a comment that explains what's blocking and keep the status.
+   Use `--status complete` only when nothing is left to check and the work
+   has reached its users: merged isn't released when the project ships
+   builds or deploys, so check it's in one first. A merge moves the issue
+   to `review`, never to `complete`. If you can't finish, leave a comment
+   that explains what's blocking and keep the status.
 
 ## Longer text
 

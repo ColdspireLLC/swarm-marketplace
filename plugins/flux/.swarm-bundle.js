@@ -81162,6 +81162,17 @@ async function projectFor(flux2, issue2) {
 
 // src/follow.ts
 import { call as call3, on } from "swarm";
+
+// src/requeststatus.ts
+function requestStatus(status, state, opened) {
+  if (status === "canceled" || status === "complete") return status;
+  if (state === "closed") return status === "review" ? "progress" : status;
+  const open3 = status === "backlog" || status === "todo" || status === "progress";
+  if ((state === "merged" || opened) && open3) return "review";
+  return status;
+}
+
+// src/follow.ts
 function watchMergeRequests(hub2) {
   const pending = /* @__PURE__ */ new Map();
   const check2 = async (thread) => {
@@ -81186,11 +81197,8 @@ function watchMergeRequests(hub2) {
     if (!issue2) return;
     const state = detail2.live?.mr?.State ?? "";
     const opened = Boolean(detail2.thread?.pr);
-    let status = issue2.status;
-    if (state === "merged") status = "complete";
-    else if (state === "closed" && issue2.status === "review") status = "progress";
-    else if (opened && (issue2.status === "backlog" || issue2.status === "todo" || issue2.status === "progress")) status = "review";
-    if (status !== issue2.status && issue2.status !== "canceled") void flux2.updateIssue(issue2.id, { status }).catch(() => {
+    const status = requestStatus(issue2.status, state, opened);
+    if (status !== issue2.status) void flux2.updateIssue(issue2.id, { status }).catch(() => {
     });
   };
   on("event", (event) => {

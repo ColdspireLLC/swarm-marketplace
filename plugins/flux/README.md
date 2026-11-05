@@ -15,7 +15,9 @@ stream); the board and the issue page; descriptions and comments in the
 editor Swarm draws; several Flux connections; uploads. `swarm flux`
 takes `--flux NAME` for one of them. A thread started on an issue is
 linked both ways, and the issue's status follows that thread's merge
-request. The sidebar's projects drag into a new order, as Flux's.
+request: opened or merged, the issue is In Review; closed unmerged, back
+In Progress. A merge never completes it, as merged isn't released: the
+agent or you complete it once it's out. The sidebar's projects drag into a new order, as Flux's.
 
 Its page of Settings (Settings, Plugins, Flux; or Flux settings… in the
 board's Flux menu) connects it: a Flux's URL and an API token, tried with
