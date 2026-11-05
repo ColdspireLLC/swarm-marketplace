@@ -707,10 +707,17 @@ test("marks, avatars and menus' icons, as Flux draws them", async (t) => {
 	await t.sleep(300);
 	await w.resize(1280, 800);
 	await w.screenshot("flux-status-menu");
+	await w.dark(true);
+	await w.screenshot("flux-status-menu-dark");
+	await w.dark(false);
 	await w.key("Escape");
 	await w.click("Priority: Urgent");
 	await w.see("Medium");
+	await t.sleep(300);
 	await w.screenshot("flux-priority-menu");
+	await w.dark(true);
+	await w.screenshot("flux-priority-menu-dark");
+	await w.dark(false);
 	await w.key("Escape");
 	// Members show their pictures, where they have one.
 	await w.click("Assignees: Bob");

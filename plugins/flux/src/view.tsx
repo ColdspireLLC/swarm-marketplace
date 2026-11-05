@@ -10,35 +10,13 @@ import type { Comment, Issue, IssueDetail, Label, Member, Project } from "./cont
 import type { CommentAgent } from "./agent";
 import { agentLogo } from "./agentlogos";
 import { COLORS, PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
-import { asIcon, emojiSrc, glyphBytes, MARK_HEX } from "./marks";
+import { asIcon, colorOf, emojiSrc, glyphBytes, MARK_HEX } from "./marks";
+export { colorOf };
 import { pictureBytes, type PictureSource } from "./pictures";
-import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
+import { STATUS_COLOR, labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
 import { dayDelta, dueLabel } from "./dates";
 import { dueItems } from "./due";
 import { HTML_IMAGE, readImageTag, type ImageTag } from "./markdown";
-
-/** A Flux color, as the theme's where it has one. */
-export const colorOf: Record<ColorName, ColorValue> = {
-	gray: "text3",
-	red: "red",
-	orange: "#d9711c",
-	yellow: "amber",
-	green: "green",
-	cyan: "#1597a8",
-	blue: "accent",
-	indigo: "#5b5bd6",
-	purple: "violet",
-	pink: "#d6409f",
-};
-
-const STATUS_COLOR: Record<Status, ColorValue> = {
-	backlog: "text2",
-	todo: "text2",
-	progress: "amber",
-	review: "violet",
-	complete: "green",
-	canceled: "text3",
-};
 
 /** Flux's status glyph: a ring, filled as far as the work has come. */
 export function StatusIcon({ status, size = 14 }: { status: Status; size?: number }) {
