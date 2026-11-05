@@ -79372,6 +79372,18 @@ var MARK_HEX = {
   purple: "#7c4ddf",
   pink: "#d6409f"
 };
+var colorOf = {
+  gray: "text3",
+  red: "red",
+  orange: "#d9711c",
+  yellow: "amber",
+  green: "green",
+  cyan: "#1597a8",
+  blue: "accent",
+  indigo: "#5b5bd6",
+  purple: "violet",
+  pink: "#d6409f"
+};
 function emojiSrc(emoji4) {
   return emoji4 ? "emoji:" + emoji4 : null;
 }
@@ -79411,59 +79423,63 @@ function svg(key, inner) {
   return bytes;
 }
 var GRAY = MARK_HEX.gray;
-var STATUS_HEX = {
-  backlog: GRAY,
-  todo: GRAY,
-  progress: MARK_HEX.yellow,
-  review: MARK_HEX.purple,
-  complete: MARK_HEX.green,
-  canceled: GRAY
+var STATUS_COLOR = {
+  backlog: "text2",
+  todo: "text2",
+  progress: "amber",
+  review: "violet",
+  complete: "green",
+  canceled: "text3"
 };
 function at2(r, deg) {
   const a3 = (deg - 90) * Math.PI / 180;
   return `${(7 + r * Math.cos(a3)).toFixed(2)} ${(7 + r * Math.sin(a3)).toFixed(2)}`;
 }
+function cutDisc(id2, glyph) {
+  return `<mask id="${id2}"><rect width="14" height="14" fill="#fff"/><path d="${glyph}" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></mask><circle cx="7" cy="7" r="6" fill="currentColor" mask="url(#${id2})"/>`;
+}
 function statusMark(status) {
-  const c = STATUS_HEX[status];
   return {
+    tint: STATUS_COLOR[status],
     mark: svg("status:" + status, () => {
-      const ring = `<circle cx="7" cy="7" r="6" fill="none" stroke="${c}" stroke-width="1.5"/>`;
+      const ring = `<circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/>`;
       switch (status) {
         case "backlog":
-          return `<circle cx="7" cy="7" r="6" fill="none" stroke="${c}" stroke-width="1.5" stroke-dasharray="1.6 1.54"/>`;
+          return `<circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="1.6 1.54"/>`;
         case "todo":
           return ring;
         case "progress":
-          return ring + `<path d="M7 7 L${at2(4, 0)} A4 4 0 1 1 ${at2(4, 270)} Z" fill="${c}"/>`;
+          return ring + `<path d="M7 7 L${at2(4, 0)} A4 4 0 1 1 ${at2(4, 270)} Z" fill="currentColor"/>`;
         case "review":
-          return ring + `<path d="M7 7 L${at2(4, 0)} A4 4 0 0 1 ${at2(4, 180)} Z" fill="${c}"/>`;
+          return ring + `<path d="M7 7 L${at2(4, 0)} A4 4 0 0 1 ${at2(4, 180)} Z" fill="currentColor"/>`;
         case "complete":
-          return `<circle cx="7" cy="7" r="6" fill="${c}"/><path d="M4.2 7.15 L6.15 9.1 L9.8 5.25" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+          return cutDisc("c", "M4.2 7.15 L6.15 9.1 L9.8 5.25");
         case "canceled":
-          return `<circle cx="7" cy="7" r="6" fill="${c}"/><path d="M5 5 L9 9 M9 5 L5 9" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>`;
+          return cutDisc("x", "M5 5 L9 9 M9 5 L5 9");
       }
     })
   };
 }
 function priorityMark(priority) {
   return {
+    tint: priority === "urgent" ? "red" : priority === "none" ? "text2" : "text",
     mark: svg("priority:" + priority, () => {
-      if (priority === "urgent") return `<rect x="0.5" y="0.5" width="13" height="13" rx="3" fill="${MARK_HEX.red}"/><rect x="6.2" y="3" width="1.6" height="5.5" rx="0.8" fill="#fff"/><rect x="6.2" y="9.6" width="1.6" height="1.6" rx="0.8" fill="#fff"/>`;
-      if (priority === "none") return `<rect x="3" y="6.25" width="8" height="1.5" rx="0.75" fill="${GRAY}"/>`;
+      if (priority === "urgent") return `<rect x="0.5" y="0.5" width="13" height="13" rx="3" fill="currentColor"/><rect x="6.2" y="3" width="1.6" height="5.5" rx="0.8" fill="#fff"/><rect x="6.2" y="9.6" width="1.6" height="1.6" rx="0.8" fill="#fff"/>`;
+      if (priority === "none") return `<rect x="3" y="6.25" width="8" height="1.5" rx="0.75" fill="currentColor"/>`;
       const level = { high: 3, medium: 2, low: 1 }[priority];
       let out = "";
-      for (let i2 = 0; i2 < 3; i2++) out += `<rect x="${1.5 + i2 * 4}" y="${(10 - i2 * 3.2).toFixed(1)}" width="3" height="${(3 + i2 * 3.2).toFixed(1)}" rx="1" fill="${GRAY}" fill-opacity="${i2 < level ? 1 : 0.35}"/>`;
+      for (let i2 = 0; i2 < 3; i2++) out += `<rect x="${1.5 + i2 * 4}" y="${(10 - i2 * 3.2).toFixed(1)}" width="3" height="${(3 + i2 * 3.2).toFixed(1)}" rx="1" fill="currentColor" fill-opacity="${i2 < level ? 1 : 0.25}"/>`;
       return out;
     })
   };
 }
 function memberMark(member2) {
-  const tile = { initial: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() || "?", tint: MARK_HEX[member2.avatarColor] };
+  const tile = { initial: (member2.name || member2.username).trim().slice(0, 1).toUpperCase() || "?", tint: colorOf[member2.avatarColor] ?? GRAY };
   const picture = member2.avatarUrl ? pictureBytes(member2.avatarUrl) : null;
   return picture ? { mark: picture, ...tile } : tile;
 }
 function labelMark(color) {
-  return { mark: svg("label:" + color, () => `<circle cx="7" cy="7" r="3.5" fill="${MARK_HEX[color] ?? GRAY}"/>`) };
+  return { tint: colorOf[color] ?? "text3", mark: svg("label", () => `<circle cx="7" cy="7" r="3.5" fill="currentColor"/>`) };
 }
 
 // src/palette.tsx
@@ -80242,26 +80258,6 @@ function dueItems(current, set2) {
 
 // src/view.tsx
 import { jsx as jsx4, jsxs as jsxs3 } from "swarm/jsx-runtime";
-var colorOf = {
-  gray: "text3",
-  red: "red",
-  orange: "#d9711c",
-  yellow: "amber",
-  green: "green",
-  cyan: "#1597a8",
-  blue: "accent",
-  indigo: "#5b5bd6",
-  purple: "violet",
-  pink: "#d6409f"
-};
-var STATUS_COLOR = {
-  backlog: "text2",
-  todo: "text2",
-  progress: "amber",
-  review: "violet",
-  complete: "green",
-  canceled: "text3"
-};
 function StatusIcon({ status, size: size3 = 14 }) {
   const c = STATUS_COLOR[status];
   return /* @__PURE__ */ jsx4(

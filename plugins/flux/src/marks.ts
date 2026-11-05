@@ -1,6 +1,6 @@
 // Project marks: emoji as Swarm's Twemoji, Swarm's Nucleo icons, and Flux
 // glyphs whose names are not in Swarm's Nucleo set, drawn here.
-import type { IconName } from "swarm";
+import type { ColorValue, IconName } from "swarm";
 import type { ColorName } from "./flux";
 
 const NUCLEO: ReadonlySet<string> = new Set([
@@ -216,6 +216,20 @@ export const MARK_HEX: Record<ColorName, string> = {
 	blue: "#2f6bea",
 	indigo: "#5b5bd6",
 	purple: "#7c4ddf",
+	pink: "#d6409f",
+};
+
+/** A Flux color, as the theme's where it has one. */
+export const colorOf: Record<ColorName, ColorValue> = {
+	gray: "text3",
+	red: "red",
+	orange: "#d9711c",
+	yellow: "amber",
+	green: "green",
+	cyan: "#1597a8",
+	blue: "accent",
+	indigo: "#5b5bd6",
+	purple: "violet",
 	pink: "#d6409f",
 };
 
