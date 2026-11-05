@@ -39,6 +39,9 @@ export const STATUS_DISPLAY_ORDER: readonly Status[] = [
 export const PRIORITIES = ["urgent", "high", "medium", "low", "none"] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
+/** The search fields of the menus that can run long: a workspace's projects, labels and members. */
+export const SEARCH = { project: "Change project…", labels: "Change labels…", assignees: "Assign to…" } as const;
+
 export const PRIORITY_LABELS: Record<Priority, string> = {
   urgent: "Urgent",
   high: "High",

@@ -656,7 +656,11 @@ test("a column of 300 cards, of 30 labels and 10 members, draws: their menus' it
 	await w.click("Labels: Label 7");
 	await w.see("New label…");
 	await w.screenshot("flux-crowd-labels");
-	await w.key("Down");
+	// Thirty run past its foot: what's typed keeps those that have it, and Enter picks the first.
+	await w.type("28");
+	await w.gone("New label…");
+	await w.see("Label 28");
+	await w.screenshot("flux-crowd-labels-searched");
 	await w.key("Enter");
 	await t.until(() => labels() !== was, { what: "a label pushed" });
 	// Its assignees, each with their mark, and their handle under their name.
@@ -675,7 +679,13 @@ test("a column of 300 cards, of 30 labels and 10 members, draws: their menus' it
 	// No card in view has it: the menu's item, not a chip.
 	await w.see("Label 29");
 	await w.screenshot("flux-crowd-context-labels");
-	await w.click("Label 29");
+	// Its search, as the chips' menus have: typed, the other 29 go, and Enter picks it.
+	const named = async () => (await w.texts()).filter((s) => /^Label \d+$/.test(s)).length;
+	const all = await named();
+	await w.type("29");
+	await t.until(async () => (await named()) <= all - 29, { what: "the submenu searched" });
+	await w.screenshot("flux-crowd-context-labels-searched");
+	await w.key("Enter");
 	await t.until(() => labels() !== was, { what: "a label pushed from the right-click menu" });
 	expect((await w.texts()).join("\n")).not.toContain("couldn't draw");
 }, { timeout: 120_000 });

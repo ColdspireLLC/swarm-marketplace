@@ -240,7 +240,7 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 				</ui.text>
 			</ui.box>
 			<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-				<ui.menu label={`Swarm project: ${shown}`} tooltip={fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : undefined} style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }}>
+				<ui.menu label={`Swarm project: ${shown}`} search="Choose a Swarm project…" tooltip={fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : undefined} style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }}>
 					<ui.icon icon="folder" style={{ width: 14, height: 14, color: "currentColor" }} />
 					<ui.text style={{ fontSize: 13, color: "currentColor" }} maxLines={1}>{shown}</ui.text>
 					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />

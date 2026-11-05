@@ -77346,6 +77346,7 @@ var STATUS_DISPLAY_ORDER = [
   "canceled"
 ];
 var PRIORITIES = ["urgent", "high", "medium", "low", "none"];
+var SEARCH = { project: "Change project…", labels: "Change labels…", assignees: "Assign to…" };
 var PRIORITY_LABELS = {
   urgent: "Urgent",
   high: "High",
@@ -80500,7 +80501,7 @@ function Properties({ issue: issue2, project, members: members2, labels, me: me2
       issue2.priority !== "none" && /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: PRIORITY_LABELS[issue2.priority] }),
       () => PRIORITIES.map((p) => /* @__PURE__ */ jsx4(ui7.item, { ...priorityMark(p), checked: issue2.priority === p, onClick: () => edits.update({ priority: p }), children: PRIORITY_LABELS[p] }, p))
     ] }),
-    /* @__PURE__ */ jsxs3(ui7.menu, { label: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", tooltip: "Assignees", style: assignees.length === 1 ? square : chip, children: [
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", tooltip: "Assignees", search: SEARCH.assignees, style: assignees.length === 1 ? square : chip, children: [
       assignees.length === 0 ? /* @__PURE__ */ jsx4(Unassigned, { size: 16 }) : assignees.slice(0, 3).map((m) => /* @__PURE__ */ jsx4(Avatar, { member: m }, "av-" + m.id)),
       assignees.length > 1 && /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 13 }, children: String(assignees.length) }),
       () => [
@@ -80509,7 +80510,7 @@ function Properties({ issue: issue2, project, members: members2, labels, me: me2
         members2.map((m) => /* @__PURE__ */ jsx4(ui7.item, { ...memberMark(m), checked: issue2.assigneeIds.includes(m.id), detail: "@" + m.username, onClick: () => edits.update({ assigneeIds: toggle(issue2.assigneeIds, m.id) }), children: m.name }, m.id))
       ]
     ] }),
-    /* @__PURE__ */ jsxs3(ui7.menu, { label: chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels", tooltip: "Labels", style: chosen.length ? chip : square, children: [
+    /* @__PURE__ */ jsxs3(ui7.menu, { label: chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels", tooltip: "Labels", search: SEARCH.labels, style: chosen.length ? chip : square, children: [
       chosen.length === 0 && /* @__PURE__ */ jsx4(ui7.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
       chosen.map((l) => /* @__PURE__ */ jsxs3(ui7.box, { style: { flexDirection: "row", gap: 5, alignItems: "center" }, children: [
         /* @__PURE__ */ jsx4(ui7.box, { style: { width: 7, height: 7, borderRadius: "full", backgroundColor: colorOf[l.color] } }),
@@ -81191,7 +81192,7 @@ function StartAgent({ flux: flux2, issue: issue2 }) {
       /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 14, color: "text2" }, children: `The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}` })
     ] }),
     /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }, children: [
-      /* @__PURE__ */ jsxs5(ui10.menu, { label: `Swarm project: ${shown}`, tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
+      /* @__PURE__ */ jsxs5(ui10.menu, { label: `Swarm project: ${shown}`, search: "Choose a Swarm project…", tooltip: fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : void 0, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }, children: [
         /* @__PURE__ */ jsx6(ui10.icon, { icon: "folder", style: { width: 14, height: 14, color: "currentColor" } }),
         /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 13, color: "currentColor" }, maxLines: 1, children: shown }),
         /* @__PURE__ */ jsx6(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
@@ -82597,7 +82598,7 @@ function Toolbar({ flux: flux2, project, scope, options }) {
       }, style: { ...ghostChip }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14 }, children: "Cancel" }) })
     ] }, "search") : null,
     /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null }, children: [
-      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Project: ${project ? project.name : "All projects"}`, style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: `Project: ${project ? project.name : "All projects"}`, search: "Go to project…", style: { ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }, children: [
         project ? /* @__PURE__ */ jsx10(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx10(FluxMark, { size: 16 }),
         /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, minWidth: 0 }, maxLines: 1, children: project ? project.name : "All projects" }),
         /* @__PURE__ */ jsx10(ui15.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2", flexShrink: 0 } }),
@@ -82777,7 +82778,7 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
               () => pickerItems(flux2, issue2, "due")
             ] }) : null,
             issue2.subIssueCount > 0 ? /* @__PURE__ */ jsx10(SubIssueChip, { done: issue2.subIssueDoneCount, total: issue2.subIssueCount }) : null,
-            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs9(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+            shows(options, "labels") ? marks.map((item) => /* @__PURE__ */ jsxs9(Picker2, { label: `Labels: ${item.name}`, search: SEARCH.labels, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
               tagContent(item),
               () => pickerItems(flux2, issue2, "labels")
             ] }, item.id)) : null,
@@ -82786,7 +82787,7 @@ function Card({ flux: flux2, issue: issue2, group, index, options, showProject }
           shows(options, "created") ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", marginTop: 8 }, tooltip: new Date(issue2.createdAt).toLocaleString(), children: createdOn(issue2.createdAt) }) : null
         ] }),
         /* @__PURE__ */ jsxs9(ui15.box, { style: { flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }, children: [
-          shows(options, "assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
+          shows(options, "assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", search: SEARCH.assignees, style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }, children: [
             assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 20, ring: "overlay" }) : /* @__PURE__ */ jsx10(Unassigned, { size: 20 }),
             () => pickerItems(flux2, issue2, "assignees")
           ] }) : /* @__PURE__ */ jsx10(ui15.box, {}),
@@ -82818,8 +82819,8 @@ function pickerItems(flux2, issue2, kind) {
     }
   }
 }
-function Picker2({ label, style, children }) {
-  return /* @__PURE__ */ jsx10(ui15.menu, { label, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
+function Picker2({ label, search, style, children }) {
+  return /* @__PURE__ */ jsx10(ui15.menu, { label, search, style: { ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children });
 }
 var field = { flexDirection: "row", gap: 4, alignItems: "center", justifyContent: "center", height: 22, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: 4, border: "1px solid border" };
 function KeyLine({ issue: issue2, parent, showKey }) {
@@ -83000,11 +83001,11 @@ function ListRow({ flux: flux2, issue: issue2, group, index, options, showProjec
       dueContent(issue2.dueDate),
       () => pickerItems(flux2, issue2, "due")
     ] }) }) : null,
-    shows(options, "labels") ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs9(Picker2, { label: `Labels: ${item.name}`, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
+    shows(options, "labels") ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }, children: marks.map((item) => /* @__PURE__ */ jsxs9(Picker2, { label: `Labels: ${item.name}`, search: SEARCH.labels, style: { ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }, children: [
       tagContent(item),
       () => pickerItems(flux2, issue2, "labels")
     ] }, item.id)) }) : null,
-    shows(options, "assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
+    shows(options, "assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign", search: SEARCH.assignees, style: { minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }, children: [
       assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 20 }) : /* @__PURE__ */ jsx10(Unassigned, { size: 20 }),
       () => pickerItems(flux2, issue2, "assignees")
     ] }) : null,
@@ -83165,16 +83166,16 @@ function propertyMenus(flux2, issues, shortcuts) {
   return [
     /* @__PURE__ */ jsx10(ui15.menu, { label: "Status", icon: "check-circle", shortcut: shortcuts ? "S" : void 0, children: () => STATUSES.map((status) => /* @__PURE__ */ jsx10(ui15.item, { ...statusMark(status), checked: all2((issue2) => issue2.status === status), onClick: () => each(() => ({ status })), children: STATUS_LABELS[status] }, status)) }, "status"),
     /* @__PURE__ */ jsx10(ui15.menu, { label: "Priority", icon: "rows", shortcut: shortcuts ? "P" : void 0, children: () => PRIORITIES.map((priority, index) => /* @__PURE__ */ jsx10(ui15.item, { ...priorityMark(priority), shortcut: shortcuts ? `Shift+${(index + 1) % 5}` : void 0, checked: all2((issue2) => issue2.priority === priority), onClick: () => each(() => ({ priority })), children: PRIORITY_LABELS[priority] }, priority)) }, "priority"),
-    /* @__PURE__ */ jsx10(ui15.menu, { label: "Assignee", icon: "user", shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Assignee", icon: "user", search: SEARCH.assignees, shortcut: shortcuts ? "A" : void 0, children: () => flux2.memberList().map((member2) => {
       const on3 = all2((issue2) => issue2.assigneeIds.includes(member2.id));
       return /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(member2), checked: on3, onClick: () => each((issue2) => ({ assigneeIds: toggled(issue2.assigneeIds, member2.id, on3) })), children: member2.name }, member2.id);
     }) }, "assignee"),
     /* @__PURE__ */ jsx10(ui15.menu, { label: "Due date", icon: "calendar", shortcut: shortcuts ? "Shift+D" : void 0, children: () => dueItems(issues.find((issue2) => issue2.dueDate)?.dueDate ?? null, (dueDate) => each(() => ({ dueDate }))) }, "due"),
-    /* @__PURE__ */ jsx10(ui15.menu, { label: "Labels", icon: "tag", shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx10(ui15.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
+    /* @__PURE__ */ jsx10(ui15.menu, { label: "Labels", icon: "tag", search: SEARCH.labels, shortcut: shortcuts ? "L" : void 0, children: () => flux2.labels().length === 0 ? /* @__PURE__ */ jsx10(ui15.item, { disabled: true, children: "No labels" }) : flux2.labels().map((label) => {
       const on3 = all2((issue2) => issue2.labelIds.includes(label.id));
       return /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(label.color), checked: on3, onClick: () => each((issue2) => ({ labelIds: toggled(issue2.labelIds, label.id, on3) })), children: label.name }, label.id);
     }) }, "labels"),
-    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
+    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", search: SEARCH.project, shortcut: shortcuts ? "Shift+P" : void 0, children: () => projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: all2((issue2) => issue2.projectId === project.id), onClick: () => each(() => ({ projectId: project.id })), children: project.name }, project.id)) }, "project") : null
   ];
 }
 function IssueContextMenu({ flux: flux2, issue: issue2 }) {
@@ -83412,7 +83413,7 @@ function NewIssue({ flux: flux2 }) {
   return /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: () => void submitNew(flux2), children: [
     /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }, children: [
       /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsxs9(ui15.menu, { label: `Project: ${project?.name ?? "None"}`, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
+        /* @__PURE__ */ jsxs9(ui15.menu, { label: `Project: ${project?.name ?? "None"}`, search: SEARCH.project, style: { ...ghostChip, height: 28, paddingLeft: 4 }, children: [
           /* @__PURE__ */ jsx10(ProjectMark, { project, size: 14 }),
           /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 13 }, children: project?.name ?? "Project" }),
           projects.map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(item), checked: item.id === st6.draftProject, onClick: () => {
@@ -83449,7 +83450,7 @@ function NewIssue({ flux: flux2 }) {
           st6.draftPriority = priority;
         }, children: PRIORITY_LABELS[priority] }, priority))
       ] }),
-      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee", search: SEARCH.assignees, style: chip2, children: [
         chosenPeople.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: chosenPeople, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
         /* @__PURE__ */ jsx10(ui15.text, { style: { ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }, maxLines: 1, children: chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee" }),
         [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((member2) => /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(member2), detail: "@" + member2.username, checked: st6.draftAssignees.includes(member2.id), onClick: () => {
@@ -83715,7 +83716,7 @@ function SubRow({ flux: flux2, sub, members: members2, properties }) {
     shown("priority") && sub.priority !== "none" ? /* @__PURE__ */ jsx10(PriorityIcon, { priority: sub.priority, size: 14 }) : null,
     /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }, maxLines: 1, children: sub.title.trim() || "Untitled" }),
     shown("labels") && labels.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...from3(SM), flexDirection: "row", gap: 4, flexShrink: 0 }, children: labels.map((l) => /* @__PURE__ */ jsx10(ui15.box, { style: field, children: tagContent(l) }, l.id)) }) : null,
-    shown("assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
+    shown("assignee") ? /* @__PURE__ */ jsxs9(Picker2, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee", search: SEARCH.assignees, style: { ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }, children: [
       who.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: who, size: 20 }) : /* @__PURE__ */ jsx10(Unassigned, { size: 20 }),
       pickerItems(flux2, sub, "assignees")
     ] }) : null
@@ -83777,14 +83778,14 @@ function SubComposer({ flux: flux2, parent }) {
           c.priority = p;
         }, children: PRIORITY_LABELS[p] }, p))
       ] }),
-      /* @__PURE__ */ jsxs9(ui15.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", style: chip2, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee", search: SEARCH.assignees, style: chip2, children: [
         who.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: who, size: 16, ring: "overlay" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }),
         chipText(who.length ? who.map((m) => m.name).join(", ") : "Assignee", who.length === 0),
         () => [...members2].sort((a3, b) => Number(b.id === me2) - Number(a3.id === me2)).map((m) => /* @__PURE__ */ jsx10(ui15.item, { ...memberMark(m), detail: "@" + m.username, checked: c.assigneeIds.includes(m.id), onClick: () => {
           c.assigneeIds = toggle(c.assigneeIds, m.id);
         }, children: m.id === me2 ? `${m.name} (you)` : m.name }, m.id))
       ] }),
-      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", style: chip2, children: [
+      /* @__PURE__ */ jsxs9(ui15.menu, { label: chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels", search: SEARCH.labels, style: chip2, children: [
         chosen.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { flexDirection: "row" }, children: chosen.map((l, n) => /* @__PURE__ */ jsx10(ui15.box, { style: { width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") } }, l.id)) }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
         chipText(chosen.length ? `${chosen.length} ${chosen.length === 1 ? "label" : "labels"}` : "Labels", chosen.length === 0),
         () => flux2.labels().map((l) => /* @__PURE__ */ jsx10(ui15.item, { ...labelMark(l.color), checked: c.labelIds.includes(l.id), onClick: () => {
@@ -83804,7 +83805,7 @@ function IssueMenu({ flux: flux2, issue: issue2, onDelete }) {
     /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", shortcut: "D", onClick: () => duplicate(flux2, issue2.id, (copy3) => openIssue(copy3.key)), children: "Duplicate" }),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "external", shortcut: "Mod+Shift+,", disabled: !url2, onClick: () => ui15.copy(url2), children: "Copy link" }),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "copy", onClick: () => ui15.copy(issue2.key), children: "Copy ID" }),
-    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", children: projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
+    projects.length >= 2 ? /* @__PURE__ */ jsx10(ui15.menu, { label: "Move to project", icon: "folder", shortcut: "Shift+P", search: SEARCH.project, children: projects.map((project) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(project), checked: issue2.projectId === project.id, onClick: () => apply2(flux2, issue2.id, { projectId: project.id }), children: project.name }, project.id)) }) : null,
     /* @__PURE__ */ jsx10(ui15.separator, {}),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "plus", shortcut: "Mod+Shift+O", onClick: () => composeSub(flux2, issue2), children: "Add sub-issue" }),
     /* @__PURE__ */ jsx10(ui15.item, { icon: "branch", shortcut: "Mod+Shift+P", onClick: () => openPalette("parent", [issue2.id], (id2, patch) => apply2(flux2, id2, patch)), children: "Set parent" }),
@@ -83898,25 +83899,25 @@ function PropertyRail({ flux: flux2, issue: issue2, project, members: members2 }
   return /* @__PURE__ */ jsxs9(ui15.box, { style: { width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }, children: [
     /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 2 }, children: [
       /* @__PURE__ */ jsx10(ui15.text, { style: railHeading, children: "Properties" }),
-      /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(ProjectMark, { project }), label: "Project", value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: () => flux2.projects().map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(ProjectMark, { project }), label: "Project", search: SEARCH.project, value: project?.name ?? "None", menu: "Project: " + (project?.name ?? "None"), children: () => flux2.projects().map((item) => /* @__PURE__ */ jsx10(ui15.item, { ...navMark(item), checked: item.id === issue2.projectId, onClick: () => edits.update({ projectId: item.id }), children: item.name }, item.id)) }),
       /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(StatusIcon, { status: issue2.status }), label: "Status", value: STATUS_LABELS[issue2.status], menu: "Status: " + STATUS_LABELS[issue2.status], children: () => pickerItems(flux2, issue2, "status") }),
       /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(PriorityIcon, { priority: issue2.priority }), label: "Priority", value: issue2.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue2.priority], muted: issue2.priority === "none", menu: "Priority: " + PRIORITY_LABELS[issue2.priority], children: () => pickerItems(flux2, issue2, "priority") }),
-      /* @__PURE__ */ jsx10(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: () => pickerItems(flux2, issue2, "assignees") }),
+      /* @__PURE__ */ jsx10(RailRow, { icon: assignees.length ? /* @__PURE__ */ jsx10(AvatarStack, { members: assignees, size: 14, ring: "bg" }) : /* @__PURE__ */ jsx10(ui15.icon, { icon: "user", style: { width: 14, height: 14, color: "text2" } }), label: "Assignee", search: SEARCH.assignees, value: assignees.length > 1 ? `${assignees[0].name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign", muted: assignees.length === 0, menu: assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign", children: () => pickerItems(flux2, issue2, "assignees") }),
       /* @__PURE__ */ jsx10(RailRow, { icon: /* @__PURE__ */ jsx10(ui15.icon, { icon: "calendar", style: { width: 14, height: 14, color: issue2.dueDate ? dueTone(issue2.dueDate) : "text2" } }), label: "Due date", value: issue2.dueDate ? dueLabel(issue2.dueDate) : "Due date", menu: issue2.dueDate ? "Due " + issue2.dueDate : "Due date", children: () => dueItems(issue2.dueDate, (dueDate) => edits.update({ dueDate })) })
     ] }),
     /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 2 }, children: [
       /* @__PURE__ */ jsx10(ui15.text, { style: railHeading, children: "Labels" }),
-      labels.length === 0 ? /* @__PURE__ */ jsxs9(ui15.menu, { label: "Add label", style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+      labels.length === 0 ? /* @__PURE__ */ jsxs9(ui15.menu, { label: "Add label", search: SEARCH.labels, style: { flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
         /* @__PURE__ */ jsx10(ui15.icon, { icon: "tag", style: { width: 14, height: 14, color: "text2" } }),
         /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, color: "text2" }, children: "Add label" }),
         labelItems
       ] }) : /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }, children: [
-        labels.map((item) => /* @__PURE__ */ jsxs9(ui15.menu, { label: `Labels: ${item.name}`, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+        labels.map((item) => /* @__PURE__ */ jsxs9(ui15.menu, { label: `Labels: ${item.name}`, search: SEARCH.labels, style: { ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
           /* @__PURE__ */ jsx10(ui15.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" } }),
           /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500 }, maxLines: 1, children: item.name }),
           labelItems
         ] }, item.id)),
-        /* @__PURE__ */ jsx10(ui15.menu, { label: "", icon: "plus", tooltip: "Add label", children: labelItems })
+        /* @__PURE__ */ jsx10(ui15.menu, { label: "", icon: "plus", tooltip: "Add label", search: SEARCH.labels, children: labelItems })
       ] })
     ] }),
     /* @__PURE__ */ jsxs9(ui15.box, { style: { gap: 4 }, children: [
@@ -83938,8 +83939,8 @@ function PropertyRail({ flux: flux2, issue: issue2, project, members: members2 }
     ] })
   ] });
 }
-function RailRow({ icon, value, menu, muted, children }) {
-  return /* @__PURE__ */ jsxs9(ui15.menu, { label: menu, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
+function RailRow({ icon, value, menu, search, muted, children }) {
+  return /* @__PURE__ */ jsxs9(ui15.menu, { label: menu, search, style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }, children: [
     icon,
     /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }, maxLines: 1, children: value }),
     children
@@ -84162,7 +84163,7 @@ function ProjectLinks({ flux: flux2 }) {
           /* @__PURE__ */ jsx11(MarkPicker, { label: `Icon of ${project.name}`, value: markOf2(project), onChange: (next2) => setMark2(flux2, project, next2) }),
           /* @__PURE__ */ jsx11(ui16.text, { style: { flex: 1, minWidth: 0 }, maxLines: 1, children: project.name }),
           /* @__PURE__ */ jsx11(ui16.text, { style: { width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }, tooltip: keyNote(flux2, project), children: project.key }),
-          /* @__PURE__ */ jsxs10(ui16.menu, { label: `Swarm project for ${project.name}: ${shown}`, style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
+          /* @__PURE__ */ jsxs10(ui16.menu, { label: `Swarm project for ${project.name}: ${shown}`, search: "Choose a Swarm project…", style: { flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }, children: [
             /* @__PURE__ */ jsx11(ui16.text, { style: { flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }, maxLines: 1, children: shown }),
             /* @__PURE__ */ jsx11(ui16.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text3" } }),
             /* @__PURE__ */ jsx11(ui16.item, { checked: !linked, onClick: () => flux2.link(project.id, null), children: "Not linked" }),

@@ -206,7 +206,7 @@ function ProjectLinks({ flux }: { flux: Flux }) {
 								<MarkPicker label={`Icon of ${project.name}`} value={markOf(project)} onChange={(next) => setMark(flux, project, next)} />
 								<ui.text style={{ flex: 1, minWidth: 0 }} maxLines={1}>{project.name}</ui.text>
 								<ui.text style={{ width: 52, fontSize: 12, fontFamily: "mono", color: "text2" }} tooltip={keyNote(flux, project)}>{project.key}</ui.text>
-								<ui.menu label={`Swarm project for ${project.name}: ${shown}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
+								<ui.menu label={`Swarm project for ${project.name}: ${shown}`} search="Choose a Swarm project…" style={{ flexDirection: "row", gap: 6, alignItems: "center", width: 200, height: 28, paddingLeft: 10, paddingRight: 8, borderRadius: "control", border: "1px solid border", backgroundColor: "field", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
 									<ui.text style={{ flex: 1, minWidth: 0, fontSize: 13, color: linked ? "text" : "text3" }} maxLines={1}>{shown}</ui.text>
 									<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text3" }} />
 									<ui.item checked={!linked} onClick={() => flux.link(project.id, null)}>Not linked</ui.item>
