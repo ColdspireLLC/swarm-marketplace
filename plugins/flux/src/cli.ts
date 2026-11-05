@@ -149,10 +149,22 @@ Commands:
   swarm flux members            Workspace members and their @usernames
   swarm flux open [ISSUE]       Print an issue's link in Flux
 
-Every command takes --json, and --flux NAME to use one connection.`;
+Every command takes --json, and --flux NAME to use one connection. Run
+from a thread attached to an issue, they use that issue's connection.`;
 
-export function registerCli(resolve: (name?: string) => Flux) {
+/** Which connection holds what, by id, for a command that doesn't say --flux. */
+export interface Owners {
+	/** The one a thread's issues are in, which a command run from that thread uses. */
+	ofThread(thread: string): string | undefined;
+	/** The one an issue key is in, used when the one in use hasn't it. */
+	ofIssue(ref: string): string | undefined;
+}
+
+/** resolve finds a connection by name, the active one for none. */
+export function registerCli(resolve: (name?: string) => Flux, owners: Owners = { ofThread: () => undefined, ofIssue: () => undefined }) {
 	let picked: string | undefined;
+	/** Whether the command said --flux, so stays on it. */
+	let chosen = false;
 	const flux: Flux = new Proxy({} as Flux, {
 		get(_target, prop) {
 			const current = resolve(picked);
@@ -168,8 +180,10 @@ export function registerCli(resolve: (name?: string) => Flux) {
 			try {
 				const taken = takeFlux(args);
 				picked = taken.name;
+				chosen = picked !== undefined;
 				args = taken.args;
 				const ctx = await context(io);
+				if (!chosen && ctx.thread) picked = owners.ofThread(ctx.thread);
 				if (name !== "status") await flux.whenReady();
 				return await fn(args, io, ctx);
 			} catch (e) {
@@ -183,6 +197,7 @@ export function registerCli(resolve: (name?: string) => Flux) {
 				return 1;
 			} finally {
 				picked = undefined;
+				chosen = false;
 			}
 		});
 	};
@@ -208,8 +223,17 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 
 	const lookup = (): Lookup => ({ baseUrl: flux.baseUrl, members: flux.memberList(), labels: flux.labels(), projects: flux.projects() });
 
+	/** An issue by key, in the connection in use, else in the one that has it unless --flux said which. */
+	const issueByRef = (ref: string): Issue => {
+		if (!chosen && !flux.findIssue(ref)) {
+			const owner = owners.ofIssue(ref);
+			if (owner) picked = owner;
+		}
+		return flux.requireIssue(ref);
+	};
+
 	const issueFromArg = (ref: string | undefined, ctx: Context): Issue => {
-		if (ref) return flux.requireIssue(ref);
+		if (ref) return issueByRef(ref);
 		const attached = ctx.thread ? flux.issuesOfThread(ctx.thread) : [];
 		if (attached.length === 1) return attached[0]!;
 		throw new CliError(attached.length > 1 ? `this thread is attached to ${attached.map((i) => i.key).join(", ")}; say which one` : "missing issue key", "Pass an issue key such as ABC-12.");
@@ -428,7 +452,7 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 		const { values: o, positionals } = parse(args, { "keep-status": { type: "boolean" }, json: { type: "boolean" } });
 		if (!ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or attach from the thread's Flux panel.");
 		if (!positionals[0]) throw new CliError("missing issue key", "Pass an issue key such as ABC-12.");
-		const issue = flux.requireIssue(positionals[0]);
+		const issue = issueByRef(positionals[0]);
 		const updated = await flux.attach(issue.id, ctx.thread, !o["keep-status"]);
 		if (o.json) return json(io, updated);
 		io.print(`Attached this thread to ${updated.key} (${STATUS_LABELS[updated.status]}). Run \`swarm flux show\` to read it.`);
@@ -438,7 +462,8 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 		const { values: o, positionals } = parse(args, { thread: { type: "string" } });
 		const thread = str(o.thread) ?? ctx.thread;
 		if (!thread) throw new CliError("which thread?", "Run this from the thread, or pass --thread ID.");
-		const issue = positionals[0] ? flux.requireIssue(positionals[0]) : issueFromArg(undefined, { ...ctx, thread });
+		if (!chosen && thread !== ctx.thread) picked = owners.ofThread(thread) ?? picked;
+		const issue = positionals[0] ? issueByRef(positionals[0]) : issueFromArg(undefined, { ...ctx, thread });
 		flux.detach(issue.id, thread);
 		io.print(`Detached ${thread} from ${issue.key}.`);
 	});

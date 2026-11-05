@@ -1085,6 +1085,49 @@ test("a thread's agent starts on an issue, is told of it, and comments as itself
 	expect([...items.values()].some((i) => i.body?.title === "Orphan")).toBe(false);
 });
 
+test("a thread keeps its issue from a workspace that isn't active: its badge, panel, commands and instructions", async (t) => {
+	await flux(t);
+	const second = await flux(t, { unset: true, workspace: "Syntad" });
+	// Syntad's own project and issue, none of the first's.
+	for (const id of ["c1", "i1", "i2", "p1"]) second.put(id, null);
+	second.put("p9", { type: "project", key: "SYN", name: "Syncing", mark: { type: "emoji", value: "🌿", color: "green" }, position: 0, nextNumber: 2 });
+	second.put("y1", { type: "issue", projectId: "p9", number: 1, title: "Ship the Syntad sync", description: "", status: "todo", priority: "none", assigneeIds: [], labelIds: [], subscriberIds: [], creatorId: "u1", dueDate: null, parentId: null, position: 0 });
+	await t.set("connections", JSON.stringify([{ id: "syn", url: second.srv.url, token: "tok" }]));
+	await t.until(async () => (await t.run("status", "--flux", "syn")).stdout.includes("Flux: ready"), { what: "Syntad ready" });
+
+	const th = await t.thread("say Hello.");
+	await th.idle();
+	await t.runIn(th, "start", "ABC-1");
+	// A key of the other workspace's is found there, with no --flux.
+	const other = await t.thread("say Hello.");
+	await other.idle();
+	expect((await t.runIn(other, "start", "SYN-1")).stdout).toBe("Attached this thread to SYN-1 (In Progress). Run `swarm flux show` to read it.\n");
+	expect(second.items.get("y1")!.body!.status).toBe("progress");
+
+	// Syntad made active, the first's thread keeps its badge and its panel.
+	const w = await t.window();
+	await w.resize(1280, 900);
+	await w.click("Flux");
+	await w.click("Workspace: Coldspire");
+	await w.click("Syntad");
+	await t.until(async () => (await t.run("status")).stdout.includes("Workspace: Syntad"), { what: "Syntad active" });
+	await w.click("Threads");
+	await t.until(async () => (await w.texts()).includes("ABC-1") && (await w.texts()).includes("SYN-1"), { what: "both threads' badges" });
+	await w.screenshot("flux-badges-every-workspace");
+	await w.panel(th, "flux");
+	await w.see("Fix the login redirect");
+	expect(await w.has("Attach a Flux issue")).toBe(false);
+	// Its commands use its issue's workspace, and its agent is told of it.
+	expect((await t.runIn(th, "show")).stdout).toContain("# ABC-1 · Fix the login redirect");
+	await th.send("say Noted.");
+	await th.see("This thread is attached to Flux issue ABC-1. Keep that issue current as you work:");
+	await th.idle();
+	// Deleted, it's detached from its issue in the workspace that isn't active.
+	expect((await t.run("show", "ABC-1")).stdout).toContain(`Swarm threads: ${th.id}`);
+	await t.call("Delete", { thread: th.id });
+	await t.until(async () => !(await t.run("show", "ABC-1")).stdout.includes(th.id), { what: "ABC-1 detached" });
+});
+
 test("Start agent seeds bb's prompt, sends the issue's images, and remembers the project", async (t) => {
 	const { items } = await flux(t);
 	const th = await t.thread("say Hello.");
