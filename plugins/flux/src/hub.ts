@@ -114,6 +114,18 @@ export class Hub {
 		return null;
 	}
 
+	/** The Flux with a project by key, name or old key: the active one's first. */
+	ofProject(ref: string): Flux | undefined {
+		const active = this.active;
+		return [active, ...this.all().filter((f) => f !== active)].find((flux) => flux.findProject(ref));
+	}
+
+	/** The Flux with a project linked to a Swarm project: the active one's first. */
+	ofSwarmProject(swarmProject: string): Flux | undefined {
+		const active = this.active;
+		return [active, ...this.all().filter((f) => f !== active)].find((flux) => flux.projectOfSwarm(swarmProject));
+	}
+
 	use(id: string) {
 		this.activeId = id;
 		storage.set("activeConnection", id);

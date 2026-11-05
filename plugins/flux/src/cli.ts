@@ -149,8 +149,12 @@ Commands:
   swarm flux members            Workspace members and their @usernames
   swarm flux open [ISSUE]       Print an issue's link in Flux
 
-Every command takes --json, and --flux NAME to use one connection. Run
-from a thread attached to an issue, they use that issue's connection.`;
+Every connected workspace stays synced, the one selected in the window or
+not. Every command takes --json, and --flux NAME (a workspace's name or
+slug) to use one; \`swarm flux status\` lists them. Without it, a command
+uses the workspace of this thread's issue, else the one whose project is
+linked to this Swarm project, else the selected one; an issue or project
+key from another workspace is found there.`;
 
 /** Which connection holds what, by id, for a command that doesn't say --flux. */
 export interface Owners {
@@ -158,6 +162,14 @@ export interface Owners {
 	ofThread(thread: string): string | undefined;
 	/** The one an issue key is in, used when the one in use hasn't it. */
 	ofIssue(ref: string): string | undefined;
+	/** The one with a Flux project by key or name, used when the one in use hasn't it. */
+	ofProject?(ref: string): string | undefined;
+	/** The one with a project linked to a Swarm project, which a command run from its threads uses. */
+	ofSwarmProject?(project: string): string | undefined;
+	/** Every connection set up, for status to list. */
+	all?(): Flux[];
+	/** The active one's id. */
+	active?(): string;
 }
 
 /** resolve finds a connection by name, the active one for none. */
@@ -184,6 +196,7 @@ export function registerCli(resolve: (name?: string) => Flux, owners: Owners = {
 				args = taken.args;
 				const ctx = await context(io);
 				if (!chosen && ctx.thread) picked = owners.ofThread(ctx.thread);
+				if (!chosen && !picked && ctx.project) picked = owners.ofSwarmProject?.(ctx.project);
 				if (name !== "status") await flux.whenReady();
 				return await fn(args, io, ctx);
 			} catch (e) {
@@ -241,6 +254,7 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 
 	const projectFromOption = (v: string | undefined, ctx: Context) => {
 		if (v) {
+			if (!chosen && !flux.findProject(v)) picked = owners.ofProject?.(v) ?? picked;
 			const p = flux.findProject(v);
 			if (!p) throw new CliError(`no Flux project "${v}"`, "Run `swarm flux projects` to list project keys.");
 			return p;
@@ -283,12 +297,17 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 
 	guarded("status", async (args, io) => {
 		const c = flux.connection();
-		if (args.includes("--json")) return json(io, c);
+		const others = (owners.all?.() ?? []).filter((f) => f.id !== c.id).map((f) => ({ id: f.id, state: f.state, workspace: f.workspace, active: f.id === owners.active?.() }));
+		if (args.includes("--json")) return json(io, { ...c, others });
 		const lines = [`Flux: ${c.state}${c.message ? ` — ${c.message}` : ""}`];
 		if (c.baseUrl) lines.push(`Server: ${c.baseUrl}`);
 		if (c.workspace) lines.push(`Workspace: ${c.workspace.name}`);
 		if (c.me) lines.push(`Signed in as: ${c.me.name} (@${c.me.username})`);
 		lines.push(`Issues synced: ${c.issueCount}`);
+		if (others.length) {
+			lines.push("", "Other workspaces (pass --flux NAME to use one; an issue key or project key finds its own):");
+			for (const o of others) lines.push(`  ${pad(o.workspace?.name ?? o.id, 20)} --flux ${o.workspace?.slug || o.id}  ${o.state}${o.active ? "  (active in the window)" : ""}`);
+		}
 		io.print(lines.join("\n"));
 	});
 
@@ -364,7 +383,7 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 		// Checked before the issue exists, so a failed --start doesn't leave one behind.
 		if (o.start && !ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or leave out --start.");
 		if (o["create-labels"] && list(o.label).length === 0) throw new CliError("--create-labels needs --label");
-		const parent = str(o.parent) ? flux.requireIssue(str(o.parent)!) : null;
+		const parent = str(o.parent) ? issueByRef(str(o.parent)!) : null;
 		const project = projectFromOption(str(o.project), ctx) ?? (parent ? flux.projects().find((p) => p.id === parent.projectId) ?? null : null);
 		if (!project) throw new CliError("which project?", "Add --project <KEY>. `swarm flux projects` lists them; `swarm flux link KEY` makes one this Swarm project's default.");
 		const status = str(o.status) ? statusOrThrow(str(o.status)!) : undefined;
@@ -484,6 +503,7 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 
 	guarded("link", async (args, io, ctx) => {
 		const { values: o, positionals } = parse(args, { project: { type: "string" }, none: { type: "boolean" } });
+		if (positionals[0] && !chosen && !flux.findProject(positionals[0])) picked = owners.ofProject?.(positionals[0]) ?? picked;
 		const p = positionals[0] ? flux.findProject(positionals[0]) : null;
 		if (!p) throw new CliError(positionals[0] ? `no Flux project "${positionals[0]}"` : "which Flux project?", "Run `swarm flux projects` to list project keys.");
 		if (o.none) {

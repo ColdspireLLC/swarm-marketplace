@@ -78917,6 +78917,16 @@ var Hub = class {
     }
     return null;
   }
+  /** The Flux with a project by key, name or old key: the active one's first. */
+  ofProject(ref) {
+    const active = this.active;
+    return [active, ...this.all().filter((f2) => f2 !== active)].find((flux2) => flux2.findProject(ref));
+  }
+  /** The Flux with a project linked to a Swarm project: the active one's first. */
+  ofSwarmProject(swarmProject) {
+    const active = this.active;
+    return [active, ...this.all().filter((f2) => f2 !== active)].find((flux2) => flux2.projectOfSwarm(swarmProject));
+  }
   use(id2) {
     this.activeId = id2;
     storage3.set("activeConnection", id2);
@@ -79943,8 +79953,12 @@ Commands:
   swarm flux members            Workspace members and their @usernames
   swarm flux open [ISSUE]       Print an issue's link in Flux
 
-Every command takes --json, and --flux NAME to use one connection. Run
-from a thread attached to an issue, they use that issue's connection.`;
+Every connected workspace stays synced, the one selected in the window or
+not. Every command takes --json, and --flux NAME (a workspace's name or
+slug) to use one; \`swarm flux status\` lists them. Without it, a command
+uses the workspace of this thread's issue, else the one whose project is
+linked to this Swarm project, else the selected one; an issue or project
+key from another workspace is found there.`;
 function registerCli(resolve, owners = { ofThread: () => void 0, ofIssue: () => void 0 }) {
   let picked;
   let chosen = false;
@@ -79965,6 +79979,7 @@ function registerCli(resolve, owners = { ofThread: () => void 0, ofIssue: () => 
         args2 = taken.args;
         const ctx = await context(io);
         if (!chosen && ctx.thread) picked = owners.ofThread(ctx.thread);
+        if (!chosen && !picked && ctx.project) picked = owners.ofSwarmProject?.(ctx.project);
         if (name !== "status") await flux2.whenReady();
         return await fn(args2, io, ctx);
       } catch (e) {
@@ -80018,6 +80033,7 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
   };
   const projectFromOption = (v2, ctx) => {
     if (v2) {
+      if (!chosen && !flux2.findProject(v2)) picked = owners.ofProject?.(v2) ?? picked;
       const p = flux2.findProject(v2);
       if (!p) throw new CliError(`no Flux project "${v2}"`, "Run `swarm flux projects` to list project keys.");
       return p;
@@ -80053,12 +80069,17 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
   command2("help", (_a3, io) => io.print(USAGE));
   guarded("status", async (args2, io) => {
     const c = flux2.connection();
-    if (args2.includes("--json")) return json2(io, c);
+    const others = (owners.all?.() ?? []).filter((f2) => f2.id !== c.id).map((f2) => ({ id: f2.id, state: f2.state, workspace: f2.workspace, active: f2.id === owners.active?.() }));
+    if (args2.includes("--json")) return json2(io, { ...c, others });
     const lines = [`Flux: ${c.state}${c.message ? ` — ${c.message}` : ""}`];
     if (c.baseUrl) lines.push(`Server: ${c.baseUrl}`);
     if (c.workspace) lines.push(`Workspace: ${c.workspace.name}`);
     if (c.me) lines.push(`Signed in as: ${c.me.name} (@${c.me.username})`);
     lines.push(`Issues synced: ${c.issueCount}`);
+    if (others.length) {
+      lines.push("", "Other workspaces (pass --flux NAME to use one; an issue key or project key finds its own):");
+      for (const o of others) lines.push(`  ${pad(o.workspace?.name ?? o.id, 20)} --flux ${o.workspace?.slug || o.id}  ${o.state}${o.active ? "  (active in the window)" : ""}`);
+    }
     io.print(lines.join("\n"));
   });
   guarded("list", async (args2, io, ctx) => {
@@ -80132,7 +80153,7 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
     if (!title) throw new CliError("--title is required", 'swarm flux create --title "…" [--project KEY]');
     if (o.start && !ctx.thread) throw new CliError("not running in a Swarm thread", "Run this from an agent's thread, or leave out --start.");
     if (o["create-labels"] && list(o.label).length === 0) throw new CliError("--create-labels needs --label");
-    const parent = str(o.parent) ? flux2.requireIssue(str(o.parent)) : null;
+    const parent = str(o.parent) ? issueByRef(str(o.parent)) : null;
     const project = projectFromOption(str(o.project), ctx) ?? (parent ? flux2.projects().find((p) => p.id === parent.projectId) ?? null : null);
     if (!project) throw new CliError("which project?", "Add --project <KEY>. `swarm flux projects` lists them; `swarm flux link KEY` makes one this Swarm project's default.");
     const status = str(o.status) ? statusOrThrow(str(o.status)) : void 0;
@@ -80244,6 +80265,7 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
   });
   guarded("link", async (args2, io, ctx) => {
     const { values: o, positionals } = parse3(args2, { project: { type: "string" }, none: { type: "boolean" } });
+    if (positionals[0] && !chosen && !flux2.findProject(positionals[0])) picked = owners.ofProject?.(positionals[0]) ?? picked;
     const p = positionals[0] ? flux2.findProject(positionals[0]) : null;
     if (!p) throw new CliError(positionals[0] ? `no Flux project "${positionals[0]}"` : "which Flux project?", "Run `swarm flux projects` to list project keys.");
     if (o.none) {
@@ -84104,7 +84126,14 @@ function activate() {
   setInterval(() => void refreshWorking(), 5e3);
   connect2();
   settings2.onChange(connect2);
-  registerCli((name) => hub.get(name), { ofThread: (thread) => hub.ofThread(thread)?.id, ofIssue: (ref) => hub.findIssue(ref)?.flux.id });
+  registerCli((name) => hub.get(name), {
+    ofThread: (thread) => hub.ofThread(thread)?.id,
+    ofIssue: (ref) => hub.findIssue(ref)?.flux.id,
+    ofProject: (ref) => hub.ofProject(ref)?.id,
+    ofSwarmProject: (project) => hub.ofSwarmProject(project)?.id,
+    all: () => hub.connected(),
+    active: () => hub.active.id
+  });
   tool("issue_images", (params2) => issueImages(hub.findIssue(params2.issue)?.flux ?? hub.active, params2));
   hook("message", ({ thread }) => {
     const issues = hub.issuesOfThread(thread).map((a3) => a3.issue);
