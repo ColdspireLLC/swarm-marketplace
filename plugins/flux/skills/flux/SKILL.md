@@ -127,6 +127,17 @@ Colors: `gray`, `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `indigo`,
 `purple`, `pink`. Without `--color`, a new label gets the color fewest labels
 use, as in Flux.
 
+## Several workspaces
+
+Every Flux workspace connected in Swarm stays synced, whether or not it's
+the one selected in Flux's page, and you can work in any of them.
+`swarm flux status` lists them. An issue key (`SYN-4`) or a project key
+(`--project SYN`) from another workspace is found there on its own; for the
+rest (`list` with no project, `labels`, `members`, `projects`), pass
+`--flux NAME` with the workspace's name or slug. Without it, commands use
+the workspace of this thread's issue, else the one whose project is linked
+to this Swarm project, else the selected one.
+
 ## Other commands
 
 - `swarm flux projects`, `swarm flux labels`, `swarm flux members` list what you can

@@ -146,7 +146,14 @@ export function activate() {
 	setInterval(() => void refreshWorking(), 5000);
 	connect();
 	settings.onChange(connect);
-	registerCli((name) => hub.get(name), { ofThread: (thread) => hub.ofThread(thread)?.id, ofIssue: (ref) => hub.findIssue(ref)?.flux.id });
+	registerCli((name) => hub.get(name), {
+		ofThread: (thread) => hub.ofThread(thread)?.id,
+		ofIssue: (ref) => hub.findIssue(ref)?.flux.id,
+		ofProject: (ref) => hub.ofProject(ref)?.id,
+		ofSwarmProject: (project) => hub.ofSwarmProject(project)?.id,
+		all: () => hub.connected(),
+		active: () => hub.active.id,
+	});
 
 	// The issue's own Flux, which needn't be the active one: a thread's may be another's.
 	tool<{ issue: string; images?: number[] }>("issue_images", (params) => issueImages(hub.findIssue(params.issue)?.flux ?? hub.active, params));

@@ -1103,6 +1103,11 @@ test("a thread keeps its issue from a workspace that isn't active: its badge, pa
 	await other.idle();
 	expect((await t.runIn(other, "start", "SYN-1")).stdout).toBe("Attached this thread to SYN-1 (In Progress). Run `swarm flux show` to read it.\n");
 	expect(second.items.get("y1")!.body!.status).toBe("progress");
+	// status names the other workspaces, and a project key of one is found there.
+	const status = (await t.run("status")).stdout;
+	expect(status).toContain("Workspace: Coldspire");
+	expect(status).toMatch(/Other workspaces[^\n]*\n  Syntad +--flux syntad  ready/);
+	expect((await t.run("list", "--project", "SYN")).stdout).toContain("SYN-1");
 
 	// Syntad made active, the first's thread keeps its badge and its panel.
 	const w = await t.window();
