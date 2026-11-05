@@ -9,6 +9,7 @@ import type { Issue } from "./contract";
 import { startPrompt } from "./prompt";
 import { imageSources } from "./markdown";
 import { StatusIcon } from "./view";
+import { DEFAULT_ID, addConfig, freshName, same, saveConfig, spawnConfig, spawnConfigs, type Choice } from "./spawn";
 
 export function mentionOptions(flux: Flux) {
 	return [
@@ -143,7 +144,9 @@ export function CommentEditor({ flux, issue, image }: { flux: Flux; issue: Issue
 	);
 }
 
-// Start agent's dialog, tracked: the pickers' choices, the prompt, the
+// Start agent's dialog, tracked: the pickers' choices, the agent
+// configuration they came from, and the name of one being saved (null
+// while none is), the prompt, the
 // issue it's for and was seeded from, whether it's starting; the Swarm
 // project it starts in (the Flux project's link, else one of its name,
 // else the only one), and Swarm's projects, null until read.
@@ -152,6 +155,8 @@ const st = ui.store({
 	model: "",
 	effort: "",
 	approval: "",
+	config: DEFAULT_ID,
+	naming: null as string | null,
 	branch: "",
 	prompt: "",
 	seeded: "",
@@ -208,6 +213,7 @@ export function StartAgentDialog({ flux }: { flux: Flux }) {
 function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 	if (st.seeded !== issue.id) {
 		st.seeded = issue.id;
+		useConfig(DEFAULT_ID);
 		// bb's prompt: the issue, its description with its images numbered, and where the rest is.
 		const start = startPrompt(flux.detail(issue.id), flux.baseUrl);
 		st.prompt = start.prompt;
@@ -240,15 +246,74 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
 					{(st.swarmProjects ?? []).map((p) => <ui.item key={p.id} checked={p.id === st.swarmProject} onClick={() => { st.swarmProject = p.id; }}>{p.name}</ui.item>)}
 				</ui.menu>
+				<ConfigMenu />
 				{ui.agentPicker({ provider: st.provider, value: st.model, effort: st.effort, onChange: (value) => { st.provider = value.provider; st.model = value.model; st.effort = value.effort ?? ""; } })}
 				{ui.modePicker({ provider: st.provider, value: st.approval, onChange: (value) => { st.approval = value; } })}
 				{ui.branchPicker({ value: st.branch, onChange: (value) => { st.branch = value; } })}
 			</ui.box>
+			{st.naming !== null ? <SaveConfig /> : null}
 			<ui.field key={"agent-prompt-" + issue.id} value={st.prompt} multiline autoFocus placeholder="What should the agent do?" keys={["Mod+Enter"]} onKeyDown={() => void run(flux, issue)} onChange={(value) => { st.prompt = value; }} style={{ minHeight: 160, maxHeight: "46vh", fontSize: 14 }} />
 			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
 				<ui.button kind="ghost" size="sm" onClick={closeStart}>Cancel</ui.button>
 				<ui.button kind="primary" size="sm" icon="bot" disabled={st.busy || !st.prompt.trim()} tooltip="⌘ Enter" onClick={() => void run(flux, issue)}>{st.busy ? "Starting…" : "Start"}</ui.button>
 			</ui.box>
+		</ui.box>
+	);
+}
+
+/** The pickers' choices now. */
+function choice(): Choice {
+	return { provider: st.provider, model: st.model, effort: st.effort, approval: st.approval };
+}
+
+/** Sets the pickers to a configuration's choices. */
+function useConfig(id: string) {
+	const config = spawnConfig(id);
+	st.config = config.id;
+	st.provider = config.provider;
+	st.model = config.model;
+	st.effort = config.effort;
+	st.approval = config.approval;
+	st.naming = null;
+}
+
+/**
+ * The configuration the pickers came from, marked once they're changed,
+ * and a menu of the others, saving into it, saving as a new one, and
+ * Settings, where they're kept.
+ */
+function ConfigMenu() {
+	const config = spawnConfig(st.config);
+	const changed = !same(config, choice());
+	const shown = changed ? `${config.name} (changed)` : config.name;
+	return (
+		<ui.menu label={`Configuration: ${shown}`} tooltip="Agent configuration" wide style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }}>
+			<ui.icon icon="sliders" style={{ width: 14, height: 14, color: "currentColor" }} />
+			<ui.text style={{ fontSize: 13, color: "currentColor" }} maxLines={1}>{shown}</ui.text>
+			<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
+			{spawnConfigs().map((c) => <ui.item key={c.id} checked={c.id === config.id} onClick={() => useConfig(c.id)}>{c.name}</ui.item>)}
+			<ui.separator />
+			<ui.item icon="check" disabled={!changed} onClick={() => { saveConfig(config.id, choice()); ui.toast(`Saved ${config.name}.`); }}>{`Save to ${config.name}`}</ui.item>
+			<ui.item icon="plus" onClick={() => { st.naming = ""; }}>Save as new configuration…</ui.item>
+			<ui.item icon="settings" href="swarm://settings/flux/flux">Manage configurations</ui.item>
+		</ui.menu>
+	);
+}
+
+/** Save as new configuration's name, under the pickers. */
+function SaveConfig() {
+	const fresh = freshName();
+	const save = () => {
+		const name = (st.naming ?? "").trim() || fresh;
+		st.config = addConfig(name, choice());
+		st.naming = null;
+		ui.toast(`Saved ${name}.`);
+	};
+	return (
+		<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+			<ui.field key="config-name" label="Configuration name" value={st.naming ?? ""} autoFocus placeholder={fresh} onChange={(value) => { st.naming = value; }} onSubmit={save} style={{ flex: 1, minWidth: 0, height: 28 }} />
+			<ui.button kind="ghost" size="sm" onClick={() => { st.naming = null; }}>Cancel</ui.button>
+			<ui.button kind="secondary" size="sm" onClick={save}>Save configuration</ui.button>
 		</ui.box>
 	);
 }
