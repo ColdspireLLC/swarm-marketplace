@@ -888,13 +888,20 @@ export class Flux {
 		for (const c of items) {
 			let made = this.commentMade.get(c);
 			if (!made || made.opts.members !== opts.members || made.opts.baseUrl !== opts.baseUrl) {
+				const html = asString(c.body.body);
+				// Made as it's read, not here: this runs over every comment
+				// in the workspace the first time any issue's are asked for,
+				// and Turndown on each took seconds (SWARM-368).
+				let markdown: string | undefined;
 				made = {
 					opts,
 					comment: {
 						id: c.id,
 						authorId: asString(c.body.authorId) || null,
-						html: asString(c.body.body),
-						markdown: htmlToMarkdown(asString(c.body.body), opts),
+						html,
+						get markdown() {
+							return (markdown ??= htmlToMarkdown(html, opts));
+						},
 						agent: parseCommentAgent(c.body.agent),
 						createdAt: c.createdAt,
 						updatedAt: c.updatedAt,

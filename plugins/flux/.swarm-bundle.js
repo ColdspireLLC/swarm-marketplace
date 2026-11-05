@@ -78194,13 +78194,17 @@ ${ws.id}`;
     for (const c of items) {
       let made3 = this.commentMade.get(c);
       if (!made3 || made3.opts.members !== opts.members || made3.opts.baseUrl !== opts.baseUrl) {
+        const html = asString(c.body.body);
+        let markdown;
         made3 = {
           opts,
           comment: {
             id: c.id,
             authorId: asString(c.body.authorId) || null,
-            html: asString(c.body.body),
-            markdown: htmlToMarkdown(asString(c.body.body), opts),
+            html,
+            get markdown() {
+              return markdown ??= htmlToMarkdown(html, opts);
+            },
             agent: parseCommentAgent(c.body.agent),
             createdAt: c.createdAt,
             updatedAt: c.updatedAt
