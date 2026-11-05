@@ -82441,6 +82441,8 @@ function customized(options) {
 var EDGE = 16;
 var bar = { flex: 1, minWidth: 0, height: "100%", flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: EDGE - 8, paddingRight: EDGE - 4, media: [{ minWidth: 768, style: { paddingLeft: 20 - 8, paddingRight: 16 } }] };
 var ghostChip = { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, gap: 6, flexDirection: "row", alignItems: "center", borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } };
+var NEW_W = 94;
+var DISPLAY_RIGHT = { narrow: EDGE - 4 + 28 + 6, mid: EDGE - 4 + NEW_W + 6, wide: 16 + NEW_W + 6 };
 function displayPanel(options, singleProject) {
   const set2 = (patch) => setDisplay({ ...options, ...patch });
   const toggle = (property) => {
@@ -82454,7 +82456,7 @@ function displayPanel(options, singleProject) {
   const picked = (on3) => ({ borderRadius: "control", border: on3 ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on3 ? "press" : "transparent", color: on3 ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "press" : "hover", color: "text" } });
   return [
     /* @__PURE__ */ jsx9(ui14.pressable, { label: "Close display options", onClick: close6, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
-    /* @__PURE__ */ jsxs8(ui14.box, { label: "Display options", style: { position: "absolute", top: 44, right: 16, width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
+    /* @__PURE__ */ jsxs8(ui14.box, { label: "Display options", style: { position: "absolute", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }, children: [
       /* @__PURE__ */ jsx9(ui14.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs8(ui14.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
         /* @__PURE__ */ jsx9(ui14.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
         /* @__PURE__ */ jsx9(ui14.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
