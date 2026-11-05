@@ -9,7 +9,7 @@ import { ui, type Child, type ColorValue, type Style } from "swarm";
 import type { Comment, Issue, IssueDetail, Label, Member, Project } from "./contract";
 import type { CommentAgent } from "./agent";
 import { agentLogo } from "./agentlogos";
-import { COLORS, PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
+import { COLORS, PRIORITIES, PRIORITY_LABELS, SEARCH, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
 import { asIcon, colorOf, emojiSrc, glyphBytes, MARK_HEX } from "./marks";
 export { colorOf };
 import { pictureBytes, type PictureSource } from "./pictures";
@@ -260,7 +260,7 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 				{issue.priority !== "none" && <ui.text style={{ fontSize: 13 }}>{PRIORITY_LABELS[issue.priority]}</ui.text>}
 				{() => PRIORITIES.map((p) => <ui.item key={p} {...priorityMark(p)} checked={issue.priority === p} onClick={() => edits.update({ priority: p })}>{PRIORITY_LABELS[p]}</ui.item>)}
 			</ui.menu>
-			<ui.menu label={assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign"} tooltip="Assignees" style={assignees.length === 1 ? square : chip}>
+			<ui.menu label={assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign"} tooltip="Assignees" search={SEARCH.assignees} style={assignees.length === 1 ? square : chip}>
 				{assignees.length === 0 ? <Unassigned size={16} /> : assignees.slice(0, 3).map((m) => <Avatar key={"av-" + m.id} member={m} />)}
 				{assignees.length > 1 && <ui.text style={{ fontSize: 13 }}>{String(assignees.length)}</ui.text>}
 				{() => [
@@ -269,7 +269,7 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 					members.map((m) => <ui.item key={m.id} {...memberMark(m)} checked={issue.assigneeIds.includes(m.id)} detail={"@" + m.username} onClick={() => edits.update({ assigneeIds: toggle(issue.assigneeIds, m.id) })}>{m.name}</ui.item>),
 				]}
 			</ui.menu>
-			<ui.menu label={chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels"} tooltip="Labels" style={chosen.length ? chip : square}>
+			<ui.menu label={chosen.length ? "Labels: " + chosen.map((l) => l.name).join(", ") : "Labels"} tooltip="Labels" search={SEARCH.labels} style={chosen.length ? chip : square}>
 				{chosen.length === 0 && <ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />}
 				{chosen.map((l) => (
 					<ui.box key={"lb-" + l.id} style={{ flexDirection: "row", gap: 5, alignItems: "center" }}>

@@ -656,7 +656,11 @@ test("a column of 300 cards, of 30 labels and 10 members, draws: their menus' it
 	await w.click("Labels: Label 7");
 	await w.see("New label…");
 	await w.screenshot("flux-crowd-labels");
-	await w.key("Down");
+	// Thirty run past its foot: what's typed keeps those that have it, and Enter picks the first.
+	await w.type("28");
+	await w.gone("New label…");
+	await w.see("Label 28");
+	await w.screenshot("flux-crowd-labels-searched");
 	await w.key("Enter");
 	await t.until(() => labels() !== was, { what: "a label pushed" });
 	// Its assignees, each with their mark, and their handle under their name.

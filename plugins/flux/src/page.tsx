@@ -5,7 +5,7 @@ import { storage, ui, type Child, type ColorValue, type IconName, type MenuChild
 import type { Comment as IssueComment, Issue, IssuePatch, Label, Member, Project } from "./contract";
 import { ConnectForm } from "./connect";
 import { hub } from "./hub";
-import { CLOSED_STATUSES, COLORS, PRIORITIES, PRIORITY_LABELS, PRIORITY_LEVEL, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
+import { CLOSED_STATUSES, COLORS, PRIORITIES, PRIORITY_LABELS, PRIORITY_LEVEL, SEARCH, STATUSES, STATUS_LABELS, type ColorName, type Priority, type Status } from "./flux";
 import { CommentEditor, DescriptionEditor, editorImages, mentionOptions, startAgent, uploadInto, uploading } from "./edit";
 import type { Flux } from "./service";
 import { threadInfo } from "./threads";
@@ -385,7 +385,7 @@ function Toolbar({ flux, project, scope, options }: { flux: Flux; project: Proje
 			    character's typed, doesn't build it anew, and its field keep the focus. */}
 			<ui.box key="bar" style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", ...(narrowSearch ? { display: "none", media: [{ minWidth: WIDE, style: { display: "flex" } }] } : null) }}>
 				{/* The one part that shrinks: its name cut short, once all else has given way. */}
-				<ui.menu label={`Project: ${project ? project.name : "All projects"}`} style={{ ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }}>
+				<ui.menu label={`Project: ${project ? project.name : "All projects"}`} search="Go to project…" style={{ ...ghostChip, minWidth: 0, maxWidth: 224, flexShrink: 1 }}>
 					{project ? <ProjectMark project={project} size={16} /> : <FluxMark size={16} />}
 					<ui.text style={{ fontSize: 14, minWidth: 0 }} maxLines={1}>{project ? project.name : "All projects"}</ui.text>
 					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2", flexShrink: 0 }} />
@@ -636,7 +636,7 @@ function Card({ flux, issue, group, index, options, showProject }: { flux: Flux;
 						{shows(options, "priority") ? <Picker label={`Priority: ${PRIORITY_LABELS[issue.priority]}`} style={{ ...field, width: 22, paddingLeft: 0, paddingRight: 0, backgroundColor: "transparent" }}><PriorityIcon priority={issue.priority} size={12} />{() => pickerItems(flux, issue, "priority")}</Picker> : null}
 						{shows(options, "dueDate") && issue.dueDate ? <Picker label={`Due ${dueLabel(issue.dueDate)}`} style={{ ...field, backgroundColor: "transparent" }}>{dueContent(issue.dueDate)}{() => pickerItems(flux, issue, "due")}</Picker> : null}
 						{issue.subIssueCount > 0 ? <SubIssueChip done={issue.subIssueDoneCount} total={issue.subIssueCount} /> : null}
-						{shows(options, "labels") ? marks.map((item) => <Picker key={item.id} label={`Labels: ${item.name}`} style={{ ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }}>{tagContent(item)}{() => pickerItems(flux, issue, "labels")}</Picker>) : null}
+						{shows(options, "labels") ? marks.map((item) => <Picker key={item.id} label={`Labels: ${item.name}`} search={SEARCH.labels} style={{ ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }}>{tagContent(item)}{() => pickerItems(flux, issue, "labels")}</Picker>) : null}
 						{shows(options, "agents") && issue.threadIds.length > 0 ? <AgentChip issue={issue} /> : null}
 					</ui.box>
 				) : null}
@@ -644,7 +644,7 @@ function Card({ flux, issue, group, index, options, showProject }: { flux: Flux;
 			</ui.box>
 			{/* Assignees at the top, Start agent at the foot, as Flux's. */}
 			<ui.box style={{ flexShrink: 0, alignItems: "flex-end", justifyContent: "space-between", gap: 8, alignSelf: "stretch" }}>
-				{shows(options, "assignee") ? <Picker label={assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign"} style={{ minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }}>{assignees.length ? <AvatarStack members={assignees} size={20} ring="overlay" /> : <Unassigned size={20} />}{() => pickerItems(flux, issue, "assignees")}</Picker> : <ui.box />}
+				{shows(options, "assignee") ? <Picker label={assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign"} search={SEARCH.assignees} style={{ minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "center", borderRadius: 6, backgroundColor: "transparent" }}>{assignees.length ? <AvatarStack members={assignees} size={20} ring="overlay" /> : <Unassigned size={20} />}{() => pickerItems(flux, issue, "assignees")}</Picker> : <ui.box />}
 				{issue.threadIds.length === 0 && !CLOSED_STATUSES.has(issue.status) ? <StartAgentButton issue={issue} bordered /> : null}
 			</ui.box>
 		</ui.box>
@@ -677,8 +677,8 @@ function pickerItems(flux: Flux, issue: Issue, kind: "status" | "priority" | "du
 
 /** A chip that picks its property in place, as on Flux's cards: its items
  * a function, built as it opens, as every card on a board has its own. */
-function Picker({ label, style, children }: { label: string; style: Style; children: MenuChild }) {
-	return <ui.menu label={label} style={{ ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>{children}</ui.menu>;
+function Picker({ label, search, style, children }: { label: string; search?: string; style: Style; children: MenuChild }) {
+	return <ui.menu label={label} search={search} style={{ ...style, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>{children}</ui.menu>;
 }
 
 /** Flux's bordered field chip: priority, due date, sub-issues, labels, agents. */
@@ -919,10 +919,10 @@ function ListRow({ flux, issue, group, index, options, showProject, keyWidth }: 
 			{shows(options, "dueDate") && issue.dueDate ? <ui.box style={{ ...from(MD), flexShrink: 0 }}><Picker label={`Due ${dueLabel(issue.dueDate)}`} style={{ ...field, backgroundColor: "transparent" }}>{dueContent(issue.dueDate)}{() => pickerItems(flux, issue, "due")}</Picker></ui.box> : null}
 			{shows(options, "labels") ? (
 				<ui.box style={{ ...from(SM), width: 144, flexShrink: 0, flexDirection: "row", gap: 4, justifyContent: "flex-end", overflow: "hidden" }}>
-					{marks.map((item) => <Picker key={item.id} label={`Labels: ${item.name}`} style={{ ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }}>{tagContent(item)}{() => pickerItems(flux, issue, "labels")}</Picker>)}
+					{marks.map((item) => <Picker key={item.id} label={`Labels: ${item.name}`} search={SEARCH.labels} style={{ ...field, justifyContent: "flex-start", maxWidth: 144, backgroundColor: "transparent" }}>{tagContent(item)}{() => pickerItems(flux, issue, "labels")}</Picker>)}
 				</ui.box>
 			) : null}
-			{shows(options, "assignee") ? <Picker label={assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign"} style={{ minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }}>{assignees.length ? <AvatarStack members={assignees} size={20} /> : <Unassigned size={20} />}{() => pickerItems(flux, issue, "assignees")}</Picker> : null}
+			{shows(options, "assignee") ? <Picker label={assignees.length ? `Assignees: ${assignees.map((m) => m.name).join(", ")}` : "Assign"} search={SEARCH.assignees} style={{ minWidth: 24, height: 24, paddingLeft: 2, paddingRight: 2, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, borderRadius: 6, backgroundColor: "transparent" }}>{assignees.length ? <AvatarStack members={assignees} size={20} /> : <Unassigned size={20} />}{() => pickerItems(flux, issue, "assignees")}</Picker> : null}
 			{shows(options, "created") ? <ui.text style={{ ...from(MD), fontSize: 12, color: "text2", width: 48, textAlign: "right", flexShrink: 0 }} tooltip={`Created ${new Date(issue.createdAt).toLocaleString()}`}>{monthDay(issue.createdAt)}</ui.text> : null}
 			{shows(options, "updated") ? <ui.text style={{ ...from(SM), fontSize: 12, color: "text2", width: 40, textAlign: "right", flexShrink: 0 }} tooltip={`Updated ${new Date(issue.updatedAt).toLocaleString()}`}>{ago(issue.updatedAt)}</ui.text> : null}
 		</ui.box>
@@ -1387,7 +1387,7 @@ export function NewIssue({ flux }: { flux: Flux }) {
 		<ui.box style={{ gap: 0 }} keys={["Mod+Enter"]} onKeyDown={() => void submitNew(flux)}>
 			<ui.box style={{ gap: 12, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 8 }}>
 				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
-					<ui.menu label={`Project: ${project?.name ?? "None"}`} style={{ ...ghostChip, height: 28, paddingLeft: 4 }}>
+					<ui.menu label={`Project: ${project?.name ?? "None"}`} search={SEARCH.project} style={{ ...ghostChip, height: 28, paddingLeft: 4 }}>
 						<ProjectMark project={project} size={14} />
 						<ui.text style={{ fontSize: 13 }}>{project?.name ?? "Project"}</ui.text>
 						{projects.map((item) => <ui.item key={item.id} {...navMark(item)} checked={item.id === st.draftProject} onClick={() => { st.draftProject = item.id; }}>{item.name}</ui.item>)}
@@ -1415,7 +1415,7 @@ export function NewIssue({ flux }: { flux: Flux }) {
 					<ui.text style={{ ...chipText, color: st.draftPriority === "none" ? "text2" : "text" }}>{st.draftPriority === "none" ? "Priority" : PRIORITY_LABELS[st.draftPriority]}</ui.text>
 					{PRIORITIES.map((priority) => <ui.item key={priority} {...priorityMark(priority)} checked={st.draftPriority === priority} onClick={() => { st.draftPriority = priority; }}>{PRIORITY_LABELS[priority]}</ui.item>)}
 				</ui.menu>
-				<ui.menu label={chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee"} style={chip}>
+				<ui.menu label={chosenPeople.length ? `Assignee: ${chosenPeople.map((m) => m.name).join(", ")}` : "Assignee"} search={SEARCH.assignees} style={chip}>
 					{chosenPeople.length ? <AvatarStack members={chosenPeople} size={16} ring="overlay" /> : <ui.icon icon="user" style={{ width: 14, height: 14, color: "text2" }} />}
 					<ui.text style={{ ...chipText, maxWidth: 180, color: chosenPeople.length ? "text" : "text2" }} maxLines={1}>{chosenPeople.length ? chosenPeople.map((m) => m.name).join(", ") : "Assignee"}</ui.text>
 					{[...members].sort((a, b) => Number(b.id === me) - Number(a.id === me)).map((member) => <ui.item key={member.id} {...memberMark(member)} detail={"@" + member.username} checked={st.draftAssignees.includes(member.id)} onClick={() => { st.draftAssignees = st.draftAssignees.includes(member.id) ? st.draftAssignees.filter((id) => id !== member.id) : [...st.draftAssignees, member.id]; }}>{member.id === me ? `${member.name} (you)` : member.name}</ui.item>)}
@@ -1745,7 +1745,7 @@ function SubRow({ flux, sub, members, properties }: { flux: Flux; sub: Issue; me
 			{shown("priority") && sub.priority !== "none" ? <PriorityIcon priority={sub.priority} size={14} /> : null}
 			<ui.text style={{ fontSize: 14, flex: 1, minWidth: 0, color: closed ? "text2" : "text", textDecoration: closed ? "line-through" : "none" }} maxLines={1}>{sub.title.trim() || "Untitled"}</ui.text>
 			{shown("labels") && labels.length ? <ui.box style={{ ...from(SM), flexDirection: "row", gap: 4, flexShrink: 0 }}>{labels.map((l) => <ui.box key={l.id} style={field}>{tagContent(l)}</ui.box>)}</ui.box> : null}
-			{shown("assignee") ? <Picker label={who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee"} style={{ ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }}>{who.length ? <AvatarStack members={who} size={20} /> : <Unassigned size={20} />}{pickerItems(flux, sub, "assignees")}</Picker> : null}
+			{shown("assignee") ? <Picker label={who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "No assignee"} search={SEARCH.assignees} style={{ ...cell, width: "auto", minWidth: 24, paddingLeft: 2, paddingRight: 2 }}>{who.length ? <AvatarStack members={who} size={20} /> : <Unassigned size={20} />}{pickerItems(flux, sub, "assignees")}</Picker> : null}
 		</ui.box>
 	);
 }
@@ -1801,12 +1801,12 @@ function SubComposer({ flux, parent }: { flux: Flux; parent: Issue }) {
 						{chipText(c.priority === "none" ? "Priority" : PRIORITY_LABELS[c.priority], c.priority === "none")}
 						{[...PRIORITIES.filter((p) => p === "none"), ...PRIORITIES.filter((p) => p !== "none")].map((p) => <ui.item key={p} {...priorityMark(p)} checked={c.priority === p} onClick={() => { c.priority = p; }}>{PRIORITY_LABELS[p]}</ui.item>)}
 					</ui.menu>
-					<ui.menu label={who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee"} style={chip}>
+					<ui.menu label={who.length ? `Assignees: ${who.map((m) => m.name).join(", ")}` : "Assignee"} search={SEARCH.assignees} style={chip}>
 						{who.length ? <AvatarStack members={who} size={16} ring="overlay" /> : <ui.icon icon="user" style={{ width: 14, height: 14, color: "text2" }} />}
 						{chipText(who.length ? who.map((m) => m.name).join(", ") : "Assignee", who.length === 0)}
 						{() => [...members].sort((a, b) => Number(b.id === me) - Number(a.id === me)).map((m) => <ui.item key={m.id} {...memberMark(m)} detail={"@" + m.username} checked={c.assigneeIds.includes(m.id)} onClick={() => { c.assigneeIds = toggle(c.assigneeIds, m.id); }}>{m.id === me ? `${m.name} (you)` : m.name}</ui.item>)}
 					</ui.menu>
-					<ui.menu label={chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels"} style={chip}>
+					<ui.menu label={chosen.length ? `Labels: ${chosen.map((l) => l.name).join(", ")}` : "Labels"} search={SEARCH.labels} style={chip}>
 						{chosen.length ? (
 							<ui.box style={{ flexDirection: "row" }}>
 								{chosen.map((l, n) => <ui.box key={l.id} style={{ width: 10, height: 10, borderRadius: "full", marginLeft: n ? -2 : 0, backgroundColor: colorOf[l.color] ?? "text2", ...gapRing("overlay") }} />)}
@@ -1949,7 +1949,7 @@ function PropertyRail({ flux, issue, project, members }: { flux: Flux; issue: Is
 		<ui.box style={{ width: 240, flexShrink: 0, gap: 32, paddingLeft: 40 }}>
 			<ui.box style={{ gap: 2 }}>
 				<ui.text style={railHeading}>Properties</ui.text>
-				<RailRow icon={<ProjectMark project={project} />} label="Project" value={project?.name ?? "None"} menu={"Project: " + (project?.name ?? "None")}>
+				<RailRow icon={<ProjectMark project={project} />} label="Project" search={SEARCH.project} value={project?.name ?? "None"} menu={"Project: " + (project?.name ?? "None")}>
 					{() => flux.projects().map((item) => <ui.item key={item.id} {...navMark(item)} checked={item.id === issue.projectId} onClick={() => edits.update({ projectId: item.id })}>{item.name}</ui.item>)}
 				</RailRow>
 				<RailRow icon={<StatusIcon status={issue.status} />} label="Status" value={STATUS_LABELS[issue.status]} menu={"Status: " + STATUS_LABELS[issue.status]}>
@@ -1958,7 +1958,7 @@ function PropertyRail({ flux, issue, project, members }: { flux: Flux; issue: Is
 				<RailRow icon={<PriorityIcon priority={issue.priority} />} label="Priority" value={issue.priority === "none" ? "Set priority" : PRIORITY_LABELS[issue.priority]} muted={issue.priority === "none"} menu={"Priority: " + PRIORITY_LABELS[issue.priority]}>
 					{() => pickerItems(flux, issue, "priority")}
 				</RailRow>
-				<RailRow icon={assignees.length ? <AvatarStack members={assignees} size={14} ring="bg" /> : <ui.icon icon="user" style={{ width: 14, height: 14, color: "text2" }} />} label="Assignee" value={assignees.length > 1 ? `${assignees[0]!.name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign"} muted={assignees.length === 0} menu={assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign"}>
+				<RailRow icon={assignees.length ? <AvatarStack members={assignees} size={14} ring="bg" /> : <ui.icon icon="user" style={{ width: 14, height: 14, color: "text2" }} />} label="Assignee" search={SEARCH.assignees} value={assignees.length > 1 ? `${assignees[0]!.name} +${assignees.length - 1}` : assignees[0]?.name ?? "Assign"} muted={assignees.length === 0} menu={assignees.length ? "Assignees: " + assignees.map((m) => m.name).join(", ") : "Assign"}>
 					{() => pickerItems(flux, issue, "assignees")}
 				</RailRow>
 				<RailRow icon={<ui.icon icon="calendar" style={{ width: 14, height: 14, color: issue.dueDate ? dueTone(issue.dueDate) : "text2" }} />} label="Due date" value={issue.dueDate ? dueLabel(issue.dueDate) : "Due date"} menu={issue.dueDate ? "Due " + issue.dueDate : "Due date"}>
@@ -1968,7 +1968,7 @@ function PropertyRail({ flux, issue, project, members }: { flux: Flux; issue: Is
 			<ui.box style={{ gap: 2 }}>
 				<ui.text style={railHeading}>Labels</ui.text>
 				{labels.length === 0 ? (
-					<ui.menu label="Add label" style={{ flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
+					<ui.menu label="Add label" search={SEARCH.labels} style={{ flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-start", alignSelf: "flex-start", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
 						<ui.icon icon="tag" style={{ width: 14, height: 14, color: "text2" }} />
 						<ui.text style={{ fontSize: 14, color: "text2" }}>Add label</ui.text>
 						{labelItems}
@@ -1976,13 +1976,13 @@ function PropertyRail({ flux, issue, project, members }: { flux: Flux; issue: Is
 				) : (
 					<ui.box style={{ flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center", paddingLeft: 2 }}>
 						{labels.map((item) => (
-							<ui.menu key={item.id} label={`Labels: ${item.name}`} style={{ ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
+							<ui.menu key={item.id} label={`Labels: ${item.name}`} search={SEARCH.labels} style={{ ...field, height: 28, paddingLeft: 8, paddingRight: 8, backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } }}>
 								<ui.box style={{ width: 8, height: 8, borderRadius: "full", backgroundColor: colorOf[item.color] ?? "text3" }} />
 								<ui.text style={{ fontSize: 12, fontWeight: 500 }} maxLines={1}>{item.name}</ui.text>
 								{labelItems}
 							</ui.menu>
 						))}
-						<ui.menu label="" icon="plus" tooltip="Add label">{labelItems}</ui.menu>
+						<ui.menu label="" icon="plus" tooltip="Add label" search={SEARCH.labels}>{labelItems}</ui.menu>
 					</ui.box>
 				)}
 			</ui.box>
@@ -2008,9 +2008,9 @@ function PropertyRail({ flux, issue, project, members }: { flux: Flux; issue: Is
 	);
 }
 
-function RailRow({ icon, value, menu, muted, children }: { icon: Child; label: string; value: string; menu: string; muted?: boolean; children?: MenuChild }) {
+function RailRow({ icon, value, menu, search, muted, children }: { icon: Child; label: string; value: string; menu: string; search?: string; muted?: boolean; children?: MenuChild }) {
 	return (
-		<ui.menu label={menu} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }}>
+		<ui.menu label={menu} search={search} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", backgroundColor: "transparent", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "press" } }}>
 			{icon}
 			<ui.text style={{ fontSize: 14, flex: 1, minWidth: 0, color: muted ? "text2" : "text" }} maxLines={1}>{value}</ui.text>
 			{children}
