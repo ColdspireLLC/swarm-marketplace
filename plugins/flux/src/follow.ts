@@ -1,8 +1,12 @@
-// The issue's status follows the thread's merge request: opening one moves
-// the issue to In Review, merging it completes the issue, and closing it
-// without merging puts a review back to In Progress.
+// The issue's status follows the thread's merge request: opening or merging
+// one moves the issue to In Review, and closing it without merging puts a
+// review back to In Progress. Nothing here completes an issue: a merge is
+// not a release (a branch merged may wait for a build, a deploy, or a
+// hotpatch of the version that's out), so whoever knows it reached its
+// users, the agent or you, says so.
 import { call, on } from "swarm";
 import type { Hub } from "./hub";
+import { requestStatus } from "./requeststatus";
 
 export function watchMergeRequests(hub: Hub) {
 	const pending = new Map<string, number>();
@@ -28,11 +32,8 @@ export function watchMergeRequests(hub: Hub) {
 		if (!issue) return;
 		const state = detail.live?.mr?.State ?? "";
 		const opened = Boolean(detail.thread?.pr);
-		let status = issue.status;
-		if (state === "merged") status = "complete";
-		else if (state === "closed" && issue.status === "review") status = "progress";
-		else if (opened && (issue.status === "backlog" || issue.status === "todo" || issue.status === "progress")) status = "review";
-		if (status !== issue.status && issue.status !== "canceled") void flux.updateIssue(issue.id, { status }).catch(() => {});
+		const status = requestStatus(issue.status, state, opened);
+		if (status !== issue.status) void flux.updateIssue(issue.id, { status }).catch(() => {});
 	};
 	on("event", (event) => {
 		if (!event.thread) return;
