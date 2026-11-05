@@ -453,6 +453,13 @@ const bar = { flex: 1, minWidth: 0, height: "100%", flexDirection: "row", gap: 6
 // A menu's trigger without chrome: the ghost's background on hover, and while its menu is open.
 const ghostChip = { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, gap: 6, flexDirection: "row", alignItems: "center", borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } } as const;
 
+// The display options hang from the top of the page, just under their
+// button in the bar above it, their right edge on its own: in from the
+// page's edge by the bar's padding, New issue (its + alone when narrow)
+// and the bar's gap. NEW_W is New issue's width, as Swarm draws it.
+const NEW_W = 94;
+const DISPLAY_RIGHT = { narrow: EDGE - 4 + 28 + 6, mid: EDGE - 4 + NEW_W + 6, wide: 16 + NEW_W + 6 };
+
 function displayPanel(options: DisplayOptions, singleProject: boolean): Child {
 	const set = (patch: Partial<DisplayOptions>) => setDisplay({ ...options, ...patch });
 	const toggle = (property: Property) => {
@@ -465,7 +472,7 @@ function displayPanel(options: DisplayOptions, singleProject: boolean): Child {
 	const picked = (on: boolean): Style => ({ borderRadius: "control", border: on ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on ? "press" : "transparent", color: on ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on ? "press" : "hover", color: "text" } });
 	return [
 		<ui.pressable key="display-shade" label="Close display options" onClick={close} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 }} />,
-		<ui.box key="display-panel" label="Display options" style={{ position: "absolute", top: 44, right: 16, width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }}>
+		<ui.box key="display-panel" label="Display options" style={{ position: "absolute", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288, zIndex: 21, padding: 8, borderRadius: "card", backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 } }}>
 			<ui.box style={{ flexDirection: "row", gap: 4, padding: 4 }}>
 				{LAYOUTS.map((layout) => (
 					<ui.pressable key={"layout-" + layout} label={layout === "board" ? "Board" : "List"} role="radio" checked={options.layout === layout} onClick={() => set({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping })} style={{ ...picked(options.layout === layout), flex: 1, height: 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }}>
