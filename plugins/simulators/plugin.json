@@ -1,0 +1,374 @@
+{
+	"$schema": "./plugin.schema.json",
+	"id": "simulators",
+	"name": "Simulators",
+	"version": "0.1.0",
+	"description": "iOS simulators and Android emulators of the agents' own, one thread's each, slim: about a third of the memory, so more of them run at once. Screenshots, touches, apps and device settings through tools, live in Swarm's window.",
+	"adds": [
+		"Side panel",
+		"Composer status",
+		"Agent tools",
+		"Agent skill",
+		"Agent instructions",
+		"Command line"
+	],
+	"icon": "icon.svg",
+	"main": "main.tsx",
+	"permissions": {
+		"api": [
+			"read",
+			"media"
+		],
+		"process": [
+			"sh",
+			"curl",
+			"ssh"
+		],
+		"machines": true,
+		"storage": true
+	},
+	"settings": [
+		{
+			"key": "iosAgents",
+			"title": "iOS simulators for agents",
+			"type": "number",
+			"default": 2,
+			"min": 0,
+			"max": 8,
+			"description": "How many the agents may run at once, a thread's each (about 1 GB each slim, 3 GB stock). 0: none."
+		},
+		{
+			"key": "androidAgents",
+			"title": "Android emulators for agents",
+			"type": "number",
+			"default": 1,
+			"min": 0,
+			"max": 6,
+			"description": "How many the agents may run at once, a thread's each (about 2.5 GB each slim, 8 GB stock). 0: none."
+		},
+		{
+			"key": "slim",
+			"title": "Slim simulators",
+			"type": "toggle",
+			"default": true,
+			"description": "Run the agents' simulators with what they rarely need turned off: on iOS, Siri, Spotlight, widgets, iCloud, photo analysis and more (simslim's lists); on Android, Google's apps and services, sync and background processes (avdslim's). Applied as each next boots. Never the user's own simulators."
+		},
+		{
+			"key": "keepIOS",
+			"title": "Keep in iOS simulators",
+			"type": "text",
+			"default": "store, web, icloud, com.apple.healthd",
+			"placeholder": "store, web, com.apple.healthd",
+			"description": "What slimming leaves on: category ids (swarm simulators slimming lists them) or single launchd labels. The default keeps push and StoreKit, universal links, iCloud and HealthKit."
+		},
+		{
+			"key": "keepAndroid",
+			"title": "Keep in Android emulators",
+			"type": "text",
+			"default": "",
+			"placeholder": "location, media",
+			"description": "What slimming leaves on: category ids (swarm simulators slimming lists them) or single packages."
+		},
+		{
+			"key": "iosModel",
+			"title": "iOS model",
+			"type": "text",
+			"default": "",
+			"placeholder": "iPhone 17 Pro",
+			"description": "The model agents' simulators are made of. Empty: the newest iPhone Pro of the newest iOS."
+		},
+		{
+			"key": "iosHost",
+			"title": "Mac",
+			"type": "text",
+			"default": "",
+			"placeholder": "Anthonys-Mac-mini",
+			"description": "The Mac the iOS simulators run on: one joined to Swarm (its name), or an ssh target. Empty: this computer where it's a Mac, else the first Mac joined to Swarm."
+		},
+		{
+			"key": "androidHost",
+			"title": "Android emulators' computer",
+			"type": "text",
+			"default": "",
+			"description": "Where the Android emulators run: a computer joined to Swarm, or an ssh target. Empty: where the iOS simulators run."
+		},
+		{
+			"key": "androidSdk",
+			"title": "Android SDK",
+			"type": "text",
+			"default": "",
+			"placeholder": "~/Library/Android/sdk",
+			"description": "The SDK's folder there. Empty: $ANDROID_HOME, Android Studio's, Homebrew's, or bb's Simulator plugin's, the first with an emulator."
+		},
+		{
+			"key": "androidImage",
+			"title": "Android system image",
+			"type": "text",
+			"default": "",
+			"placeholder": "system-images;android-36;google_apis;arm64-v8a",
+			"description": "What agents' emulators are made of. Empty: the newest Google APIs image installed."
+		}
+	],
+	"tools": [
+		{
+			"name": "sim_status",
+			"title": "Simulators' status",
+			"description": "The agents' iOS simulators and Android emulators: each one, who has it, how it is, who waits. Never waits.",
+			"input": {
+				"type": "object",
+				"properties": {},
+				"required": []
+			},
+			"readOnly": true
+		},
+		{
+			"name": "sim_take",
+			"title": "Take a simulator",
+			"description": "Take an iOS simulator or Android emulator of your own, a fresh one of the plugin's (none of the user's apps or data), made, slimmed and booted as needed: its name and UDID or adb serial, to build and install for. Yours alone until your turn of the conversation ends. Every other sim_* tool takes one by itself; take first to build for it.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"note": {
+						"type": "string",
+						"maxLength": 200,
+						"description": "What you're testing, shown to the user."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": []
+			}
+		},
+		{
+			"name": "sim_release",
+			"title": "Give a simulator back",
+			"description": "Give your simulator back now (both when no platform is named). Your turn ending gives it back anyway; the same thread gets it back as it left it if nobody took it.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					}
+				},
+				"required": []
+			}
+		},
+		{
+			"name": "sim_capture",
+			"title": "Screenshot your simulator",
+			"description": "A screenshot of your simulator's screen, at its pixels, which sim_drive takes. show: also give a Markdown image line to put in your reply, which shows it in the thread.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"show": {
+						"type": "boolean",
+						"description": "Show it to the user: a Markdown image line for your reply."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": []
+			},
+			"readOnly": true
+		},
+		{
+			"name": "sim_describe",
+			"title": "Read your simulator's screen",
+			"description": "Your simulator's screen as named elements (buttons, fields, cells, text) and the point to tap each, in screenshot pixels: cheaper and surer than a screenshot to find where to tap. iOS through WebDriverAgent (a few minutes to build the first time), Android through uiautomator.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": []
+			},
+			"readOnly": true
+		},
+		{
+			"name": "sim_drive",
+			"title": "Drive your simulator",
+			"description": "Taps, swipes, keys and text on your simulator, in screenshot pixels, one step per entry: tap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], type TEXT, key NAME (iOS: home, enter, lock, volumeup, volumedown; Android: home, back, enter, recents, delete, tab, power), wait MS. capture: a screenshot after.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"steps": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						},
+						"minItems": 1,
+						"maxItems": 40
+					},
+					"capture": {
+						"type": "boolean",
+						"description": "Return a screenshot after the steps."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": [
+					"steps"
+				]
+			}
+		},
+		{
+			"name": "sim_app",
+			"title": "An app on your simulator",
+			"description": "List the installed apps, or launch, terminate, install (an .app or .apk path on the simulators' machine), uninstall an app, open a URL or deep link (openurl), or read an app's recent logs.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"action": {
+						"type": "string",
+						"enum": [
+							"list",
+							"launch",
+							"terminate",
+							"install",
+							"uninstall",
+							"openurl",
+							"logs"
+						]
+					},
+					"target": {
+						"type": "string",
+						"description": "Bundle id or package; a path for install; a URL for openurl."
+					},
+					"args": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Launch arguments (iOS)."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": [
+					"action"
+				]
+			}
+		},
+		{
+			"name": "sim_device",
+			"title": "Your simulator itself",
+			"description": "Change your simulator: appearance (dark|light), text-size (iOS: extra-small … accessibility-extra-extra-extra-large; Android: a font scale, 1.3), location (LAT,LON, or clear), permission (grant|revoke|reset SERVICE, with app), push (the payload's JSON, with app; iOS), status-bar (clean, or clear). Or shutdown, reboot, erase (no apps, no data), measure (its memory).",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"action": {
+						"type": "string",
+						"enum": [
+							"appearance",
+							"text-size",
+							"location",
+							"permission",
+							"push",
+							"status-bar",
+							"shutdown",
+							"reboot",
+							"erase",
+							"measure"
+						]
+					},
+					"value": {
+						"type": "string"
+					},
+					"app": {
+						"type": "string",
+						"description": "The app's bundle id or package, for permission and push."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": [
+					"action"
+				]
+			}
+		}
+	],
+	"hooks": [
+		"turnEnd"
+	],
+	"instructions": "AGENTS.md",
+	"skills": "skills"
+}
