@@ -11,6 +11,14 @@ or that you're in line, answers within a minute while it goes on: call again
 (a cold boot takes a few minutes on a busy Mac). Ending your turn gives it
 back.
 
+Past taps and screenshots, `sim_shell` runs commands on it (root on
+Android through su, which keeps your forwards, unlike `adb root`),
+`sim_files` copies files between your own computer and it, `sim_app
+install` takes a build on your own computer, and `sim_forward` makes its
+localhost reach your dev server (Metro) wherever the simulators run: no
+copying by hand, no forwarders of your own, no adb from another tool on
+it.
+
 Look before you act on a screen you haven't seen this turn (`sim_describe`
 for where to tap, `sim_capture` to see it). The simulators are slim:
 services they rarely need are off (on iOS Siri, Spotlight, widgets,

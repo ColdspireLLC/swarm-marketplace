@@ -63,7 +63,7 @@ ls -d "$root"/system-images/*/*/* 2>/dev/null | sed "s|^$root/||" | sed 's/^/ima
 	return s;
 }
 
-const env = (s: Sdk) => `export ANDROID_HOME="${s.root}" ANDROID_SDK_ROOT="${s.root}" ANDROID_AVD_HOME="${AVD_HOME}"; adb="${s.adb}"`;
+export const env = (s: Sdk) => `export ANDROID_HOME="${s.root}" ANDROID_SDK_ROOT="${s.root}" ANDROID_AVD_HOME="${AVD_HOME}"; adb="${s.adb}"`;
 
 /**
  * Slot n's AVD, written where there's none, or where it's slim and
@@ -138,20 +138,25 @@ echo "the emulator didn't boot in 9 minutes: $log on the host" >&2; exit 1`,
 }
 
 /**
- * Wakes an emulator's screen, kept on from then, at its home screen,
- * without a dialog over it (Android's error dialogs are hidden: on a busy
- * Mac System UI is slow enough to be called not responding), and waits
- * until System UI is up (its status bar): Android says it's booted well
- * before, minutes before on a busy Mac.
+ * Keeps an emulator's screen on and awake, and waits until System UI is
+ * up (its status bar): Android says it's booted well before, minutes
+ * before on a busy Mac. Its error dialogs are hidden: there System UI is
+ * slow enough to be called not responding. home, for one just booted or
+ * handed to another thread, also goes to its home screen with nothing
+ * over it.
  */
-export async function wake(w: Where, s: Sdk, serial: string) {
+export async function wake(w: Where, s: Sdk, serial: string, home: boolean) {
+	// Home, and closing what's over it, only for one just booted or handed to another thread:
+	// for the thread at work it would send its app away (or dismiss the dialog it tests).
+	const front = home ? "am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1; input keyevent KEYCODE_HOME" : ":";
 	await shell(
 		w,
 		s,
 		serial,
 		`svc power stayon true; settings put system screen_off_timeout 1800000; settings put global hide_error_dialogs 1
 for i in $(seq 120); do
-  input keyevent KEYCODE_WAKEUP; am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1; input keyevent KEYCODE_HOME
+  [ "$(dumpsys power | grep -o 'mWakefulness=[A-Za-z]*')" = mWakefulness=Awake ] || input keyevent KEYCODE_WAKEUP
+  ${front}
   dumpsys window windows | grep -q ' StatusBar}' && exit 0
   sleep 2
 done

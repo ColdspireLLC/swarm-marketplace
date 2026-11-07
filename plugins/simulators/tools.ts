@@ -42,4 +42,7 @@ export function registerTools() {
 	simTool<P & { steps: string[]; capture?: boolean }>("sim_drive", (a, ctx) => ops.drive(ctx.thread, a.platform, a.steps, a));
 	simTool<P & { action: string; target?: string; args?: string[] }>("sim_app", (a, ctx) => ops.app(ctx.thread, a.platform, a.action, a.target, a));
 	simTool<P & { action: string; value?: string; app?: string }>("sim_device", (a, ctx) => ops.device(ctx.thread, a.platform, a.action, a.value, a));
+	simTool<P & { command: string; root?: boolean; timeout?: number }>("sim_shell", (a, ctx) => ops.shell(ctx.thread, a.platform, a.command, a));
+	simTool<P & { action: "put" | "get"; local: string; remote: string }>("sim_files", (a, ctx) => ops.files(ctx.thread, a.platform, a.action, a.local, a.remote, a));
+	simTool<P & { port?: number; to?: string; remove?: boolean }>("sim_forward", (a, ctx) => ops.forward(ctx.thread, a.platform, a.port, a));
 }
