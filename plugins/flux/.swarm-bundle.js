@@ -84307,9 +84307,25 @@ function issueCard(flux2, issue2) {
     ] })
   ] }, issue2.id);
 }
+function issueLinks() {
+  return [...new Set(hub.all().map((f2) => f2.baseUrl).filter(Boolean))].map((url2) => `${url2.replace(/\/+$/, "")}/issue/{id}`);
+}
+var mentionsOn = false;
+var linksShown = "";
+function syncIssueLinks() {
+  const links = issueLinks();
+  const key = links.join("\n");
+  if (!mentionsOn || key === linksShown || typeof swarm3.mentions.links !== "function") return;
+  linksShown = key;
+  try {
+    swarm3.mentions.links("flux-issues", links);
+  } catch {
+  }
+}
 function activate() {
   ui17.tracked();
   hub.onChange = () => {
+    syncIssueLinks();
     badges();
     syncNav(flux);
     void refreshWorking();
@@ -84431,11 +84447,14 @@ function activate() {
     swarm3.mentions.provide({
       id: "flux-issues",
       label: "Flux issues",
-      // A sent message's @FLX-12 opens the issue's page.
+      // A sent message's @FLX-12 opens the issue's page, as does an agent's link to the issue in Flux.
       href: "swarm://plugin/flux/issues/{id}",
+      links: issueLinks(),
       search: (query) => {
         const needle = query.trim().toLowerCase();
-        return flux.issues().filter((issue2) => !needle || issue2.key.toLowerCase().includes(needle) || issue2.title.toLowerCase().includes(needle)).slice(0, 8).map((issue2) => ({ id: issue2.key, title: `${issue2.key} ${issue2.title}`, subtitle: STATUS_LABELS[issue2.status] }));
+        const found2 = needle ? hub.findIssue(needle)?.issue : void 0;
+        const exact = found2 && found2.key.toLowerCase() === needle ? [found2] : [];
+        return [...exact, ...flux.issues().filter((issue2) => !exact.includes(issue2) && (!needle || issue2.key.toLowerCase().includes(needle) || issue2.title.toLowerCase().includes(needle)))].slice(0, 8).map((issue2) => ({ id: issue2.key, title: `${issue2.key} ${issue2.title}`, subtitle: STATUS_LABELS[issue2.status], ...statusMark(issue2.status) }));
       },
       resolve: (id2) => {
         const issue2 = hub.findIssue(id2)?.issue;
@@ -84443,6 +84462,8 @@ function activate() {
         return { context: `Flux issue ${issue2.key}: ${issue2.title} (${STATUS_LABELS[issue2.status]}).` };
       }
     });
+    mentionsOn = true;
+    linksShown = issueLinks().join("\n");
   } catch {
   }
   ui17.directive({

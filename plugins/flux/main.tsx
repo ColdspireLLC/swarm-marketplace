@@ -22,6 +22,7 @@ import { ProjectDialog, closeProject, moveProject, openNewProject } from "./src/
 import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
 import { Avatar, IssueView, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
+import { statusMark } from "./src/menumarks";
 
 // The page and the commands use whichever Flux is active. What shows in a
 // thread is its issue's Flux, whichever is active: hub.issuesOfThread.
@@ -133,11 +134,32 @@ function issueCard(flux: Flux, issue: Issue): Child {
 	);
 }
 
+// Each Flux's issue pages, as an agent links them: a reply's link to one opens the issue here.
+function issueLinks(): string[] {
+	return [...new Set(hub.all().map((f) => f.baseUrl).filter(Boolean))].map((url) => `${url.replace(/\/+$/, "")}/issue/{id}`);
+}
+
+let mentionsOn = false;
+let linksShown = "";
+function syncIssueLinks() {
+	const links = issueLinks();
+	const key = links.join("\n");
+	// Swarms before swarm.mentions.links still open the issue's mentions.
+	if (!mentionsOn || key === linksShown || typeof swarm.mentions.links !== "function") return;
+	linksShown = key;
+	try {
+		swarm.mentions.links("flux-issues", links);
+	} catch {
+		// As provide: the rest of Flux still runs.
+	}
+}
+
 export function activate() {
 	// Its surfaces render as what they read changes: Flux's copy (the
 	// hub's), what's typed and chosen (its stores), storage and settings.
 	ui.tracked();
 	hub.onChange = () => {
+		syncIssueLinks();
 		badges();
 		syncNav(flux);
 		void refreshWorking();
@@ -287,14 +309,18 @@ export function activate() {
 		swarm.mentions.provide({
 			id: "flux-issues",
 			label: "Flux issues",
-			// A sent message's @FLX-12 opens the issue's page.
+			// A sent message's @FLX-12 opens the issue's page, as does an agent's link to the issue in Flux.
 			href: "swarm://plugin/flux/issues/{id}",
+			links: issueLinks(),
 			search: (query) => {
 				const needle = query.trim().toLowerCase();
-				return flux.issues()
-					.filter((issue) => !needle || issue.key.toLowerCase().includes(needle) || issue.title.toLowerCase().includes(needle))
+				// The issue of that key first, of any Flux: Swarm asks for one by its key, to show it as the pointer comes over a link to it.
+				const found = needle ? hub.findIssue(needle)?.issue : undefined;
+				const exact = found && found.key.toLowerCase() === needle ? [found] : [];
+				return [...exact, ...flux.issues().filter((issue) => !exact.includes(issue) && (!needle || issue.key.toLowerCase().includes(needle) || issue.title.toLowerCase().includes(needle)))]
 					.slice(0, 8)
-					.map((issue) => ({ id: issue.key, title: `${issue.key} ${issue.title}`, subtitle: STATUS_LABELS[issue.status] }));
+					// Its status's glyph, in its color, before the row, and as the pointer comes over a mention of it or a link to it.
+					.map((issue) => ({ id: issue.key, title: `${issue.key} ${issue.title}`, subtitle: STATUS_LABELS[issue.status], ...statusMark(issue.status) }));
 			},
 			resolve: (id) => {
 				const issue = hub.findIssue(id)?.issue;
@@ -302,6 +328,8 @@ export function activate() {
 				return { context: `Flux issue ${issue.key}: ${issue.title} (${STATUS_LABELS[issue.status]}).` };
 			},
 		});
+		mentionsOn = true;
+		linksShown = issueLinks().join("\n");
 	} catch {
 		// Mentions stay off until the grant is there. The rest of Flux still runs.
 	}
