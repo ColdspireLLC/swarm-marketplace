@@ -84407,6 +84407,8 @@ function activate() {
     swarm3.mentions.provide({
       id: "flux-issues",
       label: "Flux issues",
+      // A sent message's @FLX-12 opens the issue's page.
+      href: "swarm://plugin/flux/issues/{id}",
       search: (query) => {
         const needle = query.trim().toLowerCase();
         return flux.issues().filter((issue2) => !needle || issue2.key.toLowerCase().includes(needle) || issue2.title.toLowerCase().includes(needle)).slice(0, 8).map((issue2) => ({ id: issue2.key, title: `${issue2.key} ${issue2.title}`, subtitle: STATUS_LABELS[issue2.status] }));
