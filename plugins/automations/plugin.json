@@ -1,0 +1,19 @@
+{
+	"$schema": "./plugin.schema.json",
+	"id": "automations",
+	"name": "Automations",
+	"version": "0.1.0",
+	"description": "Scheduled work: an agent given a prompt, or a script, on a cron or once. Each run's thread or output, and its history, on a page of its own; agents make them with swarm automations.",
+	"adds": ["Page", "Composer status", "Thread menu", "Command line", "Agent skill"],
+	"icon": "icon.svg",
+	"main": "main.tsx",
+	"skills": "skills",
+	"hooks": ["turnEnd"],
+	"permissions": {
+		"api": ["read", "threads"],
+		"threads": true,
+		"process": ["sh", "bash", "node", "python3"],
+		"storage": true,
+		"required": ["storage", "api:read", "api:threads", "threads"]
+	}
+}
