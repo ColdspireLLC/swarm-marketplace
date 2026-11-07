@@ -29,6 +29,12 @@ minutes, default 4).
      `npx expo run:android --device SERIAL`.
    Your shell may be on another computer than the simulators: then build
    where they are, or copy the build there first.
+   Your shell may be elsewhere than the simulators: `sim_app install`
+   takes the build where you made it and copies it over.
+   For a dev server (Metro, say), `sim_forward` with its port makes the
+   device's localhost:PORT reach your computer's (to: host:port or
+   another port); it stays across the emulator's reboots and goes when
+   the device does.
 3. `sim_app launch TARGET` (bundle id or package), or `openurl` a deep link.
 4. `sim_describe` for the elements and where to tap; `sim_drive` with
    steps in screenshot pixels (`tap X Y`, `swipe X1 Y1 X2 Y2`,
@@ -36,6 +42,19 @@ minutes, default 4).
 5. `sim_capture` with `show: true` to show the user what you saw: put the
    line it gives in your reply.
 6. `sim_release` when done early; your turn ending gives it back anyway.
+
+## Commands and files on it
+
+- `sim_shell`: a command on your device. Android: its shell; `root: true`
+  through su (sqlite3 on an app's database, pm, settings, logcat). Don't
+  `adb root`: it restarts adbd and drops your forwards. iOS: on the Mac,
+  in the simulator's data folder, `$UDID` and `$DATA` set (`xcrun simctl
+  get_app_container $UDID BUNDLE data`, sqlite3).
+- `sim_files`: `put` a file from your computer onto the device, `get` one
+  back. Android: a device path (root outside /sdcard). iOS:
+  `app:BUNDLE/Documents/…`, or a path in the simulator's data folder.
+- Drive it with the plugin's tools, never adb or simctl through another
+  tool (Test machines): that's another thread's way in.
 
 ## The device
 

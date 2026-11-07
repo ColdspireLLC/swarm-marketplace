@@ -5,7 +5,9 @@
 // in that call where it holds none.
 import { call } from "swarm";
 import * as android from "./android";
+import * as access from "./access";
 import { elementLines } from "./elements";
+import { bring } from "./transfer";
 import * as ios from "./ios";
 import { SimError } from "./ios";
 import { IDLE_MS, PoolError, type Platform, type Slot } from "./pool";
@@ -92,6 +94,7 @@ async function ready(s: Slot, fresh: boolean): Promise<string[]> {
 
 async function readyIOS(w: Where, s: Slot, fresh: boolean): Promise<string[]> {
 	const notes: string[] = [];
+	if (fresh) await access.unforward(s, w, null);
 	const { device: d, created } = await ios.ensureAgent(w, s.n, String(settings.get("iosModel") ?? ""));
 	setInfo(s, { udid: d.udid, name: d.name, booted: d.state === "Booted" });
 	const off = slimOn() ? iosLabelsOff(keepIOS()) : [];
@@ -152,12 +155,16 @@ async function readyAndroid(w: Where, s: Slot, fresh: boolean): Promise<string[]
 		await android.waitBooted(w, sdk, running);
 	}
 	setInfo(s, { serial, booted: true, slim });
+	if (fresh) {
+		// Another thread's: what it forwarded goes, as its apps do.
+		await access.unforward(s, w, sdk);
+	} else if (!running) await access.reforward(s, w, sdk);
 	if (running && fresh) {
 		setInfo(s, { busy: "clearing" });
 		await android.clear(w, sdk, running);
 	}
 	setInfo(s, { busy: "waking" });
-	await android.wake(w, sdk, serial!);
+	await android.wake(w, sdk, serial!, !running || fresh);
 	return notes;
 }
 
@@ -330,9 +337,15 @@ export async function app(thread: string, platform: string | undefined, action: 
 				case "terminate":
 					await ios.terminate(w, u, need());
 					return `Quit ${target}.`;
-				case "install":
-					await ios.install(w, u, need());
-					return `Installed ${target}.`;
+				case "install": {
+					const f = await bring(thread, need(), w);
+					try {
+						await ios.install(w, u, f.path);
+					} finally {
+						await f.done();
+					}
+					return `Installed ${target}${f.copied ? `, copied from the thread's computer` : ""}.`;
+				}
 				case "uninstall":
 					await ios.uninstall(w, u, need());
 					return `Uninstalled ${target}.`;
@@ -354,8 +367,14 @@ export async function app(thread: string, platform: string | undefined, action: 
 				case "terminate":
 					await android.terminate(w, sdk, serial, need());
 					return `Stopped ${target}.`;
-				case "install":
-					return (await android.install(w, sdk, serial, need())).trim() || `Installed ${target}.`;
+				case "install": {
+					const f = await bring(thread, need(), w);
+					try {
+						return (await android.install(w, sdk, serial, f.path)).trim() || `Installed ${target}${f.copied ? `, copied from the thread's computer` : ""}.`;
+					} finally {
+						await f.done();
+					}
+				}
 				case "uninstall":
 					return (await android.uninstall(w, sdk, serial, need())).trim() || `Uninstalled ${target}.`;
 				case "openurl":
@@ -414,6 +433,35 @@ async function power(thread: string, platform: string | undefined, action: "shut
 		const name = info(s).name;
 		return { text: action === "erase" ? `${name} is erased: no apps, no data. Your next call boots it.` : `${name} is shut down. Your next call boots it${action === "reboot" ? ", which is the reboot" : " again"}.` };
 	});
+}
+
+/** Runs a command on the thread's device (Android's shell, root through su; an iOS simulator's Mac, in its data folder). */
+export async function shell(thread: string, platform: string | undefined, command: string, o: { root?: boolean; timeout?: number; wait?: number }): Promise<Out> {
+	const { v, intro } = await withSim(thread, platform, o, async (s, w) => access.shell(s, w, s.platform === "android" ? await sdkOf(w) : null, command, !!o.root, o.timeout ?? 120));
+	return { text: join(intro, `Exit code ${v.code}.${v.output ? "\n" + v.output : ""}`), code: v.code };
+}
+
+/** Copies a file between the thread's computer and its device. */
+export async function files(thread: string, platform: string | undefined, action: "put" | "get", local: string, remote: string, o: { wait?: number }): Promise<Out> {
+	const { v, intro } = await withSim(thread, platform, o, async (s, w) => access.files(thread, s, w, s.platform === "android" ? await sdkOf(w) : null, action, local, remote));
+	return { text: join(intro, v) };
+}
+
+/** Makes the device's localhost:port reach the thread's dev server, or undoes it. */
+export async function forward(thread: string, platform: string | undefined, port: number | undefined, o: { to?: string; remove?: boolean; wait?: number }): Promise<Out> {
+	const { v, intro } = await withSim(thread, platform, o, async (s, w) => {
+		const sdk = s.platform === "android" ? await sdkOf(w) : null;
+		if (o.remove) {
+			await access.unforward(s, w, sdk, port);
+			return port ? `${info(s).name}'s port ${port} isn't forwarded any more.` : `${info(s).name}'s forwards are gone.`;
+		}
+		if (port === undefined) {
+			const list = access.forwardsOf(s);
+			return list.length ? list.map((f) => `localhost:${f.device} → ${f.to}`).join("\n") : "No forwards.";
+		}
+		return access.forward(thread, s, w, sdk, port, o.to);
+	});
+	return { text: join(intro, v) };
 }
 
 /**

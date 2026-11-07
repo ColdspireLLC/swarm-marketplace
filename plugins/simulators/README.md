@@ -32,8 +32,13 @@ leases and simslim's and avdslim's slimming.
   `/data/local/tmp/swarm-slim-state` first, which `unslimScript` puts back.
   `swarm simulators slimming` lists the categories.
 - **Agents**: `sim_status`, `sim_take`, `sim_release`, `sim_capture`,
-  `sim_describe`, `sim_drive`, `sim_app`, `sim_device`; `swarm simulators
-  …` the same.
+  `sim_describe`, `sim_drive`, `sim_app`, `sim_device`, `sim_shell`,
+  `sim_files`, `sim_forward`; `swarm simulators …` the same. Files go
+  between the thread's computer and the simulators' through Swarm
+  (`transfer.ts`, 8 MB chunks, checked by SHA-256); a forward is `adb
+  reverse` (Android) onto a small forwarder on the simulators' computer
+  to the thread's (`access.ts`). Test machines leaves the agents'
+  emulators out, so only the thread holding one drives it.
 
 **Live**: Swarm's window shows a slot's simulator live and takes its
 touches (Watch live, `swarm://screen/<machine>?phone=<serial>` or

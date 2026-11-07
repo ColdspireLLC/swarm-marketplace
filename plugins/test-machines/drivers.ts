@@ -443,6 +443,12 @@ export class ADB implements Driver {
 		const skipped = new Set(String(settings.get("skipPhones") ?? "").split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean));
 		const devices = parseDevices(r.stdout).filter((d) => !skipped.has(d.serial)).sort((a, b) => Number(a.serial.includes(":")) - Number(b.serial.includes(":")));
 		for (const d of devices) {
+			// The Simulators plugin's agent emulators are one thread's each, through its tools: not
+			// a test machine any thread drives as well.
+			if (/^emulator-\d+$/.test(d.serial)) {
+				const avd = await this.exec("adb", ["-s", d.serial, "emu", "avd", "name"], 15).catch(() => null);
+				if (avd?.code === 0 && /^swarm_agent_\d+\s*$/m.test(avd.stdout.split("\n")[0] ?? "")) continue;
+			}
 			let hw = this.hardware.get(d.serial);
 			if (!hw) {
 				const g = await this.exec("adb", ["-s", d.serial, "shell", "getprop ro.serialno"], 20).catch(() => null);

@@ -2,7 +2,7 @@
 	"$schema": "./plugin.schema.json",
 	"id": "simulators",
 	"name": "Simulators",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "iOS simulators and Android emulators of the agents' own, one thread's each, slim: about a third of the memory, so more of them run at once. Screenshots, touches, apps and device settings through tools, live in Swarm's window.",
 	"adds": [
 		"Side panel",
@@ -290,7 +290,7 @@
 		{
 			"name": "sim_app",
 			"title": "An app on your simulator",
-			"description": "List the installed apps, or launch, terminate, install (an .app or .apk path on the simulators' machine), uninstall an app, open a URL or deep link (openurl), or read an app's recent logs.",
+			"description": "List the installed apps, or launch, terminate, install (an .app, .ipa or .apk: a path on your own computer, copied over, or on the simulators' computer), uninstall an app, open a URL or deep link (openurl), or read an app's recent logs.",
 			"input": {
 				"type": "object",
 				"properties": {
@@ -384,6 +384,128 @@
 				"required": [
 					"action"
 				]
+			}
+		},
+		{
+			"name": "sim_shell",
+			"title": "A command on your simulator",
+			"description": "Run a shell command on your own simulator and get its output and exit code. Android: in the emulator's shell (root: true runs it as root through su, which keeps adb and your forwards as they are, unlike adb root); sqlite3, pm, am, settings, logcat, cmd and the rest. iOS: on the Mac, in the simulator's data folder, with $UDID and $DATA set: xcrun simctl … $UDID, sqlite3 on an app's database (xcrun simctl get_app_container $UDID BUNDLE data).",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"command": {
+						"type": "string",
+						"minLength": 1
+					},
+					"root": {
+						"type": "boolean",
+						"description": "Android: as root."
+					},
+					"timeout": {
+						"type": "number",
+						"minimum": 1,
+						"maximum": 600,
+						"description": "Seconds before it's stopped (default 120)."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": [
+					"command"
+				]
+			}
+		},
+		{
+			"name": "sim_files",
+			"title": "Copy files to or from your simulator",
+			"description": "Copy a file between your own computer (where you build; local, absolute) and your simulator (remote), wherever the simulators run. Android: a path on the device (outside /sdcard and /data/local/tmp as root). iOS: app:BUNDLE/path in that app's data container, or a path in the simulator's data folder.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"action": {
+						"type": "string",
+						"enum": [
+							"put",
+							"get"
+						]
+					},
+					"local": {
+						"type": "string",
+						"minLength": 1
+					},
+					"remote": {
+						"type": "string",
+						"minLength": 1
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": [
+					"action",
+					"local",
+					"remote"
+				]
+			}
+		},
+		{
+			"name": "sim_forward",
+			"title": "Reach your dev server from your simulator",
+			"description": "Make your simulator's localhost:port reach your dev server (Metro, a web server) on your own computer, wherever the simulators run: to is host:port or a port there (port when left out). Android through adb reverse, kept across the emulator's reboots; an iOS simulator shares its Mac's network. No port: lists your forwards. remove: undoes one (or all). They go when your simulator goes to another thread.",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"port": {
+						"type": "number",
+						"minimum": 1,
+						"maximum": 65535
+					},
+					"to": {
+						"type": "string",
+						"description": "host:port, or a port on your computer."
+					},
+					"remove": {
+						"type": "boolean"
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": []
 			}
 		}
 	],

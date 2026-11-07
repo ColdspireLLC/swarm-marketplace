@@ -92,6 +92,33 @@ export function registerCli() {
 				run: ({ positionals, options }, io) =>
 					act(io, (t) => ops.device(t, options.platform as string | undefined, String(positionals.action), ((positionals.value as string[] | undefined) ?? []).join(" ") || undefined, { app: options.app as string | undefined, wait: minutes(options.wait) })),
 			}),
+			shell: cliCommand({
+				summary: "A command on your simulator: Android's shell (--root through su), or an iOS simulator's Mac, in its data folder, with $UDID and $DATA set",
+				positionals: [{ name: "command", required: true, variadic: true, description: "The command, after --" }],
+				options: { root: { type: "boolean", description: "Android: as root" }, timeout: { type: "duration", defaultUnit: "s", description: "Stop it after this (default 2m)" }, platform: { type: "enum", values: ["ios", "android"], description: "Which of yours" }, ...wait },
+				run: async ({ positionals, options }, io) => {
+					const r = await act(io, (t) => ops.shell(t, options.platform as string | undefined, (positionals.command as string[]).join(" "), { root: !!options.root, timeout: typeof options.timeout === "number" ? options.timeout / 1000 : undefined, wait: minutes(options.wait) }));
+					return r;
+				},
+			}),
+			files: cliCommand({
+				summary: "Copy a file between your computer and your simulator: put LOCAL REMOTE, get REMOTE LOCAL (iOS: app:BUNDLE/path, or a path in its data folder)",
+				positionals: [{ name: "action", required: true, description: "put or get" }, { name: "from", required: true }, { name: "to", required: true }],
+				options: { platform: { type: "enum", values: ["ios", "android"], description: "Which of yours" }, ...wait },
+				run: ({ positionals, options }, io) => {
+					const a = String(positionals.action);
+					if (a !== "put" && a !== "get") throw new PluginCliError("put or get.", { code: "usage" });
+					const [local, remote] = a === "put" ? [String(positionals.from), String(positionals.to)] : [String(positionals.to), String(positionals.from)];
+					return act(io, (t) => ops.files(t, options.platform as string | undefined, a, local, remote, { wait: minutes(options.wait) }));
+				},
+			}),
+			forward: cliCommand({
+				summary: "Make your simulator's localhost:PORT reach your dev server (--to host:port or a port on your computer; PORT itself when not given); no PORT lists them",
+				positionals: [{ name: "port", description: "The simulator's port" }],
+				options: { to: { type: "string", description: "host:port, or a port on your computer" }, remove: { type: "boolean", description: "Undo it (all, with no port)" }, platform: { type: "enum", values: ["ios", "android"], description: "Which of yours" }, ...wait },
+				run: ({ positionals, options }, io) =>
+					act(io, (t) => ops.forward(t, options.platform as string | undefined, positionals.port === undefined ? undefined : Number(positionals.port), { to: options.to as string | undefined, remove: !!options.remove, wait: minutes(options.wait) })),
+			}),
 			slimming: cliCommand({
 				summary: "What slimming turns off, by category: the ids the Keep settings take",
 				run: () => {
