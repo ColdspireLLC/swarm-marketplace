@@ -1,8 +1,9 @@
 // Automations in a thread: the row above the composer of a thread an
-// automation started or re-prompts, saying which and when it runs next,
-// and "Automate this thread…" in each thread's menu.
+// automation started or re-prompts, saying which (and, for one it
+// re-prompts, when it comes back), a clock on its row in the sidebar,
+// and "Automate this thread…" in each thread's menu. The schedule itself
+// is the automation's page's to say.
 import { call, ui, type Child } from "swarm";
-import { describeCron } from "./cron";
 import { fill, openForm } from "./form";
 import { line, NAV, relative, state } from "./parts";
 import { automations, runs, type Automation } from "./store";
@@ -12,6 +13,27 @@ function of(thread: string): Automation | undefined {
 	for (const a of automations.values()) if (a.target === thread) return a;
 	for (const [id, list] of runs) if (list.some((r) => r.thread === thread)) return automations.get(id);
 	return undefined;
+}
+
+/** The threads given a badge, so one no longer an automation's loses it. */
+const marked = new Set<string>();
+
+/** Each automation's threads' clocks in the sidebar: red while one it re-prompts is failing. */
+export function syncBadges() {
+	const ids = new Set(marked);
+	for (const a of automations.values()) if (a.target) ids.add(a.target);
+	for (const list of runs.values()) for (const r of list) if (r.thread) ids.add(r.thread);
+	for (const thread of ids) {
+		const a = of(thread);
+		if (!a) {
+			ui.badge(thread, null);
+			marked.delete(thread);
+			continue;
+		}
+		const again = a.target === thread;
+		ui.badge(thread, { icon: "clock", tone: again && state(a) === "failing" ? "red" : "muted", tooltip: `${again ? "Re-prompted by" : "Started by"} ${a.name}` });
+		marked.add(thread);
+	}
 }
 
 export function registerThread() {
@@ -24,12 +46,14 @@ export function registerThread() {
 			const a = of(thread);
 			if (!a) return null;
 			const s = state(a);
-			const when = s === "running" ? "running now" : !a.enabled ? "paused" : a.nextAt ? `next ${relative(a.nextAt)}` : "";
+			const again = a.target === thread;
+			// When it comes back, only to a thread it re-prompts: one it started gets no more runs.
+			const when = !again ? "" : s === "running" ? "running now" : !a.enabled ? "paused" : a.nextAt ? `next ${relative(a.nextAt)}` : "";
 			return (
 				<ui.box label={`Automation ${a.name}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
-					<ui.text style={{ fontWeight: 500, color: s === "failing" ? "red" : s === "running" ? "accent" : "text2", flexShrink: 0 }}>{a.target === thread ? "Re-prompted by" : "Started by"}</ui.text>
+					<ui.text style={{ fontWeight: 500, color: s === "failing" ? "red" : s === "running" ? "accent" : "text2", flexShrink: 0 }}>{again ? "Re-prompted by" : "Started by"}</ui.text>
 					<ui.text style={{ fontWeight: 500, ...line }}>{a.name}</ui.text>
-					<ui.text style={{ color: "text3", flexShrink: 0, whiteSpace: "nowrap" }}>{[a.cron ? describeCron(a.cron) : "once", when].filter(Boolean).join(" · ")}</ui.text>
+					{when ? <ui.text style={{ color: "text3", ...line }}>{when}</ui.text> : null}
 				</ui.box>
 			);
 		},

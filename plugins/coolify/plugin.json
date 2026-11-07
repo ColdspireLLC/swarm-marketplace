@@ -2,7 +2,7 @@
   "$schema": "./plugin.schema.json",
   "id": "coolify",
   "name": "Coolify",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Your Coolify in Swarm: what's running and deploying, every deployment and its log, rollbacks, env vars and servers; Deploy beside each thread of a project Coolify runs; and agents that deploy, fix failed builds and set up new apps.",
   "adds": [
     "App page",
