@@ -81180,7 +81180,6 @@ function StartAgent({ flux: flux2, issue: issue2 }) {
   }
   const fluxProject = flux2.projects().find((p) => p.id === issue2.projectId);
   const moves = issue2.status === "backlog" || issue2.status === "todo";
-  const images = st4.imageIds.length;
   const go = () => void run3(flux2, issue2);
   return /* @__PURE__ */ jsxs5(ui10.box, { label: `Start an agent on ${issue2.key}`, style: { gap: 0 }, keys: ["Mod+Enter"], onKeyDown: go, children: [
     /* @__PURE__ */ jsxs5(ui10.box, { style: { gap: 10, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 12 }, children: [
@@ -81222,10 +81221,10 @@ function StartAgent({ flux: flux2, issue: issue2 }) {
       st4.naming !== null ? /* @__PURE__ */ jsx6(SaveConfig, {}) : null
     ] }),
     /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 16, paddingTop: 12, paddingBottom: 14 }, children: [
-      /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", flexWrap: "wrap", columnGap: 14, rowGap: 4, alignItems: "center" }, children: [
-        /* @__PURE__ */ jsx6(Note, { icon: "refresh", children: `Keeps ${issue2.key} updated` }),
-        moves ? /* @__PURE__ */ jsx6(Note, { icon: "arrow-right", children: "Moves it to In Progress" }) : null,
-        images ? /* @__PURE__ */ jsx6(Note, { icon: "image", children: images === 1 ? "Its image goes along" : `Its ${images} images go along` }) : null
+      /* @__PURE__ */ jsxs5(ui10.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+        moves ? /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 12, color: "text2" }, children: "Moves to" }) : null,
+        moves ? /* @__PURE__ */ jsx6(StatusIcon, { status: "progress", size: 12 }) : null,
+        moves ? /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children: "In Progress" }) : null
       ] }),
       /* @__PURE__ */ jsx6(ui10.button, { kind: "ghost", size: "sm", onClick: closeStart, children: "Cancel" }),
       /* @__PURE__ */ jsx6(ui10.button, { kind: "primary", size: "sm", icon: "bot", disabled: st4.busy || !st4.prompt.trim(), onClick: go, children: st4.busy ? "Starting…" : "Start  ⌘↵" })
@@ -81234,12 +81233,6 @@ function StartAgent({ flux: flux2, issue: issue2 }) {
 }
 var rowLabel = { fontSize: 12, color: "text3", width: 64, flexShrink: 0 };
 var pickerStyle = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } };
-function Note({ icon, children }) {
-  return /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 5, alignItems: "center" }, children: [
-    /* @__PURE__ */ jsx6(ui10.icon, { icon, style: { width: 12, height: 12, color: "text3" } }),
-    /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 12, color: "text2" }, maxLines: 1, children })
-  ] });
-}
 function SwarmProjectMenu({ fluxProject }) {
   const chosen = st4.swarmProjects?.find((p) => p.id === st4.swarmProject);
   const shown = chosen?.name ?? (st4.swarmProjects ? "Choose a project" : "…");

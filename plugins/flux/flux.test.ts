@@ -1153,8 +1153,7 @@ test("Start agent seeds bb's prompt, sends the issue's images, and remembers the
 	await w.click("All issues");
 	await w.click("Fix the login redirect");
 	await w.click("Start agent");
-	await w.see("Its image goes along");
-	await w.see("Moves it to In Progress");
+	await w.see("Moves to");
 	// The only Swarm project, Alpha linked to none.
 	await w.see("Swarm project: project");
 	await w.screenshot("flux-start-agent");
@@ -1163,9 +1162,9 @@ test("Start agent seeds bb's prompt, sends the issue's images, and remembers the
 	await w.dark(false);
 	// A dialog, as bb's: Escape leaves it, and the board's card opens it in place.
 	await w.key("Escape");
-	await w.gone("Its image goes along");
+	await w.gone("Moves to");
 	await w.click("Start agent");
-	await w.see("Its image goes along");
+	await w.see("Moves to");
 	await w.click("Start  ⌘↵");
 	await w.see("Agent started on ABC-1.");
 	await t.until(() => items.get("i1")!.body!.status === "progress", { what: "the issue in progress" });

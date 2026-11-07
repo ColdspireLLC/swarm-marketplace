@@ -1,7 +1,7 @@
 // Descriptions and comments, in the editor Swarm draws. Typing stays in
 // the window; what it reports is written into the issue, descriptions
 // through the live Yjs document.
-import swarm, { call, ui, type IconName } from "swarm";
+import swarm, { call, ui } from "swarm";
 import { Avatar, Markdown, type ImageOf } from "./view";
 import { clearDraft, drafted, editDraft, finishUpload, setDraft } from "./drafts";
 import type { Flux } from "./service";
@@ -225,7 +225,6 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 	}
 	const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
 	const moves = issue.status === "backlog" || issue.status === "todo";
-	const images = st.imageIds.length;
 	const go = () => void run(flux, issue);
 	return (
 		<ui.box label={`Start an agent on ${issue.key}`} style={{ gap: 0 }} keys={["Mod+Enter"]} onKeyDown={go}>
@@ -259,11 +258,11 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 				{st.naming !== null ? <SaveConfig /> : null}
 			</ui.box>
 			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 16, paddingTop: 12, paddingBottom: 14 }}>
-				{/* What starting does besides, said once, quietly. */}
-				<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", flexWrap: "wrap", columnGap: 14, rowGap: 4, alignItems: "center" }}>
-					<Note icon="refresh">{`Keeps ${issue.key} updated`}</Note>
-					{moves ? <Note icon="arrow-right">Moves it to In Progress</Note> : null}
-					{images ? <Note icon="image">{images === 1 ? "Its image goes along" : `Its ${images} images go along`}</Note> : null}
+				{/* What starting does to the issue: the rest Flux's agents always do. */}
+				<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center" }}>
+					{moves ? <ui.text style={{ fontSize: 12, color: "text2" }}>Moves to</ui.text> : null}
+					{moves ? <StatusIcon status="progress" size={12} /> : null}
+					{moves ? <ui.text style={{ fontSize: 12, color: "text2" }} maxLines={1}>In Progress</ui.text> : null}
 				</ui.box>
 				<ui.button kind="ghost" size="sm" onClick={closeStart}>Cancel</ui.button>
 				<ui.button kind="primary" size="sm" icon="bot" disabled={st.busy || !st.prompt.trim()} onClick={go}>{st.busy ? "Starting…" : "Start  ⌘↵"}</ui.button>
@@ -276,16 +275,6 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 const rowLabel = { fontSize: 12, color: "text3", width: 64, flexShrink: 0 } as const;
 // Swarm's pickers' look, for the dialog's own menus beside them.
 const pickerStyle = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } } as const;
-
-/** One thing starting does, in the dialog's foot. */
-function Note({ icon, children }: { icon: IconName; children: string }) {
-	return (
-		<ui.box style={{ flexDirection: "row", gap: 5, alignItems: "center" }}>
-			<ui.icon icon={icon} style={{ width: 12, height: 12, color: "text3" }} />
-			<ui.text style={{ fontSize: 12, color: "text2" }} maxLines={1}>{children}</ui.text>
-		</ui.box>
-	);
-}
 
 /** The Swarm project the agent works in, with its icon, as Swarm's own menus show projects. */
 function SwarmProjectMenu({ fluxProject }: { fluxProject: Project | undefined }) {
