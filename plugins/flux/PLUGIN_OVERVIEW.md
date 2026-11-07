@@ -1,7 +1,7 @@
 Your Flux issues in Swarm, for you and your agents.
 
 - **Board and list**: Flux's keys, palette and drag and drop, and each issue's page.
-- **Start from an issue**: Start agent hands it and its pictures to a new thread, with the agent, model and mode of a configuration you saved.
+- **Start from an issue**: Start agent hands it and its pictures to a new thread, with the agent, model and mode of a configuration you saved, working where you choose: a new worktree off any branch, an existing branch or worktree, the checkout, or a pull request.
 - **Issues that keep up**: a thread keeps its issue current, and its merge request moves the status.
 - **Agents that use Flux**: `swarm flux` reads and updates issues, and a skill shows them how.
 - **Issues wherever they're named**: an agent's link to an issue opens it here, and shows its status and title as you point at it; paste an issue's link in a message and it becomes the issue's mention.

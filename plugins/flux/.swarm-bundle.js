@@ -81125,7 +81125,10 @@ var st4 = ui10.store({
   approval: "",
   config: DEFAULT_ID,
   naming: null,
-  branch: "",
+  // Where it works, as Swarm's new-thread form chooses it: a new worktree from the checkout's branch until changed.
+  where: { place: "new" },
+  // The checkout has changes, and switching it was asked: Switch anyway does.
+  askSwitch: false,
   prompt: "",
   seeded: "",
   imageIds: [],
@@ -81174,7 +81177,8 @@ function StartAgent({ flux: flux2, issue: issue2 }) {
     const start = startPrompt(flux2.detail(issue2.id), flux2.baseUrl);
     st4.prompt = start.prompt;
     st4.imageIds = start.imageIds;
-    st4.branch = "";
+    st4.where = { place: "new" };
+    st4.askSwitch = false;
     st4.swarmProject = knownProject(flux2, issue2);
     void loadProjects(flux2, issue2);
   }
@@ -81202,10 +81206,18 @@ function StartAgent({ flux: flux2, issue: issue2 }) {
       /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4, alignItems: "center" }, children: [
         /* @__PURE__ */ jsx6(ui10.text, { style: rowLabel, children: "Work in" }),
         /* @__PURE__ */ jsx6(SwarmProjectMenu, { fluxProject }),
-        ui10.branchPicker({ project: st4.swarmProject || void 0, value: st4.branch, onChange: (value) => {
-          st4.branch = value;
+        (ui10.format ?? 0) >= 20 ? ui10.placePicker({ project: st4.swarmProject || void 0, value: st4.where.place, base: st4.where.base, branch: st4.where.branch, tree: st4.where.tree, request: st4.where.request, onChange: (value) => {
+          st4.where = value;
+          st4.askSwitch = false;
+        } }) : ui10.branchPicker({ project: st4.swarmProject || void 0, value: st4.where.branch ?? "", onChange: (value) => {
+          st4.where = { place: "branch", branch: value };
         } })
       ] }),
+      st4.askSwitch ? /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", gap: 8, alignItems: "center" }, children: [
+        /* @__PURE__ */ jsx6(ui10.icon, { icon: "alert", style: { width: 12, height: 12, color: "amber" } }),
+        /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 12, color: "amber", flex: 1, minWidth: 0 }, children: "The checkout has changes." }),
+        /* @__PURE__ */ jsx6(ui10.button, { kind: "secondary", size: "sm", onClick: () => void run3(flux2, issue2, true), children: "Switch anyway" })
+      ] }) : null,
       /* @__PURE__ */ jsxs5(ui10.box, { style: { flexDirection: "row", flexWrap: "wrap", gap: 4, alignItems: "center" }, children: [
         /* @__PURE__ */ jsx6(ui10.text, { style: rowLabel, children: "Run with" }),
         /* @__PURE__ */ jsx6(ConfigMenu, {}),
@@ -81242,7 +81254,7 @@ function SwarmProjectMenu({ fluxProject }) {
     /* @__PURE__ */ jsx6(ui10.text, { style: { fontSize: 13, color: chosen ? "text" : "currentColor" }, maxLines: 1, children: shown }),
     /* @__PURE__ */ jsx6(ui10.icon, { icon: "chevron-down", style: { width: 12, height: 12, color: "text2" } }),
     (st4.swarmProjects ?? []).map((p) => /* @__PURE__ */ jsx6(ui10.item, { project: p.id, checked: p.id === st4.swarmProject, onClick: () => {
-      if (p.id !== st4.swarmProject) st4.branch = "";
+      if (p.id !== st4.swarmProject) st4.where = { place: "new" };
       st4.swarmProject = p.id;
     }, children: p.name }, p.id))
   ] });
@@ -81308,8 +81320,35 @@ async function loadProjects(flux2, issue2) {
   st4.swarmProjects = projects;
   if (!st4.swarmProject) st4.swarmProject = found2;
 }
-async function run3(flux2, issue2) {
+function whereOptions(where, force = false) {
+  switch (where.place) {
+    case "new":
+      return { worktree: true, base: where.base || void 0 };
+    case "branch":
+      return { worktree: true, branch: where.branch || void 0 };
+    case "switch":
+      return { checkout: true, branch: where.branch || void 0, force: force || void 0 };
+    case "tree":
+      return { worktreePath: where.tree || void 0 };
+    case "mr":
+      return { request: where.request || void 0 };
+    default:
+      return {};
+  }
+}
+function unready(where) {
+  if ((where.place === "branch" || where.place === "switch") && !where.branch) return "Choose a branch.";
+  if (where.place === "tree" && !where.tree) return "Choose a worktree.";
+  if (where.place === "mr" && !where.request?.trim()) return "Give the request's number or its address.";
+  return "";
+}
+async function run3(flux2, issue2, force = false) {
   if (st4.busy || !st4.prompt.trim()) return;
+  const why = unready(st4.where);
+  if (why) {
+    ui10.toast(why);
+    return;
+  }
   st4.busy = true;
   try {
     const project = st4.swarmProject || await projectFor(flux2, issue2);
@@ -81336,8 +81375,7 @@ async function run3(flux2, issue2) {
       model: st4.model || void 0,
       effort: st4.effort || void 0,
       approval: st4.approval || void 0,
-      worktree: true,
-      branch: st4.branch || void 0,
+      ...whereOptions(st4.where, force),
       title: `${issue2.key} · ${issue2.title}`,
       prompt: text3,
       images: pictures,
@@ -81355,7 +81393,9 @@ async function run3(flux2, issue2) {
     ui10.openThread(spawned.id);
     ui10.toast(`Agent started on ${issue2.key}.`);
   } catch (error62) {
-    ui10.toast(error62 instanceof Error ? error62.message : String(error62));
+    const message = error62 instanceof Error ? error62.message : String(error62);
+    if (st4.where.place === "switch" && message.includes("the checkout has changes")) st4.askSwitch = true;
+    else ui10.toast(message);
   } finally {
     st4.busy = false;
   }
