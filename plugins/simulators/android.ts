@@ -70,10 +70,10 @@ const env = (s: Sdk) => `export ANDROID_HOME="${s.root}" ANDROID_SDK_ROOT="${s.r
  * shouldn't be or the other way (its config written again, its data
  * kept). Says whether it was made.
  */
-export async function ensureAvd(w: Where, s: Sdk, n: number, slim: boolean): Promise<boolean> {
+export async function ensureAvd(w: Where, s: Sdk, n: number, slim: boolean, memory: number): Promise<boolean> {
 	const name = avdName(n);
 	const home = (await mac(w, `echo ${AVD_HOME}`)).trim();
-	const f = avdFiles(home, name, n, s.image, s, slim);
+	const f = avdFiles(home, name, n, s.image, { ...s, memory }, slim);
 	// What the plugin last wrote is kept beside the AVD (swarm-config.ini) and compared, not
 	// config.ini: the emulator writes that again its own way. Changed, the config is written anew.
 	const o = await mac(
@@ -113,10 +113,10 @@ const gpu = (s: Sdk) => ["-gpu", s.os === "darwin" ? "host" : s.headless ? "swif
  * snapshot: one restored on a Mac's GPU draws nothing (seen on Android
  * 16, emulator 37.2).
  */
-export async function boot(w: Where, s: Sdk, n: number, slim: boolean): Promise<string> {
+export async function boot(w: Where, s: Sdk, n: number, slim: boolean, memory: number): Promise<string> {
 	const have = (await running(w, s)).get(avdName(n));
 	if (have) return have;
-	const flags = ["-no-window", "-no-snapshot-save", "-no-snapshot-load", ...(slim ? SLIM_FLAGS : ["-no-audio", "-no-boot-anim"]), ...gpu(s)];
+	const flags = ["-no-window", "-no-snapshot-save", "-no-snapshot-load", "-memory", String(memory), ...(slim ? SLIM_FLAGS : ["-no-audio", "-no-boot-anim"]), ...gpu(s)];
 	const o = await mac(
 		w,
 		`${env(s)}; name="$1"; shift

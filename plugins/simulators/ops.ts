@@ -9,7 +9,7 @@ import { elementLines } from "./elements";
 import * as ios from "./ios";
 import { SimError } from "./ios";
 import { IDLE_MS, PoolError, type Platform, type Slot } from "./pool";
-import { ANDROID_CATEGORIES, ANDROID_SETTINGS, androidPackagesOff, androidSettingsSet } from "./slimandroid";
+import { ANDROID_CATEGORIES, ANDROID_SETTINGS, androidMemory, androidPackagesOff, androidSettingsSet } from "./slimandroid";
 import { IOS_CATEGORIES, iosLabelsOff, keptNote } from "./slimios";
 import { info, keepAndroid, keepIOS, key, liveLink, message, pool, quoted, setInfo, shots, slimOn, title, where } from "./state";
 import type { Where } from "./where";
@@ -139,9 +139,10 @@ async function readyAndroid(w: Where, s: Slot, fresh: boolean): Promise<string[]
 	let serial = running;
 	if (!running) {
 		setInfo(s, { busy: "making", name: `Swarm agent ${s.n} (Android)` });
-		if (await android.ensureAvd(w, sdk, s.n, slim)) notes.push(`It's new, of ${sdk.image}: none of the user's apps or data. Install the app you test.`);
+		const memory = androidMemory(settings.get("androidMemory"));
+		if (await android.ensureAvd(w, sdk, s.n, slim, memory)) notes.push(`It's new, of ${sdk.image}: none of the user's apps or data. Install the app you test.`);
 		setInfo(s, { busy: "booting" });
-		serial = await android.boot(w, sdk, s.n, slim);
+		serial = await android.boot(w, sdk, s.n, slim, memory);
 		setInfo(s, { serial, busy: slim ? "slimming" : "booting" });
 		const k = keepAndroid();
 		if (slim) await android.slimGuest(w, sdk, serial, androidPackagesOff(k), androidSettingsSet(k));

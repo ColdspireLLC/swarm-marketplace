@@ -18,7 +18,7 @@ export const ANDROID_CATEGORIES: Record<string, { what: string; packages: string
 	wellbeing: {
 		what: "Digital Wellbeing, Gemini and on-device intelligence",
 		packages: G(
-			"apps.wellbeing settings.intelligence com.android.emulator.multidisplay apps.bard apps.restore apps.pulse configupdater projection.gearhead healthconnect.controller com.android.imsserviceentitlement com.android.carrierdefaultapp ondevicepersonalization.services federatedcompute glasses.companion glasses.core apps.safetyhub markup",
+			"apps.wellbeing settings.intelligence com.android.emulator.multidisplay apps.bard apps.restore apps.pulse configupdater projection.gearhead com.android.imsserviceentitlement com.android.carrierdefaultapp ondevicepersonalization.services federatedcompute glasses.companion glasses.core apps.safetyhub markup",
 		),
 	},
 	media: {
@@ -92,6 +92,7 @@ const SAFE = /^[\w.:=,-]+$/;
 
 /**
  * The guest's script that slims it: each package still enabled disabled,
+ * each it disabled before and no longer should enabled again,
  * each setting not yet changed changed, both written to STATE first; then
  * Bluetooth off and the caches dropped. Run again, it changes only what
  * isn't yet, and keeps the first originals. It prints what it disabled.
@@ -100,6 +101,12 @@ export function slimScript(packages: string[], settings: [string, string, string
 	for (const v of [...packages, ...settings.flat()]) if (!SAFE.test(v)) throw new Error(`not a package or setting: ${v}`);
 	return [
 		`touch ${STATE}`,
+		// What it disabled before that it no longer should (a package kept since, or taken off its
+		// lists), enabled again and forgotten.
+		`keep=" ${packages.join(" ")} "`,
+		`for p in $(sed -n 's/^pkg //p' ${STATE}); do`,
+		`  case "$keep" in *" $p "*) ;; *) pm enable --user 0 "$p" >/dev/null 2>&1 && echo "enabled $p"; grep -v -x "pkg $p" ${STATE} > ${STATE}.new; mv ${STATE}.new ${STATE} ;; esac`,
+		`done`,
 		`enabled=$(pm list packages -e 2>/dev/null | sed 's/^package://')`,
 		`for p in ${packages.join(" ")}; do`,
 		`  echo "$enabled" | grep -qx "$p" || continue`,
@@ -150,14 +157,14 @@ export function parseIni(text: string): Map<string, string> {
 export const ini = (m: Map<string, string>) => [...m].map(([k, v]) => `${k}=${v}`).join("\n") + "\n";
 
 /**
- * An AVD's config tuned after avdslim's: 1.5 GB of RAM and four cores, the
+ * An AVD's config tuned after avdslim's: the RAM set (3 GB) and four cores, the
  * host's GPU (SwiftShader where Linux has no display), cold boots, and no
  * audio, cameras or d-pad. headless: Linux without a display.
  */
-export function slimConfig(config: Map<string, string>, host: { os: "darwin" | "linux" | "windows"; headless: boolean }): Map<string, string> {
+export function slimConfig(config: Map<string, string>, host: { os: "darwin" | "linux" | "windows"; headless: boolean; memory: number }): Map<string, string> {
 	const out = new Map(config);
 	const set: Record<string, string> = {
-		"hw.ramSize": "1536",
+		"hw.ramSize": String(host.memory),
 		"vm.heapSize": "256",
 		"hw.gpu.enabled": "yes",
 		"hw.gpu.mode": host.os === "darwin" ? "host" : host.headless ? "swiftshader_indirect" : "auto",
@@ -176,4 +183,12 @@ export function slimConfig(config: Map<string, string>, host: { os: "darwin" | "
 }
 
 /** The emulator's flags for a slim AVD, after avdslim's: its RAM, low-RAM mode, no audio or cameras, no boot animation. */
-export const SLIM_FLAGS = ["-memory", "1536", "-lowram", "-no-audio", "-camera-back", "none", "-camera-front", "none", "-no-boot-anim"];
+export const SLIM_FLAGS = ["-no-audio", "-camera-back", "none", "-camera-front", "none", "-no-boot-anim"];
+
+/**
+ * The emulator's RAM in MB: the setting's, 3 GB by default. avdslim's 1.5
+ * GB with Android's low-RAM mode boots, but an app under test (a debug
+ * React Native build, half a gigabyte) is killed by the low-memory killer
+ * there, and System UI stops responding.
+ */
+export const androidMemory = (setting: unknown) => Math.min(8192, Math.max(1536, Math.round(Number(setting) || 3072)));

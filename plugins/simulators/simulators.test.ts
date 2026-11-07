@@ -114,6 +114,8 @@ test("Android slimming is undone from what it recorded", () => {
 	const script = slimScript(packages, settings);
 	expect(script).toContain(`grep -q '^set global auto_sync ' /data/local/tmp/swarm-slim-state || echo "set global auto_sync $(settings get global auto_sync)"`);
 	expect(script.indexOf(`echo "pkg $p" >>`)).toBeLessThan(script.indexOf("pm disable-user"));
+	// One kept since it was disabled is enabled again, and forgotten.
+	expect(script).toContain(`pm enable --user 0 "$p"`);
 	expect(() => slimScript(["com.x; reboot"], [])).toThrow("not a package");
 	expect(unslimScript()).toContain(`pm enable --user 0 "$a"`);
 	expect(slimmedPackages("pkg com.a\nset global auto_sync 1\npkg com.b\npkg com.a\n")).toEqual(["com.a", "com.b"]);
@@ -122,10 +124,10 @@ test("Android slimming is undone from what it recorded", () => {
 test("an agent's AVD, slim or stock", () => {
 	const image = pickImage(["system-images;android-35;google_apis;arm64-v8a", "system-images;android-36;google_apis_playstore;arm64-v8a", "system-images;android-36;google_apis_ps16k;arm64-v8a", "system-images;android-36;google_apis;arm64-v8a", "system-images;android-36;google_apis;x86_64"], "arm64-v8a");
 	expect(image).toBe("system-images;android-36;google_apis;arm64-v8a");
-	const stock = parseIni(avdFiles("/h/avd", "swarm_agent_1", 1, image, { os: "darwin", headless: true }, false).config);
-	const slim = avdFiles("/h/avd", "swarm_agent_1", 1, image, { os: "darwin", headless: true }, true);
+	const stock = parseIni(avdFiles("/h/avd", "swarm_agent_1", 1, image, { os: "darwin", headless: true, memory: 3072 }, false).config);
+	const slim = avdFiles("/h/avd", "swarm_agent_1", 1, image, { os: "darwin", headless: true, memory: 3072 }, true);
 	const s = parseIni(slim.config);
-	expect([stock.get("hw.ramSize"), s.get("hw.ramSize"), s.get("hw.gpu.mode"), s.get("image.sysdir.1")]).toEqual(["2048", "1536", "host", "system-images/android-36/google_apis/arm64-v8a/"]);
+	expect([stock.get("hw.ramSize"), s.get("hw.ramSize"), s.get("hw.gpu.mode"), s.get("image.sysdir.1")]).toEqual(["3072", "3072", "host", "system-images/android-36/google_apis/arm64-v8a/"]);
 	expect(parseIni(slim.pointer).get("path")).toBe("/h/avd/swarm_agent_1.avd");
 });
 

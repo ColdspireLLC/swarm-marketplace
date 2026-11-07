@@ -2,10 +2,11 @@
 	"$schema": "./plugin.schema.json",
 	"id": "simulators",
 	"name": "Simulators",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "iOS simulators and Android emulators of the agents' own, one thread's each, slim: about a third of the memory, so more of them run at once. Screenshots, touches, apps and device settings through tools, live in Swarm's window.",
 	"adds": [
 		"Side panel",
+		"Settings page",
 		"Composer status",
 		"Agent tools",
 		"Agent skill",
@@ -35,7 +36,8 @@
 			"default": 2,
 			"min": 0,
 			"max": 8,
-			"description": "How many the agents may run at once, a thread's each (about 1 GB each slim, 3 GB stock). 0: none."
+			"description": "How many the agents may run at once, a thread's each (about 1 GB each slim, 3 GB stock). 0: none.",
+			"hidden": true
 		},
 		{
 			"key": "androidAgents",
@@ -44,14 +46,26 @@
 			"default": 1,
 			"min": 0,
 			"max": 6,
-			"description": "How many the agents may run at once, a thread's each (about 2.5 GB each slim, 8 GB stock). 0: none."
+			"description": "How many the agents may run at once, a thread's each (about 2.5 GB each slim, 8 GB stock). 0: none.",
+			"hidden": true
+		},
+		{
+			"key": "androidMemory",
+			"title": "Android emulators' memory",
+			"type": "number",
+			"default": 3072,
+			"min": 1536,
+			"max": 8192,
+			"hidden": true,
+			"description": "Each emulator's RAM in MB: an app under test needs room. Applied as each next boots."
 		},
 		{
 			"key": "slim",
 			"title": "Slim simulators",
 			"type": "toggle",
 			"default": true,
-			"description": "Run the agents' simulators with what they rarely need turned off: on iOS, Siri, Spotlight, widgets, iCloud, photo analysis and more (simslim's lists); on Android, Google's apps and services, sync and background processes (avdslim's). Applied as each next boots. Never the user's own simulators."
+			"description": "Run the agents' simulators with what they rarely need turned off: on iOS, Siri, Spotlight, widgets, iCloud, photo analysis and more (simslim's lists); on Android, Google's apps and services, sync and background processes (avdslim's). Applied as each next boots. Never the user's own simulators.",
+			"hidden": true
 		},
 		{
 			"key": "keepIOS",
@@ -59,7 +73,8 @@
 			"type": "text",
 			"default": "store, web, icloud, com.apple.healthd",
 			"placeholder": "store, web, com.apple.healthd",
-			"description": "What slimming leaves on: category ids (swarm simulators slimming lists them) or single launchd labels. The default keeps push and StoreKit, universal links, iCloud and HealthKit."
+			"description": "What slimming leaves on: category ids (swarm simulators slimming lists them) or single launchd labels. The default keeps push and StoreKit, universal links, iCloud and HealthKit.",
+			"hidden": true
 		},
 		{
 			"key": "keepAndroid",
@@ -67,7 +82,8 @@
 			"type": "text",
 			"default": "",
 			"placeholder": "location, media",
-			"description": "What slimming leaves on: category ids (swarm simulators slimming lists them) or single packages."
+			"description": "What slimming leaves on: category ids (swarm simulators slimming lists them) or single packages.",
+			"hidden": true
 		},
 		{
 			"key": "iosModel",
@@ -75,7 +91,8 @@
 			"type": "text",
 			"default": "",
 			"placeholder": "iPhone 17 Pro",
-			"description": "The model agents' simulators are made of. Empty: the newest iPhone Pro of the newest iOS."
+			"description": "The model agents' simulators are made of. Empty: the newest iPhone Pro of the newest iOS.",
+			"hidden": true
 		},
 		{
 			"key": "iosHost",
@@ -83,14 +100,16 @@
 			"type": "text",
 			"default": "",
 			"placeholder": "Anthonys-Mac-mini",
-			"description": "The Mac the iOS simulators run on: one joined to Swarm (its name), or an ssh target. Empty: this computer where it's a Mac, else the first Mac joined to Swarm."
+			"description": "The Mac the iOS simulators run on: one joined to Swarm (its name), or an ssh target. Empty: this computer where it's a Mac, else the first Mac joined to Swarm.",
+			"hidden": true
 		},
 		{
 			"key": "androidHost",
 			"title": "Android emulators' computer",
 			"type": "text",
 			"default": "",
-			"description": "Where the Android emulators run: a computer joined to Swarm, or an ssh target. Empty: where the iOS simulators run."
+			"description": "Where the Android emulators run: a computer joined to Swarm, or an ssh target. Empty: where the iOS simulators run.",
+			"hidden": true
 		},
 		{
 			"key": "androidSdk",
@@ -98,7 +117,8 @@
 			"type": "text",
 			"default": "",
 			"placeholder": "~/Library/Android/sdk",
-			"description": "The SDK's folder there. Empty: $ANDROID_HOME, Android Studio's, Homebrew's, or bb's Simulator plugin's, the first with an emulator."
+			"description": "The SDK's folder there. Empty: $ANDROID_HOME, Android Studio's, Homebrew's, or bb's Simulator plugin's, the first with an emulator.",
+			"hidden": true
 		},
 		{
 			"key": "androidImage",
@@ -106,7 +126,8 @@
 			"type": "text",
 			"default": "",
 			"placeholder": "system-images;android-36;google_apis;arm64-v8a",
-			"description": "What agents' emulators are made of. Empty: the newest Google APIs image installed."
+			"description": "What agents' emulators are made of. Empty: the newest Google APIs image installed.",
+			"hidden": true
 		}
 	],
 	"tools": [
