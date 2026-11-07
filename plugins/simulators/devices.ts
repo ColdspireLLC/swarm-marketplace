@@ -70,7 +70,7 @@ export function pickImage(images: string[], abi: string): string {
 }
 
 /** An agent AVD's files, pure: the pointer <name>.ini and its config.ini, slim or stock. */
-export function avdFiles(home: string, name: string, n: number, image: string, s: { os: "darwin" | "linux"; headless: boolean }, slim: boolean): { pointer: string; config: string } {
+export function avdFiles(home: string, name: string, n: number, image: string, s: { os: "darwin" | "linux"; headless: boolean; memory: number }, slim: boolean): { pointer: string; config: string } {
 	const [, api = "", tag = "", abi = ""] = image.split(";");
 	const config = new Map(
 		Object.entries({
@@ -81,7 +81,7 @@ export function avdFiles(home: string, name: string, n: number, image: string, s
 			"abi.type": abi,
 			"hw.cpu.arch": abi.startsWith("arm") ? "arm64" : abi,
 			"hw.cpu.ncore": "4",
-			"hw.ramSize": "2048",
+			"hw.ramSize": String(s.memory),
 			"vm.heapSize": "256",
 			"disk.dataPartition.size": "4G",
 			"hw.device.name": "pixel_9",

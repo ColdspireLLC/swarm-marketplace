@@ -173,6 +173,7 @@
       },
       "adds": [
         "Side panel",
+        "Settings page",
         "Composer status",
         "Agent tools",
         "Agent skill",

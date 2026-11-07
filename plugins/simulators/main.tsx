@@ -7,10 +7,11 @@
 // actions (ops.ts). A thread's simulators go back as its turn ends. The
 // panel and the row above the composer show them (panel.tsx); Swarm's
 // window shows one live (swarm://screen).
-import { hook, on, schedule, settings } from "swarm";
+import { hook, on, schedule, settings, ui } from "swarm";
 import { registerCli } from "./cli";
 import * as ops from "./ops";
 import { registerPanel } from "./panel";
+import { settingsPage } from "./settingsPage";
 import { learnTitles, restore, view } from "./state";
 import { registerTools } from "./tools";
 
@@ -19,6 +20,7 @@ export function activate() {
 	registerTools();
 	registerCli();
 	registerPanel();
+	ui.page({ id: "simulators", title: "Simulators", icon: "mobile", render: settingsPage });
 	hook("turnEnd", ({ thread, turn }) => ops.turnEnded(thread, turn));
 	on("event", (e) => {
 		if (e.type === "thread.renamed" || e.type === "thread.created") void learnTitles();
