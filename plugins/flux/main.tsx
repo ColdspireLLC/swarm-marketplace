@@ -287,6 +287,8 @@ export function activate() {
 		swarm.mentions.provide({
 			id: "flux-issues",
 			label: "Flux issues",
+			// A sent message's @FLX-12 opens the issue's page.
+			href: "swarm://plugin/flux/issues/{id}",
 			search: (query) => {
 				const needle = query.trim().toLowerCase();
 				return flux.issues()
