@@ -1,14 +1,14 @@
 // Descriptions and comments, in the editor Swarm draws. Typing stays in
 // the window; what it reports is written into the issue, descriptions
 // through the live Yjs document.
-import swarm, { call, ui } from "swarm";
+import swarm, { call, ui, type IconName } from "swarm";
 import { Avatar, Markdown, type ImageOf } from "./view";
 import { clearDraft, drafted, editDraft, finishUpload, setDraft } from "./drafts";
 import type { Flux } from "./service";
-import type { Issue } from "./contract";
+import type { Issue, Project } from "./contract";
 import { startPrompt } from "./prompt";
 import { imageSources } from "./markdown";
-import { StatusIcon } from "./view";
+import { ProjectMark, StatusIcon } from "./view";
 import { DEFAULT_ID, addConfig, freshName, same, saveConfig, spawnConfig, spawnConfigs, type Choice } from "./spawn";
 
 export function mentionOptions(flux: Flux) {
@@ -218,46 +218,93 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 		const start = startPrompt(flux.detail(issue.id), flux.baseUrl);
 		st.prompt = start.prompt;
 		st.imageIds = start.imageIds;
+		st.branch = "";
 		// Chosen as it opens, from what's read already; read again behind it.
 		st.swarmProject = knownProject(flux, issue);
 		void loadProjects(flux, issue);
 	}
 	const fluxProject = flux.projects().find((p) => p.id === issue.projectId);
-	const shown = st.swarmProjects?.find((p) => p.id === st.swarmProject)?.name ?? (st.swarmProjects ? "Choose a project" : "…");
 	const moves = issue.status === "backlog" || issue.status === "todo";
 	const images = st.imageIds.length;
+	const go = () => void run(flux, issue);
 	return (
-		<ui.box label={`Start an agent on ${issue.key}`} style={{ position: "relative", gap: 14, padding: 20 }}>
-			<ui.iconButton icon="x" label="Close" style={{ position: "absolute", top: 14, right: 14, width: 28, height: 28 }} onClick={closeStart} />
-			<ui.box style={{ gap: 6 }}>
-				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", paddingRight: 32 }}>
-					<StatusIcon status={issue.status} size={16} />
-					<ui.text style={{ fontSize: 17, fontWeight: 600, color: "text2", flexShrink: 0 }}>{issue.key}</ui.text>
-					<ui.text style={{ fontSize: 17, fontWeight: 600, minWidth: 0, flexShrink: 1 }} maxLines={1}>{issue.title.trim() || "Untitled"}</ui.text>
+		<ui.box label={`Start an agent on ${issue.key}`} style={{ gap: 0 }} keys={["Mod+Enter"]} onKeyDown={go}>
+			<ui.box style={{ gap: 10, paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 12 }}>
+				{/* Where it's from, as New issue's head: the Flux project, then the issue. */}
+				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28 }}>
+					<ProjectMark project={fluxProject} size={14} />
+					<ui.text style={{ fontSize: 13, color: "text2", flexShrink: 0 }}>{fluxProject?.name ?? "No project"}</ui.text>
+					<ui.icon icon="chevron-right" style={{ width: 12, height: 12, color: "text3" }} />
+					<StatusIcon status={issue.status} size={14} />
+					<ui.text style={{ fontSize: 13, color: "text2", flexShrink: 0 }}>{issue.key}</ui.text>
+					<ui.box style={{ flex: 1 }} />
+					<ui.iconButton icon="x" label="Close" style={{ width: 28, height: 28, marginRight: -6 }} onClick={closeStart} />
 				</ui.box>
-				<ui.text style={{ fontSize: 14, color: "text2" }}>
-					{`The agent gets this issue and keeps it updated as it works.${moves ? " Starting moves it to In Progress." : ""}${images ? ` Its ${images === 1 ? "image goes" : `${images} images go`} along as ${images === 1 ? "an attachment" : "attachments"}.` : ""}`}
-				</ui.text>
+				<ui.text style={{ fontSize: 18, fontWeight: 500, lineHeight: "26px" }} maxLines={2}>{issue.title.trim() || "Untitled"}</ui.text>
+				<ui.field key={"agent-prompt-" + issue.id} value={st.prompt} multiline autoFocus placeholder="What should the agent do?" onChange={(value) => { st.prompt = value; }} style={{ minHeight: 180, maxHeight: "44vh", fontSize: 14, lineHeight: "22px", backgroundColor: "transparent", boxShadow: "none", padding: 0 }} />
 			</ui.box>
-			<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-				<ui.menu label={`Swarm project: ${shown}`} search="Choose a Swarm project…" tooltip={fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : undefined} style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }}>
-					<ui.icon icon="folder" style={{ width: 14, height: 14, color: "currentColor" }} />
-					<ui.text style={{ fontSize: 13, color: "currentColor" }} maxLines={1}>{shown}</ui.text>
-					<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
-					{(st.swarmProjects ?? []).map((p) => <ui.item key={p.id} checked={p.id === st.swarmProject} onClick={() => { st.swarmProject = p.id; }}>{p.name}</ui.item>)}
-				</ui.menu>
-				<ConfigMenu />
-				{ui.agentPicker({ provider: st.provider, value: st.model, effort: st.effort, onChange: (value) => { st.provider = value.provider; st.model = value.model; st.effort = value.effort ?? ""; } })}
-				{ui.modePicker({ provider: st.provider, value: st.approval, onChange: (value) => { st.approval = value; } })}
-				{ui.branchPicker({ value: st.branch, onChange: (value) => { st.branch = value; } })}
+			<ui.box style={{ height: 1, backgroundColor: "divider" }} />
+			<ui.box style={{ gap: 6, paddingLeft: 16, paddingRight: 16, paddingTop: 10, paddingBottom: 4 }}>
+				<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+					<ui.text style={rowLabel}>Work in</ui.text>
+					<SwarmProjectMenu fluxProject={fluxProject} />
+					{ui.branchPicker({ project: st.swarmProject || undefined, value: st.branch, onChange: (value) => { st.branch = value; } })}
+				</ui.box>
+				<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+					<ui.text style={rowLabel}>Run with</ui.text>
+					<ConfigMenu />
+					{ui.agentPicker({ provider: st.provider, value: st.model, effort: st.effort, onChange: (value) => { st.provider = value.provider; st.model = value.model; st.effort = value.effort ?? ""; } })}
+					{ui.modePicker({ provider: st.provider, value: st.approval, onChange: (value) => { st.approval = value; } })}
+				</ui.box>
+				{st.naming !== null ? <SaveConfig /> : null}
 			</ui.box>
-			{st.naming !== null ? <SaveConfig /> : null}
-			<ui.field key={"agent-prompt-" + issue.id} value={st.prompt} multiline autoFocus placeholder="What should the agent do?" keys={["Mod+Enter"]} onKeyDown={() => void run(flux, issue)} onChange={(value) => { st.prompt = value; }} style={{ minHeight: 160, maxHeight: "46vh", fontSize: 14 }} />
-			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
+			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center", paddingLeft: 20, paddingRight: 16, paddingTop: 12, paddingBottom: 14 }}>
+				{/* What starting does besides, said once, quietly. */}
+				<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", flexWrap: "wrap", columnGap: 14, rowGap: 4, alignItems: "center" }}>
+					<Note icon="refresh">{`Keeps ${issue.key} updated`}</Note>
+					{moves ? <Note icon="arrow-right">Moves it to In Progress</Note> : null}
+					{images ? <Note icon="image">{images === 1 ? "Its image goes along" : `Its ${images} images go along`}</Note> : null}
+				</ui.box>
 				<ui.button kind="ghost" size="sm" onClick={closeStart}>Cancel</ui.button>
-				<ui.button kind="primary" size="sm" icon="bot" disabled={st.busy || !st.prompt.trim()} tooltip="⌘ Enter" onClick={() => void run(flux, issue)}>{st.busy ? "Starting…" : "Start"}</ui.button>
+				<ui.button kind="primary" size="sm" icon="bot" disabled={st.busy || !st.prompt.trim()} onClick={go}>{st.busy ? "Starting…" : "Start  ⌘↵"}</ui.button>
 			</ui.box>
 		</ui.box>
+	);
+}
+
+// A row's label, ahead of its pickers.
+const rowLabel = { fontSize: 12, color: "text3", width: 64, flexShrink: 0 } as const;
+// Swarm's pickers' look, for the dialog's own menus beside them.
+const pickerStyle = { flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } } as const;
+
+/** One thing starting does, in the dialog's foot. */
+function Note({ icon, children }: { icon: IconName; children: string }) {
+	return (
+		<ui.box style={{ flexDirection: "row", gap: 5, alignItems: "center" }}>
+			<ui.icon icon={icon} style={{ width: 12, height: 12, color: "text3" }} />
+			<ui.text style={{ fontSize: 12, color: "text2" }} maxLines={1}>{children}</ui.text>
+		</ui.box>
+	);
+}
+
+/** The Swarm project the agent works in, with its icon, as Swarm's own menus show projects. */
+function SwarmProjectMenu({ fluxProject }: { fluxProject: Project | undefined }) {
+	const chosen = st.swarmProjects?.find((p) => p.id === st.swarmProject);
+	const shown = chosen?.name ?? (st.swarmProjects ? "Choose a project" : "…");
+	const remembers = fluxProject && !fluxProject.swarmProjectId ? `Remembered for ${fluxProject.name} once it starts` : undefined;
+	return (
+		<ui.menu label={`Swarm project: ${shown}`} search="Choose a Swarm project…" tooltip={remembers} style={pickerStyle}>
+			{chosen ? <ui.projectIcon project={chosen.id} style={{ width: 14, height: 14, flexShrink: 0 }} /> : <ui.icon icon="folder" style={{ width: 14, height: 14, color: "currentColor" }} />}
+			<ui.text style={{ fontSize: 13, color: chosen ? "text" : "currentColor" }} maxLines={1}>{shown}</ui.text>
+			<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />
+			{(st.swarmProjects ?? []).map((p) => (
+				<ui.item key={p.id} project={p.id} checked={p.id === st.swarmProject} onClick={() => {
+					// Another project's branches aren't this one's.
+					if (p.id !== st.swarmProject) st.branch = "";
+					st.swarmProject = p.id;
+				}}>{p.name}</ui.item>
+			))}
+		</ui.menu>
 	);
 }
 
@@ -287,7 +334,7 @@ function ConfigMenu() {
 	const changed = !same(config, choice());
 	const shown = changed ? `${config.name} (changed)` : config.name;
 	return (
-		<ui.menu label={`Configuration: ${shown}`} tooltip="Agent configuration" wide style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 28, paddingLeft: 8, paddingRight: 8, borderRadius: "control", backgroundColor: "transparent", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "press", color: "text" } }}>
+		<ui.menu label={`Configuration: ${shown}`} tooltip="Agent configuration" wide style={pickerStyle}>
 			<ui.icon icon="sliders" style={{ width: 14, height: 14, color: "currentColor" }} />
 			<ui.text style={{ fontSize: 13, color: "currentColor" }} maxLines={1}>{shown}</ui.text>
 			<ui.icon icon="chevron-down" style={{ width: 12, height: 12, color: "text2" }} />

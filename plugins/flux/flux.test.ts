@@ -1153,8 +1153,8 @@ test("Start agent seeds bb's prompt, sends the issue's images, and remembers the
 	await w.click("All issues");
 	await w.click("Fix the login redirect");
 	await w.click("Start agent");
-	await w.see("Its image goes along as an attachment.");
-	await w.see("Starting moves it to In Progress.");
+	await w.see("Its image goes along");
+	await w.see("Moves it to In Progress");
 	// The only Swarm project, Alpha linked to none.
 	await w.see("Swarm project: project");
 	await w.screenshot("flux-start-agent");
@@ -1163,10 +1163,10 @@ test("Start agent seeds bb's prompt, sends the issue's images, and remembers the
 	await w.dark(false);
 	// A dialog, as bb's: Escape leaves it, and the board's card opens it in place.
 	await w.key("Escape");
-	await w.gone("Its image goes along as an attachment.");
+	await w.gone("Its image goes along");
 	await w.click("Start agent");
-	await w.see("Its image goes along as an attachment.");
-	await w.click("Start");
+	await w.see("Its image goes along");
+	await w.click("Start  ⌘↵");
 	await w.see("Agent started on ABC-1.");
 	await t.until(() => items.get("i1")!.body!.status === "progress", { what: "the issue in progress" });
 	// No comment of its own: the agent's own say what it does.
@@ -1219,7 +1219,7 @@ test("Start agent's configurations: Default opens it, others are saved and picke
 	await w.screenshot("flux-start-config-menu");
 	await w.click("Careful");
 	await w.see("Auto-accept edits");
-	await w.click("Start");
+	await w.click("Start  ⌘↵");
 	await w.see("Agent started on ABC-1.");
 	// Its thread started with Careful's mode.
 	const started = await t.until(async () => (await t.call("Threads", {})).find((th) => th.title.startsWith("ABC-1")), { what: "the agent's thread" });
