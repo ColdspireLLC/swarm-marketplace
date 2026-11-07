@@ -147,6 +147,51 @@
         ],
         "machines": true
       }
+    },
+    {
+      "id": "simulators",
+      "displayName": "Simulators",
+      "description": "iOS simulators and Android emulators of each agent's own, slimmed to about a third of the memory: screenshots, elements, touches, apps and device settings through tools, and the thread's simulator live in its side panel.",
+      "icon": "plugins/simulators/icon.svg",
+      "tags": [
+        "testing",
+        "devices",
+        "ios",
+        "android",
+        "simulators",
+        "agents"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/simulators/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/simulators",
+          "range": "^0.1.0",
+          "tagPrefix": "simulators/"
+        }
+      },
+      "adds": [
+        "Side panel",
+        "Composer status",
+        "Agent tools",
+        "Agent skill",
+        "Agent instructions",
+        "Command line"
+      ],
+      "permissions": {
+        "api": [
+          "read",
+          "media"
+        ],
+        "process": [
+          "sh",
+          "curl",
+          "ssh"
+        ],
+        "machines": true,
+        "storage": true
+      }
     }
   ]
 }
