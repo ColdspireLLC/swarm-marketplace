@@ -1,7 +1,7 @@
 // Descriptions and comments, in the editor Swarm draws. Typing stays in
 // the window; what it reports is written into the issue, descriptions
 // through the live Yjs document.
-import swarm, { call, ui } from "swarm";
+import swarm, { call, ui, type ThreadSpawnOptions, type UIPlaceChoice } from "swarm";
 import { Avatar, Markdown, type ImageOf } from "./view";
 import { clearDraft, drafted, editDraft, finishUpload, setDraft } from "./drafts";
 import type { Flux } from "./service";
@@ -157,7 +157,10 @@ const st = ui.store({
 	approval: "",
 	config: DEFAULT_ID,
 	naming: null as string | null,
-	branch: "",
+	// Where it works, as Swarm's new-thread form chooses it: a new worktree from the checkout's branch until changed.
+	where: { place: "new" } as UIPlaceChoice,
+	// The checkout has changes, and switching it was asked: Switch anyway does.
+	askSwitch: false,
 	prompt: "",
 	seeded: "",
 	imageIds: [] as string[],
@@ -218,7 +221,8 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 		const start = startPrompt(flux.detail(issue.id), flux.baseUrl);
 		st.prompt = start.prompt;
 		st.imageIds = start.imageIds;
-		st.branch = "";
+		st.where = { place: "new" };
+		st.askSwitch = false;
 		// Chosen as it opens, from what's read already; read again behind it.
 		st.swarmProject = knownProject(flux, issue);
 		void loadProjects(flux, issue);
@@ -247,8 +251,18 @@ function StartAgent({ flux, issue }: { flux: Flux; issue: Issue }) {
 				<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
 					<ui.text style={rowLabel}>Work in</ui.text>
 					<SwarmProjectMenu fluxProject={fluxProject} />
-					{ui.branchPicker({ project: st.swarmProject || undefined, value: st.branch, onChange: (value) => { st.branch = value; } })}
+					{(ui.format ?? 0) >= 20
+						? ui.placePicker({ project: st.swarmProject || undefined, value: st.where.place, base: st.where.base, branch: st.where.branch, tree: st.where.tree, request: st.where.request, onChange: (value) => { st.where = value; st.askSwitch = false; } })
+						// An older Swarm: a branch, in a worktree of its own.
+						: ui.branchPicker({ project: st.swarmProject || undefined, value: st.where.branch ?? "", onChange: (value) => { st.where = { place: "branch", branch: value }; } })}
 				</ui.box>
+				{st.askSwitch ? (
+					<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+						<ui.icon icon="alert" style={{ width: 12, height: 12, color: "amber" }} />
+						<ui.text style={{ fontSize: 12, color: "amber", flex: 1, minWidth: 0 }}>The checkout has changes.</ui.text>
+						<ui.button kind="secondary" size="sm" onClick={() => void run(flux, issue, true)}>Switch anyway</ui.button>
+					</ui.box>
+				) : null}
 				<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
 					<ui.text style={rowLabel}>Run with</ui.text>
 					<ConfigMenu />
@@ -289,7 +303,7 @@ function SwarmProjectMenu({ fluxProject }: { fluxProject: Project | undefined })
 			{(st.swarmProjects ?? []).map((p) => (
 				<ui.item key={p.id} project={p.id} checked={p.id === st.swarmProject} onClick={() => {
 					// Another project's branches aren't this one's.
-					if (p.id !== st.swarmProject) st.branch = "";
+					if (p.id !== st.swarmProject) st.where = { place: "new" };
 					st.swarmProject = p.id;
 				}}>{p.name}</ui.item>
 			))}
@@ -368,8 +382,39 @@ async function loadProjects(flux: Flux, issue: Issue) {
 	if (!st.swarmProject) st.swarmProject = found;
 }
 
-async function run(flux: Flux, issue: Issue) {
+/** Where the agent works, as spawn says it. */
+export function whereOptions(where: UIPlaceChoice, force = false): Pick<ThreadSpawnOptions, "worktree" | "branch" | "base" | "checkout" | "force" | "worktreePath" | "request"> {
+	switch (where.place) {
+		case "new":
+			return { worktree: true, base: where.base || undefined };
+		case "branch":
+			return { worktree: true, branch: where.branch || undefined };
+		case "switch":
+			return { checkout: true, branch: where.branch || undefined, force: force || undefined };
+		case "tree":
+			return { worktreePath: where.tree || undefined };
+		case "mr":
+			return { request: where.request || undefined };
+		default:
+			return {};
+	}
+}
+
+/** Why the place chosen can't start yet, or "". */
+function unready(where: UIPlaceChoice): string {
+	if ((where.place === "branch" || where.place === "switch") && !where.branch) return "Choose a branch.";
+	if (where.place === "tree" && !where.tree) return "Choose a worktree.";
+	if (where.place === "mr" && !where.request?.trim()) return "Give the request's number or its address.";
+	return "";
+}
+
+async function run(flux: Flux, issue: Issue, force = false) {
 	if (st.busy || !st.prompt.trim()) return;
+	const why = unready(st.where);
+	if (why) {
+		ui.toast(why);
+		return;
+	}
 	st.busy = true;
 	try {
 		const project = st.swarmProject || (await projectFor(flux, issue));
@@ -400,8 +445,7 @@ async function run(flux: Flux, issue: Issue) {
 			model: st.model || undefined,
 			effort: st.effort || undefined,
 			approval: st.approval || undefined,
-			worktree: true,
-			branch: st.branch || undefined,
+			...whereOptions(st.where, force),
 			title: `${issue.key} · ${issue.title}`,
 			prompt: text,
 			images: pictures,
@@ -420,7 +464,10 @@ async function run(flux: Flux, issue: Issue) {
 		ui.openThread(spawned.id);
 		ui.toast(`Agent started on ${issue.key}.`);
 	} catch (error) {
-		ui.toast(error instanceof Error ? error.message : String(error));
+		const message = error instanceof Error ? error.message : String(error);
+		// As Swarm's own form: the dialog asks, rather than a toast.
+		if (st.where.place === "switch" && message.includes("the checkout has changes")) st.askSwitch = true;
+		else ui.toast(message);
 	} finally {
 		st.busy = false;
 	}
