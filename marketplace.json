@@ -192,6 +192,50 @@
         "machines": true,
         "storage": true
       }
+    },
+    {
+      "id": "automations",
+      "displayName": "Automations",
+      "description": "Scheduled work: an agent given a prompt, or a script, on a cron or once. Each run's thread or output, and its history, on a page of its own; agents make them with swarm automations.",
+      "icon": "plugins/automations/icon.svg",
+      "tags": [
+        "automation",
+        "schedules",
+        "cron",
+        "agents",
+        "scripts"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/automations/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/automations",
+          "range": "^0.1.0",
+          "tagPrefix": "automations/"
+        }
+      },
+      "adds": [
+        "Page",
+        "Composer status",
+        "Thread menu",
+        "Command line",
+        "Agent skill"
+      ],
+      "permissions": {
+        "api": [
+          "read",
+          "threads"
+        ],
+        "threads": true,
+        "process": [
+          "sh",
+          "bash",
+          "node",
+          "python3"
+        ],
+        "storage": true
+      }
     }
   ]
 }
