@@ -71,6 +71,7 @@ async function ready(s: Slot, fresh: boolean): Promise<string[]> {
 	const run = (async () => {
 		const w = await where(s.platform);
 		if (!w.machine && !w.ssh && w.label === "no Mac") throw new SimError("iOS simulators need a Mac: join one to Swarm (swarm machine), or set the Simulators plugin's Mac.");
+		if (w.offline) throw new SimError(`${w.label}, where the agents' ${s.platform === "ios" ? "iOS simulators" : "Android emulators"} run, isn't connected to Swarm just now: tell the user, who can start Swarm there (Settings, Machines says how it is). Don't try another way meanwhile.`);
 		try {
 			if (s.platform === "ios") notes.push(...(await readyIOS(w, s, fresh)));
 			else notes.push(...(await readyAndroid(w, s, fresh)));
@@ -242,7 +243,7 @@ export async function status(): Promise<Out> {
 	for (const p of ["ios", "android"] as Platform[]) {
 		const cap = Number(settings.get(p === "ios" ? "iosAgents" : "androidAgents") ?? 0);
 		const w = await where(p);
-		lines.push(`${p === "ios" ? "iOS simulators" : "Android emulators"}: ${cap} for agents, on ${w.label}.${slimOn() ? " Slim." : ""}`);
+		lines.push(`${p === "ios" ? "iOS simulators" : "Android emulators"}: ${cap} for agents, on ${w.label}${w.offline ? ", which isn't connected to Swarm just now" : ""}.${slimOn() ? " Slim." : ""}`);
 		for (const s of pool.slots.filter((x) => x.platform === p).sort((a, b) => a.n - b.n)) {
 			const i = info(s);
 			const who = s.holder ? `${quoted(s.holder.thread)}'s${s.holder.note ? ` (${s.holder.note})` : ""}` : "free";

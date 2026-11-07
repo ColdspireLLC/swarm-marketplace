@@ -2,7 +2,7 @@
 	"$schema": "./plugin.schema.json",
 	"id": "simulators",
 	"name": "Simulators",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "iOS simulators and Android emulators of the agents' own, one thread's each, slim: about a third of the memory, so more of them run at once. Screenshots, touches, apps and device settings through tools, live in Swarm's window.",
 	"adds": [
 		"Side panel",

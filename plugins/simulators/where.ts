@@ -10,6 +10,8 @@ export interface Where {
 	ssh?: string;
 	/** What to call it in what's said. */
 	label: string;
+	/** A joined computer that isn't connected to Swarm just now. */
+	offline?: boolean;
 }
 
 interface Joined {
@@ -42,7 +44,7 @@ export async function whereOf(target: string): Promise<Where> {
 	const t = target.trim();
 	if (!t) return { label: "this computer" };
 	const m = (await joinedMachines()).find((x) => x.id === t || x.name.toLowerCase() === t.toLowerCase() || slug(x.name) === slug(t));
-	if (m) return { machine: m.id, label: m.name };
+	if (m) return { machine: m.id, label: m.name, offline: !m.connected };
 	return { ssh: t, label: t };
 }
 

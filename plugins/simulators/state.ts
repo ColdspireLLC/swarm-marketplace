@@ -74,8 +74,11 @@ async function whereNow(p: Platform): Promise<Where> {
 	if (p === "android" && set("androidHost")) return whereOf(set("androidHost"));
 	if (set("iosHost")) return whereOf(set("iosHost"));
 	if (process.platform === "darwin") return whereOf("");
-	const mac = (await joinedMachines()).find((m) => m.os === "darwin" && m.connected);
-	if (mac) return { machine: mac.id, label: mac.name };
+	// The Mac connected, else the one that's away: what's said is that it's away, not that
+	// there's none (nor Android looked for here instead).
+	const macs = (await joinedMachines()).filter((m) => m.os === "darwin");
+	const mac = macs.find((m) => m.connected) ?? macs[0];
+	if (mac) return { machine: mac.id, label: mac.name, offline: !mac.connected };
 	if (p === "android") return whereOf("");
 	return { label: "no Mac" };
 }
