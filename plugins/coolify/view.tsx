@@ -17,6 +17,11 @@ export const badge = (tone: api.Tone | "accent", label: string): Child => (
 	</ui.tag>
 );
 
+/** A state as a dot of its tone, the word in its label: what the composer's row shows in place of a badge. */
+export const dot = (tone: api.Tone | "accent", label: string, live = false): Child => (
+	<ui.box label={label} style={{ width: 6, height: 6, borderRadius: 3, flexShrink: 0, backgroundColor: tone === "muted" ? "text3" : tone, ...(live ? { animation: { name: "pulse" } } : {}) }} />
+);
+
 export function empty(icon: IconName, title: string, sub = "", action?: Child): Child {
 	return (
 		<ui.box style={{ marginTop: "auto", marginBottom: "auto", alignSelf: "center", maxWidth: 340, padding: 16, gap: 6, alignItems: "center" }}>

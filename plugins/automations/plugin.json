@@ -2,7 +2,7 @@
 	"$schema": "./plugin.schema.json",
 	"id": "automations",
 	"name": "Automations",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Scheduled work: an agent given a prompt, or a script, on a cron or once. Each run's thread or output, and its history, on a page of its own; agents make them with swarm automations.",
 	"adds": ["Page", "Composer status", "Thread menu", "Command line", "Agent skill"],
 	"icon": "icon.svg",

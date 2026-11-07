@@ -9,7 +9,7 @@ import { hook, schedule, ui } from "swarm";
 import { registerCli } from "./cli";
 import { registerPage, syncNav } from "./page";
 import { learnProjects } from "./parts";
-import { registerThread } from "./thread";
+import { registerThread, syncBadges } from "./thread";
 import { arm, settle, tick, turnEnded } from "./runner";
 import { listeners, load } from "./store";
 
@@ -24,8 +24,9 @@ export async function activate() {
 		await learnProjects();
 	});
 	await load();
-	listeners.push(syncNav, arm);
+	listeners.push(syncNav, syncBadges, arm);
 	syncNav();
+	syncBadges();
 	await learnProjects();
 	await settle();
 	tick();

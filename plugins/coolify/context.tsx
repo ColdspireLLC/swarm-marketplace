@@ -1,20 +1,58 @@
 // Coolify in a thread: a segment of the row above the composer, in a
-// project whose repository Coolify deploys, saying how its application is
-// doing and when it last deployed, with Deploy at its end and each of its
-// applications under it while it's open; and a note to the thread's agent
+// project whose repository Coolify deploys: a dot on its icon saying how
+// its applications are doing (pulsing while one deploys), then its first
+// application's name, its state only when that isn't Running, and when it
+// last deployed while that's within the hour, with Deploy at its end and each of its applications
+// under it while it's open; and a note to the thread's agent
 // naming them, so "deploy it" needs no lookup.
 import { agents, ui, type Child } from "swarm";
 import * as api from "./coolify";
 import type { Resource } from "./coolify";
 import { conn, deployingNow, lastDeployment, linkedTo, openedOf, PAGE, placeOf, press, threadProject } from "./store";
-import { badge, faint, line } from "./view";
+import { dot, faint, line } from "./view";
 
-function stateOf(r: Resource): { tone: api.Tone | "accent"; label: string } {
+type State = { tone: api.Tone | "accent"; label: string };
+
+function stateOf(r: Resource): State {
 	if (deployingNow(r.uuid)) return { tone: "accent", label: "Deploying" };
 	const last = lastDeployment(r.uuid);
 	if (last?.status === "failed") return { tone: "red", label: "Deploy failed" };
 	const s = api.statusOf(r.status);
 	return { tone: s.tone, label: s.label };
+}
+
+// The dot's order: one deploying first, then a failure, a warning, running, and what's stopped.
+const rank: Record<State["tone"], number> = { accent: 4, red: 3, amber: 2, green: 1, muted: 0 };
+
+/** The worst of the applications' states, the one the dot shows. */
+function worst(apps: Resource[]): State {
+	let w = stateOf(apps[0]!);
+	for (const r of apps.slice(1)) {
+		const s = stateOf(r);
+		if (rank[s.tone] > rank[w.tone]) w = s;
+	}
+	return w;
+}
+
+/** How long a deploy stays news on the row: long enough to see a push went out, not so long it's noise. */
+const RECENT = 60 * 60 * 1000;
+
+/**
+ * What the row says after the name: nothing while it's running and its
+ * last deploy is old news, the dot says that; when it deployed while
+ * that's recent; and a state that isn't Running in its tone, a failed
+ * deploy's time beside it while that's recent too.
+ */
+function said(r: Resource): Child[] {
+	const s = stateOf(r);
+	if (s.tone === "accent") return [<ui.text key="s" style={{ color: "accent", flexShrink: 0 }}>Deploying…</ui.text>];
+	const last = lastDeployment(r.uuid);
+	const recent = !!last && Date.now() - api.parseTime(last.created_at) < RECENT;
+	const out: Child[] = [];
+	if (s.tone !== "green") out.push(<ui.text key="s" style={{ color: s.tone === "muted" ? "text2" : s.tone, flexShrink: 0, whiteSpace: "nowrap" }}>{s.label}</ui.text>);
+	const failed = last?.status === "failed";
+	if (recent && (failed || s.tone === "green")) out.push(<ui.text key="w" style={{ ...faint, ...line }}>{failed ? api.ago(last.created_at) : `deployed ${api.ago(last.created_at)}`}</ui.text>);
+	return out;
 }
 
 const nameOf = (r: Resource, all: Resource[]) => {
@@ -66,16 +104,21 @@ export function registerContext() {
 			const apps = linkedTo(threadProject(thread));
 			if (!apps.length) return null;
 			const r = apps[0]!;
-			const s = stateOf(r);
-			const last = lastDeployment(r.uuid);
 			return (
-				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+				<ui.box label={`${nameOf(r, apps)}, ${stateOf(r).label}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
 					<ui.text style={{ ...line, fontWeight: 500 }}>{nameOf(r, apps)}</ui.text>
-					{badge(s.tone, s.label)}
-					{last && !deployingNow(r.uuid) ? <ui.text style={faint}>{last.status === "failed" ? api.ago(last.created_at) : `deployed ${api.ago(last.created_at)}`}</ui.text> : null}
-					{apps.length > 1 ? <ui.text style={faint}>{`+${apps.length - 1}`}</ui.text> : null}
+					{said(r)}
+					{apps.length > 1 ? <ui.text style={{ ...faint, flexShrink: 0 }}>{`+${apps.length - 1}`}</ui.text> : null}
 				</ui.box>
 			);
+		},
+		badge: ({ thread }) => {
+			if (!conn()) return null;
+			const apps = linkedTo(threadProject(thread));
+			if (!apps.length) return null;
+			const w = worst(apps);
+			if (w.label === "Unknown") return null;
+			return dot(w.tone, apps.length > 1 ? `${w.label}: ${apps.filter((r) => stateOf(r).label === w.label).map((r) => nameOf(r, apps)).join(", ")}` : w.label, w.tone === "accent");
 		},
 		action: ({ thread }) => {
 			const apps = linkedTo(threadProject(thread));
@@ -102,9 +145,9 @@ export function registerContext() {
 						const doms = api.domains(r.fqdn);
 						return (
 							<ui.box key={r.uuid} style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: 30 }}>
-								<ui.icon icon="cube" style={{ width: 13, height: 13, color: "text3", flexShrink: 0 }} />
+								{dot(s.tone, s.label, s.tone === "accent")}
 								<ui.text style={{ fontWeight: 500, flexShrink: 0 }}>{nameOf(r, apps)}</ui.text>
-								{badge(s.tone, s.label)}
+								{s.tone !== "green" ? <ui.text style={{ fontSize: "small", color: s.tone === "muted" ? "text2" : s.tone, flexShrink: 0 }}>{s.label}</ui.text> : null}
 								<ui.text style={{ ...faint, ...line, flex: 1 }}>{[doms[0]?.replace(/^https?:\/\//, ""), last ? `${last.commit && last.commit !== "HEAD" ? last.commit.slice(0, 7) + " " : ""}${api.ago(last.created_at)}` : ""].filter(Boolean).join(" · ")}</ui.text>
 								{doms[0] ? <ui.iconButton icon="globe" label={`Open ${doms[0]}`} href={/^https?:\/\//.test(doms[0]) ? doms[0] : `https://${doms[0]}`} /> : null}
 								<ui.iconButton icon="external" label={`${api.displayName(r)} in Coolify's page`} href={`swarm://plugin/${PAGE}/r/${r.uuid}`} />
