@@ -5,7 +5,7 @@ import type { Resource } from "./coolify";
 
 export const faint: Style = { fontSize: "small", color: "text3", whiteSpace: "nowrap" };
 export const line: Style = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" };
-export const column: Style = { maxWidth: 820, width: "100%", alignSelf: "center", paddingLeft: 32, paddingRight: 32 };
+export const column: Style = { maxWidth: 760, width: "100%", alignSelf: "center", paddingLeft: 32, paddingRight: 32 };
 export const top: Style = { flexDirection: "row", height: 44, flexShrink: 0, alignItems: "center", gap: 6, paddingLeft: 12, paddingRight: 8 };
 export const heading: Style = { fontSize: "small", fontWeight: 600, color: "text2" };
 export const rowStyle: Style = { flexDirection: "row", width: "100%", gap: 10, alignItems: "center", padding: "s4 s5", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "selected" }, transition: { duration: 120, colors: true } };
