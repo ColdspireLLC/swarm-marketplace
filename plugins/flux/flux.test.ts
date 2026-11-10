@@ -1046,6 +1046,14 @@ test("create, update and comment push what Flux takes", async (t) => {
 	expect(String(comment.body!.body)).toContain('data-type="mention"');
 	// Commenters follow the issue.
 	expect(items.get("i2")!.body!.subscriberIds).toEqual(["u1"]);
+	// show prints its id, by which it's edited and deleted.
+	const id = comment.id.slice(0, 8);
+	expect((await t.run("show", "ABC-2")).stdout).toContain(` · comment ${id}\n\nStarted on it`);
+	expect((await t.run("comment", "ABC-2", "--edit", id, "--body", "Started on it.")).stdout).toMatch(new RegExp(`^Edited comment ${id} on ABC-2\\. http`));
+	expect(items.get(comment.id)!.body!.body).toBe("<p>Started on it.</p>");
+	expect((await t.run("comment", "ABC-2", "--delete", "nope")).stderr).toContain('no comment "nope" on ABC-2');
+	expect((await t.run("comment", "ABC-2", "--delete", id)).stdout).toBe(`Deleted comment ${id} on ABC-2.\n`);
+	expect(items.get(comment.id)!.deleted).toBe(true);
 	expect((await t.run("update", "ABC-1")).stderr).toContain("nothing to change");
 	expect((await t.run("update", "ABC-1", "--status", "nope")).stderr).toContain('unknown status "nope"');
 });

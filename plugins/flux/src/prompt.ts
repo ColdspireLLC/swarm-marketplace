@@ -27,6 +27,11 @@ export function memberName(lookup: Lookup, id: string | null): string {
   return member ? `${member.name} (@${member.username})` : "Former member";
 }
 
+/** A comment's id as `swarm flux comment --edit` takes it: its first 8 characters. */
+export function shortId(id: string): string {
+  return id.slice(0, 8);
+}
+
 function clip(text: string, max: number): string {
   return text.length > max
     ? `${text.slice(0, max)}\n\n…(truncated; ${text.length - max} more characters)`
@@ -86,7 +91,7 @@ export function issueContext(detail: IssueDetail, lookup: Lookup): string {
       `## ${skipped > 0 ? `Latest ${recent.length} of ${detail.comments.length} comments` : "Comments"}\n\n${recent
         .map(
           (comment) =>
-            `**${memberName(lookup, comment.authorId)}** · ${comment.createdAt.slice(0, 16).replace("T", " ")}\n\n${clip(numbered(comment.markdown), MAX_COMMENT_CHARS)}`,
+            `**${memberName(lookup, comment.authorId)}**${comment.agent ? ` by ${comment.agent.name}` : ""} · ${comment.createdAt.slice(0, 16).replace("T", " ")} · comment ${shortId(comment.id)}\n\n${clip(numbered(comment.markdown), MAX_COMMENT_CHARS)}`,
         )
         .join("\n\n---\n\n")}`,
     );

@@ -78589,7 +78589,7 @@ ${ws.id}`;
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
     const it2 = this.item(id2, "comment");
-    if (asString(it2.body.authorId) !== me2.id) throw new Error("You can edit your own comments.");
+    if (asString(it2.body.authorId) !== me2.id) throw new Error("You can edit only your own comments.");
     const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
     const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
     await this.change(`Edit to a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id: id2, html });
@@ -78598,7 +78598,7 @@ ${ws.id}`;
     const me2 = this.me;
     if (!me2) throw new FluxNotReadyError("Flux is not connected.");
     const it2 = this.item(id2, "comment");
-    if (asString(it2.body.authorId) !== me2.id) throw new Error("You can delete your own comments.");
+    if (asString(it2.body.authorId) !== me2.id) throw new Error("You can delete only your own comments.");
     await this.change(`Deleting a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentDelete", id: id2 });
   }
   /** A label of name, in the color fewest labels use when none is given. */
@@ -79716,6 +79716,9 @@ function memberName(lookup, id2) {
   const member2 = lookup.members.find((candidate) => candidate.id === id2);
   return member2 ? `${member2.name} (@${member2.username})` : "Former member";
 }
+function shortId(id2) {
+  return id2.slice(0, 8);
+}
 function clip(text3, max3) {
   return text3.length > max3 ? `${text3.slice(0, max3)}
 
@@ -79764,7 +79767,7 @@ ${detail2.subIssues.map(
       `## ${skipped > 0 ? `Latest ${recent.length} of ${detail2.comments.length} comments` : "Comments"}
 
 ${recent.map(
-        (comment) => `**${memberName(lookup, comment.authorId)}** · ${comment.createdAt.slice(0, 16).replace("T", " ")}
+        (comment) => `**${memberName(lookup, comment.authorId)}**${comment.agent ? ` by ${comment.agent.name}` : ""} · ${comment.createdAt.slice(0, 16).replace("T", " ")} · comment ${shortId(comment.id)}
 
 ${clip(numbered(comment.markdown), MAX_COMMENT_CHARS)}`
       ).join("\n\n---\n\n")}`
@@ -79946,6 +79949,8 @@ Commands:
   swarm flux create             Create an issue (--start to attach this thread to it)
   swarm flux update [ISSUE]     Change an issue's status, priority, assignees, labels, title, description, due date, or parent
   swarm flux comment [ISSUE]    Comment on an issue in Markdown; @username notifies people
+                                (--edit ID --body MD to change one of yours, --delete ID to remove it;
+                                show prints each comment's ID)
   swarm flux start ISSUE        Attach this thread to an issue and move it to In Progress
   swarm flux detach [ISSUE]     Detach this thread from an issue
   swarm flux projects           Flux projects and the Swarm projects they're linked to
@@ -80031,6 +80036,17 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
     const attached = ctx.thread ? flux2.issuesOfThread(ctx.thread) : [];
     if (attached.length === 1) return attached[0];
     throw new CliError(attached.length > 1 ? `this thread is attached to ${attached.map((i2) => i2.key).join(", ")}; say which one` : "missing issue key", "Pass an issue key such as ABC-12.");
+  };
+  const commentOf = (issue2, ref) => {
+    const want = ref.trim().toLowerCase();
+    const hint = `Run \`swarm flux show ${issue2.key}\` for its comments' ids.`;
+    if (!want) throw new CliError("which comment?", hint);
+    const comments = flux2.comments(issue2.id);
+    const exact = comments.find((c) => c.id.toLowerCase() === want);
+    if (exact) return exact;
+    const found2 = comments.filter((c) => c.id.toLowerCase().startsWith(want));
+    if (found2.length === 1) return found2[0];
+    throw new CliError(found2.length ? `"${ref}" is the start of several comments on ${issue2.key}` : `no comment "${ref}" on ${issue2.key}`, hint);
   };
   const projectFromOption = (v2, ctx) => {
     if (v2) {
@@ -80227,10 +80243,24 @@ Swarm threads: ${issue2.threadIds.join(", ")}` : ""));
     io.print([...createdLine(created), `Updated ${updated.key}: ${changes.join("; ")}`].join("\n"));
   });
   guarded("comment", async (args2, io, ctx) => {
-    const { values: o, positionals } = parse3(args2, { body: { type: "string", short: "b", aliases: ["message", "text"] }, m: { type: "string" }, json: { type: "boolean" } });
+    const { values: o, positionals } = parse3(args2, { body: { type: "string", short: "b", aliases: ["message", "text"] }, m: { type: "string" }, edit: { type: "string" }, delete: { type: "string" }, json: { type: "boolean" } });
     const issue2 = issueFromArg(positionals[0], ctx);
     const body = str(o.body) ?? str(o.m) ?? "";
-    if (!body.trim()) throw new CliError("comment body is empty", 'swarm flux comment ABC-12 --body "…"');
+    if (str(o.edit) !== void 0 && str(o.delete) !== void 0) throw new CliError("--edit or --delete, not both");
+    if (str(o.delete) !== void 0) {
+      const comment2 = commentOf(issue2, str(o.delete));
+      await flux2.deleteComment(comment2.id);
+      if (o.json) return json2(io, { deleted: comment2.id });
+      return io.print(`Deleted comment ${shortId(comment2.id)} on ${issue2.key}.`);
+    }
+    if (!body.trim()) throw new CliError("comment body is empty", str(o.edit) !== void 0 ? 'swarm flux comment ABC-12 --edit ID --body "…"' : 'swarm flux comment ABC-12 --body "…"');
+    if (str(o.edit) !== void 0) {
+      const comment2 = commentOf(issue2, str(o.edit));
+      await flux2.updateComment(comment2.id, body);
+      const edited = flux2.comments(issue2.id).find((c) => c.id === comment2.id) ?? comment2;
+      if (o.json) return json2(io, edited);
+      return io.print(`Edited comment ${shortId(comment2.id)} on ${issue2.key}. ${flux2.issueUrl(issue2)}`);
+    }
     const comment = await flux2.addComment(issue2.id, body, ctx.agent);
     if (o.json) return json2(io, comment);
     io.print(`Commented on ${issue2.key} (${comment.markdown.length} characters). ${flux2.issueUrl(issue2)}`);
@@ -83891,7 +83921,7 @@ function When({ iso, prefix = " · " }) {
 }
 function Comment({ flux: flux2, comment, members: members2, image }) {
   const author = members2.find((member2) => member2.id === comment.authorId);
-  const mine = comment.authorId === flux2.me?.id && !comment.agent;
+  const mine = comment.authorId === flux2.me?.id;
   const editing2 = st6.editingComment === comment.id;
   const edited = new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1e3;
   const agent2 = comment.agent;

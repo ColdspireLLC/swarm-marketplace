@@ -29,7 +29,7 @@
     { "name": "show", "usage": "[ISSUE]", "description": "An issue with its description, sub-issues, and comments" },
     { "name": "create", "usage": "--title T [--project KEY] [--description MD]", "description": "Create an issue" },
     { "name": "update", "usage": "[ISSUE] [--status S] [--description MD] …", "description": "Change an issue" },
-    { "name": "comment", "usage": "[ISSUE] --body MD", "description": "Comment on an issue in Markdown" },
+    { "name": "comment", "usage": "[ISSUE] --body MD | --edit ID --body MD | --delete ID", "description": "Comment on an issue in Markdown, or edit or delete one of yours" },
     { "name": "start", "usage": "ISSUE", "description": "Attach this thread to an issue and move it to In Progress" },
     { "name": "detach", "usage": "[ISSUE]", "description": "Detach this thread from an issue" },
     { "name": "projects", "description": "Flux projects and the Swarm projects they're linked to" },
