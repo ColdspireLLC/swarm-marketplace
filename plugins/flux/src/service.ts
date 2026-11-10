@@ -1335,7 +1335,7 @@ export class Flux {
 		const me = this.me;
 		if (!me) throw new FluxNotReadyError("Flux is not connected.");
 		const it = this.item(id, "comment");
-		if (asString(it.body.authorId) !== me.id) throw new Error("You can edit your own comments.");
+		if (asString(it.body.authorId) !== me.id) throw new Error("You can edit only your own comments.");
 		const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
 		const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
 		await this.change(`Edit to a comment on ${this.issue(asString(it.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id, html });
@@ -1345,7 +1345,7 @@ export class Flux {
 		const me = this.me;
 		if (!me) throw new FluxNotReadyError("Flux is not connected.");
 		const it = this.item(id, "comment");
-		if (asString(it.body.authorId) !== me.id) throw new Error("You can delete your own comments.");
+		if (asString(it.body.authorId) !== me.id) throw new Error("You can delete only your own comments.");
 		await this.change(`Deleting a comment on ${this.issue(asString(it.body.issueId))?.key ?? "an issue"}`, { type: "commentDelete", id });
 	}
 

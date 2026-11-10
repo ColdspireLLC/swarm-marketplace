@@ -49,6 +49,17 @@ whose output another command or script will read. `swarm flux help` lists the co
 
    For a comment over several lines, see [Longer text](#longer-text).
 
+   To fix or take back a comment, rather than posting another: `swarm flux
+   show` prints each comment's id (`comment 1a2b3c4d`), and
+
+   ```sh
+   swarm flux comment ABC-12 --edit 1a2b3c4d --body "…"
+   swarm flux comment ABC-12 --delete 1a2b3c4d
+   ```
+
+   change or remove one of the account's comments. Leave the ones people
+   wrote themselves alone unless asked.
+
 4. When the work is ready for review, say so on the issue:
 
    ```sh

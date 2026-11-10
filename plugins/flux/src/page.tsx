@@ -1865,7 +1865,8 @@ function When({ iso, prefix = " · " }: { iso: string; prefix?: string }) {
 
 function Comment({ flux, comment, members, image }: { flux: Flux; comment: IssueComment; members: Member[]; image: ImageOf }) {
 	const author = members.find((member) => member.id === comment.authorId);
-	const mine = comment.authorId === flux.me?.id && !comment.agent;
+	// An agent's comment is still the account's, as Flux has it: yours to edit or delete.
+	const mine = comment.authorId === flux.me?.id;
 	const editing = st.editingComment === comment.id;
 	const edited = new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 	const agent = comment.agent;
