@@ -18,6 +18,20 @@ import { dayDelta, dueLabel } from "./dates";
 import { dueItems } from "./due";
 import { HTML_IMAGE, readImageTag, type ImageTag } from "./markdown";
 
+/** "N waiting to send": a click opens the changes, oldest first, in a menu. */
+export function PendingMenu({ items }: { items: { seq: number; label: string }[] }) {
+	if (items.length === 0) return null;
+	const title = `${items.length} waiting to send`;
+	return (
+		<ui.menu label={title} wide style={{ flexDirection: "row", gap: 6, alignItems: "center", height: 24, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }}>
+			<ui.icon icon="clock" style={{ width: 12, height: 12, color: "currentColor", flexShrink: 0 }} />
+			<ui.text style={{ fontSize: 12, color: "currentColor" }}>{title}</ui.text>
+			<ui.heading>Sent when Flux is back</ui.heading>
+			{items.map((item) => <ui.item key={item.seq}>{item.label}</ui.item>)}
+		</ui.menu>
+	);
+}
+
 /** Flux's status glyph: a ring, filled as far as the work has come. */
 export function StatusIcon({ status, size = 14 }: { status: Status; size?: number }) {
 	const c = STATUS_COLOR[status];

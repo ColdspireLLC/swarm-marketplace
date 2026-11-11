@@ -319,6 +319,10 @@ function takeFlux(args: string[]): { name?: string; args: string[] } {
 		if (c.workspace) lines.push(`Workspace: ${c.workspace.name}`);
 		if (c.me) lines.push(`Signed in as: ${c.me.name} (@${c.me.username})`);
 		lines.push(`Issues synced: ${c.issueCount}`);
+		if (c.pending.length) {
+			lines.push("Waiting to send:");
+			for (const item of c.pending) lines.push(`  ${item.label}`);
+		}
 		if (others.length) {
 			lines.push("", "Other workspaces (pass --flux NAME to use one; an issue key or project key finds its own):");
 			for (const o of others) lines.push(`  ${pad(o.workspace?.name ?? o.id, 20)} --flux ${o.workspace?.slug || o.id}  ${o.state}${o.active ? "  (active in the window)" : ""}`);

@@ -996,7 +996,18 @@ test("changes made offline wait, and go when Flux is back", async (t) => {
 	await t.sleep(250);
 	await w.key("Shift+2");
 	await w.see("2 waiting to send");
+	await w.click("2 waiting to send");
+	await w.see("ABC-2: priority → Urgent");
+	await w.see("ABC-1: priority → High");
+	const waiting = (await t.run("status")).stdout;
+	expect(waiting).toContain("Waiting to send:");
+	expect(waiting).toContain("ABC-2: priority → Urgent");
+	expect(waiting).toContain("ABC-1: priority → High");
 	await w.screenshot("flux-offline");
+	await w.dark(true);
+	await w.screenshot("flux-offline-dark");
+	await w.dark(false);
+	await w.key("Escape");
 	put("i1", null);
 	away.down = false;
 	await w.click("Retry now");
@@ -1770,6 +1781,9 @@ test("a project made offline waits, and goes when Flux is back", async (t) => {
 	// Shown at once, its board open, and waiting.
 	await w.see("Project: Offline");
 	await w.see("1 waiting to send", { timeout: 15000 });
+	await w.click("1 waiting to send");
+	await w.see("Project “Offline”");
+	await w.key("Escape");
 	expect([...items.values()].some((it) => it.body?.name === "Offline")).toBe(false);
 	away.down = false;
 	await w.click("Retry now");

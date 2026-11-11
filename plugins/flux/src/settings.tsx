@@ -5,7 +5,7 @@ import { call, ui, type ColorValue } from "swarm";
 import { ConnectForm } from "./connect";
 import { hub } from "./hub";
 import type { Flux, State } from "./service";
-import { Avatar } from "./view";
+import { Avatar, PendingMenu } from "./view";
 import { SpawnConfigs } from "./spawn";
 import { MarkPicker, confirmDelete, keyNote, markOf, openNewProject, openProjectSettings, setMark } from "./projects";
 
@@ -149,6 +149,7 @@ function ConnectionCard({ flux, active }: { flux: Flux; active: boolean | null }
 					) : null}
 				</ui.box>
 			</ui.box>
+			{c.pending.length ? <PendingMenu items={c.pending} /> : null}
 			{open ? <ConnectForm name={"change-" + flux.id} target={flux.id} url={flux.baseUrl || flux.url} done={() => void editing.delete(flux.id)} /> : null}
 			<ui.pressable label={`Disconnect ${nameOf(flux)}`} role="link" onClick={() => disconnect(flux)} style={{ alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
 				<ui.text style={{ fontSize: "small", textDecoration: "underline" }}>Disconnect and forget the token</ui.text>

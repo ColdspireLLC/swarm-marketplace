@@ -21,7 +21,7 @@ import { FluxSettings, refreshProjects } from "./src/settings";
 import { ProjectDialog, closeProject, moveProject, openNewProject } from "./src/projects";
 import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
-import { Avatar, IssueView, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
+import { Avatar, IssueView, PendingMenu, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
 import { statusMark } from "./src/menumarks";
 
 // The page and the commands use whichever Flux is active. What shows in a
@@ -378,7 +378,10 @@ export function activate() {
 						{c.state !== "ready" && (
 							<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }}>
 								<ui.icon icon="alert" style={{ color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 }} />
-								<ui.text style={{ fontSize: "small", flex: 1 }}>{c.message || `Flux is ${c.state}: what shows is as it was.`}</ui.text>
+								<ui.box style={{ flex: 1, minWidth: 0, gap: 8 }}>
+									<ui.text style={{ fontSize: "small" }}>{c.message || `Flux is ${c.state}: what shows is as it was.`}</ui.text>
+									{c.pending.length ? <PendingMenu items={c.pending} /> : null}
+								</ui.box>
 							</ui.box>
 						)}
 						{shown ? (

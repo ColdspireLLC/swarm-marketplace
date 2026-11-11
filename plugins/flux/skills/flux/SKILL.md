@@ -163,5 +163,7 @@ to this Swarm project, else the selected one.
 - `swarm flux status` shows whether Swarm is connected to Flux. If commands
   fail saying Flux isn't set up, tell the user to set its URL and API token in
   Settings, Plugins, Flux, rather than retrying.
-- While Flux can't be reached, reads answer from Swarm's last synced copy;
-  changes fail saying so: try them again once it's back.
+- While Flux can't be reached, reads answer from Swarm's last synced copy.
+  A change that can wait is kept and sent when Flux is back. On the Flux
+  page, "N waiting to send" opens them, and `swarm flux status` lists them.
+  A change that needs Flux now (creating an issue, which Flux numbers) fails until it's back.

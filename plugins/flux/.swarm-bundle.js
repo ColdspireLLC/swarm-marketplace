@@ -77316,6 +77316,106 @@ function aliasesAfter(aliases, was, key) {
   return out.filter((a3) => a3 !== key);
 }
 
+// src/dates.ts
+function startOfDay(date5) {
+  return new Date(date5.getFullYear(), date5.getMonth(), date5.getDate());
+}
+function addDays(date5, days) {
+  return new Date(date5.getFullYear(), date5.getMonth(), date5.getDate() + days);
+}
+function isoDay(date5) {
+  return `${date5.getFullYear()}-${String(date5.getMonth() + 1).padStart(2, "0")}-${String(date5.getDate()).padStart(2, "0")}`;
+}
+function parseIsoDay(value) {
+  const match2 = value ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
+  if (!match2) return null;
+  const [year, month, day] = [Number(match2[1]), Number(match2[2]) - 1, Number(match2[3])];
+  const date5 = new Date(year, month, day);
+  return date5.getFullYear() === year && date5.getMonth() === month && date5.getDate() === day ? date5 : null;
+}
+function endOfWorkWeek(now) {
+  const today = startOfDay(now);
+  const day = today.getDay();
+  return addDays(today, day <= 5 ? 5 - day : 6);
+}
+function dayDelta(value, now = /* @__PURE__ */ new Date()) {
+  const date5 = parseIsoDay(value);
+  if (!date5) return 0;
+  return Math.round((date5.getTime() - startOfDay(now).getTime()) / 864e5);
+}
+var SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function dueLabel(value, now = /* @__PURE__ */ new Date()) {
+  const date5 = parseIsoDay(value);
+  if (!date5) return value;
+  const diff = dayDelta(value, now);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  if (diff === -1) return "Yesterday";
+  if (diff > 1 && diff < 7) return SHORT_DAYS[date5.getDay()];
+  return `${SHORT_MONTHS[date5.getMonth()]} ${date5.getDate()}${date5.getFullYear() === now.getFullYear() ? "" : `, ${date5.getFullYear()}`}`;
+}
+function dueHint(date5, now = /* @__PURE__ */ new Date()) {
+  return `${SHORT_DAYS[date5.getDay()]}, ${date5.getDate()} ${SHORT_MONTHS[date5.getMonth()]}${date5.getFullYear() === now.getFullYear() ? "" : ` ${date5.getFullYear()}`}`;
+}
+function dueChoices(now = /* @__PURE__ */ new Date()) {
+  const today = startOfDay(now);
+  const seen = /* @__PURE__ */ new Set();
+  return [
+    ["Today", today],
+    ["Tomorrow", addDays(today, 1)],
+    ["End of week", endOfWorkWeek(today)],
+    ["In one week", addDays(today, 7)],
+    ["In two weeks", addDays(today, 14)]
+  ].map(([label, date5]) => ({ label, value: isoDay(date5), hint: dueHint(date5, today) })).filter((choice2) => !seen.has(choice2.value) && seen.add(choice2.value));
+}
+var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+var WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+function upcomingMonthDay(now, month, day, year) {
+  const today = startOfDay(now);
+  let date5 = new Date(year ?? today.getFullYear(), month, day);
+  if (date5.getMonth() !== month || date5.getDate() !== day) return null;
+  if (year === void 0 && date5.getTime() < today.getTime()) date5 = new Date(today.getFullYear() + 1, month, day);
+  return date5;
+}
+function parseDue(query, now = /* @__PURE__ */ new Date()) {
+  const raw = query.trim().toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ");
+  if (!raw) return null;
+  const today = startOfDay(now);
+  if (raw === "today") return today;
+  if (raw === "tomorrow") return addDays(today, 1);
+  if (raw === "yesterday") return addDays(today, -1);
+  if (["next week", "in one week", "in 1 week", "1 week"].includes(raw)) return addDays(today, 7);
+  if (["in two weeks", "in 2 weeks", "2 weeks"].includes(raw)) return addDays(today, 14);
+  if (raw === "end of week" || raw === "end of this week") return endOfWorkWeek(now);
+  const duration3 = /^(?:in\s+)?(\d+)\s*(h|hrs?|hours?|d|days?|w|wks?|weeks?)$/.exec(raw);
+  if (duration3) {
+    const count = Number(duration3[1]);
+    const unit = duration3[2];
+    if (unit.startsWith("h")) return startOfDay(new Date(now.getTime() + count * 36e5));
+    return addDays(today, unit.startsWith("d") ? count : count * 7);
+  }
+  const weekday = /^(next\s+)?(sun(day)?|mon(day)?|tue(s|sday)?|wed(nesday)?|thu(r|rs|rsday)?|fri(day)?|sat(urday)?)$/.exec(raw);
+  if (weekday) {
+    const target = WEEKDAYS.indexOf(weekday[2].slice(0, 3));
+    let delta = target - today.getDay();
+    if (weekday[1] ? delta <= 0 : delta < 0) delta += 7;
+    return addDays(today, delta);
+  }
+  const iso = parseIsoDay(raw);
+  if (iso) return iso;
+  const numeric2 = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(raw);
+  if (numeric2) {
+    const year = numeric2[3] ? Number(numeric2[3].length === 2 ? `20${numeric2[3]}` : numeric2[3]) : void 0;
+    return upcomingMonthDay(now, Number(numeric2[1]) - 1, Number(numeric2[2]), year);
+  }
+  const named = /^(?:(\d{1,2})\s+)?(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*(\d{1,2})?(?:\s+(\d{4}))?$/.exec(raw);
+  if (named && (named[1] || named[3])) {
+    return upcomingMonthDay(now, MONTHS[named[2].slice(0, 3)], Number(named[1] || named[3]), named[4] ? Number(named[4]) : void 0);
+  }
+  return null;
+}
+
 // src/flux.ts
 var STATUSES = [
   "backlog",
@@ -77438,6 +77538,16 @@ var asPriority = (v2) => PRIORITIES.includes(v2) ? v2 : "none";
 var asColor = (v2) => COLORS.includes(v2) ? v2 : "gray";
 var asDueDate = (v2) => typeof v2 === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v2) ? v2 : null;
 var unique = (xs) => [...new Set(xs)];
+function excerpt(text3, max3 = 72) {
+  const flat = text3.replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/\s+/g, " ").trim();
+  const chars = [...flat];
+  if (chars.length <= max3) return flat;
+  return `${chars.slice(0, max3 - 1).join("")}…`;
+}
+function withExcerpt(label, text3) {
+  const said = excerpt(text3);
+  return said ? `${label}: “${said}”` : label;
+}
 var alikeValue = (a3, b) => Object.is(a3, b) || Array.isArray(a3) && Array.isArray(b) && a3.length === b.length && a3.every((x2, i2) => Object.is(x2, b[i2]));
 var alike = (a3, b) => {
   const ka = Object.keys(a3), kb = Object.keys(b);
@@ -78449,9 +78559,32 @@ ${ws.id}`;
       this.online();
       await this.transact(() => this.issueWrites(id2, patch));
     } else {
-      await this.change(issue2 ? `Change to ${issue2.key}` : "A change to an issue", { type: "issue", id: id2, patch });
+      await this.change(this.issueChangeLabel(issue2, patch), { type: "issue", id: id2, patch });
     }
     return this.issue(id2);
+  }
+  /** What an issue change is, for the list of what's waiting: "ABC-2: priority → Urgent". */
+  issueChangeLabel(issue2, patch) {
+    const key = issue2?.key ?? "an issue";
+    const parts = [];
+    if (patch.title !== void 0) parts.push(patch.title.trim() ? `title → ${excerpt(patch.title, 48)}` : "title cleared");
+    if (patch.status) parts.push(`status → ${STATUS_LABELS[patch.status]}`);
+    if (patch.priority) parts.push(`priority → ${PRIORITY_LABELS[patch.priority]}`);
+    if (patch.assigneeIds) {
+      const names = patch.assigneeIds.map((id2) => this.members.find((m) => m.id === id2)?.name ?? "someone");
+      parts.push(`assignees → ${names.length ? names.join(", ") : "none"}`);
+    }
+    if (patch.labelIds) {
+      const names = patch.labelIds.map((id2) => this.labels().find((l) => l.id === id2)?.name).filter((name) => !!name);
+      parts.push(`labels → ${names.length ? names.join(", ") : "none"}`);
+    }
+    if (patch.dueDate !== void 0) parts.push(`due → ${patch.dueDate ? dueLabel(patch.dueDate) : "none"}`);
+    if (patch.parentId !== void 0) parts.push(`parent → ${patch.parentId ? this.issue(patch.parentId)?.key ?? "an issue" : "none"}`);
+    if (patch.projectId) parts.push(`project → ${this.projects().find((p) => p.id === patch.projectId)?.name ?? "another project"}`);
+    if (patch.position !== void 0 && parts.length === 0) parts.push("moved");
+    if (parts.length === 0 && patch.subscribe) return `Following ${key}`;
+    if (parts.length === 0) return issue2 ? `Change to ${issue2.key}` : "A change to an issue";
+    return `${key}: ${parts.join("; ")}`;
   }
   /** An issue's writes for patch, from the copy as it is now. */
   issueWrites(id2, patch) {
@@ -78493,7 +78626,7 @@ ${ws.id}`;
     this.item(id2, "issue");
     if (this.state === "ready") markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
     const issue2 = this.issue(id2);
-    await this.change(issue2 ? `Description of ${issue2.key}` : "A description", { type: "description", id: id2, markdown });
+    await this.change(withExcerpt(issue2 ? `Description of ${issue2.key}` : "A description", markdown), { type: "description", id: id2, markdown });
   }
   /** Writes a description into the issue's live document, then its HTML. */
   async writeDescription(id2, markdown) {
@@ -78541,7 +78674,7 @@ ${ws.id}`;
     const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
     const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
     const issue2 = this.item(issueId, "issue");
-    await this.change(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me2.id, body: html, ...agent2 ? { agent: agent2 } : {} } });
+    await this.change(withExcerpt(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, html), { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me2.id, body: html, ...agent2 ? { agent: agent2 } : {} } });
     if (!asStringList(issue2.body.subscriberIds).includes(me2.id)) {
       await this.change(`Following ${this.issue(issueId)?.key ?? "an issue"}`, { type: "issue", id: issueId, patch: { subscribe: me2.id } }).catch(() => {
       });
@@ -78592,7 +78725,7 @@ ${ws.id}`;
     if (asString(it2.body.authorId) !== me2.id) throw new Error("You can edit only your own comments.");
     const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
     const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
-    await this.change(`Edit to a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id: id2, html });
+    await this.change(withExcerpt(`Edit to a comment on ${this.issue(asString(it2.body.issueId))?.key ?? "an issue"}`, html), { type: "commentEdit", id: id2, html });
   }
   async deleteComment(id2) {
     const me2 = this.me;
@@ -78661,7 +78794,7 @@ ${ws.id}`;
     }
     if (patch.mark) next2.mark = patch.mark;
     if (Object.keys(next2).length === 0) return project;
-    await this.change(`Change to ${next2.name ?? project.name}`, { type: "projectEdit", id: id2, patch: next2 });
+    await this.change(this.projectChangeLabel(project, next2), { type: "projectEdit", id: id2, patch: next2 });
     return this.projects().find((p) => p.id === id2) ?? project;
   }
   /** A project's writes for patch, from the copy as it is now: never its counter, which only numbering an issue raises. */
@@ -78677,6 +78810,14 @@ ${ws.id}`;
       body.aliases = aliasesAfter(asStringList(it2.body.aliases), was, key);
     }
     return [{ itemId: id2, baseVersion: it2.version, body }];
+  }
+  /** What a project's settings change is, for the list of what's waiting. */
+  projectChangeLabel(project, patch) {
+    const parts = [];
+    if (patch.name !== void 0) parts.push(`name → ${patch.name}`);
+    if (patch.key !== void 0) parts.push(`key → ${patch.key}`);
+    if (patch.mark) parts.push(patch.mark.type === "emoji" ? `mark → ${patch.mark.value}` : "mark");
+    return parts.length ? `${project.name}: ${parts.join("; ")}` : `Change to ${project.name}`;
   }
   /** Moves a project to place to among them, as Flux's sidebar's drag: each one's position its place. */
   async moveProject(id2, to) {
@@ -78758,6 +78899,8 @@ ${ws.id}`;
       me: this.me,
       issueCount: this.ofType("issue").length,
       queued: this.queue.length,
+      // Oldest first, the order they're sent in.
+      pending: this.queue.map((q2) => ({ seq: q2.seq, label: q2.label })),
       dropped: this.dropped,
       syncedAt: this.syncedAt
     };
@@ -79103,106 +79246,6 @@ function Confirm() {
 
 // src/palette.tsx
 import { ui as ui5 } from "swarm";
-
-// src/dates.ts
-function startOfDay(date5) {
-  return new Date(date5.getFullYear(), date5.getMonth(), date5.getDate());
-}
-function addDays(date5, days) {
-  return new Date(date5.getFullYear(), date5.getMonth(), date5.getDate() + days);
-}
-function isoDay(date5) {
-  return `${date5.getFullYear()}-${String(date5.getMonth() + 1).padStart(2, "0")}-${String(date5.getDate()).padStart(2, "0")}`;
-}
-function parseIsoDay(value) {
-  const match2 = value ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
-  if (!match2) return null;
-  const [year, month, day] = [Number(match2[1]), Number(match2[2]) - 1, Number(match2[3])];
-  const date5 = new Date(year, month, day);
-  return date5.getFullYear() === year && date5.getMonth() === month && date5.getDate() === day ? date5 : null;
-}
-function endOfWorkWeek(now) {
-  const today = startOfDay(now);
-  const day = today.getDay();
-  return addDays(today, day <= 5 ? 5 - day : 6);
-}
-function dayDelta(value, now = /* @__PURE__ */ new Date()) {
-  const date5 = parseIsoDay(value);
-  if (!date5) return 0;
-  return Math.round((date5.getTime() - startOfDay(now).getTime()) / 864e5);
-}
-var SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-function dueLabel(value, now = /* @__PURE__ */ new Date()) {
-  const date5 = parseIsoDay(value);
-  if (!date5) return value;
-  const diff = dayDelta(value, now);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  if (diff === -1) return "Yesterday";
-  if (diff > 1 && diff < 7) return SHORT_DAYS[date5.getDay()];
-  return `${SHORT_MONTHS[date5.getMonth()]} ${date5.getDate()}${date5.getFullYear() === now.getFullYear() ? "" : `, ${date5.getFullYear()}`}`;
-}
-function dueHint(date5, now = /* @__PURE__ */ new Date()) {
-  return `${SHORT_DAYS[date5.getDay()]}, ${date5.getDate()} ${SHORT_MONTHS[date5.getMonth()]}${date5.getFullYear() === now.getFullYear() ? "" : ` ${date5.getFullYear()}`}`;
-}
-function dueChoices(now = /* @__PURE__ */ new Date()) {
-  const today = startOfDay(now);
-  const seen = /* @__PURE__ */ new Set();
-  return [
-    ["Today", today],
-    ["Tomorrow", addDays(today, 1)],
-    ["End of week", endOfWorkWeek(today)],
-    ["In one week", addDays(today, 7)],
-    ["In two weeks", addDays(today, 14)]
-  ].map(([label, date5]) => ({ label, value: isoDay(date5), hint: dueHint(date5, today) })).filter((choice2) => !seen.has(choice2.value) && seen.add(choice2.value));
-}
-var MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
-var WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-function upcomingMonthDay(now, month, day, year) {
-  const today = startOfDay(now);
-  let date5 = new Date(year ?? today.getFullYear(), month, day);
-  if (date5.getMonth() !== month || date5.getDate() !== day) return null;
-  if (year === void 0 && date5.getTime() < today.getTime()) date5 = new Date(today.getFullYear() + 1, month, day);
-  return date5;
-}
-function parseDue(query, now = /* @__PURE__ */ new Date()) {
-  const raw = query.trim().toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ");
-  if (!raw) return null;
-  const today = startOfDay(now);
-  if (raw === "today") return today;
-  if (raw === "tomorrow") return addDays(today, 1);
-  if (raw === "yesterday") return addDays(today, -1);
-  if (["next week", "in one week", "in 1 week", "1 week"].includes(raw)) return addDays(today, 7);
-  if (["in two weeks", "in 2 weeks", "2 weeks"].includes(raw)) return addDays(today, 14);
-  if (raw === "end of week" || raw === "end of this week") return endOfWorkWeek(now);
-  const duration3 = /^(?:in\s+)?(\d+)\s*(h|hrs?|hours?|d|days?|w|wks?|weeks?)$/.exec(raw);
-  if (duration3) {
-    const count = Number(duration3[1]);
-    const unit = duration3[2];
-    if (unit.startsWith("h")) return startOfDay(new Date(now.getTime() + count * 36e5));
-    return addDays(today, unit.startsWith("d") ? count : count * 7);
-  }
-  const weekday = /^(next\s+)?(sun(day)?|mon(day)?|tue(s|sday)?|wed(nesday)?|thu(r|rs|rsday)?|fri(day)?|sat(urday)?)$/.exec(raw);
-  if (weekday) {
-    const target = WEEKDAYS.indexOf(weekday[2].slice(0, 3));
-    let delta = target - today.getDay();
-    if (weekday[1] ? delta <= 0 : delta < 0) delta += 7;
-    return addDays(today, delta);
-  }
-  const iso = parseIsoDay(raw);
-  if (iso) return iso;
-  const numeric2 = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(raw);
-  if (numeric2) {
-    const year = numeric2[3] ? Number(numeric2[3].length === 2 ? `20${numeric2[3]}` : numeric2[3]) : void 0;
-    return upcomingMonthDay(now, Number(numeric2[1]) - 1, Number(numeric2[2]), year);
-  }
-  const named = /^(?:(\d{1,2})\s+)?(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*(\d{1,2})?(?:\s+(\d{4}))?$/.exec(raw);
-  if (named && (named[1] || named[3])) {
-    return upcomingMonthDay(now, MONTHS[named[2].slice(0, 3)], Number(named[1] || named[3]), named[4] ? Number(named[4]) : void 0);
-  }
-  return null;
-}
 
 // src/marks.ts
 var NUCLEO = /* @__PURE__ */ new Set([
@@ -80093,6 +80136,10 @@ Set Flux's URL and an API token in Settings, Plugins, Flux, then run swarm flux 
     if (c.workspace) lines.push(`Workspace: ${c.workspace.name}`);
     if (c.me) lines.push(`Signed in as: ${c.me.name} (@${c.me.username})`);
     lines.push(`Issues synced: ${c.issueCount}`);
+    if (c.pending.length) {
+      lines.push("Waiting to send:");
+      for (const item of c.pending) lines.push(`  ${item.label}`);
+    }
     if (others.length) {
       lines.push("", "Other workspaces (pass --flux NAME to use one; an issue key or project key finds its own):");
       for (const o of others) lines.push(`  ${pad(o.workspace?.name ?? o.id, 20)} --flux ${o.workspace?.slug || o.id}  ${o.state}${o.active ? "  (active in the window)" : ""}`);
@@ -80356,6 +80403,16 @@ function dueItems(current, set2) {
 
 // src/view.tsx
 import { jsx as jsx4, jsxs as jsxs3 } from "swarm/jsx-runtime";
+function PendingMenu({ items }) {
+  if (items.length === 0) return null;
+  const title = `${items.length} waiting to send`;
+  return /* @__PURE__ */ jsxs3(ui7.menu, { label: title, wide: true, style: { flexDirection: "row", gap: 6, alignItems: "center", height: 24, paddingLeft: 6, paddingRight: 6, flexShrink: 0, borderRadius: "control", color: "text2", backgroundColor: "transparent", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }, children: [
+    /* @__PURE__ */ jsx4(ui7.icon, { icon: "clock", style: { width: 12, height: 12, color: "currentColor", flexShrink: 0 } }),
+    /* @__PURE__ */ jsx4(ui7.text, { style: { fontSize: 12, color: "currentColor" }, children: title }),
+    /* @__PURE__ */ jsx4(ui7.heading, { children: "Sent when Flux is back" }),
+    items.map((item) => /* @__PURE__ */ jsx4(ui7.item, { children: item.label }, item.seq))
+  ] });
+}
 function StatusIcon({ status, size: size3 = 14 }) {
   const c = STATUS_COLOR[status];
   return /* @__PURE__ */ jsx4(
@@ -82625,13 +82682,14 @@ function SyncBars({ flux: flux2 }) {
         /* @__PURE__ */ jsx10(ui15.text, { style: { fontWeight: 500, color: "text" }, children: "Offline" }),
         ` · Can't reach ${host}, so this is the copy synced ${since(c.syncedAt)}. Changes you make are sent when it's back.`
       ] }) }),
-      c.queued ? /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", flexShrink: 0 }, children: `${c.queued} waiting to send` }) : null,
+      c.pending.length ? /* @__PURE__ */ jsx10(PendingMenu, { items: c.pending }) : null,
       /* @__PURE__ */ jsx10(ui15.pressable, { label: "Retry now", disabled: c.state === "connecting", onClick: () => retryNow(flux2), style: { ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: c.state === "connecting" ? "Retrying…" : failed2 ? "Still can't reach it" : "Retry now" }) })
     ] }) : c.state === "error" && c.message ? /* @__PURE__ */ jsxs9(ui15.box, { label: "Flux couldn't sync", style: bar2, children: [
       /* @__PURE__ */ jsx10(ui15.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: "red", flexShrink: 0 } }),
       /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, color: "text2", flex: 1, minWidth: 0 }, maxLines: 1, tooltip: c.message, children: c.message }),
       /* @__PURE__ */ jsx10(ui15.pressable, { label: "Try again", onClick: () => flux2.reconnect(), style: barButton, children: /* @__PURE__ */ jsx10(ui15.text, { style: { fontSize: 12, fontWeight: 500, color: "currentColor" }, children: "Try again" }) })
     ] }) : null,
+    !away && c.pending.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { ...bar2, justifyContent: "flex-end" }, children: /* @__PURE__ */ jsx10(PendingMenu, { items: c.pending }) }) : null,
     c.dropped.length ? /* @__PURE__ */ jsxs9(ui15.box, { style: { ...bar2, alignItems: "flex-start", paddingTop: 8, paddingBottom: 8, backgroundColor: "redSoft" }, children: [
       /* @__PURE__ */ jsx10(ui15.icon, { icon: "alert-circle", style: { width: 14, height: 14, color: "red", flexShrink: 0, marginTop: 1 } }),
       /* @__PURE__ */ jsxs9(ui15.box, { style: { flex: 1, minWidth: 0, gap: 2 }, children: [
@@ -84072,6 +84130,7 @@ function CantLoad({ flux: flux2 }) {
     /* @__PURE__ */ jsx10(IssuesArt, {}),
     /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }, children: connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux" }),
     /* @__PURE__ */ jsx10(ui15.text, { style: { marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }, selectable: true, children: connection.state === "offline" ? offline(connection.message, false) : connection.message }),
+    connection.pending.length ? /* @__PURE__ */ jsx10(ui15.box, { style: { marginTop: 16 }, children: /* @__PURE__ */ jsx10(PendingMenu, { items: connection.pending }) }) : null,
     /* @__PURE__ */ jsxs9(ui15.box, { style: { flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }, children: [
       /* @__PURE__ */ jsx10(ui15.button, { kind: "secondary", onClick: () => void flux2.resync().catch(() => {
       }), children: "Try again" }),
@@ -84216,6 +84275,7 @@ function ConnectionCard({ flux: flux2, active }) {
         c.state === "ready" || c.state === "offline" ? /* @__PURE__ */ jsx11(ui16.button, { kind: "secondary", size: "sm", tooltip: editing.has(flux2.id) ? void 0 : "Change its URL or token", onClick: () => void (editing.has(flux2.id) ? editing.delete(flux2.id) : editing.add(flux2.id)), children: editing.has(flux2.id) ? "Cancel" : "Change" }) : null
       ] })
     ] }),
+    c.pending.length ? /* @__PURE__ */ jsx11(PendingMenu, { items: c.pending }) : null,
     open3 ? /* @__PURE__ */ jsx11(ConnectForm, { name: "change-" + flux2.id, target: flux2.id, url: flux2.baseUrl || flux2.url, done: () => void editing.delete(flux2.id) }) : null,
     /* @__PURE__ */ jsx11(ui16.pressable, { label: `Disconnect ${nameOf2(flux2)}`, role: "link", onClick: () => disconnect(flux2), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: "small", textDecoration: "underline" }, children: "Disconnect and forget the token" }) })
   ] });
@@ -84567,7 +84627,10 @@ function activate() {
       return /* @__PURE__ */ jsx12(ui17.scroll, { style: { flex: 1 }, children: /* @__PURE__ */ jsxs11(ui17.box, { style: { padding: "s6 s6 s8 s6", gap: 16 }, children: [
         c.state !== "ready" && /* @__PURE__ */ jsxs11(ui17.box, { style: { flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }, children: [
           /* @__PURE__ */ jsx12(ui17.icon, { icon: "alert", style: { color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 } }),
-          /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: "small", flex: 1 }, children: c.message || `Flux is ${c.state}: what shows is as it was.` })
+          /* @__PURE__ */ jsxs11(ui17.box, { style: { flex: 1, minWidth: 0, gap: 8 }, children: [
+            /* @__PURE__ */ jsx12(ui17.text, { style: { fontSize: "small" }, children: c.message || `Flux is ${c.state}: what shows is as it was.` }),
+            c.pending.length ? /* @__PURE__ */ jsx12(PendingMenu, { items: c.pending }) : null
+          ] })
         ] }),
         shown ? /* @__PURE__ */ jsxs11(ui17.box, { style: { gap: 12 }, children: [
           /* @__PURE__ */ jsxs11(ui17.pressable, { label: "Back", onClick: () => void viewing.delete(thread), style: { flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: [
