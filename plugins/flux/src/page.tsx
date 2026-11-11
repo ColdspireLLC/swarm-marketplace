@@ -17,7 +17,7 @@ import { openPalette, type PaletteKind } from "./palette";
 import { dayDelta, dueChoices, dueLabel } from "./dates";
 import { dueItems } from "./due";
 import { labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
-import { AgentAvatar, Avatar, RAISED_HOVER, FluxMark, IssuesArt, Markdown, TrayArt, Unassigned, PriorityIcon, ProjectMark, Properties, StatusIcon, WorkspaceLogo, colorOf, workspaceMenuMark, type MentionOf } from "./view";
+import { AgentAvatar, Avatar, RAISED_HOVER, FluxMark, IssuesArt, Markdown, PendingMenu, TrayArt, Unassigned, PriorityIcon, ProjectMark, Properties, StatusIcon, WorkspaceLogo, colorOf, workspaceMenuMark, type MentionOf } from "./view";
 import { clearDraft, drafted, editDraft } from "./drafts";
 import type { ImageOf } from "./view";
 import {
@@ -261,7 +261,7 @@ export function SyncBars({ flux }: { flux: Flux }) {
 	const c = flux.connection();
 	const host = (c.baseUrl || flux.url || "Flux").replace(/^https?:\/\//, "");
 	const away = (c.state === "offline" || (c.state === "connecting" && c.issueCount > 0)) && c.issueCount > 0;
-	// Flux's: one quiet line under the bar, its dot, what's waiting and Retry now at its end.
+	// Flux's: one quiet line under the bar, its dot and Retry now. "N waiting to send" opens those changes.
 	const bar = { flexDirection: "row", gap: 8, alignItems: "center", minHeight: 32, paddingLeft: EDGE, paddingRight: EDGE - 6, paddingTop: 4, paddingBottom: 4, borderBottom: "1px solid border", media: [{ minWidth: 768, style: { paddingLeft: 20, paddingRight: 14 } }] } satisfies Style;
 	const barButton = { height: 24, paddingLeft: 6, paddingRight: 6, justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text", hover: { backgroundColor: "hover" } } as const;
 	const failed = st.retryFailed;
@@ -276,7 +276,7 @@ export function SyncBars({ flux }: { flux: Flux }) {
 							{` · Can't reach ${host}, so this is the copy synced ${since(c.syncedAt)}. Changes you make are sent when it's back.`}
 						</ui.text>
 					</ui.box>
-					{c.queued ? <ui.text style={{ fontSize: 12, color: "text2", flexShrink: 0 }}>{`${c.queued} waiting to send`}</ui.text> : null}
+					{c.pending.length ? <PendingMenu items={c.pending} /> : null}
 					<ui.pressable label="Retry now" disabled={c.state === "connecting"} onClick={() => retryNow(flux)} style={{ ...barButton, opacity: c.state === "connecting" ? 0.6 : 1 }}>
 						<ui.text style={{ fontSize: 12, fontWeight: 500, color: "currentColor" }}>{c.state === "connecting" ? "Retrying…" : failed ? "Still can't reach it" : "Retry now"}</ui.text>
 					</ui.pressable>
@@ -288,6 +288,11 @@ export function SyncBars({ flux }: { flux: Flux }) {
 					<ui.pressable label="Try again" onClick={() => flux.reconnect()} style={barButton}>
 						<ui.text style={{ fontSize: 12, fontWeight: 500, color: "currentColor" }}>Try again</ui.text>
 					</ui.pressable>
+				</ui.box>
+			) : null}
+			{!away && c.pending.length ? (
+				<ui.box style={{ ...bar, justifyContent: "flex-end" }}>
+					<PendingMenu items={c.pending} />
 				</ui.box>
 			) : null}
 			{c.dropped.length ? (
@@ -2066,6 +2071,7 @@ function CantLoad({ flux }: { flux: Flux }) {
 			<IssuesArt />
 			<ui.text style={{ marginTop: 32, fontSize: 20, lineHeight: "28px", fontWeight: 500, letterSpacing: -0.2, textAlign: "center" }}>{connection.state === "offline" ? "Can't reach Flux" : "Can't load Flux"}</ui.text>
 			<ui.text style={{ marginTop: 6, fontSize: 14, color: "text2", textAlign: "center", maxWidth: 480 }} selectable>{connection.state === "offline" ? offline(connection.message, false) : connection.message}</ui.text>
+			{connection.pending.length ? <ui.box style={{ marginTop: 16 }}><PendingMenu items={connection.pending} /></ui.box> : null}
 			<ui.box style={{ flexDirection: "row", gap: 16, alignItems: "center", marginTop: 24 }}>
 				<ui.button kind="secondary" onClick={() => void flux.resync().catch(() => {})}>Try again</ui.button>
 				<ui.link label="Flux settings" href={SETTINGS} />

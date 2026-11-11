@@ -13,7 +13,8 @@ import type { Comment, Issue, IssueDetail, IssuePatch, Label, Member, Project } 
 import { parseDescription, descriptionState, writeLiveDescription } from "./description";
 import { ItemStore } from "./store";
 import { aliasesAfter, keyOwner, keyProblem as formatProblem, normalizeProjectKey, uniqueProjectKey, type Keyed } from "./keys";
-import { COLORS, CLOSED_STATUSES, PRIORITIES, STATUSES, parseIssueKey, type ColorName, type Priority, type Status } from "./flux";
+import { dueLabel } from "./dates";
+import { COLORS, CLOSED_STATUSES, PRIORITIES, PRIORITY_LABELS, STATUSES, STATUS_LABELS, parseIssueKey, type ColorName, type Priority, type Status } from "./flux";
 
 export class FluxNotReadyError extends Error {
 	name = "FluxNotReadyError";
@@ -59,6 +60,12 @@ interface Queued {
 	change: PendingChange;
 }
 
+/** A change waiting to be sent, as the offline bar and `swarm flux status` list it. */
+export interface Pending {
+	seq: number;
+	label: string;
+}
+
 /** A change made offline that Flux didn't take, or that no longer applied, kept to say so. */
 export interface Dropped {
 	id: string;
@@ -101,6 +108,29 @@ const asPriority = (v: unknown): Priority => ((PRIORITIES as readonly string[]).
 const asColor = (v: unknown): ColorName => ((COLORS as readonly string[]).includes(v as string) ? (v as ColorName) : "gray");
 const asDueDate = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
 const unique = <T>(xs: T[]) => [...new Set(xs)];
+
+/** A change's words, one line, for the list of what's waiting to be sent. */
+function excerpt(text: string, max = 72): string {
+	const flat = text
+		.replace(/<[^>]+>/g, " ")
+		.replace(/&nbsp;/gi, " ")
+		.replace(/&amp;/gi, "&")
+		.replace(/&lt;/gi, "<")
+		.replace(/&gt;/gi, ">")
+		.replace(/&quot;/gi, '"')
+		.replace(/&#39;|&apos;/gi, "'")
+		.replace(/\s+/g, " ")
+		.trim();
+	const chars = [...flat];
+	if (chars.length <= max) return flat;
+	return `${chars.slice(0, max - 1).join("")}…`;
+}
+
+/** label, then a short quote of text when it has words. */
+function withExcerpt(label: string, text: string): string {
+	const said = excerpt(text);
+	return said ? `${label}: “${said}”` : label;
+}
 
 /** Whether two values are alike: the same, or arrays of the same items. */
 const alikeValue = (a: unknown, b: unknown) => Object.is(a, b) || (Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => Object.is(x, b[i])));
@@ -1179,9 +1209,34 @@ export class Flux {
 			this.online();
 			await this.transact(() => this.issueWrites(id, patch));
 		} else {
-			await this.change(issue ? `Change to ${issue.key}` : "A change to an issue", { type: "issue", id, patch });
+			await this.change(this.issueChangeLabel(issue, patch), { type: "issue", id, patch });
 		}
 		return this.issue(id)!;
+	}
+
+	/** What an issue change is, for the list of what's waiting: "ABC-2: priority → Urgent". */
+	private issueChangeLabel(issue: Issue | null, patch: IssuePatch): string {
+		const key = issue?.key ?? "an issue";
+		const parts: string[] = [];
+		if (patch.title !== undefined) parts.push(patch.title.trim() ? `title → ${excerpt(patch.title, 48)}` : "title cleared");
+		if (patch.status) parts.push(`status → ${STATUS_LABELS[patch.status]}`);
+		if (patch.priority) parts.push(`priority → ${PRIORITY_LABELS[patch.priority]}`);
+		if (patch.assigneeIds) {
+			const names = patch.assigneeIds.map((id) => this.members.find((m) => m.id === id)?.name ?? "someone");
+			parts.push(`assignees → ${names.length ? names.join(", ") : "none"}`);
+		}
+		if (patch.labelIds) {
+			const names = patch.labelIds.map((id) => this.labels().find((l) => l.id === id)?.name).filter((name): name is string => !!name);
+			parts.push(`labels → ${names.length ? names.join(", ") : "none"}`);
+		}
+		if (patch.dueDate !== undefined) parts.push(`due → ${patch.dueDate ? dueLabel(patch.dueDate) : "none"}`);
+		if (patch.parentId !== undefined) parts.push(`parent → ${patch.parentId ? (this.issue(patch.parentId)?.key ?? "an issue") : "none"}`);
+		if (patch.projectId) parts.push(`project → ${this.projects().find((p) => p.id === patch.projectId)?.name ?? "another project"}`);
+		// A drag that only reorders. A move that also changes status says that, not this.
+		if (patch.position !== undefined && parts.length === 0) parts.push("moved");
+		if (parts.length === 0 && patch.subscribe) return `Following ${key}`;
+		if (parts.length === 0) return issue ? `Change to ${issue.key}` : "A change to an issue";
+		return `${key}: ${parts.join("; ")}`;
 	}
 
 	/** An issue's writes for patch, from the copy as it is now. */
@@ -1231,7 +1286,7 @@ export class Flux {
 		// Pictures pasted in go up now, or the change waits with them in it.
 		if (this.state === "ready") markdown = await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "issue_image"));
 		const issue = this.issue(id);
-		await this.change(issue ? `Description of ${issue.key}` : "A description", { type: "description", id, markdown });
+		await this.change(withExcerpt(issue ? `Description of ${issue.key}` : "A description", markdown), { type: "description", id, markdown });
 	}
 
 	/** Writes a description into the issue's live document, then its HTML. */
@@ -1282,7 +1337,7 @@ export class Flux {
 		const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
 		const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
 		const issue = this.item(issueId, "issue");
-		await this.change(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me.id, body: html, ...(agent ? { agent } : {}) } });
+		await this.change(withExcerpt(`Comment on ${this.issue(issueId)?.key ?? "an issue"}`, html), { type: "comment", id: commentId, body: { type: "comment", issueId, authorId: me.id, body: html, ...(agent ? { agent } : {}) } });
 		// Commenters follow the issue, as Flux has it.
 		if (!asStringList(issue.body.subscriberIds).includes(me.id)) {
 			await this.change(`Following ${this.issue(issueId)?.key ?? "an issue"}`, { type: "issue", id: issueId, patch: { subscribe: me.id } }).catch(() => {});
@@ -1338,7 +1393,7 @@ export class Flux {
 		if (asString(it.body.authorId) !== me.id) throw new Error("You can edit only your own comments.");
 		const lifted = this.state === "ready" ? await liftDataImages(markdown, (bytes, type, name) => this.uploadImage(bytes, type, name, "comment_image")) : markdown;
 		const html = markdownToHtml(lifted, { baseUrl: this.baseUrl, members: this.mentionTargets() });
-		await this.change(`Edit to a comment on ${this.issue(asString(it.body.issueId))?.key ?? "an issue"}`, { type: "commentEdit", id, html });
+		await this.change(withExcerpt(`Edit to a comment on ${this.issue(asString(it.body.issueId))?.key ?? "an issue"}`, html), { type: "commentEdit", id, html });
 	}
 
 	async deleteComment(id: string): Promise<void> {
@@ -1414,7 +1469,7 @@ export class Flux {
 		}
 		if (patch.mark) next.mark = patch.mark;
 		if (Object.keys(next).length === 0) return project;
-		await this.change(`Change to ${next.name ?? project.name}`, { type: "projectEdit", id, patch: next });
+		await this.change(this.projectChangeLabel(project, next), { type: "projectEdit", id, patch: next });
 		return this.projects().find((p) => p.id === id) ?? project;
 	}
 
@@ -1431,6 +1486,15 @@ export class Flux {
 			body.aliases = aliasesAfter(asStringList(it.body.aliases), was, key);
 		}
 		return [{ itemId: id, baseVersion: it.version, body }];
+	}
+
+	/** What a project's settings change is, for the list of what's waiting. */
+	private projectChangeLabel(project: Project, patch: ProjectPatch): string {
+		const parts: string[] = [];
+		if (patch.name !== undefined) parts.push(`name → ${patch.name}`);
+		if (patch.key !== undefined) parts.push(`key → ${patch.key}`);
+		if (patch.mark) parts.push(patch.mark.type === "emoji" ? `mark → ${patch.mark.value}` : "mark");
+		return parts.length ? `${project.name}: ${parts.join("; ")}` : `Change to ${project.name}`;
 	}
 
 	/** Moves a project to place to among them, as Flux's sidebar's drag: each one's position its place. */
@@ -1520,6 +1584,8 @@ export class Flux {
 			me: this.me,
 			issueCount: this.ofType("issue").length,
 			queued: this.queue.length,
+			// Oldest first, the order they're sent in.
+			pending: this.queue.map((q): Pending => ({ seq: q.seq, label: q.label })),
 			dropped: this.dropped,
 			syncedAt: this.syncedAt,
 		};
