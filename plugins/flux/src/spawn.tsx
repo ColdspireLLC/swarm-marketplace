@@ -2,6 +2,7 @@
 // starts with, kept by name. Default is what it opens with; the others
 // are picked in its menu. Flux's page of Settings lists and edits them.
 import { storage, ui } from "swarm";
+import { CARD, phone, SectionHead, TAP } from "./phone";
 
 export interface SpawnConfig {
 	id: string;
@@ -94,57 +95,79 @@ export function SpawnConfigs() {
 	const list = spawnConfigs();
 	return (
 		<ui.box style={{ gap: 12 }}>
-			<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-				<ui.box style={{ flex: 1, minWidth: 0, gap: 4 }}>
-					<ui.text style={{ fontWeight: 600 }}>Agent configurations</ui.text>
-					<ui.text style={{ fontSize: "small", color: "text2" }}>The agent, model and mode Start agent starts with. It opens on Default; the others are a click away in its Configuration menu, which also saves what's picked.</ui.text>
-				</ui.box>
-				<ui.button
-					kind="secondary"
-					size="sm"
-					icon="plus"
-					onClick={() => {
-						const def = list[0]!;
-						const id = addConfig(freshName(), def);
-						st.renaming = id;
-						st.name = spawnConfig(id).name;
-					}}
-				>
-					New configuration
-				</ui.button>
-			</ui.box>
-			<ui.box style={{ borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }}>
-				{list.map((config, i) => (
-					<ui.box key={config.id} label={`Configuration ${config.name}`} style={{ flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 12, paddingRight: 8, height: 44, borderTop: i === 0 ? "none" : "1px solid divider" }}>
-						{st.renaming === config.id ? (
-							<ui.field
-								key={"rename-" + config.id}
-								label={`Name of ${config.name}`}
-								value={st.name}
-								autoFocus
-								onChange={(value) => { st.name = value; }}
-								onSubmit={() => finishRename(config.id)}
-								style={{ flex: 1, minWidth: 140, height: 28 }}
-							/>
-						) : (
-							<ui.text style={{ flex: 1, minWidth: 140, fontWeight: config.id === DEFAULT_ID ? 500 : 400 }} maxLines={1}>{config.name}</ui.text>
-						)}
-						{ui.agentPicker({ provider: config.provider, value: config.model, effort: config.effort, onChange: (value) => saveConfig(config.id, { ...config, provider: value.provider, model: value.model, effort: value.effort ?? "" }) })}
-						{ui.modePicker({ provider: config.provider, value: config.approval, onChange: (value) => saveConfig(config.id, { ...config, approval: value }) })}
-						{config.id === DEFAULT_ID ? (
-							<ui.box style={{ width: 28 }} />
-						) : st.renaming === config.id ? (
-							<ui.iconButton icon="check" label={`Save the name of ${config.name}`} style={{ width: 28, height: 28 }} onClick={() => finishRename(config.id)} />
-						) : (
-							<ui.menu label={`Actions for ${config.name}`} tooltip="Configuration actions" style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }}>
-								<ui.icon icon="more" style={{ width: 14, height: 14, color: "currentColor" }} />
-								<ui.item icon="pencil" onClick={() => { st.renaming = config.id; st.name = config.name; }}>Rename</ui.item>
-								<ui.separator />
-								<ui.item icon="trash" danger onClick={() => deleteConfig(config.id)}>Delete</ui.item>
-							</ui.menu>
-						)}
-					</ui.box>
-				))}
+			<SectionHead
+				title="Agent configurations"
+				note="The agent, model and mode Start agent starts with. It opens on Default; the others are a click away in its Configuration menu, which also saves what's picked."
+				action={
+					<ui.button
+						kind="secondary"
+						size="sm"
+						icon="plus"
+						onClick={() => {
+							const def = list[0]!;
+							const id = addConfig(freshName(), def);
+							st.renaming = id;
+							st.name = spawnConfig(id).name;
+						}}
+					>
+						{phone ? "New" : "New configuration"}
+					</ui.button>
+				}
+			/>
+			<ui.box style={phone ? { ...CARD, overflow: "hidden" } : { borderRadius: "card", border: "1px solid border", backgroundColor: "raised", overflow: "hidden" }}>
+				{list.map((config, i) => {
+					const name = st.renaming === config.id ? (
+						<ui.field
+							key={"rename-" + config.id}
+							label={`Name of ${config.name}`}
+							value={st.name}
+							autoFocus
+							onChange={(value) => { st.name = value; }}
+							onSubmit={() => finishRename(config.id)}
+							style={{ flex: 1, minWidth: 140, height: phone ? TAP : 28 }}
+						/>
+					) : (
+						<ui.text style={{ flex: 1, minWidth: 140, fontWeight: config.id === DEFAULT_ID ? 500 : 400 }} maxLines={1}>{config.name}</ui.text>
+					);
+					const side = phone ? TAP : 28;
+					const end = config.id === DEFAULT_ID ? (
+						<ui.box style={{ width: phone ? 0 : 28 }} />
+					) : st.renaming === config.id ? (
+						<ui.iconButton icon="check" label={`Save the name of ${config.name}`} style={{ width: side, height: side }} onClick={() => finishRename(config.id)} />
+					) : (
+						<ui.menu label={`Actions for ${config.name}`} tooltip="Configuration actions" style={{ width: side, height: side, alignItems: "center", justifyContent: "center", borderRadius: "control", color: "text2", hover: { backgroundColor: "hover", color: "text" }, checked: { backgroundColor: "hover", color: "text" } }}>
+							<ui.icon icon="more" style={{ width: 14, height: 14, color: "currentColor" }} />
+							<ui.item icon="pencil" onClick={() => { st.renaming = config.id; st.name = config.name; }}>Rename</ui.item>
+							<ui.separator />
+							<ui.item icon="trash" danger onClick={() => deleteConfig(config.id)}>Delete</ui.item>
+						</ui.menu>
+					);
+					const agent = ui.agentPicker({ provider: config.provider, value: config.model, effort: config.effort, onChange: (value) => saveConfig(config.id, { ...config, provider: value.provider, model: value.model, effort: value.effort ?? "" }) });
+					const mode = ui.modePicker({ provider: config.provider, value: config.approval, onChange: (value) => saveConfig(config.id, { ...config, approval: value }) });
+					if (phone) {
+						// On a phone, its name and menu, then its agent and mode under them, which have no room beside it.
+						return (
+							<ui.box key={config.id} label={`Configuration ${config.name}`} style={{ gap: 4, paddingLeft: 16, paddingRight: 6, paddingTop: 6, paddingBottom: 12, borderTop: i === 0 ? "none" : "1px solid divider" }}>
+								<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: TAP }}>
+									{name}
+									{end}
+								</ui.box>
+								<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginLeft: -8 }}>
+									{agent}
+									{mode}
+								</ui.box>
+							</ui.box>
+						);
+					}
+					return (
+						<ui.box key={config.id} label={`Configuration ${config.name}`} style={{ flexDirection: "row", gap: 8, alignItems: "center", paddingLeft: 12, paddingRight: 8, height: 44, borderTop: i === 0 ? "none" : "1px solid divider" }}>
+							{name}
+							{agent}
+							{mode}
+							{end}
+						</ui.box>
+					);
+				})}
 			</ui.box>
 		</ui.box>
 	);

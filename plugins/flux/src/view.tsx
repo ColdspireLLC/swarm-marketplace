@@ -16,6 +16,7 @@ import { pictureBytes, type PictureSource } from "./pictures";
 import { STATUS_COLOR, labelMark, memberMark, priorityMark, statusMark } from "./menumarks";
 import { dayDelta, dueLabel } from "./dates";
 import { dueItems } from "./due";
+import { phone, TAP } from "./phone";
 import { HTML_IMAGE, readImageTag, type ImageTag } from "./markdown";
 
 /** "N waiting to send": a click opens the changes, oldest first, in a menu. */
@@ -234,7 +235,7 @@ export function ProjectMark({ project, size = 14 }: { project: Project | undefin
  */
 export const RAISED_HOVER = "color-mix(in srgb, text 8%, raised)";
 
-const chip: Style = {
+const CHIP: Style = {
 	height: 28, paddingLeft: 9, paddingRight: 10, gap: 6, borderRadius: "control", flexDirection: "row", alignItems: "center",
 	border: "1px solid border", backgroundColor: "raised", color: "text",
 	hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" }, checked: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" },
@@ -242,7 +243,9 @@ const chip: Style = {
 	// click or its menu closing leaves it the focus, as the other menus'.
 	transition: { duration: 120, colors: true },
 };
-const square: Style = { ...chip, width: 28, paddingLeft: 0, paddingRight: 0, justifyContent: "center" };
+const SQUARE: Style = { ...CHIP, width: 28, paddingLeft: 0, paddingRight: 0, justifyContent: "center" };
+const CHIP_PHONE: Style = { ...CHIP, height: 34, paddingLeft: 11, paddingRight: 12 };
+const SQUARE_PHONE: Style = { ...SQUARE, width: 34, height: 34 };
 
 /** What the panel changes an issue with. */
 export interface Edits {
@@ -255,6 +258,9 @@ export function Properties({ issue, project, members, labels, me, edits, start }
 }) {
 	const assignees = members.filter((m) => issue.assigneeIds.includes(m.id));
 	const chosen = labels.filter((l) => issue.labelIds.includes(l.id));
+	// A finger's size on a phone, a little more room around the words.
+	const chip = phone ? CHIP_PHONE : CHIP;
+	const square = phone ? SQUARE_PHONE : SQUARE;
 	const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
 	return (
 		<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
@@ -534,11 +540,11 @@ export function IssueView(props: {
 	const name = (id: string | null) => members.find((m) => m.id === id);
 	return (
 		<ui.box style={{ gap: 0 }}>
-			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 22 }}>
+			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6, height: phone ? TAP : 22 }}>
 				<ProjectMark project={props.project} size={13} />
 				<ui.text style={{ fontSize: "small", color: "text2", letterSpacing: 0.2, userSelect: "text" }}>{issue.key}</ui.text>
-				<ui.box style={{ flexDirection: "row", marginLeft: "auto", gap: 2, alignItems: "center" }}>
-					<ui.iconButton icon="external" label="Open in Flux" href={props.url} disabled={!props.url} />
+				<ui.box style={{ flexDirection: "row", marginLeft: "auto", gap: 2, alignItems: "center", ...(phone ? { marginRight: -8 } : null) }}>
+					<ui.iconButton icon="external" label="Open in Flux" href={props.url} disabled={!props.url} style={phone ? { width: TAP, height: TAP } : undefined} />
 					{props.detach && (
 						<ui.menu label="" icon="more" tooltip={"More of " + issue.key}>
 							<ui.item icon="x" onClick={props.detach}>Detach this thread</ui.item>
@@ -558,7 +564,7 @@ export function IssueView(props: {
 					</ui.pressable>
 					{d.parent.subIssueCount > 0 && (
 						<ui.box style={{ flexDirection: "row" }}>
-							<ui.box label={`${d.parent.subIssueDoneCount} of ${d.parent.subIssueCount} sub-issues done`} style={{ ...chip, height: 22, paddingLeft: 6, paddingRight: 7, gap: 5, cursor: "default", hover: {} }}>
+							<ui.box label={`${d.parent.subIssueDoneCount} of ${d.parent.subIssueCount} sub-issues done`} style={{ ...CHIP, height: 22, paddingLeft: 6, paddingRight: 7, gap: 5, cursor: "default", hover: {} }}>
 								<ui.canvas label="Progress" width={14} height={14} style={{ width: 12, height: 12 }}
 									draw={(g) => {
 										g.circle(7, 7, 5.5, { stroke: "borderStrong", lineWidth: 2.2 });
@@ -575,7 +581,7 @@ export function IssueView(props: {
 				<Properties issue={issue} project={props.project} members={members} labels={props.labels} me={props.me} edits={props.edits} start={props.start} />
 				{props.working && (
 					<ui.box style={{ flexDirection: "row" }}>
-						<ui.box label="An agent works on it" style={{ ...chip, cursor: "default", border: "1px solid color-mix(in srgb, green 45%, transparent)", backgroundColor: "greenSoft", hover: {} }}>
+						<ui.box label="An agent works on it" style={{ ...CHIP, cursor: "default", border: "1px solid color-mix(in srgb, green 45%, transparent)", backgroundColor: "greenSoft", hover: {} }}>
 							<ui.box style={{ width: 7, height: 7, borderRadius: "full", backgroundColor: "green", animation: { name: "pulse" } }} />
 							<ui.text style={{ fontSize: 13 }}>Working</ui.text>
 						</ui.box>

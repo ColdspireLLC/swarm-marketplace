@@ -23,6 +23,7 @@ import { setThreads, threadInfo } from "./src/threads";
 import type { Flux } from "./src/service";
 import { Avatar, IssueView, PendingMenu, RAISED_HOVER, PriorityIcon, ProjectMark, StatusIcon, colorOf, tickTask } from "./src/view";
 import { statusMark } from "./src/menumarks";
+import { CARD, phone, renderingFor, SIDE, TAP } from "./src/phone";
 
 // The page and the commands use whichever Flux is active. What shows in a
 // thread is its issue's Flux, whichever is active: hub.issuesOfThread.
@@ -112,7 +113,7 @@ function issueCard(flux: Flux, issue: Issue): Child {
 	const labels = flux.labels().filter((label) => issue.labelIds.includes(label.id));
 	const chip = { flexDirection: "row", gap: 4, alignItems: "center", height: 22, paddingLeft: 6, paddingRight: 6, borderRadius: "control", border: "1px solid border" } as const;
 	return (
-		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`)} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }}>
+		<ui.box key={issue.id} label={`${issue.key} ${issue.title}`} onClick={() => ui.navTo("flux", `issues/${encodeURIComponent(issue.key)}`, { title: issue.key })} style={{ padding: "10px 12px", gap: 4, borderRadius: "card", backgroundColor: "raised", border: "1px solid border", maxWidth: 512, userSelect: "none", transition: { duration: 120, colors: true }, hover: { backgroundColor: RAISED_HOVER, borderColor: "borderStrong" } }}>
 			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
 				<ProjectMark project={project} size={13} />
 				{parent ? <ui.text style={{ fontSize: 11, color: "text3" }}>{`${parent.key} ›`}</ui.text> : null}
@@ -199,7 +200,7 @@ export function activate() {
 	// ::flux{key="ABC-12"}: an issue's card in a reply.
 	ui.shareIcon({ id: "mark", path: "icon.svg" });
 	// Its page of Settings: the Fluxes it's connected to, and where their agents work.
-	ui.page({ id: "flux", title: "Flux", icon: "flux:mark", render: () => <FluxSettings /> });
+	ui.page({ id: "flux", title: "Flux", icon: "flux:mark", render: ({ args }) => { renderingFor(args); return <FluxSettings />; } });
 	ui.nav({
 		id: "flux",
 		title: "Flux",
@@ -219,18 +220,21 @@ export function activate() {
 			const project = flux.projects().find((p) => "p-" + p.id === item);
 			if (project) moveProject(flux, project, index);
 		},
-		render: ({ args }) => <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} item={args.item} section={args.section} image={imageOf} />,
+		render: ({ args }) => {
+			renderingFor(args);
+			return <FluxPage path={args.path ?? ""} slot={args.slot ?? ""} item={args.item} section={args.section} image={imageOf} />;
+		},
 	});
 	syncNav(flux);
 	// Swarm's projects read ahead, for Start agent to open with one chosen.
 	warmStart();
 
 	// Each forgets what it was open for as Swarm closes it: Escape, or a click outside.
-	ui.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: () => <Palette /> });
-	ui.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: () => <Confirm /> });
-	ui.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: () => <StartAgentDialog flux={flux} /> });
+	ui.overlay({ id: "flux-palette", width: 480, bare: true, onClose: closePalette, render: ({ args }) => (renderingFor(args), <Palette />) });
+	ui.overlay({ id: "flux-confirm", width: 400, bare: true, onClose: closeConfirm, render: ({ args }) => (renderingFor(args), <Confirm />) });
+	ui.overlay({ id: "flux-start", title: "Start an agent", width: 720, bare: true, onClose: forgetStart, render: ({ args }) => (renderingFor(args), <StartAgentDialog flux={flux} />) });
 	// New project, and a project's settings, as Flux's dialog.
-	ui.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: () => <ProjectDialog flux={flux} /> });
+	ui.overlay({ id: "flux-project", title: "Project", width: 512, bare: true, onClose: closeProject, render: ({ args }) => (renderingFor(args), <ProjectDialog flux={flux} />) });
 	ui.command({ id: "flux-new-project", title: "New Flux project", detail: "Its name, key and icon, then its board", icon: "folder-add", run: () => openNewProject() });
 
 	ui.overlay({
@@ -239,7 +243,7 @@ export function activate() {
 		width: 672,
 		bare: true,
 		onClose: closeCreate,
-		render: () => <NewIssue flux={flux} />,
+		render: ({ args }) => (renderingFor(args), <NewIssue flux={flux} />),
 	});
 
 	ui.header({
@@ -342,13 +346,16 @@ export function activate() {
 		},
 	});
 
+	const attachIssue = (i: Issue, thread: string) => void flux.attach(i.id, thread, false).then(() => ui.toast(`Attached to ${i.key}.`), (e: unknown) => ui.toast(`Couldn't attach ${i.key}: ${e instanceof Error ? e.message : String(e)}`));
+
 	// Each thread's Flux panel: its issue, or one to attach.
 	const search = ui.state("");
 	ui.panel({
 		id: "flux",
 		title: "Flux issue",
 		icon: "list",
-		render: ({ thread }) => {
+		render: ({ thread, args }) => {
+			renderingFor(args);
 			// Its issues' Flux, else the active one's, to attach one of.
 			const attached = hub.issuesOfThread(thread);
 			const own = attached[0]?.flux ?? hub.active;
@@ -374,7 +381,7 @@ export function activate() {
 				.slice(0, 30);
 			return (
 				<ui.scroll style={{ flex: 1 }}>
-					<ui.box style={{ padding: "s6 s6 s8 s6", gap: 16 }}>
+					<ui.box style={phone ? { paddingLeft: SIDE, paddingRight: SIDE, paddingTop: 12, paddingBottom: 32, gap: 16 } : { padding: "s6 s6 s8 s6", gap: 16 }}>
 						{c.state !== "ready" && (
 							<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "amberSoft" }}>
 								<ui.icon icon="alert" style={{ color: "amber", width: 13, height: 13, flexShrink: 0, marginTop: 2 }} />
@@ -386,7 +393,7 @@ export function activate() {
 						)}
 						{shown ? (
 							<ui.box style={{ gap: 12 }}>
-								<ui.pressable label="Back" onClick={() => void viewing.delete(thread)} style={{ flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
+								<ui.pressable label="Back" onClick={() => void viewing.delete(thread)} style={{ flexDirection: "row", gap: 5, alignItems: "center", alignSelf: "flex-start", color: "text2", hover: { color: "text" }, ...(phone ? { height: TAP, paddingRight: 8 } : null) }}>
 									<ui.icon icon="chevron-right" style={{ width: 12, height: 12, transform: "rotate(180deg)" }} />
 									<ui.text style={{ fontSize: "small" }}>{attached.length ? "Back to " + attached[0]!.issue.key : "Back"}</ui.text>
 								</ui.pressable>
@@ -402,7 +409,23 @@ export function activate() {
 									<ui.text style={{ fontSize: 12, color: "text2" }}>The agent in this thread will report progress to it.</ui.text>
 								</ui.box>
 								<ui.field key="search" value={search.value} placeholder="Search issues" onChange={(v) => void (search.value = v)} />
-								<ui.list
+								{phone ? (
+									// On a phone, the 30 at most as a card of rows a finger can pick, in the page's one scroll.
+									<ui.box style={{ ...CARD, overflow: "hidden" }}>
+										{open.map((i, n) => (
+											<ui.box key={i.id}>
+												{n ? <ui.box style={{ height: 1, marginLeft: 44, backgroundColor: "divider" }} /> : null}
+												<ui.pressable label={`Attach ${i.key} ${i.title}`} onClick={() => attachIssue(i, thread)} style={{ flexDirection: "row", gap: 12, alignItems: "center", minHeight: 56, paddingLeft: 16, paddingRight: 16 }}>
+													<StatusIcon status={i.status} size={16} />
+													<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+														<ui.text style={{ fontWeight: 500 }} maxLines={1}>{i.title}</ui.text>
+														<ui.text style={{ fontSize: 12, color: "text2" }} maxLines={1}>{i.key}</ui.text>
+													</ui.box>
+												</ui.pressable>
+											</ui.box>
+										))}
+									</ui.box>
+								) : <ui.list
 									key="issues"
 									count={open.length}
 									rowHeight={36}
@@ -410,14 +433,14 @@ export function activate() {
 									row={(n) => {
 										const i = open[n]!;
 										return (
-											<ui.pressable label={`Attach ${i.key} ${i.title}`} onClick={() => void flux.attach(i.id, thread, false).then(() => ui.toast(`Attached to ${i.key}.`), (e: unknown) => ui.toast(`Couldn't attach ${i.key}: ${e instanceof Error ? e.message : String(e)}`))} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
+											<ui.pressable label={`Attach ${i.key} ${i.title}`} onClick={() => attachIssue(i, thread)} style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
 												<StatusIcon status={i.status} size={13} />
 												<ui.text style={{ fontSize: 12, color: "text2", width: 72 }}>{i.key}</ui.text>
 												<ui.text style={{ fontSize: 13, flex: 1, minWidth: 0 }} maxLines={1}>{i.title}</ui.text>
 											</ui.pressable>
 										);
 									}}
-								/>
+								/>}
 							</ui.box>
 						)}
 					</ui.box>
