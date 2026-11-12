@@ -3,12 +3,33 @@ import { ui, type Child, type IconName, type Style } from "swarm";
 import * as api from "./coolify";
 import type { Resource } from "./coolify";
 
+/**
+ * Whether the surface being drawn is a phone's (args.compact "1"). Each
+ * render sets it as it starts; renders run one at a time, so the parts
+ * below read it while they're built.
+ */
+export const phone = { on: false };
+export const setPhone = (args: { compact?: string }) => void (phone.on = args.compact === "1");
+
+/** A phone's card: a shade off the page, rounded, no border and no clip (a clip under Android's stretch costs a mask pass a frame). */
+export const phoneCard: Style = { backgroundColor: "color-mix(in srgb, text 5%, bg)", borderRadius: 10 };
+
 export const faint: Style = { fontSize: "small", color: "text3", whiteSpace: "nowrap" };
 export const line: Style = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" };
-export const column: Style = { maxWidth: 760, width: "100%", alignSelf: "center", paddingLeft: 32, paddingRight: 32 };
+const desktopColumn: Style = { maxWidth: 760, width: "100%", alignSelf: "center", paddingLeft: 32, paddingRight: 32 };
+const phoneColumn: Style = { width: "100%", paddingLeft: 16, paddingRight: 16 };
+/** The page's column: centred on a desktop, the screen's width less 16 each side on a phone. */
+export const columnStyle = (): Style => (phone.on ? phoneColumn : desktopColumn);
+export const column: Style = desktopColumn;
 export const top: Style = { flexDirection: "row", height: 44, flexShrink: 0, alignItems: "center", gap: 6, paddingLeft: 12, paddingRight: 8 };
 export const heading: Style = { fontSize: "small", fontWeight: 600, color: "text2" };
-export const rowStyle: Style = { flexDirection: "row", width: "100%", gap: 10, alignItems: "center", padding: "s4 s5", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "selected" }, transition: { duration: 120, colors: true } };
+const desktopRow: Style = { flexDirection: "row", width: "100%", gap: 10, alignItems: "center", padding: "s4 s5", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "selected" }, transition: { duration: 120, colors: true } };
+const phoneRow: Style = { flexDirection: "row", width: "100%", gap: 12, alignItems: "center", minHeight: 56, padding: "10 14", active: { backgroundColor: "hover" }, checked: { backgroundColor: "selected" }, transition: { duration: 120, colors: true } };
+/** A row of a list: a finger's height on a phone. */
+export const rowOf = (): Style => (phone.on ? phoneRow : desktopRow);
+export const rowStyle: Style = desktopRow;
+/** A line of a row that gives way to what's beside it, ellipsized, on a phone; as it was on a desktop. */
+export const fitted = (s: Style): Style => (phone.on ? { ...s, flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } : s);
 
 /** A state as Swarm's badge: Running in green, Failed in red. */
 export const badge = (tone: api.Tone | "accent", label: string): Child => (
@@ -54,8 +75,19 @@ export function loading(what = "Loading…", big = false): Child {
 	);
 }
 
-/** Figures in a row, a line between each, in one card. */
+/** Figures in a row, a line between each, in one card; on a phone, two by two. */
 export function stats(items: { value: string; label: string; tone?: "green" | "amber" | "red" | "accent" }[]): Child {
+	if (phone.on) {
+		const cell = (it: (typeof items)[number]) => (
+			<ui.box key={it.label} style={{ ...phoneCard, flex: 1, minWidth: 0, padding: "12 14", gap: 2 }}>
+				<ui.text style={{ fontSize: 20, fontWeight: 500, color: it.tone ?? "text" }}>{it.value}</ui.text>
+				<ui.text style={{ ...faint, ...line }}>{it.label}</ui.text>
+			</ui.box>
+		);
+		const rows: Child[] = [];
+		for (let i = 0; i < items.length; i += 2) rows.push(<ui.box key={`r${i}`} style={{ flexDirection: "row", gap: 8 }}>{items.slice(i, i + 2).map(cell)}</ui.box>);
+		return <ui.box style={{ gap: 8 }}>{rows}</ui.box>;
+	}
 	return (
 		<ui.card padding="s0" gap="s0" style={{ flexDirection: "row" }}>
 			{items.flatMap((it, i) => [
@@ -72,12 +104,15 @@ export function stats(items: { value: string; label: string; tone?: "green" | "a
 /** Swarm's refresh: busy turns its icon, not the button. */
 export const refresh = (reading: boolean, run: () => unknown): Child => <ui.iconButton icon="refresh" label="Refresh" busy={reading} onClick={run} />;
 
-/** Rows in Swarm's card, a line between each and the next. */
-export const list = (items: Child[]): Child => (
-	<ui.card padding="s0" gap="s0">
-		{items.flatMap((row, i) => (i === 0 ? [row] : [<ui.divider key={`line-${i}`} />, row]))}
-	</ui.card>
-);
+/** Rows in Swarm's card, a line between each and the next; on a phone, the phone's card, its lines inset. */
+export const list = (items: Child[]): Child =>
+	phone.on ? (
+		<ui.box style={phoneCard}>{items.flatMap((row, i) => (i === 0 ? [row] : [<ui.box key={`line-${i}`} style={{ height: 1, marginLeft: 14, backgroundColor: "divider" }} />, row]))}</ui.box>
+	) : (
+		<ui.card padding="s0" gap="s0">
+			{items.flatMap((row, i) => (i === 0 ? [row] : [<ui.divider key={`line-${i}`} />, row]))}
+		</ui.card>
+	);
 
 export function problem(text: string): Child {
 	return (
@@ -99,17 +134,46 @@ export function iconOf(r: { type: string }): IconName {
 	return "database";
 }
 
+/** A phone's section heading: caption, uppercase, semibold, faint. */
+const phoneHeading: Style = { fontSize: "caption", fontWeight: 600, color: "text3", textTransform: "uppercase", paddingLeft: 4 };
+
 /** A section's heading, with what acts on it at its end. */
 export const sectionHead = (title: string, ...end: Child[]): Child => (
-	<ui.box style={{ flexDirection: "row", alignItems: "center", minHeight: 24, gap: 4 }}>
-		<ui.text style={heading}>{title}</ui.text>
+	<ui.box style={{ flexDirection: "row", alignItems: "center", minHeight: phone.on ? 28 : 24, gap: 4 }}>
+		<ui.text style={phone.on ? phoneHeading : heading}>{title}</ui.text>
 		<ui.spacer />
 		{end}
 	</ui.box>
 );
 
+/** The lines a log shows in place on a phone; the rest is a tap away, in the overlay. */
+const PHONE_LINES = 120;
+
+/**
+ * A log on a phone: the newest lines, monospace, wrapped, on the page's own
+ * scroll (no scroll of its own inside it, which Android's stretch makes
+ * slow), Copy and All of it under them.
+ */
+function phoneLog(key: string, text: string, larger?: { title: string }): Child {
+	const all = text.split("\n");
+	const shown = all.length > PHONE_LINES ? all.slice(-PHONE_LINES).join("\n") : text;
+	return (
+		<ui.box key={key} style={{ gap: 8, minWidth: 0 }}>
+			{all.length > PHONE_LINES ? <ui.text style={{ ...faint, whiteSpace: "normal" }}>{`The newest ${PHONE_LINES} of ${all.length.toLocaleString()} lines.`}</ui.text> : null}
+			<ui.box style={{ ...phoneCard, padding: "10 12" }}>
+				<ui.text selectable style={{ fontFamily: "mono", fontSize: 11, lineHeight: 1.45, color: "text2", whiteSpace: "pre-wrap" }}>{shown || " "}</ui.text>
+			</ui.box>
+			<ui.box style={{ flexDirection: "row", gap: 8 }}>
+				<ui.button kind="secondary" icon="copy" onClick={() => { ui.copy(text); ui.toast("Copied the log."); }} style={{ flex: 1 }}>Copy</ui.button>
+				{larger ? <ui.button kind="secondary" icon="maximize" onClick={() => openBigLog(larger.title, text)} style={{ flex: 1 }}>All of it</ui.button> : null}
+			</ui.box>
+		</ui.box>
+	);
+}
+
 /** A log in Swarm's code viewer: selectable across lines, copied with the keyboard, scrolled within its height. */
 export function logBox(key: string, text: string, height = 420, larger?: { title: string }): Child {
+	if (phone.on) return phoneLog(key, text, larger);
 	return (
 		<ui.box key={key} style={{ position: "relative", minWidth: 0 }}>
 			<ui.source key="src" text={text || " "} style={{ maxHeight: height, minHeight: Math.min(height, 120) }} />
@@ -153,13 +217,19 @@ export function registerLogOverlay() {
 /** Whether a line of a container's log reads as an error. */
 export const errorLine = (s: string) => /\b(error|err!|fatal|panic|exception|traceback)\b/i.test(s);
 
-/** A row of facts: what it is, then its value. */
-export const fact = (label: string, value: Child): Child => (
+/** A row of facts: what it is, then its value; on a phone, the label above its value. */
+export const fact = (label: string, value: Child): Child =>
+	phone.on ? (
+		<ui.box key={label} style={{ gap: 4, padding: "10 14", minHeight: 52, justifyContent: "center" }}>
+			<ui.text style={faint}>{label}</ui.text>
+			<ui.box style={{ minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{value}</ui.box>
+		</ui.box>
+	) : (
 	<ui.box key={label} style={{ flexDirection: "row", gap: 12, alignItems: "center", minHeight: 30, padding: "0 s5" }}>
 		<ui.text style={{ ...faint, width: 120, flexShrink: 0 }}>{label}</ui.text>
 		<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap", paddingTop: 4, paddingBottom: 4 }}>{value}</ui.box>
 	</ui.box>
-);
+	);
 
 /** A figure of the overview: a number, what it counts, and a tone. */
 export const tile = (value: string, label: string, tone?: "green" | "amber" | "red" | "accent"): Child => (

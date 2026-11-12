@@ -9,7 +9,7 @@ import { describeCron, formatDuration, nextCron, parseCron, stamp } from "./cron
 import { EditError, setEnabled } from "./edit";
 import { draft, fill, Form, openForm } from "./form";
 import { askAgent, IDEAS, type Idea } from "./ideas";
-import { card, column, doing, empty, fact, faint, heading, line, mark, NAV, project, projectNames, relative, RUN, upcoming, runMark, runTip, soft, state, STATE, strip, title, top, type State } from "./parts";
+import { cardStyle, columnStyle, doing, empty, fact, faint, heading, insetLine, line, mark, NAV, phone, project, projectNames, relative, RUN, setPhone, upcoming, runMark, runTip, soft, state, STATE, strip, title, top, type State } from "./parts";
 import { start } from "./runner";
 import { activeRun, automations, remove, runs, type Automation, type Run } from "./store";
 
@@ -46,12 +46,13 @@ const SEARCH_FROM = 8;
 function row(a: Automation, chosen: boolean, divided: boolean): Child {
 	const s = state(a);
 	const many = projectNames.size > 1;
+	if (phone.on) return phoneRow(a, chosen, divided, s, many);
 	return (
 		<ui.pressable
 			key={a.id}
 			label={a.name}
 			checked={chosen}
-			onClick={() => ui.navTo(NAV, chosen ? "" : "a/" + a.id)}
+			onClick={() => ui.navTo(NAV, chosen ? "" : "a/" + a.id, { title: a.name })}
 			style={{ minHeight: 60, width: "100%", flexDirection: "row", gap: 12, alignItems: "center", padding: "8 8 8 12", borderTop: divided ? "1px solid divider" : undefined, hover: { backgroundColor: "hover" }, checked: { backgroundColor: "selected" }, transition: { duration: 110, colors: true } }}>
 			{mark(a, 16, 26)}
 			<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 3 }}>
@@ -68,6 +69,27 @@ function row(a: Automation, chosen: boolean, divided: boolean): Child {
 	);
 }
 
+/**
+ * A row on a phone: Run now, which shows on a desktop's hover, is on the
+ * automation's page a tap away; its strip of runs and its switch stay.
+ */
+function phoneRow(a: Automation, chosen: boolean, divided: boolean, s: State, many: boolean): Child {
+	return (
+		<ui.box key={a.id}>
+			{insetLine(divided, 44)}
+			<ui.pressable label={a.name} checked={chosen} onClick={() => ui.navTo(NAV, chosen ? "" : "a/" + a.id, { title: a.name })} style={{ minHeight: 64, width: "100%", flexDirection: "row", gap: 12, alignItems: "center", padding: "10 12 10 14", active: { backgroundColor: "hover" }, transition: { duration: 110, colors: true } }}>
+				{mark(a, 18, 22)}
+				<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 4 }}>
+					<ui.text style={{ fontWeight: 500, ...line }}>{a.name}</ui.text>
+					<ui.text style={{ ...faint, ...line, color: s === "failing" ? "red" : "text3" }}>{[many ? projectNames.get(a.project) : "", scheduleText(a), s === "failing" ? a.lastError : nextText(a)].filter(Boolean).join(" · ")}</ui.text>
+				</ui.box>
+				{strip(runs.get(a.id) ?? [], 6)}
+				{s === "done" ? null : <ui.toggle checked={a.enabled} tooltip={a.enabled ? `On: pause ${a.name}` : `Paused: resume ${a.name}`} onChange={(v) => toggle(a, v)} />}
+			</ui.pressable>
+		</ui.box>
+	);
+}
+
 function matches(a: Automation): boolean {
 	const q = view.search.trim().toLowerCase();
 	if (!q) return true;
@@ -80,12 +102,12 @@ function ideaCard(i: Idea): Child {
 			key={i.id}
 			label={`${i.title}: ${i.blurb}`}
 			onClick={() => openForm({ idea: i })}
-			style={{ ...card, flexDirection: "column", alignItems: "stretch", flexGrow: 1, flexBasis: 0, minWidth: 220, gap: 8, padding: 14, hover: { backgroundColor: "hover" }, transition: { duration: 110, colors: true } }}>
+			style={{ ...cardStyle(), flexDirection: "column", alignItems: "stretch", flexGrow: 1, flexBasis: phone.on ? "100%" : 0, minWidth: 220, gap: 8, padding: 14, hover: { backgroundColor: "hover" }, transition: { duration: 110, colors: true } }}>
 			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
 				<ui.icon icon={i.icon} style={{ width: 16, height: 16, color: "text2", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 				<ui.text style={{ fontWeight: 500, ...line }}>{i.title}</ui.text>
 				<ui.spacer />
-				<ui.iconButton icon="sparkle" label={`Ask an agent to set up ${i.title}`} onClick={() => ui.prefill({ prompt: askAgent(i.blurb.charAt(0).toLowerCase() + i.blurb.slice(1)) })} style={{ opacity: 0, groupHover: { opacity: 1 }, focus: { opacity: 1 } }} />
+				<ui.iconButton icon="sparkle" label={`Ask an agent to set up ${i.title}`} onClick={() => ui.prefill({ prompt: askAgent(i.blurb.charAt(0).toLowerCase() + i.blurb.slice(1)) })} style={phone.on ? undefined : { opacity: 0, groupHover: { opacity: 1 }, focus: { opacity: 1 } }} />
 			</ui.box>
 			<ui.text style={soft}>{i.blurb}</ui.text>
 			<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
@@ -102,14 +124,14 @@ function ideas(): Child {
 	return (
 		<ui.box key="ideas" style={{ gap: 8 }}>
 			{heading("Ideas to start from")}
-			<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>{IDEAS.map(ideaCard)}</ui.box>
+			<ui.box style={{ flexDirection: phone.on ? "column" : "row", flexWrap: phone.on ? "nowrap" : "wrap", gap: 10 }}>{IDEAS.map(ideaCard)}</ui.box>
 		</ui.box>
 	);
 }
 
 function newMenu(): Child {
 	return (
-		<ui.menu wide label="New" icon="plus" kind="primary" size="sm" tooltip="New automation">
+		<ui.menu wide label={phone.on ? "New automation" : "New"} icon="plus" kind="primary" size={phone.on ? "md" : "sm"} tooltip="New automation" style={phone.on ? { alignSelf: "stretch" } : undefined}>
 			<ui.item icon="plus" label="Blank automation" detail="A schedule, and a prompt or a script" onClick={() => openForm()} />
 			<ui.item icon="sparkle" label="Ask an agent to set one up" detail="Describe it in a new thread" onClick={() => ui.prefill({ prompt: askAgent("") })} />
 			<ui.separator />
@@ -148,13 +170,13 @@ function list(open: string): Child {
 							label={g.name}
 							checked={!folded}
 							onClick={() => void (view.folded[g.name] = !folded)}
-							style={{ flexDirection: "row", height: 28, gap: 4, alignItems: "center", paddingLeft: 4, paddingRight: 4, borderRadius: "control", alignSelf: "flex-start", marginTop: gi > first ? 16 : 0, hover: { backgroundColor: "hover" } }}>
+							style={{ flexDirection: "row", height: phone.on ? 36 : 28, gap: 4, alignItems: "center", paddingLeft: 4, paddingRight: phone.on ? 8 : 4, borderRadius: "control", alignSelf: "flex-start", marginTop: gi > first ? (phone.on ? 12 : 16) : 0, hover: { backgroundColor: "hover" } }}>
 							<ui.icon icon={folded ? "chevron-right" : "chevron-down"} style={{ width: 12, height: 12, color: "text3" }} />
-							<ui.text style={{ fontSize: "small", fontWeight: 600, color: g.name === "Needs a look" ? "red" : "text2", whiteSpace: "nowrap" }}>{g.name}</ui.text>
+							<ui.text style={phone.on ? { fontSize: "caption", fontWeight: 600, textTransform: "uppercase", color: g.name === "Needs a look" ? "red" : "text3", whiteSpace: "nowrap" } : { fontSize: "small", fontWeight: 600, color: g.name === "Needs a look" ? "red" : "text2", whiteSpace: "nowrap" }}>{g.name}</ui.text>
 							<ui.text style={faint}>{String(g.items.length)}</ui.text>
 						</ui.pressable>,
 						folded ? null : (
-							<ui.box key={"rows-" + g.name} style={card}>
+							<ui.box key={"rows-" + g.name} style={cardStyle()}>
 								{g.items.map((a, i) => row(a, a.id === open, i > 0))}
 							</ui.box>
 						),
@@ -165,22 +187,24 @@ function list(open: string): Child {
 	}
 	return (
 		<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
-			<ui.box dragWindow style={top} />
-			<ui.box style={{ ...column, flexShrink: 0, paddingBottom: 12, gap: 10 }}>
-				<ui.box style={{ flexDirection: "row", minHeight: 28, gap: 8, alignItems: "center" }}>
+			{phone.on ? null : <ui.box dragWindow style={top} />}
+			<ui.box style={{ ...columnStyle(), flexShrink: 0, paddingBottom: 12, paddingTop: phone.on ? 8 : 0, gap: 10 }}>
+				{/* A phone's bar has the title: New, the width of the screen, under it. */}
+				{phone.on ? newMenu() : null}
+				{phone.on ? null : <ui.box style={{ flexDirection: "row", minHeight: 28, gap: 8, alignItems: "center" }}>
 					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "baseline", flexShrink: 1, minWidth: 0 }}>
 						<ui.text style={title}>Automations</ui.text>
 						{all.length ? <ui.text style={{ fontSize: "body", color: "text3", whiteSpace: "nowrap" }}>{String(all.length)}</ui.text> : null}
 					</ui.box>
 					<ui.spacer />
 					{newMenu()}
-				</ui.box>
+				</ui.box>}
 				{all.length >= SEARCH_FROM || view.search ? (
 					<ui.search key="search" value={view.search} placeholder="Search automations" onChange={(v) => (view.search = v)} />
 				) : null}
 			</ui.box>
 			<ui.scroll key="list" style={{ flexGrow: 1 }}>
-				<ui.box style={{ ...column, paddingBottom: 24 }}>{body}</ui.box>
+				<ui.box style={{ ...columnStyle(), paddingBottom: phone.on ? 32 : 24 }}>{body}</ui.box>
 			</ui.scroll>
 		</ui.box>
 	);
@@ -231,7 +255,7 @@ function summary(a: Automation): Child {
 	if (a.target) rows.push(["Thread", [<ui.link key="l" label="Open the thread it re-prompts" onClick={() => ui.openThread(a.target!)} />]]);
 	if (a.mode === "script") rows.push(["Limit", [<ui.text key="t">{`Stops after ${formatDuration(a.timeoutMs ?? 120_000)}`}</ui.text>]]);
 	if (a.origin === "agent") rows.push(["Made by", [<ui.text key="t">An agent</ui.text>, a.creator ? <ui.link key="l" label="Open its thread" onClick={() => ui.openThread(a.creator!)} /> : null]]);
-	return <ui.box style={card}>{rows.map(([k, v], i) => fact(k, i > 0, ...v))}</ui.box>;
+	return <ui.box style={cardStyle()}>{rows.map(([k, v], i) => fact(k, i > 0, ...v))}</ui.box>;
 }
 
 /** The runs as bars, oldest at the left: their height their time taken, their colour how they ended. */
@@ -240,7 +264,7 @@ function chart(list: Run[]): Child {
 	const took = (r: Run) => Math.max(1000, (r.ended ?? Date.now()) - r.started);
 	const most = Math.log(Math.max(...shown.map(took)) + 1);
 	return (
-		<ui.box label="Its runs over time" style={{ ...card, flexDirection: "row", gap: 3, alignItems: "flex-end", height: 72, padding: "12 12 10 12" }}>
+		<ui.box label="Its runs over time" style={{ ...cardStyle(), flexDirection: "row", gap: 3, alignItems: "flex-end", height: 72, padding: "12 12 10 12" }}>
 			{shown.map((r) => {
 				const tone = RUN[r.status].tone;
 				const h = r.status === "skipped" ? 6 : 10 + 40 * (Math.log(took(r) + 1) / most);
@@ -250,7 +274,37 @@ function chart(list: Run[]): Child {
 	);
 }
 
+/** A run on a phone: when over what it said, its thread a tap at its end; its output opens under it. */
+function phoneRunRow(r: Run, divided: boolean): Child {
+	const out = [r.stdout, r.stderr].filter((x) => x?.trim()).join("\n").trim();
+	const more = !!out && out !== (r.summary ?? "").trim();
+	const opened = !!view.open[r.id];
+	const took = r.ended ? formatDuration(Math.max(1000, r.ended - r.started)) : "";
+	return (
+		<ui.box key={r.id}>
+			{insetLine(divided, 40)}
+			<ui.pressable label={`${RUN[r.status].label}: ${r.summary ?? ""}`} checked={opened} onClick={() => void (more && (view.open[r.id] = !opened))} style={{ flexDirection: "row", minHeight: 56, gap: 12, alignItems: "center", padding: "8 6 8 14" }}>
+				{runMark(r)}
+				<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 3 }}>
+					<ui.text style={{ fontWeight: 500, ...line }}>{[stamp(r.started), took, r.trigger === "manual" ? "by hand" : r.trigger === "retry" ? "a retry" : ""].filter(Boolean).join(" · ")}</ui.text>
+					<ui.text style={{ ...line, fontSize: "small", color: r.status === "failed" ? "red" : "text2" }}>{r.summary ?? (r.status === "running" ? "Running…" : RUN[r.status].label)}</ui.text>
+				</ui.box>
+				{r.thread ? <ui.iconButton icon="message" label="Open its thread" onClick={() => ui.openThread(r.thread!)} /> : null}
+				{more ? <ui.icon icon={opened ? "chevron-down" : "chevron-right"} style={{ width: 12, height: 12, color: "text3", marginRight: 6 }} /> : null}
+			</ui.pressable>
+			{opened && more ? (
+				<ui.box style={{ padding: "0 14 12 14" }}>
+					<ui.text selectable style={{ fontFamily: "mono", fontSize: "small", color: "text2", backgroundColor: "bg", borderRadius: "control", padding: 10, whiteSpace: "pre-wrap" }}>
+						{out}
+					</ui.text>
+				</ui.box>
+			) : null}
+		</ui.box>
+	);
+}
+
 function runRow(r: Run, divided: boolean): Child {
+	if (phone.on) return phoneRunRow(r, divided);
 	const out = [r.stdout, r.stderr].filter((x) => x?.trim()).join("\n").trim();
 	const more = !!out && out !== (r.summary ?? "").trim();
 	const opened = !!view.open[r.id];
@@ -284,7 +338,7 @@ function runRow(r: Run, divided: boolean): Child {
 
 function moreMenu(a: Automation): Child {
 	return (
-		<ui.menu label="More" icon="more" kind="ghost" size="sm" tooltip="More">
+		<ui.menu label={phone.on ? "" : "More"} icon="more" kind={phone.on ? "secondary" : "ghost"} size={phone.on ? "md" : "sm"} tooltip="More">
 			<ui.item icon="pencil" label="Edit" onClick={() => openForm({ a })} />
 			<ui.item icon="copy" label="Duplicate" onClick={() => openForm({ a, copy: true })} />
 			<ui.item icon="copy" label="Copy its id" detail={a.id} onClick={() => (ui.copy(a.id), ui.toast("Copied its id"))} />
@@ -294,27 +348,56 @@ function moreMenu(a: Automation): Child {
 	);
 }
 
+/** A phone's actions: Run now the row's width, Edit and Pause halves of the row under it, the rest in its menu. */
+function phoneActions(a: Automation, s: State): Child {
+	return (
+		<ui.box style={{ gap: 8 }}>
+			<ui.button kind="primary" icon="play" disabled={s === "running"} onClick={() => void start(a, "manual")} style={{ width: "100%" }}>
+				{s === "running" ? "Running…" : "Run now"}
+			</ui.button>
+			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+				<ui.button kind="secondary" icon="pencil" onClick={() => openForm({ a })} style={{ flex: 1 }}>
+					Edit
+				</ui.button>
+				{s === "done" ? null : (
+					<ui.button kind="secondary" icon={a.enabled ? "pause" : "play"} onClick={() => toggle(a, !a.enabled)} style={{ flex: 1 }}>
+						{a.enabled ? "Pause" : "Resume"}
+					</ui.button>
+				)}
+				{moreMenu(a)}
+			</ui.box>
+		</ui.box>
+	);
+}
+
 function detail(a: Automation | undefined): Child {
 	const close = () => ui.navTo(NAV, "");
 	if (!a)
 		return (
 			<ui.box style={{ flexGrow: 1 }}>
-				<ui.box dragWindow style={{ ...top, justifyContent: "flex-end" }}>
-					<ui.iconButton icon="x" label="Close" onClick={close} />
-				</ui.box>
+				{phone.on ? null : (
+					<ui.box dragWindow style={{ ...top, justifyContent: "flex-end" }}>
+						<ui.iconButton icon="x" label="Close" onClick={close} />
+					</ui.box>
+				)}
 				{empty("clock", "That automation was deleted")}
 			</ui.box>
 		);
 	const s = state(a);
 	const rs = runs.get(a.id) ?? [];
 	const count = (st: Run["status"]) => rs.filter((r) => r.status === st).length;
+	// A phone's buttons are a finger's size.
+	const size = phone.on ? "md" : "sm";
 	return (
 		<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
-			<ui.box dragWindow style={{ ...top, justifyContent: "flex-end" }}>
-				<ui.iconButton icon="x" label="Close" onClick={close} />
-			</ui.box>
+			{/* A phone's bar has Back, which closes it. */}
+			{phone.on ? null : (
+				<ui.box dragWindow style={{ ...top, justifyContent: "flex-end" }}>
+					<ui.iconButton icon="x" label="Close" onClick={close} />
+				</ui.box>
+			)}
 			<ui.scroll key={"a-" + a.id} style={{ flexGrow: 1 }}>
-				<ui.box style={{ ...column, gap: 16, paddingBottom: 24 }}>
+				<ui.box style={{ ...columnStyle(), gap: 16, paddingBottom: phone.on ? 32 : 24, paddingTop: phone.on ? 8 : 0 }}>
 					<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
 						{mark(a, 20, 28)}
 						<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 2 }}>
@@ -325,6 +408,7 @@ function detail(a: Automation | undefined): Child {
 							{project(a.project)}
 						</ui.box>
 					</ui.box>
+					{phone.on ? phoneActions(a, s) : (
 					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
 						<ui.button kind="primary" size="sm" icon="play" disabled={s === "running"} onClick={() => void start(a, "manual")}>
 							{s === "running" ? "Running…" : "Run now"}
@@ -340,14 +424,15 @@ function detail(a: Automation | undefined): Child {
 						<ui.spacer />
 						{moreMenu(a)}
 					</ui.box>
+					)}
 					{view.deleting === a.id ? (
 						<ui.card tone="red" icon="trash" title={`Delete ${a.name}?`}>
 							<ui.text style={soft}>{`It and its ${rs.length === 1 ? "run" : `${rs.length} runs`} go; the threads it started stay.`}</ui.text>
 							<ui.box style={{ flexDirection: "row", gap: 6, marginTop: 8 }}>
-								<ui.button kind="danger" size="sm" onClick={async () => (await remove(a.id), (view.deleting = ""), close(), ui.toast(`Deleted ${a.name}`))}>
+								<ui.button kind="danger" size={size} onClick={async () => (await remove(a.id), (view.deleting = ""), close(), ui.toast(`Deleted ${a.name}`))} style={phone.on ? { flex: 1 } : undefined}>
 									Delete
 								</ui.button>
-								<ui.button kind="ghost" size="sm" onClick={() => void (view.deleting = "")}>
+								<ui.button kind={phone.on ? "secondary" : "ghost"} size={size} onClick={() => void (view.deleting = "")} style={phone.on ? { flex: 1 } : undefined}>
 									Keep it
 								</ui.button>
 							</ui.box>
@@ -371,7 +456,7 @@ function detail(a: Automation | undefined): Child {
 					{a.prompt ? (
 						<ui.box style={{ gap: 8 }}>
 							{heading(a.mode === "script" ? "Then an agent is told" : "Prompt")}
-							<ui.box style={{ ...card, padding: "10 14" }}>
+							<ui.box style={{ ...cardStyle(), padding: "10 14" }}>
 								<ui.markdown>{a.prompt}</ui.markdown>
 							</ui.box>
 						</ui.box>
@@ -381,10 +466,10 @@ function detail(a: Automation | undefined): Child {
 						{rs.length ? (
 							<ui.box style={{ gap: 8 }}>
 								{rs.length >= 5 ? chart(rs) : null}
-								<ui.box style={card}>{rs.slice(0, 25).map((r, i) => runRow(r, i > 0))}</ui.box>
+								<ui.box style={cardStyle()}>{rs.slice(0, 25).map((r, i) => runRow(r, i > 0))}</ui.box>
 							</ui.box>
 						) : (
-							<ui.box style={card}>{empty("history", "No runs yet", a.enabled && a.nextAt ? `Its first runs ${upcoming(a.nextAt)}.` : "Run it now to try it.")}</ui.box>
+							<ui.box style={cardStyle()}>{empty("history", "No runs yet", a.enabled && a.nextAt ? `Its first runs ${upcoming(a.nextAt)}.` : "Run it now to try it.")}</ui.box>
 						)}
 					</ui.box>
 				</ui.box>
@@ -406,6 +491,7 @@ export function registerPage() {
 		icon: "clock",
 		islands: true,
 		render: ({ args }) => {
+			setPhone(args);
 			const path = String(args.path || "");
 			let side: Child = null;
 			let open = "";

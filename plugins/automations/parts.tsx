@@ -11,8 +11,27 @@ export const NAV = "automations";
 export const faint: Style = { fontSize: "small", color: "text3", whiteSpace: "nowrap" };
 export const soft: Style = { fontSize: "small", color: "text2" };
 export const line: Style = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" };
-export const card: Style = { borderRadius: "card", boxShadow: "inset 0 0 0 1px divider", overflow: "hidden" };
-export const column: Style = { maxWidth: 760, width: "100%", alignSelf: "center", paddingLeft: 32, paddingRight: 32 };
+/**
+ * Whether the surface being drawn is a phone's (args.compact "1"). The
+ * page's render sets it as it starts; renders run one at a time, so the
+ * parts read it while they're built.
+ */
+export const phone = { on: false };
+export const setPhone = (args: { compact?: string }) => void (phone.on = args.compact === "1");
+
+const desktopCard: Style = { borderRadius: "card", boxShadow: "inset 0 0 0 1px divider", overflow: "hidden" };
+/** A phone's card: a shade off the page, rounded, no border, and no clip (a clip under Android's stretch costs a mask pass a frame). */
+const phoneCard: Style = { backgroundColor: "color-mix(in srgb, text 5%, bg)", borderRadius: 10 };
+export const card: Style = desktopCard;
+export const cardStyle = (): Style => (phone.on ? phoneCard : desktopCard);
+const desktopColumn: Style = { maxWidth: 760, width: "100%", alignSelf: "center", paddingLeft: 32, paddingRight: 32 };
+export const column: Style = desktopColumn;
+/** The page's column: centred on a desktop; the screen's width less 16 each side on a phone. */
+export const columnStyle = (): Style => (phone.on ? { width: "100%", paddingLeft: 16, paddingRight: 16 } : desktopColumn);
+/** A line between a card's rows: across on a desktop, inset on a phone. */
+export const divide = (divided: boolean): Style => (!divided ? {} : phone.on ? {} : { borderTop: "1px solid divider" });
+/** On a phone, the inset line above a row of a card. */
+export const insetLine = (divided: boolean, inset = 14): Child => (divided && phone.on ? <ui.box style={{ height: 1, marginLeft: inset, backgroundColor: "divider" }} /> : null);
 export const top: Style = { flexDirection: "row", height: 44, flexShrink: 0, alignItems: "center", gap: 6, paddingLeft: 12, paddingRight: 8 };
 export const title: Style = { fontSize: 20, fontWeight: 500, whiteSpace: "nowrap" };
 
@@ -130,6 +149,17 @@ export function empty(icon: IconName, heading: string, sub = "", action?: Child)
 
 /** A labelled line of a summary card. */
 export function fact(label: string, divided: boolean, ...value: Child[]): Child {
+	if (phone.on)
+		// A phone's: the label over its value, as its settings rows.
+		return (
+			<ui.box key={label}>
+				{insetLine(divided)}
+				<ui.box style={{ minHeight: 52, gap: 4, justifyContent: "center", padding: "8 14" }}>
+					<ui.text style={faint}>{label}</ui.text>
+					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0, flexWrap: "wrap" }}>{value}</ui.box>
+				</ui.box>
+			</ui.box>
+		);
 	return (
 		<ui.box key={label} style={{ flexDirection: "row", minHeight: 36, gap: 8, alignItems: "center", padding: "6 12", borderTop: divided ? "1px solid divider" : undefined }}>
 			<ui.text style={{ ...faint, width: 96, flexShrink: 0 }}>{label}</ui.text>
@@ -141,8 +171,8 @@ export function fact(label: string, divided: boolean, ...value: Child[]): Child 
 /** A section's small heading. */
 export function heading(text: string, extra?: Child): Child {
 	return (
-		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minHeight: 24 }}>
-			<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2", whiteSpace: "nowrap" }}>{text}</ui.text>
+		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minHeight: phone.on ? 28 : 24 }}>
+			<ui.text style={phone.on ? { fontSize: "caption", fontWeight: 600, color: "text3", textTransform: "uppercase", whiteSpace: "nowrap", paddingLeft: 4 } : { fontSize: "small", fontWeight: 600, color: "text2", whiteSpace: "nowrap" }}>{text}</ui.text>
 			{extra}
 		</ui.box>
 	);

@@ -19,6 +19,7 @@ import {
 	deployingNow,
 	fresh,
 	lastDeployment,
+	navItems,
 	openedOf,
 	PAGE,
 	placeOf,
@@ -39,7 +40,7 @@ import {
 	type Dep,
 	type Opened,
 } from "./store";
-import { badge, column, deploymentTitle, empty, errorLine, fact, faint, howDeployed, iconOf, line, logBox, problem, list, refresh, rowStyle, searchField, sectionHead, sourceText, top, loading, stats } from "./view";
+import { badge, columnStyle, deploymentTitle, empty, errorLine, fact, faint, fitted, howDeployed, iconOf, line, logBox, phone, phoneCard, problem, list, refresh, rowOf, searchField, sectionHead, setPhone, sourceText, top, loading, stats } from "./view";
 
 type View = { kind: "overview" } | { kind: "deployments" } | { kind: "project"; uuid: string } | { kind: "servers" };
 
@@ -66,13 +67,13 @@ function resourceRow(r: Resource, base: string, open: string, why?: string): Chi
 	const sub = why ?? (api.domains(r.fqdn)[0]?.replace(/^https?:\/\//, "") || sourceText(r));
 	const linked = projectsOf(r);
 	return (
-		<ui.pressable key={r.uuid} label={`${api.displayName(r)}, ${going ? "Deploying" : s.label}`} checked={open === r.uuid} onClick={() => openIn(base, open === r.uuid ? "" : r.uuid)} style={rowStyle}>
+		<ui.pressable key={r.uuid} label={`${api.displayName(r)}, ${going ? "Deploying" : s.label}`} checked={open === r.uuid} onClick={() => openIn(base, open === r.uuid ? "" : r.uuid)} style={rowOf()}>
 			<ui.icon icon={iconOf(r)} style={{ width: 15, height: 15, color: "text2", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 				<ui.text style={{ fontWeight: 500, ...line }}>{api.displayName(r)}</ui.text>
 				<ui.text style={{ ...faint, ...line, color: why ? "amber" : "text3" }}>{sub}</ui.text>
 			</ui.box>
-			{linked.length ? (
+			{linked.length && !phone.on ? (
 				<ui.box tooltip={`Built from ${linked.map((p) => p.name).join(", ")}`} style={{ flexDirection: "row", gap: 4, alignItems: "center", flexShrink: 0 }}>
 					<ui.icon icon="folder" style={{ width: 12, height: 12, color: "text3" }} />
 					<ui.text style={faint}>{linked[0]!.name}</ui.text>
@@ -96,15 +97,15 @@ function feedRow(d: Dep, base: string, open: string): Child {
 		openIn(base, r.uuid);
 	};
 	return (
-		<ui.pressable key={d.deployment_uuid} label={`${r ? api.displayName(r) : d.application_name ?? ""}: ${deploymentTitle(d, r)}, ${s.label}`} checked={open === d.app && !!r && state.opened.get(r.uuid)?.expanded === d.deployment_uuid} onClick={go} style={rowStyle}>
+		<ui.pressable key={d.deployment_uuid} label={`${r ? api.displayName(r) : d.application_name ?? ""}: ${deploymentTitle(d, r)}, ${s.label}`} checked={open === d.app && !!r && state.opened.get(r.uuid)?.expanded === d.deployment_uuid} onClick={go} style={rowOf()}>
 			<ui.icon icon={api.deploying(d) ? "rocket" : d.status === "failed" ? "alert-circle" : "check-circle"} style={{ width: 15, height: 15, color: api.deploying(d) ? "accent" : d.status === "failed" ? "red" : "text3", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "baseline", minWidth: 0 }}>
-					<ui.text style={{ fontWeight: 500, flexShrink: 0 }}>{r ? api.displayName(r) : (d.application_name ?? "")}</ui.text>
+					<ui.text style={phone.on ? { fontWeight: 500, ...line, flexShrink: 0, maxWidth: "60%" } : { fontWeight: 500, flexShrink: 0 }}>{r ? api.displayName(r) : (d.application_name ?? "")}</ui.text>
 					{d.commit && d.commit !== "HEAD" ? <ui.text style={{ fontFamily: "mono", fontSize: 12, color: "text2", flexShrink: 0 }}>{d.commit.slice(0, 7)}</ui.text> : null}
 					<ui.text style={{ ...line, color: "text2" }}>{deploymentTitle(d, r)}</ui.text>
 				</ui.box>
-				<ui.text style={faint}>{[r ? placeOf(r)?.project : "", howDeployed(d), api.ago(d.created_at), api.took(d)].filter(Boolean).join(" · ")}</ui.text>
+				<ui.text style={fitted(faint)}>{[r ? placeOf(r)?.project : "", howDeployed(d), api.ago(d.created_at), api.took(d)].filter(Boolean).join(" · ")}</ui.text>
 			</ui.box>
 			{badge(s.tone, s.label)}
 		</ui.pressable>
@@ -125,6 +126,46 @@ function titleBar(title: string, count: string, ...end: Child[]): Child {
 			{end}
 			{c ? <ui.iconButton icon="external" label="Open Coolify" href={api.baseOf(c.url)} /> : null}
 			<ui.iconButton icon="settings" label="Coolify settings" href={`swarm://settings/${PAGE}/${PAGE}`} />
+		</ui.box>
+	);
+}
+
+/**
+ * A phone's head, drawn at the end of its bar, which has the page's title
+ * and Back: Refresh, and a menu of the rest (New app, Coolify itself,
+ * Settings).
+ */
+function phoneHead(end: Child[]): Child {
+	const c = conn();
+	const setup = agentsCanSetUp();
+	return (
+		<ui.box style={{ flexDirection: "row", gap: 2, alignItems: "center", flexShrink: 0 }}>
+			{c ? end : null}
+			<ui.menu label="" icon="more" kind="ghost" tooltip="More">
+				{c && setup ? <ui.item icon="plus" label="New app" detail="Set one up with an agent" onClick={() => ask(undefined, setupPrompt())} /> : null}
+				{c ? <ui.item icon="external" label="Open Coolify" href={api.baseOf(c.url)} /> : null}
+				<ui.item icon="settings" label="Coolify settings" href={`swarm://settings/${PAGE}/${PAGE}`} />
+			</ui.menu>
+		</ui.box>
+	);
+}
+
+/** A phone's way to the other views, which a desktop's sidebar lists: a row each, as a phone's settings are. */
+function browse(): Child {
+	const items = navItems().filter((it) => it.id !== "overview");
+	return (
+		<ui.box style={{ gap: 6 }}>
+			{sectionHead("Browse")}
+			{list(
+				items.map((it) => (
+					<ui.pressable key={it.id} label={it.title} onClick={() => ui.navTo(PAGE, it.path, { title: it.title })} style={rowOf()}>
+						<ui.icon icon={it.icon} style={{ width: 16, height: 16, color: "text2", flexShrink: 0 }} />
+						<ui.text style={{ flex: 1, ...line }}>{it.title}</ui.text>
+						{it.badge ? <ui.text style={{ ...faint, color: it.badge.endsWith("!") ? "red" : "text3" }}>{it.badge.replace("!", " down")}</ui.text> : null}
+						<ui.icon icon="chevron-right" style={{ width: 14, height: 14, color: "text3", flexShrink: 0 }} />
+					</ui.pressable>
+				)),
+			)}
 		</ui.box>
 	);
 }
@@ -182,6 +223,7 @@ function overview(base: string, open: string): Child {
 				{done.length ? list(done.map((d) => feedRow(d, base, open))) : state.recentReading ? loading("Reading deployments…") : <ui.text style={{ color: "text3", padding: 12 }}>No deployments yet.</ui.text>}
 			</ui.box>
 			{linkedSection(base, open)}
+			{phone.on ? browse() : null}
 		</ui.box>
 	);
 }
@@ -198,12 +240,12 @@ function linkedSection(base: string, open: string): Child {
 			{sectionHead("Your projects on Coolify")}
 			{list(
 				rows.map(({ p, apps }) => (
-					<ui.box key={p.id} style={{ flexDirection: "row", gap: 10, alignItems: "center", padding: "s4 s5" }}>
+					<ui.box key={p.id} style={phone.on ? { flexDirection: "row", gap: 10, alignItems: "flex-start", padding: "12 14", flexWrap: "wrap" } : { flexDirection: "row", gap: 10, alignItems: "center", padding: "s4 s5" }}>
 						<ui.projectIcon project={p.id} />
 						<ui.text style={{ fontWeight: 500, flexShrink: 0 }}>{p.name}</ui.text>
 						<ui.box style={{ flex: 1, minWidth: 0, flexDirection: "row", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
 							{apps.map((r) => (
-								<ui.pressable key={r.uuid} label={`${api.displayName(r)}, ${api.statusOf(r.status).label}`} onClick={() => openIn(base, r.uuid)} style={{ flexDirection: "row", gap: 6, alignItems: "center", padding: "2 6", borderRadius: "control", hover: { backgroundColor: "hover" } }}>
+								<ui.pressable key={r.uuid} label={`${api.displayName(r)}, ${api.statusOf(r.status).label}`} onClick={() => openIn(base, r.uuid)} style={{ flexDirection: "row", gap: 6, alignItems: "center", padding: phone.on ? "6 8" : "2 6", minHeight: phone.on ? 36 : undefined, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
 									<ui.text style={{ fontSize: "small" }}>{api.displayName(r)}</ui.text>
 									{badge(deployingNow(r.uuid) ? "accent" : api.statusOf(r.status).tone, deployingNow(r.uuid) ? "Deploying" : api.statusOf(r.status).label)}
 								</ui.pressable>
@@ -216,13 +258,64 @@ function linkedSection(base: string, open: string): Child {
 	);
 }
 
-function deploymentsView(base: string, open: string): Child {
+function shownDeployments(): Dep[] {
 	const q = state.search.trim().toLowerCase();
-	const all = allRecent().filter((d) => {
+	return allRecent().filter((d) => {
 		if (!q) return true;
 		const r = resource(d.app);
 		return [r?.name ?? d.application_name ?? "", d.commit ?? "", d.commit_message ?? "", r ? (placeOf(r)?.project ?? "") : ""].some((s) => s.toLowerCase().includes(q));
 	});
+}
+
+/**
+ * Every deployment on a phone: one virtualized list that is the page's
+ * scroll, so a long feed draws only the rows on screen; its sections'
+ * headings stay at its top as it scrolls past them.
+ */
+function phoneDeployments(base: string, open: string): Child {
+	const all = shownDeployments();
+	const q = state.search.trim();
+	if (!all.length) return state.recentReading ? loading("Reading deployments…") : <ui.text style={{ color: "text3", textAlign: "center", padding: 24 }}>{q ? `Nothing matches ${q}.` : "No deployments yet."}</ui.text>;
+	const live = all.filter(api.deploying);
+	const rest = all.filter((d) => !api.deploying(d));
+	const rows: ({ head: string } | { d: Dep; last: boolean })[] = [];
+	const headers: number[] = [];
+	const section = (head: string, ds: Dep[]) => {
+		if (!ds.length) return;
+		headers.push(rows.length);
+		rows.push({ head });
+		ds.forEach((d, i) => rows.push({ d, last: i === ds.length - 1 }));
+	};
+	section("Now", live);
+	section("Each application's last five", rest);
+	return (
+		<ui.list
+			key="phone-deployments"
+			count={rows.length}
+			rowHeight={60}
+			headers={headers}
+			rowKey={(i) => {
+				const x = rows[i]!;
+				return "head" in x ? "h-" + x.head : x.d.deployment_uuid;
+			}}
+			row={(i) => {
+				const x = rows[i]!;
+				if ("head" in x) return <ui.box style={{ width: "100%", padding: "14 16 6", backgroundColor: "bg" }}>{sectionHead(x.head)}</ui.box>;
+				return (
+					<ui.box style={{ width: "100%", paddingLeft: 2, paddingRight: 2 }}>
+						{feedRow(x.d, base, open)}
+						{x.last ? null : <ui.box style={{ height: 1, marginLeft: 16, backgroundColor: "divider" }} />}
+					</ui.box>
+				);
+			}}
+			style={{ flexGrow: 1, minHeight: 0 }}
+		/>
+	);
+}
+
+function deploymentsView(base: string, open: string): Child {
+	const q = state.search.trim().toLowerCase();
+	const all = shownDeployments();
 	const live = all.filter(api.deploying);
 	const rest = all.filter((d) => !api.deploying(d));
 	if (!all.length) return state.recentReading ? loading("Reading deployments…") : <ui.text style={{ color: "text3", textAlign: "center", padding: 24 }}>{q ? `Nothing matches ${state.search.trim()}.` : "No deployments yet."}</ui.text>;
@@ -293,29 +386,29 @@ function serversView(base: string, open: string): Child {
 								if (!res) void readServerResources(s.uuid);
 							}
 						}}
-						style={{ ...rowStyle, checked: {} }}
+						style={{ ...rowOf(), checked: {} }}
 					>
 						<ui.icon icon="server" style={{ width: 15, height: 15, color: "text2", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
 						<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 							<ui.text style={{ fontWeight: 500, ...line }}>{s.name}</ui.text>
-							<ui.text style={{ ...faint, ...line }}>{[s.ip && s.ip !== "host.docker.internal" ? s.ip : "This machine", s.proxy_type && s.proxy_type !== "NONE" ? `${s.proxy_type.charAt(0) + s.proxy_type.slice(1).toLowerCase()} proxy` : "", s.settings?.concurrent_builds ? `${s.settings.concurrent_builds} builds at once` : ""].filter(Boolean).join(" · ")}</ui.text>
+							<ui.text style={{ ...faint, ...line }}>{[phone.on && s.settings?.is_build_server ? "Build server" : "", s.ip && s.ip !== "host.docker.internal" ? s.ip : "This machine", s.proxy_type && s.proxy_type !== "NONE" ? `${s.proxy_type.charAt(0) + s.proxy_type.slice(1).toLowerCase()} proxy` : "", s.settings?.concurrent_builds ? `${s.settings.concurrent_builds} builds at once` : ""].filter(Boolean).join(" · ")}</ui.text>
 						</ui.box>
-						{s.settings?.is_build_server ? badge("muted", "Build server") : null}
+						{s.settings?.is_build_server && !phone.on ? badge("muted", "Build server") : null}
 						{badge(reachable ? "green" : "red", reachable ? "Reachable" : "Unreachable")}
 						<ui.icon icon={expanded ? "chevron-down" : "chevron-right"} style={{ width: 12, height: 12, color: "text3" }} />
 					</ui.pressable>
 					{expanded ? (
-						<ui.box style={{ paddingLeft: 36, paddingRight: 12, paddingBottom: 10, gap: 2 }}>
+						<ui.box style={phone.on ? { paddingLeft: 8, paddingRight: 8, paddingBottom: 8, gap: 0 } : { paddingLeft: 36, paddingRight: 12, paddingBottom: 10, gap: 2 }}>
 							{res === undefined ? loading() : typeof res === "string" ? problem(res) : res.length === 0 ? <ui.text style={faint}>Nothing runs here.</ui.text> : null}
 							{Array.isArray(res)
 								? res.map((x) => {
 										const r = resource(x.uuid);
 										const st = api.statusOf(x.status);
 										return (
-											<ui.pressable key={x.uuid} label={`${api.displayName(x)}, ${st.label}`} onClick={() => r && openIn(base, r.uuid)} style={{ flexDirection: "row", width: "100%", gap: 8, alignItems: "center", padding: "s2 s3", borderRadius: "control", hover: { backgroundColor: "hover" } }}>
+											<ui.pressable key={x.uuid} label={`${api.displayName(x)}, ${st.label}`} onClick={() => r && openIn(base, r.uuid)} style={{ flexDirection: "row", width: "100%", gap: 8, alignItems: "center", padding: "s2 s3", minHeight: phone.on ? 40 : undefined, borderRadius: "control", hover: { backgroundColor: "hover" } }}>
 												<ui.icon icon={iconOf(x)} style={{ width: 13, height: 13, color: "text3" }} />
 												<ui.text style={{ ...line, flex: 1 }}>{api.displayName(x)}</ui.text>
-												<ui.text style={faint}>{r ? (placeOf(r)?.project ?? "") : api.typeLabel(x.type)}</ui.text>
+												<ui.text style={fitted(faint)}>{r ? (placeOf(r)?.project ?? "") : api.typeLabel(x.type)}</ui.text>
 												{badge(st.tone, st.label)}
 											</ui.pressable>
 										);
@@ -347,13 +440,13 @@ function board(view: View, base: string, open: string, head = false): Child {
 		title = any ? placeOf(any)!.project : "Project";
 		count = String((state.list ?? []).filter((r) => placeOf(r)?.projectUuid === view.uuid).length);
 	} else {
-		if (agentsCanSetUp()) end.unshift(
+		if (agentsCanSetUp() && !phone.on) end.unshift(
 			<ui.box key="new" style={{ flexShrink: 0, justifyContent: "center", marginRight: 4 }}>
 				<ui.button kind="primary" size="sm" icon="plus" tooltip="Set up a new app with an agent" onClick={() => ask(undefined, setupPrompt())}>New app</ui.button>
 			</ui.box>,
 		);
 	}
-	if (head) return titleBar(title, count, ...(c ? end : []));
+	if (head) return phone.on ? phoneHead(end) : titleBar(title, count, ...(c ? end : []));
 	if (!c) {
 		body = empty("coolify.svg", "Connect Coolify", "Give its URL and an API token, and its applications, services and databases show here.", <ui.link label="Connect in Settings…" href={`swarm://settings/${PAGE}/${PAGE}`} />);
 		search = false;
@@ -365,11 +458,18 @@ function board(view: View, base: string, open: string, head = false): Child {
 		body = loading("Reading Coolify…", true);
 	} else if (state.list.length === 0 && view.kind !== "servers") {
 		body = empty("cube", "Nothing deployed yet", "Coolify has nothing this token may see.", agentsCanSetUp() ? <ui.button onClick={() => ask(undefined, setupPrompt())}>Set up an app with an agent…</ui.button> : undefined);
+	} else if (phone.on && view.kind === "deployments") {
+		body = (
+			<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
+				{state.err ? <ui.box style={{ ...columnStyle(), paddingBottom: 8 }}>{problem(state.err)}</ui.box> : null}
+				{phoneDeployments(base, open)}
+			</ui.box>
+		);
 	} else {
 		const inner = view.kind === "overview" ? overview(base, open) : view.kind === "deployments" ? deploymentsView(base, open) : view.kind === "project" ? projectView(view.uuid, base, open) : serversView(base, open);
 		body = (
 			<ui.scroll style={{ flexGrow: 1, minHeight: 0 }}>
-				<ui.box style={{ ...column, gap: 16, paddingBottom: 24 }}>
+				<ui.box style={{ ...columnStyle(), gap: phone.on ? 20 : 16, paddingBottom: phone.on ? 32 : 24 }}>
 					{state.err ? problem(state.err) : null}
 					{inner}
 				</ui.box>
@@ -379,11 +479,11 @@ function board(view: View, base: string, open: string, head = false): Child {
 	return (
 		<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
 			{search && state.list ? (
-				<ui.box style={{ ...column, flexShrink: 0, paddingTop: 20, paddingBottom: 12 }}>
+				<ui.box style={{ ...columnStyle(), flexShrink: 0, paddingTop: phone.on ? 8 : 20, paddingBottom: 12 }}>
 					{searchField("search", state.search, view.kind === "deployments" ? "Search deployments" : "Search apps, domains, projects", (v) => void (state.search = v))}
 				</ui.box>
 			) : (
-				<ui.box style={{ height: 20, flexShrink: 0 }} />
+				<ui.box style={{ height: phone.on ? 8 : 20, flexShrink: 0 }} />
 			)}
 			{body}
 		</ui.box>
@@ -406,13 +506,13 @@ function deploymentRow(r: Resource, d: Deployment, o: Opened): Child {
 	};
 	return (
 		<ui.box key={d.deployment_uuid} style={{ minWidth: 0 }}>
-			<ui.pressable label={`${s.label} deployment ${d.commit?.slice(0, 7) ?? ""}`} checked={open} onClick={toggle} style={{ ...rowStyle, checked: {} }}>
+			<ui.pressable label={`${s.label} deployment ${d.commit?.slice(0, 7) ?? ""}`} checked={open} onClick={toggle} style={{ ...rowOf(), checked: {} }}>
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 					<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "baseline", minWidth: 0 }}>
 						{d.commit && d.commit !== "HEAD" ? <ui.text style={{ fontFamily: "mono", fontSize: 12, flexShrink: 0 }}>{d.commit.slice(0, 7)}</ui.text> : null}
 						<ui.text style={line}>{deploymentTitle(d, r)}</ui.text>
 					</ui.box>
-					<ui.text style={faint}>{[howDeployed(d), api.ago(d.created_at), api.took(d)].filter(Boolean).join(" · ")}</ui.text>
+					<ui.text style={fitted(faint)}>{[howDeployed(d), api.ago(d.created_at), api.took(d)].filter(Boolean).join(" · ")}</ui.text>
 				</ui.box>
 				{badge(s.tone, s.label)}
 				<ui.icon icon={open ? "chevron-down" : "chevron-right"} style={{ width: 12, height: 12, color: "text3" }} />
@@ -428,14 +528,17 @@ function deploymentLog(r: Resource, d: Deployment, o: Opened): Child {
 	const lines = api.logLines(o.log.logs);
 	const image = o.images?.find((i) => api.sameCommit(d.commit, i.tag));
 	const actions: Child[] = [];
-	if (d.status === "failed") actions.push(<ui.button key="fix" size="sm" kind="primary" icon="sparkle" onClick={() => ask(r, fixPrompt(r, d, o.log))}>Ask an agent to fix it</ui.button>);
-	if (api.deploying(d)) actions.push(<ui.button key="cancel" size="sm" kind="ghost" onClick={() => void cancelDeployment(d, o)}>Cancel deployment</ui.button>);
-	if (image && !image.is_current && d.status === "finished") actions.push(<ui.button key="rollback" size="sm" icon="undo" disabled={!!o.busy} onClick={() => void press(r, o, { rollback: image.tag })}>{o.busy === "rollback" ? "Rolling back…" : "Roll back to this"}</ui.button>);
+	// On a phone the actions are a finger's size, the width of the row.
+	const size = phone.on ? "md" : "sm";
+	const wide = phone.on ? { flex: 1 } : undefined;
+	if (d.status === "failed") actions.push(<ui.button key="fix" size={size} kind="primary" icon="sparkle" onClick={() => ask(r, fixPrompt(r, d, o.log))} style={wide}>Ask an agent to fix it</ui.button>);
+	if (api.deploying(d)) actions.push(<ui.button key="cancel" size={size} kind={phone.on ? "secondary" : "ghost"} onClick={() => void cancelDeployment(d, o)} style={wide}>Cancel deployment</ui.button>);
+	if (image && !image.is_current && d.status === "finished") actions.push(<ui.button key="rollback" size={size} icon="undo" disabled={!!o.busy} onClick={() => void press(r, o, { rollback: image.tag })} style={wide}>{o.busy === "rollback" ? "Rolling back…" : "Roll back to this"}</ui.button>);
 	if (image?.is_current) actions.push(<ui.tag key="current" tone="green">Running now</ui.tag>);
 	const text = api.logText(lines.map((l) => l.output).join("\n"));
 	const title = `${api.displayName(r)}: ${deploymentTitle(d, r)}${d.commit && d.commit !== "HEAD" ? ` (${d.commit.slice(0, 7)})` : ""}`;
 	return (
-		<ui.box style={{ gap: 8, padding: "s2 s5 s4", minWidth: 0 }}>
+		<ui.box style={{ gap: 8, padding: phone.on ? "4 12 14" : "s2 s5 s4", minWidth: 0 }}>
 			{actions.length ? <ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "flex-end", flexWrap: "wrap" }}>{actions}</ui.box> : null}
 			{lines.length ? logBox(`deplog-${d.deployment_uuid}`, text, 360, { title }) : <ui.text style={faint}>{o.log.logs == null ? "The token may not read logs: give it read:sensitive in Coolify." : "No lines yet."}</ui.text>}
 		</ui.box>
@@ -466,11 +569,22 @@ function overviewTab(r: Resource, o: Opened): Child {
 					"Containers",
 					<ui.box style={{ gap: 4, flex: 1 }}>
 						{parts.map((p) => (
+							phone.on ? (
+								// On a phone, the image under the name: beside it, both were cut to a few letters.
+								<ui.box key={p.name} style={{ flexDirection: "row", gap: 8, alignItems: "center", width: "100%" }}>
+									<ui.box style={{ flex: 1, minWidth: 0, gap: 1 }}>
+										<ui.text style={line}>{p.name}</ui.text>
+										{p.image ? <ui.text style={{ ...faint, ...line }}>{p.image}</ui.text> : null}
+									</ui.box>
+									{p.status ? badge(api.statusOf(p.status).tone, api.statusOf(p.status).label) : null}
+								</ui.box>
+							) : (
 							<ui.box key={p.name} style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
 								<ui.text style={{ ...line, flex: 1 }}>{p.name}</ui.text>
 								{p.image ? <ui.text style={{ ...faint, ...line }}>{p.image}</ui.text> : null}
 								{p.status ? badge(api.statusOf(p.status).tone, api.statusOf(p.status).label) : null}
 							</ui.box>
+							)
 						))}
 					</ui.box>,
 				),
@@ -552,9 +666,11 @@ function logsTab(r: Resource, o: Opened): Child {
 	else if (!lines.length) body = <ui.text style={{ color: "text3", padding: 12 }}>{o.errorsOnly && !q ? "No errors in these lines." : `No line has ${o.filter.trim()}.`}</ui.text>;
 	else body = logBox(`logs-${r.uuid}`, text, 560, { title: `${api.displayName(r)}: its containers' last lines` });
 	return (
-		<ui.box style={{ gap: 8, minWidth: 0 }}>
+		<ui.box style={{ gap: phone.on ? 10 : 8, minWidth: 0 }}>
+			{/* On a phone the filter takes the row; what sets the lines goes under it. */}
+			{phone.on ? searchField("logfilter", o.filter, "Filter lines", (v) => void (o.filter = v)) : null}
 			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-				<ui.box style={{ flex: 1, minWidth: 120 }}>{searchField("logfilter", o.filter, "Filter lines", (v) => void (o.filter = v))}</ui.box>
+				{phone.on ? null : <ui.box style={{ flex: 1, minWidth: 120 }}>{searchField("logfilter", o.filter, "Filter lines", (v) => void (o.filter = v))}</ui.box>}
 				<ui.select
 					value={String(o.lines)}
 					options={[{ value: "100", label: "100 lines" }, { value: "500", label: "500 lines" }, { value: "2000", label: "2,000 lines" }]}
@@ -566,14 +682,15 @@ function logsTab(r: Resource, o: Opened): Child {
 				<ui.box tooltip="Read them again every 5 seconds" style={{ flexShrink: 0 }}>
 					<ui.toggle checked={o.live} label="Live" onChange={(v) => void (o.live = v)} />
 				</ui.box>
+				{phone.on ? <ui.spacer /> : null}
 				{refresh(o.logsReading, () => void readLogs(r, o))}
 			</ui.box>
-			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: 24 }}>
+			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: phone.on ? 36 : 24 }}>
 				<ui.checkbox label={errors ? `Errors only (${errors})` : "Errors only"} checked={o.errorsOnly} disabled={!errors && !o.errorsOnly} onChange={(v) => void (o.errorsOnly = v)} />
 				<ui.spacer />
 			</ui.box>
 			{body}
-			{all.length ? <ui.text style={faint}>{`${said}. Select to copy part; the newest are at the end.`}</ui.text> : null}
+			{all.length ? <ui.text style={phone.on ? { ...faint, whiteSpace: "normal" } : faint}>{`${said}. Select to copy part; the newest are at the end.`}</ui.text> : null}
 		</ui.box>
 	);
 }
@@ -603,19 +720,23 @@ function resourcePane(r: Resource | undefined, uuid: string, base: string): Chil
 	const place = placeOf(r);
 	const going = deployingNow(r.uuid);
 	const last = lastDeployment(r.uuid) ?? o.deps?.[0];
-	const tabs = [{ value: "overview", label: "Overview" }, ...(app ? [{ value: "deployments", label: "Deployments" }] : []), ...(r.type !== "service" ? [{ value: "logs", label: "Logs" }] : []), { value: "environment", label: "Environment" }];
+	// On a phone the actions share the row's width.
+	const wide = phone.on ? { flex: 1 } : undefined;
+	// A phone's tabs fill its width, in words short enough that four fit.
+	const tabs = [{ value: "overview", label: "Overview" }, ...(app ? [{ value: "deployments", label: phone.on ? "Deploys" : "Deployments" }] : []), ...(r.type !== "service" ? [{ value: "logs", label: "Logs" }] : []), { value: "environment", label: phone.on ? "Variables" : "Environment" }];
 	if (!tabs.some((t) => t.value === o.tab)) o.tab = "overview";
 	return (
 		<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
 			<ui.scroll style={{ flexGrow: 1, minHeight: 0, minWidth: 0 }}>
-				<ui.box style={{ padding: "s6 s7 s7", gap: 14, width: "100%", minWidth: 0 }}>
+				<ui.box style={{ padding: phone.on ? "8 16 32" : "s6 s7 s7", gap: phone.on ? 16 : 14, width: "100%", minWidth: 0 }}>
 					<ui.box style={{ gap: 4 }}>
 						<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
 							<ui.icon icon={iconOf(r)} style={{ width: 18, height: 18, color: "text2" }} />
 							<ui.text style={{ fontSize: 20, fontWeight: 500, ...line }} selectable>{api.displayName(r)}</ui.text>
 							<ui.spacer />
 							<ui.iconButton icon="external" label="Open in Coolify" href={api.dashboardUrl(c, r, placeOf(r))} />
-							<ui.iconButton icon="x" label="Close" onClick={() => ui.navTo(PAGE, base)} />
+							{/* A phone's bar has Back, which closes it. */}
+							{phone.on ? null : <ui.iconButton icon="x" label="Close" onClick={() => ui.navTo(PAGE, base)} />}
 						</ui.box>
 						<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
 							{going ? badge("accent", "Deploying") : badge(s.tone, s.label)}
@@ -626,12 +747,12 @@ function resourcePane(r: Resource | undefined, uuid: string, base: string): Chil
 
 					<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
 						{deployable ? (
-							<ui.button kind="primary" icon="rocket" disabled={!!o.busy || going} onClick={() => void press(r, o, "deploy")}>{doing("deploy") || going ? "Deploying…" : app ? "Deploy" : "Redeploy"}</ui.button>
+							<ui.button kind="primary" icon="rocket" disabled={!!o.busy || going} onClick={() => void press(r, o, "deploy")} style={wide}>{doing("deploy") || going ? "Deploying…" : app ? "Deploy" : "Redeploy"}</ui.button>
 						) : s.running ? null : (
-							<ui.button kind="primary" icon="play" disabled={!!o.busy} onClick={() => void press(r, o, "start")}>{doing("start") ? "Starting…" : "Start"}</ui.button>
+							<ui.button kind="primary" icon="play" disabled={!!o.busy} onClick={() => void press(r, o, "start")} style={wide}>{doing("start") ? "Starting…" : "Start"}</ui.button>
 						)}
-						{s.running ? <ui.button icon="refresh" disabled={!!o.busy} onClick={() => void press(r, o, "restart")}>{doing("restart") ? "Restarting…" : "Restart"}</ui.button> : null}
-						<ui.menu label="More actions" icon="more" kind="ghost">
+						{s.running ? <ui.button icon="refresh" disabled={!!o.busy} onClick={() => void press(r, o, "restart")} style={wide}>{doing("restart") ? "Restarting…" : "Restart"}</ui.button> : null}
+						<ui.menu label={phone.on ? "" : "More actions"} tooltip="More actions" icon="more" kind={phone.on ? "secondary" : "ghost"}>
 							{app ? <ui.item icon="hammer" label="Rebuild without cache" onClick={() => void press(r, o, "force")} /> : null}
 							{deployable && !s.running ? <ui.item icon="play" label="Start" onClick={() => void press(r, o, "start")} /> : null}
 							<ui.item icon="sparkle" label="Ask an agent about it…" onClick={() => ask(r, lookPrompt(r))} />
@@ -671,7 +792,7 @@ function resourcePane(r: Resource | undefined, uuid: string, base: string): Chil
 						</ui.box>
 					) : null}
 
-					<ui.segmented style={{ alignSelf: "flex-start" }} label="Tabs" value={o.tab} options={tabs} onChange={(v) => void (o.tab = v as Opened["tab"])} />
+					<ui.segmented style={{ alignSelf: phone.on ? "stretch" : "flex-start" }} label="Tabs" value={o.tab} options={tabs} onChange={(v) => void (o.tab = v as Opened["tab"])} />
 					{o.tab === "overview" ? overviewTab(r, o) : null}
 					{o.tab === "deployments" ? deploymentsTab(r, o) : null}
 					{o.tab === "logs" ? logsTab(r, o) : null}
@@ -683,6 +804,7 @@ function resourcePane(r: Resource | undefined, uuid: string, base: string): Chil
 }
 
 export function renderPage({ args }: RenderContext): Child {
+	setPhone(args);
 	let { view, base, open } = parsePath(args.path ?? "");
 	// A project Coolify no longer has (deleted, or another team's token
 	// now), as the window reopens the page where it was: the overview,

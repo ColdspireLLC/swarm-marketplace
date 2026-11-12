@@ -6,7 +6,7 @@ import { call, ui, type Child, type ThreadInfo } from "swarm";
 import { describeCron, formatDuration, nextCron, parseCron, parseDuration, stamp } from "./cron";
 import { apply, EditError, INTERPRETERS, type Spec } from "./edit";
 import { askAgent, type Idea } from "./ideas";
-import { column, faint, line, NAV, projectNames, soft, title, top } from "./parts";
+import { columnStyle, faint, line, NAV, phone, projectNames, soft, title, top } from "./parts";
 import { automations, type Automation } from "./store";
 
 const USER = { user: true } as const;
@@ -83,7 +83,7 @@ export function fill(o: { a?: Automation; copy?: boolean; idea?: Idea; target?: 
 
 export function openForm(o: Parameters<typeof fill>[0] = {}) {
 	fill(o);
-	ui.navTo(NAV, o.a && !o.copy ? "edit/" + o.a.id : "new");
+	ui.navTo(NAV, o.a && !o.copy ? "edit/" + o.a.id : "new", { title: o.a && !o.copy ? o.a.name : "New automation" });
 }
 
 async function learnThreads(project: string) {
@@ -121,7 +121,7 @@ async function submit() {
 	try {
 		const a = await apply(spec(), USER, was);
 		draft.error = "";
-		ui.navTo(NAV, "a/" + a.id);
+		ui.navTo(NAV, "a/" + a.id, { title: a.name });
 		ui.toast(was ? `Saved ${a.name}` : `Made ${a.name}`);
 	} catch (e) {
 		draft.error = e instanceof EditError ? e.message : String(e);
@@ -209,28 +209,29 @@ function scheduleSection(): Child {
 		/>,
 		d.repeat === "cron" ? (
 			<ui.box key="cron" style={{ gap: 10 }}>
-				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+				<ui.box style={{ flexDirection: phone.on ? "column" : "row", gap: 8, alignItems: phone.on ? "stretch" : "center" }}>
 					<ui.select
 						label="Repeat"
-						style={{ backgroundColor: "field", borderRadius: "control", boxShadow: "inset 0 0 0 1px border", paddingLeft: 8, paddingRight: 4 }}
+						style={{ backgroundColor: "field", borderRadius: "control", boxShadow: "inset 0 0 0 1px border", paddingLeft: 8, paddingRight: 4, ...(phone.on ? { minHeight: 40 } : {}) }}
 						value={PRESETS.find((p) => p.cron === d.cron.trim())?.cron ?? "custom"}
 						options={[...PRESETS.map((p) => ({ value: p.cron, label: p.label })), { value: "custom", label: "Custom" }]}
 						onChange={(v) => v !== "custom" && (d.cron = v)}
 					/>
-					<ui.field key="cron" value={d.cron} placeholder="0 9 * * 1-5" tooltip="Five fields in this computer's time: minute, hour, day of the month, month, day of the week" onChange={(v) => (d.cron = v)} style={{ width: 160, fontFamily: "mono" }} />
-					<ui.text style={{ color: up.ok ? "text2" : "red", ...line }}>{up.text}</ui.text>
+					<ui.field key="cron" value={d.cron} placeholder="0 9 * * 1-5" tooltip="Five fields in this computer's time: minute, hour, day of the month, month, day of the week" onChange={(v) => (d.cron = v)} style={{ width: phone.on ? "100%" : 160, fontFamily: "mono" }} />
+					{/* On a phone the select and the cron each take the row, what it means under them. */}
+					<ui.text style={phone.on ? { color: up.ok ? "text2" : "red" } : { color: up.ok ? "text2" : "red", ...line }}>{up.text}</ui.text>
 				</ui.box>
 				{up.times.length ? (
 					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
 						<ui.text style={faint}>Next</ui.text>
-						<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{up.times.map(stamp).join("  ·  ")}</ui.text>
+						<ui.text style={phone.on ? { fontSize: "small", color: "text2" } : { fontSize: "small", color: "text2", ...line }}>{up.times.map(stamp).join("  ·  ")}</ui.text>
 					</ui.box>
 				) : null}
 			</ui.box>
 		) : (
 			<ui.box key="once" style={{ gap: 10 }}>
-				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-					<ui.menu label={Number.isNaN(at) ? "Pick a day" : stamp(at).replace(/, \d\d:\d\d$/, "")} icon="calendar" kind="secondary" size="sm">
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: phone.on ? "wrap" : "nowrap" }}>
+					<ui.menu label={Number.isNaN(at) ? "Pick a day" : stamp(at).replace(/, \d\d:\d\d$/, "")} icon="calendar" kind="secondary" size={phone.on ? "md" : "sm"}>
 						<ui.item icon="clock" label="In 1 hour" onClick={() => soon(3_600_000)} />
 						<ui.item icon="clock" label="In 3 hours" onClick={() => soon(3 * 3_600_000)} />
 						<ui.item icon="sun" label="Tomorrow at 9" onClick={() => at9(1)} />
@@ -239,8 +240,8 @@ function scheduleSection(): Child {
 						<ui.calendar label="Another day…" icon="calendar" value={d.day} onChange={(v) => (d.day = v)} />
 					</ui.menu>
 					<ui.text style={faint}>at</ui.text>
-					<ui.field key="time" value={d.time} placeholder="09:00" onChange={(v) => (d.time = v)} style={{ width: 72, fontFamily: "mono" }} />
-					<ui.text style={{ ...soft, ...line }}>{Number.isNaN(at) ? "A time as 09:30" : at < Date.now() ? "That has passed" : relative(at)}</ui.text>
+					<ui.field key="time" value={d.time} placeholder="09:00" onChange={(v) => (d.time = v)} style={{ width: phone.on ? 88 : 72, fontFamily: "mono" }} />
+					<ui.text style={phone.on ? { ...soft, flexBasis: "100%" } : { ...soft, ...line }}>{Number.isNaN(at) ? "A time as 09:30" : at < Date.now() ? "That has passed" : relative(at)}</ui.text>
 				</ui.box>
 			</ui.box>
 		),
@@ -278,7 +279,7 @@ function taskSection(): Child {
 					<ui.field key="script" multiline value={d.script} placeholder={'curl -fsS https://example.com/health > /dev/null || echo "down"'} onChange={(v) => (d.script = v)} style={{ fontFamily: "mono", minHeight: 96 }} />,
 					'Runs in its project\'s folder. Printing nothing, or a last line {"wakeAgent": false}, is a quiet run; a non-zero exit is a failure.',
 				)}
-				<ui.box style={{ flexDirection: "row", gap: 16 }}>
+				<ui.box style={{ flexDirection: "row", gap: 16, flexWrap: "wrap" }}>
 					{labelled("Runs with", <ui.select value={d.interpreter} options={INTERPRETERS.map((v) => ({ value: v, label: v }))} onChange={(v) => (d.interpreter = v)} />)}
 					{labelled("Stops after", <ui.field key="timeout" value={d.timeout} placeholder="2m" onChange={(v) => (d.timeout = v)} style={{ width: 96 }} />, parseDuration(d.timeout, "ms") === null ? "A duration: 90s, 5m" : undefined)}
 				</ui.box>
@@ -306,7 +307,7 @@ function agentSection(): Child {
 			"Each run",
 			<ui.segmented
 				label="Where each run goes"
-				style={fit}
+				style={phone.on ? { alignSelf: "stretch" } : fit}
 				value={d.where}
 				options={[
 					{ value: "thread", label: "New thread" },
@@ -343,26 +344,37 @@ export function Form(): Child {
 	const projectOptions = [...projectNames].map(([value, label]) => ({ value, label }));
 	return (
 		<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
-			<ui.box dragWindow style={{ ...top, justifyContent: "flex-end" }}>
-				<ui.iconButton icon="x" label="Close" onClick={close} />
-			</ui.box>
+			{/* A phone's bar has the page's title and Back, which closes the form. */}
+			{phone.on ? null : (
+				<ui.box dragWindow style={{ ...top, justifyContent: "flex-end" }}>
+					<ui.iconButton icon="x" label="Close" onClick={close} />
+				</ui.box>
+			)}
 			<ui.scroll style={{ flexGrow: 1 }}>
-				<ui.box style={{ ...column, gap: 20, paddingBottom: 32 }}>
-					<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-						<ui.text style={title}>{was ? `Edit ${was.name}` : "New automation"}</ui.text>
-						<ui.spacer />
-						{was ? null : (
-							<ui.button kind="ghost" size="sm" icon="sparkle" onClick={() => ui.prefill({ project: d.project || undefined, prompt: askAgent(d.prompt || "") })}>
+				<ui.box style={{ ...columnStyle(), gap: 20, paddingBottom: 32, paddingTop: phone.on ? 12 : 0 }}>
+					{phone.on ? (
+						was ? null : (
+							<ui.button kind="secondary" icon="sparkle" onClick={() => ui.prefill({ project: d.project || undefined, prompt: askAgent(d.prompt || "") })}>
 								Ask an agent to set it up
 							</ui.button>
-						)}
-					</ui.box>
+						)
+					) : (
+						<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+							<ui.text style={title}>{was ? `Edit ${was.name}` : "New automation"}</ui.text>
+							<ui.spacer />
+							{was ? null : (
+								<ui.button kind="ghost" size="sm" icon="sparkle" onClick={() => ui.prefill({ project: d.project || undefined, prompt: askAgent(d.prompt || "") })}>
+									Ask an agent to set it up
+								</ui.button>
+							)}
+						</ui.box>
+					)}
 					{section(
 						"",
 						<ui.box key="name" style={{ flexDirection: "row", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-							<ui.box style={{ flexGrow: 1, minWidth: 220 }}>{labelled("Name", <ui.field key="name" value={d.name} placeholder="What it's called" autoFocus={!was} onChange={(v) => (d.name = v)} />)}</ui.box>
+							<ui.box style={{ flexGrow: 1, minWidth: phone.on ? "100%" : 220 }}>{labelled("Name", <ui.field key="name" value={d.name} placeholder="What it's called" autoFocus={!was} onChange={(v) => (d.name = v)} />)}</ui.box>
 							{projectOptions.length > 1 ? (
-								<ui.box style={{ minWidth: 180 }}>
+								<ui.box style={{ minWidth: phone.on ? "100%" : 180 }}>
 									{labelled(
 										"Project",
 										<ui.select
@@ -385,17 +397,32 @@ export function Form(): Child {
 				</ui.box>
 			</ui.scroll>
 			<ui.box style={{ borderTop: "1px solid divider", flexShrink: 0 }}>
-				<ui.box style={{ ...column, flexDirection: "row", gap: 8, alignItems: "center", paddingTop: 12, paddingBottom: 12 }}>
-					<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 2 }}>
+				{phone.on ? (
+					// On a phone: what it will do over Cancel and Make it, each half the row.
+					<ui.box style={{ ...columnStyle(), gap: 10, paddingTop: 12, paddingBottom: 12 }}>
 						{d.error ? <ui.text style={{ fontSize: "small", color: "red" }}>{d.error}</ui.text> : <ui.text style={{ ...soft }}>{sentence()}</ui.text>}
+						<ui.box style={{ flexDirection: "row", gap: 8 }}>
+							<ui.button kind="secondary" onClick={close} style={{ flex: 1 }}>
+								Cancel
+							</ui.button>
+							<ui.button kind="primary" disabled={d.saving} onClick={() => submit()} style={{ flex: 1 }}>
+								{was ? "Save" : "Make it"}
+							</ui.button>
+						</ui.box>
 					</ui.box>
-					<ui.button kind="ghost" size="sm" onClick={close}>
-						Cancel
-					</ui.button>
-					<ui.button kind="primary" size="sm" disabled={d.saving} onClick={() => submit()}>
-						{was ? "Save" : "Make it"}
-					</ui.button>
-				</ui.box>
+				) : (
+					<ui.box style={{ ...columnStyle(), flexDirection: "row", gap: 8, alignItems: "center", paddingTop: 12, paddingBottom: 12 }}>
+						<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 2 }}>
+							{d.error ? <ui.text style={{ fontSize: "small", color: "red" }}>{d.error}</ui.text> : <ui.text style={{ ...soft }}>{sentence()}</ui.text>}
+						</ui.box>
+						<ui.button kind="ghost" size="sm" onClick={close}>
+							Cancel
+						</ui.button>
+						<ui.button kind="primary" size="sm" disabled={d.saving} onClick={() => submit()}>
+							{was ? "Save" : "Make it"}
+						</ui.button>
+					</ui.box>
+				)}
 			</ui.box>
 		</ui.box>
 	);
