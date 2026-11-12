@@ -7,6 +7,10 @@ import type { Check } from "./drivers";
 import { doctor } from "./ops";
 import { discover, found, movesFrom, stopUsing, use, type Found } from "./discover";
 import { learnTitles, message, refresh, st, wda } from "./state";
+import { CARD, heading, SIDE } from "./compact";
+
+/** Whether the page is drawn on a phone (args.compact): its rows' controls under their words, its cards a phone's. */
+let compact = false;
 
 /** WebDriverAgent's build, from the page. */
 const building = ui.store({ busy: false, said: "", failed: false });
@@ -85,8 +89,8 @@ function save(key: string) {
 /** A setting's row: its title and what it does, and its control. */
 function row(title: string, about: Child, control: Child, below?: Child): Child {
 	return (
-		<ui.box label={title} style={{ gap: 8, padding: "s5 s6" }}>
-			<ui.box style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
+		<ui.box label={title} style={{ gap: 8, padding: compact ? `12px ${SIDE}px` : "s5 s6" }}>
+			<ui.box style={{ flexDirection: "row", gap: compact ? 12 : 16, alignItems: "center" }}>
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 					<ui.text style={{ fontWeight: 500 }}>{title}</ui.text>
 					<ui.text style={{ fontSize: "small", color: "text2" }}>{about}</ui.text>
@@ -147,6 +151,21 @@ function input(key: string, placeholder: string, multiline = false): Child {
 }
 
 function section(title: string, ...rows: Child[]): Child {
+	if (compact) {
+		return (
+			<ui.box style={{ gap: 8 }}>
+				{heading(title)}
+				<ui.box style={{ borderRadius: 10, backgroundColor: CARD }}>
+					{rows.map((r, i) => (
+						<ui.box key={i}>
+							{i ? <ui.box style={{ height: 1, marginLeft: SIDE, backgroundColor: "divider" }} /> : null}
+							{r}
+						</ui.box>
+					))}
+				</ui.box>
+			</ui.box>
+		);
+	}
 	return (
 		<ui.box style={{ gap: 8 }}>
 			<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2", paddingLeft: 4 }}>{title}</ui.text>
@@ -164,12 +183,12 @@ function section(title: string, ...rows: Child[]): Child {
 function machinesFound(): Child {
 	return section(
 		"Machines",
-		<ui.box style={{ padding: "s5 s6", gap: 8 }}>
+		<ui.box style={{ padding: compact ? `12px ${SIDE}px` : "s5 s6", gap: 8 }}>
 			{st.machines.length === 0 && !st.driverProblems.length ? <ui.text style={{ color: "text2" }}>None yet: add some below.</ui.text> : null}
 			{st.machines.map((m) => (
-				<ui.box key={m.id} style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-					<ui.text style={{ fontWeight: 500 }}>{m.name}</ui.text>
-					<ui.text style={{ fontSize: "small", color: "text3", fontFamily: "mono" }}>{m.id}</ui.text>
+				<ui.box key={m.id} style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: compact ? 36 : undefined }}>
+					<ui.text style={compact ? { fontWeight: 500, flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } : { fontWeight: 500 }}>{m.name}</ui.text>
+					<ui.text style={compact ? { fontSize: "small", color: "text3", fontFamily: "mono", flexShrink: 2, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } : { fontSize: "small", color: "text3", fontFamily: "mono" }}>{m.id}</ui.text>
 					<ui.spacer />
 					{carried(m.id) ? <ui.tag tone="muted">You carry it</ui.tag> : null}
 					<ui.tag tone="default">{m.driver.name}</ui.tag>
@@ -178,9 +197,9 @@ function machinesFound(): Child {
 			{st.driverProblems.map((p, i) => (
 				<ui.text key={"p" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
 			))}
-			<ui.box style={{ flexDirection: "row", gap: 6 }}>
-				<ui.button size="sm" kind="soft" icon="refresh" onClick={async () => { await refresh(); await learnTitles(); void discover(); }}>Look for machines again</ui.button>
-				<ui.button size="sm" kind="ghost" icon="check-circle" disabled={checked.busy} onClick={() => void check()}>{checked.busy ? "Checking…" : "Check everything"}</ui.button>
+			<ui.box style={{ flexDirection: "row", gap: 6, flexWrap: compact ? "wrap" : undefined }}>
+				<ui.button size={compact ? "md" : "sm"} kind="soft" icon="refresh" onClick={async () => { await refresh(); await learnTitles(); void discover(); }}>Look for machines again</ui.button>
+				<ui.button size={compact ? "md" : "sm"} kind="ghost" icon="check-circle" disabled={checked.busy} onClick={() => void check()}>{checked.busy ? "Checking…" : "Check everything"}</ui.button>
 			</ui.box>
 			{checked.error ? <ui.text style={{ fontSize: "small", color: "red" }}>{checked.error}</ui.text> : null}
 			{checked.checks ? (
@@ -232,28 +251,29 @@ function iphoneSetup(): Child {
 }
 
 /** A phone found plugged in: what it is and where, and using it or not. */
-export function phoneRow(f: Found): Child {
+export function phoneRow(f: Found, phone = compact): Child {
 	const busy = acting.serial === f.serial;
 	const kind = f.kind === "ios" ? "iPhone" : "Android";
 	const moves = f.id || f.problem ? null : movesFrom(f);
 	const about = f.id ? `${kind}, on ${f.placeLabel}. Agents call it ${f.id}.` : `${kind}, on ${f.placeLabel}.${moves ? ` Using it moves the plugin's ${kind === "iPhone" ? "iPhones" : "Android phones"} here: those on ${moves} stop being used.` : ""}`;
+	const size = phone ? "md" : "sm";
 	const controls = f.id ? (
 		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
 			{carried(f.id) ? <ui.tag tone="muted">You carry it</ui.tag> : <ui.tag tone="green">In use</ui.tag>}
-			<ui.button size="sm" kind="ghost" disabled={busy} onClick={() => void act(f, () => stopUsing(f))}>Stop using</ui.button>
+			<ui.button size={size} kind="ghost" disabled={busy} onClick={() => void act(f, () => stopUsing(f))}>Stop using</ui.button>
 		</ui.box>
 	) : f.problem ? null : (
-		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
-			<ui.button size="sm" kind="primary" disabled={busy} onClick={() => void act(f, () => use(f, false))}>{busy ? "Turning on…" : "Use for testing"}</ui.button>
-			<ui.button size="sm" kind="ghost" disabled={busy} onClick={() => void act(f, () => use(f, true))}>It's my phone</ui.button>
+		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", flexWrap: phone ? "wrap" : undefined }}>
+			<ui.button size={size} kind="primary" disabled={busy} onClick={() => void act(f, () => use(f, false))}>{busy ? "Turning on…" : "Use for testing"}</ui.button>
+			<ui.button size={size} kind="ghost" disabled={busy} onClick={() => void act(f, () => use(f, true))}>It's my phone</ui.button>
 		</ui.box>
 	);
 	return (
 		<ui.box key={f.kind + f.serial} style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
 			<ui.icon icon="mobile" style={{ width: 16, height: 16, marginTop: 2, color: f.id ? "text" : "text3", flexShrink: 0 }} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 4 }}>
-				<ui.box style={{ flexDirection: "row", gap: 16, alignItems: "flex-start" }}>
-					<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+				<ui.box style={phone ? { gap: 10 } : { flexDirection: "row", gap: 16, alignItems: "flex-start" }}>
+					<ui.box style={{ flex: phone ? undefined : 1, minWidth: 0, gap: 2 }}>
 						<ui.text style={{ fontWeight: 500 }}>{f.model}</ui.text>
 						<ui.text style={{ fontSize: "small", color: "text2" }}>{about}</ui.text>
 						{f.problem ? <ui.text style={{ fontSize: "small", color: "amber" }}>{`Can't use it yet: ${f.problem}.`}</ui.text> : null}
@@ -271,8 +291,8 @@ function phones(): Child {
 	if (!found.at && !found.busy) void discover();
 	return section(
 		"Phones",
-		<ui.box style={{ padding: "s5 s6", gap: 14 }}>
-			{found.phones.map(phoneRow)}
+		<ui.box style={{ padding: compact ? `12px ${SIDE}px` : "s5 s6", gap: 14 }}>
+			{found.phones.map((f) => phoneRow(f))}
 			{!found.phones.length ? (
 				<ui.text style={{ color: "text2" }}>
 					{found.busy && !found.at ? "Looking for phones…" : "No phones plugged in. Plug one into this computer or one joined to Swarm (Settings, Machines): an Android phone with USB debugging on, or an iPhone with Developer Mode on that trusts the Mac."}
@@ -283,15 +303,16 @@ function phones(): Child {
 				<ui.text key={"p" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
 			))}
 			<ui.box style={{ flexDirection: "row", gap: 6 }}>
-				<ui.button size="sm" kind="soft" icon="refresh" disabled={found.busy} onClick={() => void discover()}>{found.busy ? "Looking…" : "Look for phones again"}</ui.button>
+				<ui.button size={compact ? "md" : "sm"} kind="soft" icon="refresh" disabled={found.busy} onClick={() => void discover()}>{found.busy ? "Looking…" : "Look for phones again"}</ui.button>
 			</ui.box>
 		</ui.box>,
 	);
 }
 
-export function settingsPage(): Child {
+export function settingsPage({ args }: { args: { [name: string]: string } }): Child {
+	compact = args.compact === "1";
 	return (
-		<ui.box style={{ gap: 20, maxWidth: 680 }}>
+		<ui.box style={{ gap: compact ? 24 : 20, maxWidth: 680 }}>
 			<ui.text style={{ color: "text2" }}>Computers and phones your agents test on, one thread at a time on each screen. A turn ends when its thread's turn of the conversation does, and you can take any machine for yourself from the Machines panel beside a thread.</ui.text>
 			{machinesFound()}
 			{phones()}
