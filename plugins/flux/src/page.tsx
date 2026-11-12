@@ -176,7 +176,7 @@ export function FluxPage({ path, slot, item, section, image }: { path: string; s
 		if (unset || cantLoad) return phone ? null : <HeadTitle />;
 		if (route.kind === "issue") return <IssueHead flux={flux} issueKey={route.key} />;
 		const project = projectAt(flux, route.project);
-		if (phone) return <PhoneToolbar flux={flux} project={project} options={displayOf()} />;
+		if (phone) return <PhoneBarEnd onCreate={() => openCreate(flux, project?.id)} />;
 		return <Toolbar flux={flux} project={project} scope={scopeNow()} options={displayOf()} />;
 	}
 	if (unset) return <Setup flux={flux} />;
@@ -189,6 +189,8 @@ export function FluxPage({ path, slot, item, section, image }: { path: string; s
 		const project = projectAt(flux, route.project);
 		return (
 			<ui.box style={{ position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }}>
+				{phone ? <PhoneToolbar flux={flux} project={project} options={options} /> : null}
+				{phone ? <ScopeStrip scope={scopeNow()} /> : null}
 				{options.layout === "list" ? <ListBones edge={EDGE} /> : <BoardBones edge={EDGE} />}
 				{st.displayOpen ? displayPanel(options, !!project) : null}
 			</ui.box>
@@ -226,6 +228,7 @@ function ListScreen({ flux, scope, projectKey }: { flux: Flux; scope: Scope; pro
 			onKeyDown={(key) => onListKey(flux, key, flat, groups, options)}
 		>
 			<SyncBars flux={flux} />
+			{phone ? <PhoneToolbar flux={flux} project={project} options={options} /> : null}
 			{phone ? <ScopeStrip scope={scope} /> : null}
 			{flat.length === 0 ? <Empty flux={flux} scope={scope} inProject={!!project} onCreate={() => openCreate(flux, project?.id)} /> : options.layout === "list" ? <IssueList flux={flux} groups={groups} options={options} showProject={!project} scrollKey={`${project?.key ?? ""}:${scope}`} /> : <Board flux={flux} groups={groups} options={options} showProject={!project} scrollKey={`${project?.key ?? ""}:${scope}`} />}
 			{st.selected.size > 0 ? <SelectionBar flux={flux} /> : null}
@@ -393,13 +396,26 @@ function ProjectPicker({ flux, project, style }: { flux: Flux; project: Project 
 const phoneIcon = { width: TAP, height: TAP, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2" } as const;
 
 /**
- * The board's bar on a phone, under the window's, which has Flux's name:
- * the project, then Filter, Display and New issue, each a finger's size.
- * Filter opens a field across it, Cancel beside it; the scopes are a
- * strip under the bar (ScopeStrip), which this has no room for.
+ * New issue at the end of a phone's bar, where Swarm draws the page's
+ * head: a + a finger's size, the bar's own, as its other actions.
+ */
+function PhoneBarEnd({ onCreate }: { onCreate: () => void }) {
+	return (
+		<ui.pressable label="New issue" onClick={onCreate} style={{ ...phoneIcon, color: "text" }}>
+			<ui.icon icon="plus" style={{ width: 20, height: 20, color: "currentColor" }} />
+		</ui.pressable>
+	);
+}
+
+/**
+ * The board's own row on a phone, at the top of the page under Swarm's
+ * bar (which has its title and New issue): the project, then Filter and
+ * Display, each a finger's size. Filter opens a field across it, Cancel
+ * beside it; the scopes are a strip under it (ScopeStrip). Neither moves
+ * as the board's columns scroll.
  */
 function PhoneToolbar({ flux, project, options }: { flux: Flux; project: Project | null; options: DisplayOptions }) {
-	const shell = { flex: 1, minWidth: 0, height: "100%", flexDirection: "row", gap: 4, alignItems: "center", paddingLeft: SIDE - 8, paddingRight: SIDE - 4 } as const;
+	const shell = { flexShrink: 0, height: TAP + 8, flexDirection: "row", gap: 4, alignItems: "center", paddingLeft: SIDE - 8, paddingRight: SIDE - 4 } as const;
 	if (st.searching || st.query !== "") {
 		return (
 			<ui.box style={{ ...shell, paddingLeft: SIDE, gap: 8 }}>
@@ -423,9 +439,6 @@ function PhoneToolbar({ flux, project, options }: { flux: Flux; project: Project
 			<ui.pressable label="Display" role="button" checked={st.displayOpen} onClick={() => { st.displayOpen = !st.displayOpen; }} style={{ ...phoneIcon, position: "relative", backgroundColor: st.displayOpen ? "press" : "transparent" }}>
 				<ui.icon icon="sliders" style={{ width: 18, height: 18, color: "currentColor" }} />
 				{customized(options) ? <ui.box style={{ position: "absolute", top: 6, right: 6, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" }} /> : null}
-			</ui.pressable>
-			<ui.pressable label="New issue" onClick={() => openCreate(flux, project?.id)} style={{ ...phoneIcon, marginLeft: 4, backgroundColor: "accent", color: "accentText" }}>
-				<ui.icon icon="plus" style={{ width: 18, height: 18, color: "currentColor" }} />
 			</ui.pressable>
 		</ui.box>
 	);
@@ -544,7 +557,7 @@ function displayPanel(options: DisplayOptions, singleProject: boolean): Child {
 	const picked = (on: boolean): Style => ({ borderRadius: "control", border: on ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on ? "press" : "transparent", color: on ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on ? "press" : "hover", color: "text" } });
 	return [
 		<ui.pressable key="display-shade" label="Close display options" onClick={close} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 }} />,
-		<ui.box key="display-panel" label="Display options" style={{ position: "absolute", zIndex: 21, padding: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 }, ...(phone ? { top: 4, left: SIDE, right: SIDE, borderRadius: 14 } : { borderRadius: "card", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288 }) }}>
+		<ui.box key="display-panel" label="Display options" style={{ position: "absolute", zIndex: 21, padding: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 }, ...(phone ? { top: TAP + 8, left: SIDE, right: SIDE, borderRadius: 14 } : { borderRadius: "card", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288 }) }}>
 			<ui.box style={{ flexDirection: "row", gap: 4, padding: 4 }}>
 				{LAYOUTS.map((layout) => (
 					<ui.pressable key={"layout-" + layout} label={layout === "board" ? "Board" : "List"} role="radio" checked={options.layout === layout} onClick={() => set({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping })} style={{ ...picked(options.layout === layout), flex: 1, height: phone ? TAP : 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }}>
@@ -1724,19 +1737,13 @@ function IssueHead({ flux, issueKey }: { flux: Flux; issueKey: string }) {
 	const project = issue ? flux.projects().find((item) => item.id === issue.projectId) : undefined;
 	const back = () => openList(project ? `p/${project.key}` : "");
 	if (phone) {
-		// Under a phone's bar: the way to the project's board, the key, and
-		// the issue's own actions; its title is the page's, just below.
+		// At the end of a phone's bar, whose title is the key and whose Back
+		// goes to the board: Open in Flux and the issue's menu.
+		if (!issue) return null;
 		return (
-			<ui.box style={{ ...bar, paddingLeft: SIDE - 8, paddingRight: SIDE - 4, gap: 4 }}>
-				<ui.pressable label={`Back to ${project?.name ?? "All projects"}`} onClick={back} style={{ ...ghostChip, height: TAP, minWidth: 0, flexShrink: 1, color: "text2" }}>
-					{project ? <ProjectMark project={project} size={16} /> : <FluxMark size={16} />}
-					<ui.text style={{ minWidth: 0, color: "currentColor" }} maxLines={1}>{project?.name ?? "All projects"}</ui.text>
-				</ui.pressable>
-				<ui.icon icon="chevron-right" style={{ width: 12, height: 12, color: "text3", flexShrink: 0 }} />
-				<ui.text style={{ color: "text2", flexShrink: 0, paddingLeft: 2 }}>{issueKey}</ui.text>
-				<ui.box style={{ flex: 1, minWidth: 8 }} />
-				{issue ? <ui.iconButton icon="external" label="Open in Flux" href={flux.issueUrl(issue)} disabled={!flux.issueUrl(issue)} style={{ width: TAP, height: TAP }} /> : null}
-				{issue ? <IssueMenu flux={flux} issue={issue} onDelete={back} /> : null}
+			<ui.box style={{ flexDirection: "row", gap: 0, alignItems: "center", flexShrink: 0 }}>
+				<ui.iconButton icon="external" label="Open in Flux" href={flux.issueUrl(issue)} disabled={!flux.issueUrl(issue)} style={{ width: TAP, height: TAP }} />
+				<IssueMenu flux={flux} issue={issue} onDelete={back} />
 			</ui.box>
 		);
 	}

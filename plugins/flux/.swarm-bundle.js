@@ -82648,7 +82648,7 @@ function FluxPage({ path, slot, item, section, image }) {
     if (unset || cantLoad) return phone ? null : /* @__PURE__ */ jsx11(HeadTitle, {});
     if (route.kind === "issue") return /* @__PURE__ */ jsx11(IssueHead, { flux: flux2, issueKey: route.key });
     const project = projectAt(flux2, route.project);
-    if (phone) return /* @__PURE__ */ jsx11(PhoneToolbar, { flux: flux2, project, options: displayOf() });
+    if (phone) return /* @__PURE__ */ jsx11(PhoneBarEnd, { onCreate: () => openCreate(flux2, project?.id) });
     return /* @__PURE__ */ jsx11(Toolbar, { flux: flux2, project, scope: scopeNow(), options: displayOf() });
   }
   if (unset) return /* @__PURE__ */ jsx11(Setup, { flux: flux2 });
@@ -82657,6 +82657,8 @@ function FluxPage({ path, slot, item, section, image }) {
     const options = displayOf();
     const project = projectAt(flux2, route.project);
     return /* @__PURE__ */ jsxs10(ui16.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: [
+      phone ? /* @__PURE__ */ jsx11(PhoneToolbar, { flux: flux2, project, options }) : null,
+      phone ? /* @__PURE__ */ jsx11(ScopeStrip, { scope: scopeNow() }) : null,
       options.layout === "list" ? /* @__PURE__ */ jsx11(ListBones, { edge: EDGE }) : /* @__PURE__ */ jsx11(BoardBones, { edge: EDGE }),
       st6.displayOpen ? displayPanel(options, !!project) : null
     ] });
@@ -82693,6 +82695,7 @@ function ListScreen({ flux: flux2, scope, projectKey }) {
       onKeyDown: (key) => onListKey(flux2, key, flat, groups, options),
       children: [
         /* @__PURE__ */ jsx11(SyncBars, { flux: flux2 }),
+        phone ? /* @__PURE__ */ jsx11(PhoneToolbar, { flux: flux2, project, options }) : null,
         phone ? /* @__PURE__ */ jsx11(ScopeStrip, { scope }) : null,
         flat.length === 0 ? /* @__PURE__ */ jsx11(Empty, { flux: flux2, scope, inProject: !!project, onCreate: () => openCreate(flux2, project?.id) }) : options.layout === "list" ? /* @__PURE__ */ jsx11(IssueList, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }) : /* @__PURE__ */ jsx11(Board, { flux: flux2, groups, options, showProject: !project, scrollKey: `${project?.key ?? ""}:${scope}` }),
         st6.selected.size > 0 ? /* @__PURE__ */ jsx11(SelectionBar, { flux: flux2 }) : null,
@@ -82801,8 +82804,11 @@ function ProjectPicker({ flux: flux2, project, style }) {
   ] });
 }
 var phoneIcon = { width: TAP, height: TAP, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text2" };
+function PhoneBarEnd({ onCreate }) {
+  return /* @__PURE__ */ jsx11(ui16.pressable, { label: "New issue", onClick: onCreate, style: { ...phoneIcon, color: "text" }, children: /* @__PURE__ */ jsx11(ui16.icon, { icon: "plus", style: { width: 20, height: 20, color: "currentColor" } }) });
+}
 function PhoneToolbar({ flux: flux2, project, options }) {
-  const shell = { flex: 1, minWidth: 0, height: "100%", flexDirection: "row", gap: 4, alignItems: "center", paddingLeft: SIDE - 8, paddingRight: SIDE - 4 };
+  const shell = { flexShrink: 0, height: TAP + 8, flexDirection: "row", gap: 4, alignItems: "center", paddingLeft: SIDE - 8, paddingRight: SIDE - 4 };
   if (st6.searching || st6.query !== "") {
     return /* @__PURE__ */ jsxs10(ui16.box, { style: { ...shell, paddingLeft: SIDE, gap: 8 }, children: [
       /* @__PURE__ */ jsxs10(ui16.box, { style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: TAP, paddingLeft: 10, paddingRight: 4, borderRadius: 10, backgroundColor: CARD_FILL }, children: [
@@ -82828,8 +82834,7 @@ function PhoneToolbar({ flux: flux2, project, options }) {
     }, style: { ...phoneIcon, position: "relative", backgroundColor: st6.displayOpen ? "press" : "transparent" }, children: [
       /* @__PURE__ */ jsx11(ui16.icon, { icon: "sliders", style: { width: 18, height: 18, color: "currentColor" } }),
       customized(options) ? /* @__PURE__ */ jsx11(ui16.box, { style: { position: "absolute", top: 6, right: 6, width: 6, height: 6, borderRadius: "full", backgroundColor: "accent" } }) : null
-    ] }),
-    /* @__PURE__ */ jsx11(ui16.pressable, { label: "New issue", onClick: () => openCreate(flux2, project?.id), style: { ...phoneIcon, marginLeft: 4, backgroundColor: "accent", color: "accentText" }, children: /* @__PURE__ */ jsx11(ui16.icon, { icon: "plus", style: { width: 18, height: 18, color: "currentColor" } }) })
+    ] })
   ] });
 }
 function ScopeStrip({ scope }) {
@@ -82900,7 +82905,7 @@ function displayPanel(options, singleProject) {
   const picked = (on3) => ({ borderRadius: "control", border: on3 ? "1px solid color-mix(in srgb, text 15%, transparent)" : "1px solid border", backgroundColor: on3 ? "press" : "transparent", color: on3 ? "text" : "text2", transition: { duration: 100, colors: true }, hover: { backgroundColor: on3 ? "press" : "hover", color: "text" } });
   return [
     /* @__PURE__ */ jsx11(ui16.pressable, { label: "Close display options", onClick: close6, style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 20 } }, "display-shade"),
-    /* @__PURE__ */ jsxs10(ui16.box, { label: "Display options", style: { position: "absolute", zIndex: 21, padding: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 }, ...phone ? { top: 4, left: SIDE, right: SIDE, borderRadius: 14 } : { borderRadius: "card", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288 } }, children: [
+    /* @__PURE__ */ jsxs10(ui16.box, { label: "Display options", style: { position: "absolute", zIndex: 21, padding: 8, backgroundColor: "overlay", border: "1px solid border", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", animation: { name: "fadeIn", duration: 120 }, ...phone ? { top: TAP + 8, left: SIDE, right: SIDE, borderRadius: 14 } : { borderRadius: "card", top: 0, right: DISPLAY_RIGHT.narrow, media: [{ minWidth: NEW_AT, style: { right: DISPLAY_RIGHT.mid } }, { minWidth: 768, style: { right: DISPLAY_RIGHT.wide } }], width: 288 } }, children: [
       /* @__PURE__ */ jsx11(ui16.box, { style: { flexDirection: "row", gap: 4, padding: 4 }, children: LAYOUTS.map((layout) => /* @__PURE__ */ jsxs10(ui16.pressable, { label: layout === "board" ? "Board" : "List", role: "radio", checked: options.layout === layout, onClick: () => set2({ layout, grouping: layout === "board" && options.grouping === "none" ? "status" : options.grouping }), style: { ...picked(options.layout === layout), flex: 1, height: phone ? TAP : 32, flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" }, children: [
         /* @__PURE__ */ jsx11(ui16.icon, { icon: layout === "board" ? "columns" : "rows", style: { width: 16, height: 16, color: "currentColor" } }),
         /* @__PURE__ */ jsx11(ui16.text, { style: { fontSize: 14, fontWeight: 500, color: "currentColor" }, children: layout === "board" ? "Board" : "List" })
@@ -83888,16 +83893,10 @@ function IssueHead({ flux: flux2, issueKey }) {
   const project = issue2 ? flux2.projects().find((item) => item.id === issue2.projectId) : void 0;
   const back = () => openList(project ? `p/${project.key}` : "");
   if (phone) {
-    return /* @__PURE__ */ jsxs10(ui16.box, { style: { ...bar, paddingLeft: SIDE - 8, paddingRight: SIDE - 4, gap: 4 }, children: [
-      /* @__PURE__ */ jsxs10(ui16.pressable, { label: `Back to ${project?.name ?? "All projects"}`, onClick: back, style: { ...ghostChip, height: TAP, minWidth: 0, flexShrink: 1, color: "text2" }, children: [
-        project ? /* @__PURE__ */ jsx11(ProjectMark, { project, size: 16 }) : /* @__PURE__ */ jsx11(FluxMark, { size: 16 }),
-        /* @__PURE__ */ jsx11(ui16.text, { style: { minWidth: 0, color: "currentColor" }, maxLines: 1, children: project?.name ?? "All projects" })
-      ] }),
-      /* @__PURE__ */ jsx11(ui16.icon, { icon: "chevron-right", style: { width: 12, height: 12, color: "text3", flexShrink: 0 } }),
-      /* @__PURE__ */ jsx11(ui16.text, { style: { color: "text2", flexShrink: 0, paddingLeft: 2 }, children: issueKey }),
-      /* @__PURE__ */ jsx11(ui16.box, { style: { flex: 1, minWidth: 8 } }),
-      issue2 ? /* @__PURE__ */ jsx11(ui16.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: TAP, height: TAP } }) : null,
-      issue2 ? /* @__PURE__ */ jsx11(IssueMenu, { flux: flux2, issue: issue2, onDelete: back }) : null
+    if (!issue2) return null;
+    return /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 0, alignItems: "center", flexShrink: 0 }, children: [
+      /* @__PURE__ */ jsx11(ui16.iconButton, { icon: "external", label: "Open in Flux", href: flux2.issueUrl(issue2), disabled: !flux2.issueUrl(issue2), style: { width: TAP, height: TAP } }),
+      /* @__PURE__ */ jsx11(IssueMenu, { flux: flux2, issue: issue2, onDelete: back })
     ] });
   }
   return /* @__PURE__ */ jsxs10(ui16.box, { style: bar, keys: issue2 ? ISSUE_KEYS : void 0, onKeyDown: issue2 ? (key) => onIssueKey(flux2, issue2, key) : void 0, children: [
