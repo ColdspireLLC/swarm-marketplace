@@ -13,6 +13,7 @@ import { carried } from "./rules";
 import { phoneRow } from "./settingsPage";
 import { claim, doing, learnTitles, plainTitle, recording, refresh, shots, st, turnsOf } from "./state";
 import { USER } from "./turns";
+import { machinePage, pageList, pathMachine } from "./compact";
 
 export const NAV = "test-machines";
 
@@ -55,7 +56,7 @@ function counts() {
 }
 
 /** Who has a machine, as a tile says it: a dot's colour, a line, and what's under it. */
-function standing(m: Machine, thread: string): { dot: Color; said: string; more: string } {
+export function standing(m: Machine, thread: string): { dot: Color; said: string; more: string } {
 	const t = turnsOf(m);
 	const h = t.holder;
 	const waiting = t.waiting.filter((w) => !w.kept).length;
@@ -165,14 +166,20 @@ export function unusedPhones(unused: Found[]): Child {
 	return (
 		<ui.box style={{ padding: "s5 s6", gap: 14, borderRadius: "card", border: "1px dashed borderStrong", maxWidth: 720 }}>
 			<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2" }}>Plugged in, not in use</ui.text>
-			{unused.map(phoneRow)}
+			{unused.map((f) => phoneRow(f, false))}
 		</ui.box>
 	);
 }
 
-function head(): Child {
+/** How many machines agents have, and how many threads wait: "2 in use · 1 waiting". */
+function countsSaid(): string {
 	const { held, waiting } = counts();
-	const said = [held ? `${held} in use` : "", waiting ? `${waiting} waiting` : ""].filter(Boolean).join(" · ");
+	return [held ? `${held} in use` : "", waiting ? `${waiting} waiting` : ""].filter(Boolean).join(" · ");
+}
+
+function head(compact: boolean): Child {
+	// On a phone the head sits at the end of the page's bar, beside its title: its buttons alone.
+	const said = compact ? "" : countsSaid();
 	return (
 		<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
 			{said ? <ui.text style={{ fontSize: "small", color: "text2" }}>{said}</ui.text> : null}
@@ -182,11 +189,17 @@ function head(): Child {
 	);
 }
 
-function body(): Child {
+function body(compact: boolean, path: string | undefined): Child {
 	if (!found.at && !found.busy) void discover();
 	const unused = found.phones.filter((f) => !f.id);
 	const phones = st.machines.filter(isPhone);
 	const computers = st.machines.filter((m) => !isPhone(m));
+	if (compact) {
+		// A phone: a machine's own page, at its path; else the list of them.
+		const id = pathMachine(path);
+		const m = id ? st.machines.find((x) => x.id === id) : undefined;
+		if (m) return machinePage(m);
+	}
 	if (!st.machines.length && !unused.length) {
 		return (
 			<ui.box style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: "s8", gap: 6 }}>
@@ -196,6 +209,7 @@ function body(): Child {
 			</ui.box>
 		);
 	}
+	if (compact) return pageList({ phones, computers, unused, problems: st.driverProblems, said: countsSaid() });
 	return (
 		<ui.scroll style={{ flex: 1 }}>
 			<ui.box style={{ padding: "s7 s8", gap: 28 }}>
@@ -225,7 +239,7 @@ function updateBadge() {
 }
 
 export function registerMachinesPage() {
-	ui.nav({ id: NAV, title: "Test machines", icon: "laptop-mobile", order: 60, fill: true, items: [], render: ({ args }) => (args.slot === "head" ? head() : body()) });
+	ui.nav({ id: NAV, title: "Test machines", icon: "laptop-mobile", order: 60, fill: true, items: [], render: ({ args }) => (args.slot === "head" ? head(args.compact === "1") : body(args.compact === "1", args.path)) });
 	// Turns change in many places (a call, a timeout, a turn's end): the badge looks every 2 s, and only says a change.
 	setInterval(updateBadge, 2000);
 }

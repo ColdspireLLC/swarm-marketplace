@@ -7,7 +7,7 @@ import { ui, type Child } from "swarm";
 import * as api from "./coolify";
 import type { EnvVar, Resource } from "./coolify";
 import { conn, message, openedOf, press, readEnvs, type Opened } from "./store";
-import { badge, faint, line, list, loading, problem, refresh, sectionHead } from "./view";
+import { badge, faint, line, list, loading, phone, problem, refresh, sectionHead } from "./view";
 
 interface Draft {
 	was?: EnvVar;
@@ -123,7 +123,7 @@ function editor(r: Resource, o: Opened, e: Editing): Child {
 	const multi = d.multiline || d.value.includes("\n");
 	const label = (text: string) => <ui.text style={{ fontSize: "small", fontWeight: 500, color: "text2" }}>{text}</ui.text>;
 	return (
-		<ui.box key={`edit-${d.was?.key ?? "new"}`} style={{ gap: 12, padding: "s5", backgroundColor: "raised" }}>
+		<ui.box key={`edit-${d.was?.key ?? "new"}`} style={{ gap: 12, padding: phone.on ? 14 : "s5", backgroundColor: phone.on ? undefined : "raised" }}>
 			<ui.box style={{ gap: 6 }}>
 				{label("Name")}
 				<ui.field key="env-key" value={d.key} placeholder="MY_VARIABLE" autoFocus={!d.was} onChange={(v) => { d.key = v.toUpperCase().replace(/\s+/g, "_"); e.err = ""; }} onSubmit={() => save(r, o, e)} style={{ fontFamily: "mono" }} />
@@ -146,8 +146,8 @@ function editor(r: Resource, o: Opened, e: Editing): Child {
 			</ui.box>
 			{e.err ? problem(e.err) : null}
 			<ui.box style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
-				<ui.button kind="ghost" size="sm" onClick={() => { e.draft = undefined; e.err = ""; }}>Cancel</ui.button>
-				<ui.button kind="primary" size="sm" disabled={e.busy} onClick={() => save(r, o, e)}>{e.busy ? "Saving…" : d.was ? "Save" : "Add"}</ui.button>
+				<ui.button kind={phone.on ? "secondary" : "ghost"} size={phone.on ? "md" : "sm"} onClick={() => { e.draft = undefined; e.err = ""; }} style={phone.on ? { flex: 1 } : undefined}>Cancel</ui.button>
+				<ui.button kind="primary" size={phone.on ? "md" : "sm"} disabled={e.busy} onClick={() => save(r, o, e)} style={phone.on ? { flex: 1 } : undefined}>{e.busy ? "Saving…" : d.was ? "Save" : "Add"}</ui.button>
 			</ui.box>
 		</ui.box>
 	);
@@ -159,21 +159,61 @@ function pastePanel(r: Resource, o: Opened, e: Editing): Child {
 	const have = new Set((o.envs ?? []).filter((v) => !!v.is_preview === e.previews).map((v) => v.key));
 	const updated = vars.filter((v) => have.has(v.key)).length;
 	return (
-		<ui.box key="paste" style={{ gap: 10, padding: "s5", backgroundColor: "raised" }}>
+		<ui.box key="paste" style={{ gap: 10, padding: phone.on ? 14 : "s5", backgroundColor: phone.on ? undefined : "raised" }}>
 			<ui.text style={{ fontSize: "small", fontWeight: 500, color: "text2" }}>Paste a .env file</ui.text>
 			<ui.field key="env-paste" value={e.paste ?? ""} multiline autoFocus placeholder="KEY=value, a line each" onChange={(v) => { e.paste = v; e.err = ""; }} style={{ fontFamily: "mono", minHeight: 120 }} />
 			<ui.text style={faint}>{vars.length ? `${vars.length} variable${vars.length === 1 ? "" : "s"}: ${vars.length - updated} new${updated ? `, ${updated} changed` : ""}. Those not in it stay as they are.` : "KEY=value lines; quotes, export and # comments are fine."}</ui.text>
 			{e.err ? problem(e.err) : null}
 			<ui.box style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
-				<ui.button kind="ghost" size="sm" onClick={() => { e.paste = undefined; e.err = ""; }}>Cancel</ui.button>
-				<ui.button kind="primary" size="sm" disabled={e.busy || !vars.length} onClick={() => importPaste(r, o, e)}>{e.busy ? "Importing…" : `Import${vars.length ? ` ${vars.length}` : ""}`}</ui.button>
+				<ui.button kind={phone.on ? "secondary" : "ghost"} size={phone.on ? "md" : "sm"} onClick={() => { e.paste = undefined; e.err = ""; }} style={phone.on ? { flex: 1 } : undefined}>Cancel</ui.button>
+				<ui.button kind="primary" size={phone.on ? "md" : "sm"} disabled={e.busy || !vars.length} onClick={() => importPaste(r, o, e)} style={phone.on ? { flex: 1 } : undefined}>{e.busy ? "Importing…" : `Import${vars.length ? ` ${vars.length}` : ""}`}</ui.button>
 			</ui.box>
+		</ui.box>
+	);
+}
+
+/**
+ * A variable on a phone: its name over its value, Show beside them and the
+ * rest in a menu (four buttons a finger's size don't fit beside a name);
+ * deleting asks under it, the buttons the row's width.
+ */
+function phoneRow(r: Resource, o: Opened, e: Editing, v: EnvVar): Child {
+	const value = valueOf(v);
+	const shown = o.shown.has(v.key);
+	const confirming = e.deleting === v.key;
+	const app = r.type === "application";
+	const marks = [app && v.is_buildtime && !v.is_runtime ? "Build" : "", app && v.is_runtime && !v.is_buildtime ? "Runtime" : "", v.is_literal ? "Literal" : ""].filter(Boolean);
+	return (
+		<ui.box key={v.uuid ?? v.key} style={{ padding: "8 6 8 14", gap: 8 }}>
+			<ui.box style={{ flexDirection: "row", gap: 4, alignItems: "center", minHeight: 40 }}>
+				<ui.box style={{ flex: 1, minWidth: 0, gap: 3 }}>
+					<ui.text style={{ fontFamily: "mono", fontSize: 12, fontWeight: 500, ...line }} selectable>{v.key}</ui.text>
+					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+						<ui.text style={{ fontFamily: "mono", fontSize: 12, color: value == null ? "text3" : "text2", flex: 1, ...line }} selectable={shown}>{value == null ? (v.is_shown_once ? "hidden once saved" : "hidden") : shown ? value || "(empty)" : "••••••••"}</ui.text>
+						{marks.map((m) => <ui.box key={m}>{badge("muted", m)}</ui.box>)}
+					</ui.box>
+				</ui.box>
+				{value != null ? <ui.iconButton icon={shown ? "eye-off" : "eye"} label={`${shown ? "Hide" : "Show"} ${v.key}`} onClick={() => void (shown ? o.shown.delete(v.key) : o.shown.add(v.key))} /> : null}
+				<ui.menu label="" tooltip={`More for ${v.key}`} icon="more" kind="ghost">
+					{value != null ? <ui.item icon="copy" label="Copy the value" onClick={() => { ui.copy(value); ui.toast(`Copied ${v.key}.`); }} /> : null}
+					<ui.item icon="pencil" label="Edit" onClick={() => { e.draft = draftOf(v, e.previews); e.err = ""; e.paste = undefined; }} />
+					<ui.separator />
+					<ui.item icon="trash" label="Delete…" danger onClick={() => void (e.deleting = v.key)} />
+				</ui.menu>
+			</ui.box>
+			{confirming ? (
+				<ui.box style={{ flexDirection: "row", gap: 8, paddingRight: 8 }}>
+					<ui.button kind="secondary" onClick={() => void (e.deleting = "")} style={{ flex: 1 }}>Keep</ui.button>
+					<ui.button kind="danger" disabled={e.busy} onClick={() => remove(r, o, e, v)} style={{ flex: 1 }}>Delete</ui.button>
+				</ui.box>
+			) : null}
 		</ui.box>
 	);
 }
 
 function row(r: Resource, o: Opened, e: Editing, v: EnvVar): Child {
 	if (e.draft?.was === v) return editor(r, o, e);
+	if (phone.on) return phoneRow(r, o, e, v);
 	const value = valueOf(v);
 	const shown = o.shown.has(v.key);
 	const confirming = e.deleting === v.key;
@@ -202,6 +242,24 @@ function row(r: Resource, o: Opened, e: Editing, v: EnvVar): Child {
 	);
 }
 
+
+/** The tab's head on a phone: the count, Copy as .env and Refresh on a line, Add and Paste under it the row's width, Production or Previews under those. */
+function phoneHead(r: Resource, o: Opened, e: Editing, count: number, previews: number, readable: EnvVar[], app: boolean): Child {
+	return (
+		<ui.box style={{ gap: 10 }}>
+			{sectionHead(
+				`${count} variable${count === 1 ? "" : "s"}`,
+				readable.length ? <ui.iconButton key="copyall" icon="copy" label="Copy as .env" onClick={() => { ui.copy(api.toDotenv(readable.map((v) => ({ key: v.key, value: valueOf(v)! })))); ui.toast(`Copied ${readable.length} variable${readable.length === 1 ? "" : "s"} as .env.`); }} /> : null,
+				refresh(o.envsReading, () => void readEnvs(r, o)),
+			)}
+			<ui.box style={{ flexDirection: "row", gap: 8 }}>
+				<ui.button kind="secondary" icon="plus" onClick={() => { e.draft = draftOf(undefined, e.previews); e.paste = undefined; e.err = ""; }} style={{ flex: 1 }}>Add variable</ui.button>
+				<ui.button kind="secondary" icon="paperclip" onClick={() => { e.paste = e.paste === undefined ? "" : undefined; e.draft = undefined; e.err = ""; }} style={{ flex: 1 }}>Paste .env</ui.button>
+			</ui.box>
+			{app && (previews || e.previews) ? <ui.segmented key="which" label="Which variables" style={{ alignSelf: "stretch" }} value={e.previews ? "preview" : "production"} options={[{ value: "production", label: "Production" }, { value: "preview", label: `Previews${previews ? ` ${previews}` : ""}` }]} onChange={(v) => { e.previews = v === "preview"; e.draft = undefined; }} /> : null}
+		</ui.box>
+	);
+}
 
 export function environmentTab(r: Resource, o: Opened): Child {
 	if (o.envs === undefined && !o.envsErr && !o.envsReading) void readEnvs(r, o);
@@ -235,7 +293,8 @@ export function environmentTab(r: Resource, o: Opened): Child {
 					</ui.box>
 				</ui.box>
 			) : null}
-			{sectionHead(
+			{phone.on ? phoneHead(r, o, e, vars.length, previews, readable, app) : null}
+			{phone.on ? null : sectionHead(
 				`${vars.length} variable${vars.length === 1 ? "" : "s"}`,
 				app && (previews || e.previews) ? <ui.segmented key="which" label="Which variables" value={e.previews ? "preview" : "production"} options={[{ value: "production", label: "Production" }, { value: "preview", label: `Previews${previews ? ` ${previews}` : ""}` }]} onChange={(v) => { e.previews = v === "preview"; e.draft = undefined; }} /> : null,
 				readable.length ? <ui.iconButton key="copyall" icon="copy" label="Copy as .env" onClick={() => { ui.copy(api.toDotenv(readable.map((v) => ({ key: v.key, value: valueOf(v)! })))); ui.toast(`Copied ${readable.length} variable${readable.length === 1 ? "" : "s"} as .env.`); }} /> : null,
@@ -245,7 +304,7 @@ export function environmentTab(r: Resource, o: Opened): Child {
 			)}
 			{items.length ? list(items) : <ui.text style={{ color: "text3", padding: 12 }}>{e.previews ? "No variables for previews." : "No variables yet."}</ui.text>}
 			{e.err && !e.draft && e.paste === undefined ? problem(e.err) : null}
-			{hidden ? <ui.text style={faint}>Values Coolify doesn't send need a token with read:sensitive; those set to hide once saved stay hidden.</ui.text> : null}
+			{hidden ? <ui.text style={phone.on ? { ...faint, whiteSpace: "normal" } : faint}>Values Coolify doesn't send need a token with read:sensitive; those set to hide once saved stay hidden.</ui.text> : null}
 		</ui.box>
 	);
 }

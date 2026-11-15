@@ -8,6 +8,7 @@ import { FluxClient, describe, normalizeBaseUrl, type WorkspaceChoice } from "./
 import { hub } from "./hub";
 import type { PictureSource } from "./pictures";
 import { checkFlux } from "./service";
+import { phone } from "./phone";
 import { WorkspaceLogo } from "./view";
 
 /** The workspaces a token reaches, once Flux has said, to pick from. */
@@ -87,10 +88,11 @@ export function ConnectForm({ name, target, url = "", done, cancel }: { name: st
 			<ui.box style={{ gap: 6 }}>
 				<ui.text style={{ fontWeight: 500 }}>API token</ui.text>
 				<ui.field key={name + "-token"} secret value={form.token} placeholder="flux_…" onChange={(value) => { form.token = value; form.error = ""; }} onSubmit={go} style={{ fontFamily: "mono" }} />
-				<ui.box style={{ flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+				{/* On a phone, said as one line that wraps where it must, rather than in two parts that break apart. */}
+				{phone && !tokens ? <ui.text style={{ fontSize: "small", color: "text3" }}>Make one in Flux, under Settings, API tokens.</ui.text> : <ui.box style={{ flexDirection: "row", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
 					<ui.text style={{ fontSize: "small", color: "text3" }}>Make one in Flux, under</ui.text>
 					{tokens ? <ui.link label="Settings, API tokens." href={`${tokens}/settings/tokens`} style={{ fontSize: "small" }} /> : <ui.text style={{ fontSize: "small", color: "text3" }}>Settings, API tokens.</ui.text>}
-				</ui.box>
+				</ui.box>}
 			</ui.box>
 			{form.error ? (
 				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "redSoft" }}>
@@ -130,7 +132,7 @@ function Picker({ name, form, pick, done, cancel }: { name: string; form: Form; 
 					const already = connectedTo(pick.baseUrl, ws.id);
 					const on = already || pick.chosen.includes(ws.id);
 					return (
-						<ui.box key={ws.id} style={{ flexDirection: "row", gap: 10, alignItems: "center", height: 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control" }}>
+						<ui.box key={ws.id} style={{ flexDirection: "row", gap: 10, alignItems: "center", height: phone ? 48 : 36, paddingLeft: 8, paddingRight: 8, borderRadius: "control" }}>
 							<ui.checkbox tooltip={already ? `${ws.name} is connected already` : `Add ${ws.name}`} checked={on} disabled={already} onChange={(value) => { pick.chosen = value ? [...pick.chosen.filter((id) => id !== ws.id), ws.id] : pick.chosen.filter((id) => id !== ws.id); }} />
 							<WorkspaceLogo workspace={ws} fallback={pick.baseUrl} from={sourceOf(name, pick, ws.id)} size={20} />
 							<ui.text style={{ flex: 1, minWidth: 0, color: already ? "text2" : "text" }} maxLines={1}>{ws.name}</ui.text>

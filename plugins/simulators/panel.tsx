@@ -2,7 +2,7 @@
 // own simulators first, their last screen and their live view, then every
 // agent simulator, who has it and who waits), and the row above the
 // composer while the thread holds one.
-import { ui, type Child } from "swarm";
+import { ui, type Child, type Color } from "swarm";
 import * as ops from "./ops";
 import { PLATFORM_NAME } from "./ops";
 import type { Slot } from "./pool";
@@ -23,9 +23,10 @@ function stateOf(s: Slot): string {
 	return i.booted ? (i.slim ? "Running, slim" : "Running") : "Shut down";
 }
 
-function screen(s: Slot, big: boolean): Child {
+function screen(s: Slot, big: boolean, thumb = false, compact = false): Child {
 	const k = shots.get(key(s));
-	const size = s.platform === "ios" ? (big ? { width: 160, height: 346 } : { width: 40, height: 86 }) : big ? { width: 160, height: 356 } : { width: 40, height: 89 };
+	// On a phone the thread's own is smaller beside its words, and the pool's a row's thumbnail.
+	const size = thumb ? { width: 26, height: 56 } : big && compact ? { width: 120, height: 260 } : s.platform === "ios" ? (big ? { width: 160, height: 346 } : { width: 40, height: 86 }) : big ? { width: 160, height: 356 } : { width: 40, height: 89 };
 	return (
 		<ui.box style={{ ...size, borderRadius: big ? 14 : 6, overflow: "hidden", backgroundColor: "black", border: "1px solid border", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
 			{k ? <ui.image src={k.data} alt={`${info(s).name}'s last screen`} style={{ width: "100%", height: "100%", objectFit: "contain" }} /> : <ui.icon icon="mobile" style={{ width: 16, height: 16, color: "text3" }} />}
@@ -46,7 +47,7 @@ function machineOf(s: Slot): string {
  * takes it over), with how it is and what the user does with it. Where
  * Swarm can't show it live (over ssh), its last screenshot.
  */
-function mineCard(s: Slot, thread: string): Child {
+function mineCard(s: Slot, thread: string, compact = false): Child {
 	const i = info(s);
 	const w = placed.get(s.platform);
 	const k = shots.get(key(s));
@@ -54,21 +55,22 @@ function mineCard(s: Slot, thread: string): Child {
 	const held = s.holder?.thread === thread;
 	const device = s.platform === "ios" ? (i.udid ? { simulator: i.udid } : null) : i.serial ? { phone: i.serial } : null;
 	return (
-		<ui.box key={key(s)} style={{ gap: 10 }}>
-			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+		<ui.box key={key(s)} style={{ gap: compact ? 12 : 10 }}>
+			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: compact ? "center" : "flex-start" }}>
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 					<ui.text style={{ fontWeight: 600, ...line }}>{i.name}</ui.text>
-					<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{`${PLATFORM_NAME[s.platform]} · ${held ? stateOf(s) : "given back, kept for this thread"}${w ? ` · ${w.label}` : ""}`}</ui.text>
+					<ui.text style={compact ? { fontSize: "small", color: "text2" } : { fontSize: "small", color: "text2", ...line }}>{`${PLATFORM_NAME[s.platform]} · ${held ? stateOf(s) : "given back, kept for this thread"}${w ? ` · ${w.label}` : ""}`}</ui.text>
 					{held && s.holder?.note ? <ui.text style={{ fontSize: "small", color: "text2" }}>{s.holder.note}</ui.text> : null}
 				</ui.box>
 				{held ? <ui.iconButton icon="stop" label="Give it back: the agent's turn on it ends" onClick={() => ops.endTurn(s)} /> : null}
 			</ui.box>
 			{i.problem ? <ui.text style={{ fontSize: "small", color: "red" }}>{i.problem}</ui.text> : null}
 			{machine && device && i.booted && (ui.format ?? 0) >= 17 ? (
-				<ui.screen machine={machine} {...device} watch={held ? "this thread's agent" : undefined} label={i.name} style={{ alignSelf: "center", width: "100%", maxWidth: 380 }} />
+				// On a phone, narrower than the phone, so the whole of its screen is on the phone's.
+				<ui.screen machine={machine} {...device} watch={held ? "this thread's agent" : undefined} label={i.name} style={compact ? { alignSelf: "center", width: 190 } : { alignSelf: "center", width: "100%", maxWidth: 380 }} />
 			) : (
 				<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-					{screen(s, true)}
+					{screen(s, true, false, compact)}
 					<ui.box style={{ flex: 1, minWidth: 0, gap: 6 }}>
 						<ui.text style={{ fontSize: "small", color: "text2" }}>{i.booted ? (k ? `Its screen from ${ago(k.at)}.` : "Not looked at yet.") : "Shut down: the agent's next call boots it."}</ui.text>
 						{i.booted ? <ui.button label="Look" icon="refresh" kind="ghost" onClick={() => ops.lookAt(s)} /> : null}
@@ -76,6 +78,91 @@ function mineCard(s: Slot, thread: string): Child {
 				</ui.box>
 			)}
 		</ui.box>
+	);
+}
+
+/** A slot's state as a dot's colour: running, busy, failed, or shut down. */
+function tone(s: Slot): Color {
+	const i = info(s);
+	if (i.busy) return "accent";
+	if (i.problem && !s.holder) return "red";
+	return i.booted ? "green" : "text3";
+}
+
+/** A row of the pool on a phone: a row of a card, its state a dot. */
+function compactRow(s: Slot, thread: string): Child {
+	const i = info(s);
+	const who = s.holder ? (s.holder.thread === thread ? "This thread" : title(s.holder.thread)) : "Free";
+	return (
+		<ui.box key={key(s)} label={`${i.name}: ${who}, ${stateOf(s)}`} style={{ flexDirection: "row", gap: 12, alignItems: "center", minHeight: 64, padding: "8px 16px" }}>
+			{screen(s, false, true)}
+			<ui.box style={{ flex: 1, minWidth: 0, gap: 3 }}>
+				<ui.text style={{ fontWeight: 500, ...line }}>{i.name}</ui.text>
+				<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+					<ui.box style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: tone(s), flexShrink: 0 }} />
+					<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{`${who} · ${stateOf(s)}`}</ui.text>
+				</ui.box>
+			</ui.box>
+			{s.holder && s.holder.thread !== thread ? <ui.iconButton icon="stop" label={`End ${title(s.holder.thread)}'s hold on ${i.name}`} onClick={() => ops.endTurn(s)} /> : null}
+		</ui.box>
+	);
+}
+
+/** A card's fill on a phone: the background, 5% toward the text. */
+const CARD = "color-mix(in srgb, text 5%, bg)";
+
+/** A section's heading on a phone: uppercase, small, quiet; what follows it at its end. */
+function heading(text: string, end?: Child): Child {
+	return (
+		<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingLeft: 4, minHeight: end ? 36 : undefined }}>
+			<ui.text style={{ fontSize: "caption", fontWeight: 600, color: "text3", textTransform: "uppercase" }}>{text}</ui.text>
+			{end ? <ui.spacer /> : null}
+			{end}
+		</ui.box>
+	);
+}
+
+/**
+ * The panel on a phone, a page over the thread whose bar names it: the
+ * thread's simulators in a card each, then the agents' as rows of a card,
+ * Look again at the first heading's end.
+ */
+function compactPanel(thread: string, mine: Slot[], others: Slot[], waiting: typeof pool.waiting): Child {
+	const again = <ui.iconButton icon="refresh" label="Look at them again" onClick={() => ops.look()} />;
+	return (
+		<ui.scroll style={{ flex: 1 }}>
+			<ui.box style={{ padding: "12px 16px 24px", gap: 20 }}>
+				{mine.length ? (
+					<ui.box style={{ gap: 8 }}>
+						{heading("This thread's", again)}
+						{mine.map((s) => (
+							<ui.box key={key(s)} style={{ borderRadius: 10, backgroundColor: CARD, padding: 16 }}>
+								{mineCard(s, thread, true)}
+							</ui.box>
+						))}
+					</ui.box>
+				) : null}
+				{others.length ? (
+					<ui.box style={{ gap: 8 }}>
+						{heading("Agents' simulators", mine.length ? undefined : again)}
+						<ui.box style={{ borderRadius: 10, backgroundColor: CARD }}>
+							{others.map((s, i) => (
+								<ui.box key={key(s)}>
+									{i ? <ui.box style={{ height: 1, marginLeft: 16 + 26 + 12, backgroundColor: "divider" }} /> : null}
+									{compactRow(s, thread)}
+								</ui.box>
+							))}
+						</ui.box>
+					</ui.box>
+				) : (
+					<>
+						{mine.length ? null : <ui.box style={{ alignSelf: "flex-end" }}>{again}</ui.box>}
+						{empty()}
+					</>
+				)}
+				{waiting.length ? <ui.text style={{ fontSize: "small", color: "text2", paddingLeft: 4 }}>{`Waiting: ${waiting.map((w) => `${title(w.thread)} (${w.platform === "ios" ? "iOS" : "Android"})`).join(", ")}`}</ui.text> : null}
+			</ui.box>
+		</ui.scroll>
 	);
 }
 
@@ -112,11 +199,12 @@ export function registerPanel() {
 		id: "simulators",
 		title: "Simulators",
 		icon: "mobile",
-		render: ({ thread }) => {
+		render: ({ thread, args }) => {
 			void view.v;
 			const mine = pool.slots.filter((s) => s.holder?.thread === thread || (!s.holder && s.last === thread));
 			const others = [...pool.slots].sort((a, b) => a.platform.localeCompare(b.platform) || a.n - b.n);
 			const waiting = pool.waiting;
+			if (args.compact === "1") return compactPanel(thread, mine, others, waiting);
 			return (
 				<ui.scroll style={{ flex: 1 }}>
 					<ui.box style={{ padding: "s6", gap: 16 }}>

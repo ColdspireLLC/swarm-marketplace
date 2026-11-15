@@ -10,6 +10,7 @@ import { startPrompt } from "./prompt";
 import { imageSources } from "./markdown";
 import { ProjectMark, StatusIcon } from "./view";
 import { DEFAULT_ID, addConfig, freshName, same, saveConfig, spawnConfig, spawnConfigs, type Choice } from "./spawn";
+import { phone } from "./phone";
 
 export function mentionOptions(flux: Flux) {
 	return [
@@ -76,7 +77,7 @@ export function DescriptionEditor({ flux, issue, markdown, html = "", image }: {
 	const has = unkept(html);
 	if (has) {
 		return (
-			<ui.box style={{ gap: 14, minHeight: "50vh" }}>
+			<ui.box style={{ gap: 14, minHeight: phone ? 0 : "50vh" }}>
 				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: "s3 s4", borderRadius: "control", backgroundColor: "hover" }}>
 					<ui.icon icon="info" style={{ width: 14, height: 14, color: "text2", flexShrink: 0, marginTop: 1 }} />
 					<ui.text style={{ flex: 1, minWidth: 0, fontSize: "small", color: "text2" }}>{`This description has ${has}, which Swarm can't edit without changing. Edit it in Flux.`}</ui.text>
@@ -99,7 +100,8 @@ export function DescriptionEditor({ flux, issue, markdown, html = "", image }: {
 			onChange={(value) => editDraft(key, value, save)}
 			onUpload={(file) => upload(flux, key, file, "issue_image", save)}
 			// As Flux's (min-h-[50vh]): the description is the page's, and a click anywhere in it writes there.
-			style={{ minHeight: "50vh", fontSize: 15, boxShadow: "none" }}
+			// A phone's half-screen would push what follows out of sight: a few lines' room.
+			style={{ minHeight: phone ? 96 : "50vh", fontSize: 15, boxShadow: "none" }}
 		/>
 	);
 }

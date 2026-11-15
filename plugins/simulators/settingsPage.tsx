@@ -20,16 +20,26 @@ function lookJoined() {
 
 const text = (key: string) => String(settings.get(key) ?? "");
 
+/** Whether the page is drawn on a phone (args.compact): its cards a phone's, a wide control under its row's words. */
+let compact = false;
+/** A card's fill on a phone: the background, 5% toward the text. */
+const CARD = "color-mix(in srgb, text 5%, bg)";
+
 function save(key: string) {
 	if (!draft.has(key)) return;
 	settings.set({ [key]: draft.get(key)!.trim() });
 	draft.delete(key);
 }
 
-function row(title: string, about: Child, control: Child, below?: Child): Child {
+/** A setting's row: its title and what it does, and its control; wide, a control that goes under the words on a phone. */
+function row(title: string, about: Child, control: Child, below?: Child, wide = false): Child {
+	if (compact && wide) {
+		below = <ui.box style={{ alignSelf: "flex-start" }}>{control}</ui.box>;
+		control = null;
+	}
 	return (
-		<ui.box label={title} style={{ gap: 8, padding: "s5 s6" }}>
-			<ui.box style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
+		<ui.box label={title} style={{ gap: compact ? 10 : 8, padding: compact ? "12px 16px" : "s5 s6" }}>
+			<ui.box style={{ flexDirection: "row", gap: compact ? 12 : 16, alignItems: "center" }}>
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 					<ui.text style={{ fontWeight: 500 }}>{title}</ui.text>
 					<ui.text style={{ fontSize: "small", color: "text2" }}>{about}</ui.text>
@@ -42,6 +52,21 @@ function row(title: string, about: Child, control: Child, below?: Child): Child 
 }
 
 function section(title: string, ...rows: Child[]): Child {
+	if (compact) {
+		return (
+			<ui.box style={{ gap: 8 }}>
+				<ui.text style={{ fontSize: "caption", fontWeight: 600, color: "text3", textTransform: "uppercase", paddingLeft: 4 }}>{title}</ui.text>
+				<ui.box style={{ borderRadius: 10, backgroundColor: CARD }}>
+					{rows.map((r, i) => (
+						<ui.box key={i}>
+							{i ? <ui.box style={{ height: 1, marginLeft: 16, backgroundColor: "divider" }} /> : null}
+							{r}
+						</ui.box>
+					))}
+				</ui.box>
+			</ui.box>
+		);
+	}
 	return (
 		<ui.box style={{ gap: 8 }}>
 			<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2", paddingLeft: 4 }}>{title}</ui.text>
@@ -136,21 +161,24 @@ function place(key: string, empty: string, os?: string): Child {
 	);
 }
 
-export function settingsPage(): Child {
+export function settingsPage({ args }: { args: { [name: string]: string } }): Child {
+	compact = args.compact === "1";
 	const memory = androidMemory(settings.get("androidMemory"));
 	return (
-		<ui.box style={{ gap: 20, maxWidth: 680 }}>
+		<ui.box style={{ gap: compact ? 24 : 20, maxWidth: 680 }}>
 			<ui.text style={{ color: "text2" }}>
 				Each agent gets an iOS simulator or Android emulator of its own, made and booted for it, until its turn ends. None of your simulators or their data are touched.
 			</ui.text>
 			{section(
 				"The agents' simulators",
-				row("iOS simulators", "How many agents may run at once, a thread's each: about 1 GB each slim, 3 GB stock.", number("iosAgents", { min: 0, max: 8, fallback: 2, label: "iOS simulators", unit: "" })),
-				row("Android emulators", `How many agents may run at once, a thread's each: ${(memory / 1024).toFixed(1).replace(/\.0$/, "")} GB each, as set below.`, number("androidAgents", { min: 0, max: 6, fallback: 1, label: "Android emulators", unit: "" })),
+				row("iOS simulators", "How many agents may run at once, a thread's each: about 1 GB each slim, 3 GB stock.", number("iosAgents", { min: 0, max: 8, fallback: 2, label: "iOS simulators", unit: "" }), undefined, true),
+				row("Android emulators", `How many agents may run at once, a thread's each: ${(memory / 1024).toFixed(1).replace(/\.0$/, "")} GB each, as set below.`, number("androidAgents", { min: 0, max: 6, fallback: 1, label: "Android emulators", unit: "" }), undefined, true),
 				row(
 					"Android emulators' memory",
 					"An app under test needs room: a debug React Native build takes half a gigabyte, and with less Android stops it. Applied as each next boots, its data kept.",
 					number("androidMemory", { min: 2, max: 8, fallback: 3072, scale: 1024, label: "memory for each Android emulator", unit: "GB" }),
+					undefined,
+					true,
 				),
 			)}
 			{section(

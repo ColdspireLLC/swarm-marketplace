@@ -8,6 +8,7 @@ import { carried } from "./rules";
 import { keep, learnTitles, message, refresh, shots, st } from "./state";
 import { section, tile } from "./machinesPage";
 import { USER } from "./turns";
+import { card, CARD, heading, panelRows, SIDE } from "./compact";
 
 export const PAGE = "test-machines";
 /** The link that opens the Settings page. */
@@ -102,13 +103,13 @@ function empty(): Child {
 }
 
 /** The phones plugged in that the plugin doesn't use, from the last look: one link turns them on. */
-export function unusedPhones(): Child {
+export function unusedPhones(phone = false): Child {
 	const unused = found.phones.filter((f) => !f.id && !f.problem);
 	if (!unused.length) return null;
 	const names = unused.map((f) => f.model);
 	const said = names.length === 1 ? `${names[0]} is plugged in` : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} are plugged in`;
 	return (
-		<ui.box style={{ flexDirection: "row", gap: 10, alignItems: "flex-start", padding: "s4 s5", borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }}>
+		<ui.box style={phone ? { flexDirection: "row", gap: 10, alignItems: "flex-start", padding: `12px ${SIDE}px`, borderRadius: 10, backgroundColor: CARD } : { flexDirection: "row", gap: 10, alignItems: "flex-start", padding: "s4 s5", borderRadius: "card", backgroundColor: "raised", border: "1px solid border" }}>
 			<ui.icon icon="mobile" style={{ width: 16, height: 16, marginTop: 2, color: "text2", flexShrink: 0 }} />
 			<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 				<ui.text style={{ fontWeight: 500 }}>{`${said}, not in use`}</ui.text>
@@ -122,12 +123,56 @@ export function unusedPhones(): Child {
 export const isPhone = (m: Machine) => m.kind === "android" || m.kind === "ios";
 
 
+/**
+ * The panel on a phone, a page over the thread whose bar names it: the
+ * machines as rows of cards, one opened in place, its look-again and
+ * set-up at the first heading's end.
+ */
+function compactPanel(thread: string): Child {
+	const phones = st.machines.filter(isPhone);
+	const computers = st.machines.filter((m) => !isPhone(m));
+	const actions = (
+		<ui.box style={{ flexDirection: "row", alignItems: "center" }}>
+			<ui.iconButton icon="refresh" label="Look for machines again" onClick={async () => { await refresh(); await learnTitles(); void discover(); }} />
+			<ui.iconButton icon="settings" label="Set up test machines" href={SETUP} />
+		</ui.box>
+	);
+	return (
+		<ui.scroll style={{ flex: 1 }}>
+			<ui.box style={{ padding: `12px ${SIDE}px ${SIDE + 8}px`, gap: 20 }}>
+				{st.driverProblems.map((p, i) => (
+					<ui.text key={"dp" + i} style={{ fontSize: "small", color: "red" }}>{p}</ui.text>
+				))}
+				{unusedPhones(true)}
+				{st.machines.length === 0 ? (
+					<>
+						<ui.box style={{ alignSelf: "flex-end" }}>{actions}</ui.box>
+						{empty()}
+					</>
+				) : null}
+				{phones.length ? (
+					<ui.box style={{ gap: 8 }}>
+						{heading("Phones", phones.length, actions)}
+						{card(panelRows(thread, phones), SIDE + 26 + 12)}
+					</ui.box>
+				) : null}
+				{computers.length ? (
+					<ui.box style={{ gap: 8 }}>
+						{heading("Computers", computers.length, phones.length ? undefined : actions)}
+						{card(panelRows(thread, computers), SIDE + 52 + 12)}
+					</ui.box>
+				) : null}
+			</ui.box>
+		</ui.scroll>
+	);
+}
+
 export function registerPanel() {
 	ui.panel({
 		id: "machines",
 		title: "Machines",
 		icon: "laptop-mobile",
-		render: ({ thread }) => (
+		render: ({ thread, args }) => args.compact === "1" ? compactPanel(thread) : (
 			<ui.scroll style={{ flex: 1 }}>
 				<ui.box style={{ padding: "s6", gap: 12 }}>
 					<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

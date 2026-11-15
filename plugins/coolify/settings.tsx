@@ -1,9 +1,9 @@
 // Coolify's page of Settings: Coolify's URL and an API token, tried before
 // they're kept; and the agents' access to Coolify's own MCP server.
-import { call, http, settings, ui, type Child } from "swarm";
+import { call, http, settings, ui, type Child, type RenderContext } from "swarm";
 import * as api from "./coolify";
 import { conn, forget, message, PAGE, readList, state, watch } from "./store";
-import { line, problem } from "./view";
+import { line, phone, problem, setPhone } from "./view";
 
 // ---- Its page of Settings ----
 
@@ -162,10 +162,13 @@ function agentsCard(): Child {
 					<ui.text style={{ fontWeight: 500 }}>Let agents set things up</ui.text>
 					<ui.text style={{ fontSize: "small", color: "text2" }}>{detail}</ui.text>
 				</ui.box>
-				{mcp.state === "off" ? <ui.button kind="secondary" disabled={mcp.busy} onClick={() => void turnOnMcp()}>{mcp.busy ? "Turning on…" : "Turn it on"}</ui.button> : null}
-				{mcp.state && mcp.state !== "on" && mcp.state !== "off" ? <ui.button kind="ghost" onClick={() => void checkMcp()}>Try again</ui.button> : null}
+				{mcp.state === "off" && !phone.on ? <ui.button kind="secondary" disabled={mcp.busy} onClick={() => void turnOnMcp()}>{mcp.busy ? "Turning on…" : "Turn it on"}</ui.button> : null}
+				{mcp.state && mcp.state !== "on" && mcp.state !== "off" && !phone.on ? <ui.button kind="ghost" onClick={() => void checkMcp()}>Try again</ui.button> : null}
 				<ui.toggle tooltip="Let agents use Coolify's MCP server" checked={on.length > 0} disabled={mcp.busy || (mcp.state !== "on" && on.length === 0)} onChange={(v) => void toggleAgents(v)} />
 			</ui.box>
+			{/* On a phone what acts on it goes under what it says, the row's width: beside it, the text had a word a line. */}
+			{phone.on && mcp.state === "off" ? <ui.button kind="secondary" disabled={mcp.busy} onClick={() => void turnOnMcp()}>{mcp.busy ? "Turning on…" : "Turn it on"}</ui.button> : null}
+			{phone.on && mcp.state && mcp.state !== "on" && mcp.state !== "off" ? <ui.button kind="secondary" onClick={() => void checkMcp()}>Try again</ui.button> : null}
 			{mcp.err ? problem(mcp.err) : null}
 		</ui.card>
 	);
@@ -231,7 +234,8 @@ function tokenCard(): Child {
 	);
 }
 
-export function settingsPage(): Child {
+export function settingsPage({ args }: RenderContext): Child {
+	setPhone(args);
 	const c = conn();
 	const field = (title: string, children: Child, hint?: Child) => (
 		<ui.box style={{ gap: 6 }}>
@@ -243,15 +247,32 @@ export function settingsPage(): Child {
 	if (c && !form.editing) {
 		return (
 			<ui.box style={{ gap: 16 }}>
-				<ui.card padding="s5 s6" gap="s5" style={{ flexDirection: "row", alignItems: "center" }}>
-					<ui.icon icon="check-circle" style={{ width: 16, height: 16, color: "green", alignSelf: "flex-start", marginTop: 1, flexShrink: 0 }} />
-					<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
-						<ui.text style={{ fontWeight: 500 }}>Connected</ui.text>
-						<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{api.baseOf(c.url) + (form.version ? ` · ${form.version}` : "")}</ui.text>
-					</ui.box>
-					<ui.button kind="ghost" onClick={() => { form.url = c.url; form.token = ""; form.error = ""; form.editing = true; }}>Change…</ui.button>
-					<ui.button kind="ghost" onClick={() => { void unhookAgents(); settings.set({ url: null, token: null }); mcp.state = ""; forget(); form.version = ""; }}>Disconnect</ui.button>
-				</ui.card>
+				{phone.on ? (
+					// On a phone: what it's connected to, then Change and Disconnect under it, the card's width.
+					<ui.card padding="s5 s6" gap="s5">
+						<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
+							<ui.icon icon="check-circle" style={{ width: 16, height: 16, color: "green", alignSelf: "flex-start", marginTop: 1, flexShrink: 0 }} />
+							<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+								<ui.text style={{ fontWeight: 500 }}>Connected</ui.text>
+								<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{api.baseOf(c.url) + (form.version ? ` · ${form.version}` : "")}</ui.text>
+							</ui.box>
+						</ui.box>
+						<ui.box style={{ flexDirection: "row", gap: 8 }}>
+							<ui.button kind="secondary" onClick={() => { form.url = c.url; form.token = ""; form.error = ""; form.editing = true; }} style={{ flex: 1 }}>Change…</ui.button>
+							<ui.button kind="secondary" onClick={() => { void unhookAgents(); settings.set({ url: null, token: null }); mcp.state = ""; forget(); form.version = ""; }} style={{ flex: 1 }}>Disconnect</ui.button>
+						</ui.box>
+					</ui.card>
+				) : (
+					<ui.card padding="s5 s6" gap="s5" style={{ flexDirection: "row", alignItems: "center" }}>
+						<ui.icon icon="check-circle" style={{ width: 16, height: 16, color: "green", alignSelf: "flex-start", marginTop: 1, flexShrink: 0 }} />
+						<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+							<ui.text style={{ fontWeight: 500 }}>Connected</ui.text>
+							<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{api.baseOf(c.url) + (form.version ? ` · ${form.version}` : "")}</ui.text>
+						</ui.box>
+						<ui.button kind="ghost" onClick={() => { form.url = c.url; form.token = ""; form.error = ""; form.editing = true; }}>Change…</ui.button>
+						<ui.button kind="ghost" onClick={() => { void unhookAgents(); settings.set({ url: null, token: null }); mcp.state = ""; forget(); form.version = ""; }}>Disconnect</ui.button>
+					</ui.card>
+				)}
 				{tokenCard()}
 				{agentsCard()}
 				<ui.box style={{ flexDirection: "row" }}>
@@ -276,8 +297,8 @@ export function settingsPage(): Child {
 			)}
 			{form.error ? problem(form.error) : null}
 			<ui.box style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
-				{c ? <ui.button kind="ghost" onClick={() => { form.editing = false; form.error = ""; }}>Cancel</ui.button> : null}
-				<ui.button kind="primary" disabled={form.busy} onClick={() => void connect()}>{form.busy ? "Connecting…" : "Connect"}</ui.button>
+				{c ? <ui.button kind={phone.on ? "secondary" : "ghost"} onClick={() => { form.editing = false; form.error = ""; }} style={phone.on ? { flex: 1 } : undefined}>Cancel</ui.button> : null}
+				<ui.button kind="primary" disabled={form.busy} onClick={() => void connect()} style={phone.on ? { flex: 1 } : undefined}>{form.busy ? "Connecting…" : "Connect"}</ui.button>
 			</ui.box>
 		</ui.box>
 	);
