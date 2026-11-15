@@ -132,7 +132,7 @@ function titleBar(title: string, count: string, ...end: Child[]): Child {
 
 /**
  * A phone's head, drawn at the end of its bar, which has the page's title
- * and Back: Refresh, and a menu of the rest (New app, Coolify itself,
+ * and Back: Refresh, New app as a plus, and a menu of the rest (Coolify itself,
  * Settings).
  */
 function phoneHead(end: Child[]): Child {
@@ -141,8 +141,13 @@ function phoneHead(end: Child[]): Child {
 	return (
 		<ui.box style={{ flexDirection: "row", gap: 2, alignItems: "center", flexShrink: 0 }}>
 			{c ? end : null}
+			{c && setup ? (
+				// New app as phones' apps have their action: a plus at the bar's end.
+				<ui.pressable label="New app" tooltip="Set up a new app with an agent" onClick={() => ask(undefined, setupPrompt())} style={{ width: 36, height: 36, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text", active: { backgroundColor: "hover" } }}>
+					<ui.icon icon="plus" style={{ width: 22, height: 22, color: "currentColor" }} />
+				</ui.pressable>
+			) : null}
 			<ui.menu label="" icon="more" kind="ghost" tooltip="More">
-				{c && setup ? <ui.item icon="plus" label="New app" detail="Set one up with an agent" onClick={() => ask(undefined, setupPrompt())} /> : null}
 				{c ? <ui.item icon="external" label="Open Coolify" href={api.baseOf(c.url)} /> : null}
 				<ui.item icon="settings" label="Coolify settings" href={`swarm://settings/${PAGE}/${PAGE}`} />
 			</ui.menu>

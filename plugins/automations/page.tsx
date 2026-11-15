@@ -129,18 +129,32 @@ function ideas(): Child {
 	);
 }
 
+/** New's menu: a button on a desktop's page; on a phone, a plus at the end of Swarm's bar over the page (the nav's head). */
 function newMenu(): Child {
+	const items = newItems();
+	if (phone.on) {
+		return (
+			<ui.menu wide label="New automation" tooltip="New automation" style={{ width: 36, height: 36, alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "control", color: "text" }}>
+				<ui.icon icon="plus" style={{ width: 22, height: 22, color: "currentColor" }} />
+				{items}
+			</ui.menu>
+		);
+	}
 	return (
-		<ui.menu wide label={phone.on ? "New automation" : "New"} icon="plus" kind="primary" size={phone.on ? "md" : "sm"} tooltip="New automation" style={phone.on ? { alignSelf: "stretch" } : undefined}>
-			<ui.item icon="plus" label="Blank automation" detail="A schedule, and a prompt or a script" onClick={() => openForm()} />
-			<ui.item icon="sparkle" label="Ask an agent to set one up" detail="Describe it in a new thread" onClick={() => ui.prefill({ prompt: askAgent("") })} />
-			<ui.separator />
-			<ui.heading>From an idea</ui.heading>
-			{IDEAS.map((i) => (
-				<ui.item key={i.id} icon={i.icon} label={i.title} detail={describeCron(i.cron)} onClick={() => openForm({ idea: i })} />
-			))}
+		<ui.menu wide label="New" icon="plus" kind="primary" size="sm" tooltip="New automation">
+			{items}
 		</ui.menu>
 	);
+}
+
+function newItems(): Child[] {
+	return [
+		<ui.item key="blank" icon="plus" label="Blank automation" detail="A schedule, and a prompt or a script" onClick={() => openForm()} />,
+		<ui.item key="ask" icon="sparkle" label="Ask an agent to set one up" detail="Describe it in a new thread" onClick={() => ui.prefill({ prompt: askAgent("") })} />,
+		<ui.separator key="sep" />,
+		<ui.heading key="ideas">From an idea</ui.heading>,
+		...IDEAS.map((i) => <ui.item key={i.id} icon={i.icon} label={i.title} detail={describeCron(i.cron)} onClick={() => openForm({ idea: i })} />),
+	];
 }
 
 function list(open: string): Child {
@@ -189,8 +203,7 @@ function list(open: string): Child {
 		<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
 			{phone.on ? null : <ui.box dragWindow style={top} />}
 			<ui.box style={{ ...columnStyle(), flexShrink: 0, paddingBottom: 12, paddingTop: phone.on ? 8 : 0, gap: 10 }}>
-				{/* A phone's bar has the title: New, the width of the screen, under it. */}
-				{phone.on ? newMenu() : null}
+				{/* A phone's bar has the title, and New at its end (the nav's head). */}
 				{phone.on ? null : <ui.box style={{ flexDirection: "row", minHeight: 28, gap: 8, alignItems: "center" }}>
 					<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "baseline", flexShrink: 1, minWidth: 0 }}>
 						<ui.text style={title}>Automations</ui.text>
@@ -490,9 +503,12 @@ export function registerPage() {
 		title: "Automations",
 		icon: "clock",
 		islands: true,
+		// On a phone, New is a plus at the end of the bar over the page.
+		head: true,
 		render: ({ args }) => {
 			setPhone(args);
 			const path = String(args.path || "");
+			if (args.slot === "head") return phone.on && path === "" ? newMenu() : null;
 			let side: Child = null;
 			let open = "";
 			if (path === "new") side = Form();
