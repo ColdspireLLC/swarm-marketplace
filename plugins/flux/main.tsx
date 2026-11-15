@@ -267,6 +267,7 @@ export function activate() {
 		icon: "flux:mark",
 		// Open issues nobody's agent has started, yours first, one click from the prompt; the form's project's, where it's linked to one.
 		render: (context) => {
+			renderingFor(context.args);
 			if (flux.projects().length === 0) {
 				return (
 					<ui.pressable label="Connect Flux" onClick={() => ui.navTo("flux", "")} style={{ alignSelf: "flex-start", color: "text2", hover: { color: "text" } }}>
@@ -285,6 +286,29 @@ export function activate() {
 					</ui.box>
 				);
 			}
+			const prompt = (issue: (typeof open)[number]) => `Work on @flux-issues:${issue.key} (${issue.title}). Run \`swarm flux start ${issue.key}\` first so the issue tracks this thread.`;
+			if (phone) {
+				// A phone's: each issue its title the row's width, two lines at most, and under it its marks, key and whose it is, a finger's row.
+				return (
+					<ui.box style={{ gap: 0 }}>
+						{open.map((issue, i) => (
+							<ui.pressable
+								key={issue.id}
+								label={`${issue.key} ${issue.title}`}
+								onClick={() => ui.prefill({ append: true, prompt: prompt(issue) })}
+								style={{ flexDirection: "column", alignItems: "stretch", gap: 4, paddingTop: 10, paddingBottom: 10, paddingLeft: 4, paddingRight: 4, borderRadius: "control", ...(i > 0 ? { borderTop: "1px solid divider" } : {}), active: { backgroundColor: "hover" } }}
+							>
+								<ui.text style={{ fontSize: 15, fontWeight: 500 }} maxLines={2}>{issue.title}</ui.text>
+								<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+									<PriorityIcon priority={issue.priority} size={13} />
+									<StatusIcon status={issue.status} size={13} />
+									<ui.text style={{ fontSize: 13, color: "text2" }}>{`${issue.key} · ${me && issue.assigneeIds.includes(me) ? "Yours" : "Unassigned"}`}</ui.text>
+								</ui.box>
+							</ui.pressable>
+						))}
+					</ui.box>
+				);
+			}
 			return (
 				<ui.box style={{ gap: 0, marginLeft: -4, marginRight: -4 }}>
 					{open.map((issue) => (
@@ -293,7 +317,7 @@ export function activate() {
 							label={`${issue.key} ${issue.title}`}
 							tooltip="Add to the prompt"
 							// As bb's: the issue as a mention after what's typed, and how the thread tracks it.
-							onClick={() => ui.prefill({ append: true, prompt: `Work on @flux-issues:${issue.key} (${issue.title}). Run \`swarm flux start ${issue.key}\` first so the issue tracks this thread.` })}
+							onClick={() => ui.prefill({ append: true, prompt: prompt(issue) })}
 							style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } }}
 						>
 							<PriorityIcon priority={issue.priority} size={14} />

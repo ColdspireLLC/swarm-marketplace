@@ -84728,6 +84728,7 @@ function activate() {
     icon: "flux:mark",
     // Open issues nobody's agent has started, yours first, one click from the prompt; the form's project's, where it's linked to one.
     render: (context2) => {
+      renderingFor(context2.args);
       if (flux.projects().length === 0) {
         return /* @__PURE__ */ jsx13(ui18.pressable, { label: "Connect Flux", onClick: () => ui18.navTo("flux", ""), style: { alignSelf: "flex-start", color: "text2", hover: { color: "text" } }, children: /* @__PURE__ */ jsx13(ui18.text, { style: { fontSize: 14, color: "currentColor" }, children: "Connect Flux to pick up issues from here →" }) });
       }
@@ -84740,12 +84741,32 @@ function activate() {
           /* @__PURE__ */ jsx13(ui18.link, { label: "Browse Flux", href: linked ? `swarm://plugin/flux/p/${linked.key}` : "swarm://plugin/flux" })
         ] });
       }
+      const prompt = (issue2) => `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.`;
+      if (phone) {
+        return /* @__PURE__ */ jsx13(ui18.box, { style: { gap: 0 }, children: open3.map((issue2, i2) => /* @__PURE__ */ jsxs12(
+          ui18.pressable,
+          {
+            label: `${issue2.key} ${issue2.title}`,
+            onClick: () => ui18.prefill({ append: true, prompt: prompt(issue2) }),
+            style: { flexDirection: "column", alignItems: "stretch", gap: 4, paddingTop: 10, paddingBottom: 10, paddingLeft: 4, paddingRight: 4, borderRadius: "control", ...i2 > 0 ? { borderTop: "1px solid divider" } : {}, active: { backgroundColor: "hover" } },
+            children: [
+              /* @__PURE__ */ jsx13(ui18.text, { style: { fontSize: 15, fontWeight: 500 }, maxLines: 2, children: issue2.title }),
+              /* @__PURE__ */ jsxs12(ui18.box, { style: { flexDirection: "row", gap: 6, alignItems: "center" }, children: [
+                /* @__PURE__ */ jsx13(PriorityIcon, { priority: issue2.priority, size: 13 }),
+                /* @__PURE__ */ jsx13(StatusIcon, { status: issue2.status, size: 13 }),
+                /* @__PURE__ */ jsx13(ui18.text, { style: { fontSize: 13, color: "text2" }, children: `${issue2.key} · ${me2 && issue2.assigneeIds.includes(me2) ? "Yours" : "Unassigned"}` })
+              ] })
+            ]
+          },
+          issue2.id
+        )) });
+      }
       return /* @__PURE__ */ jsx13(ui18.box, { style: { gap: 0, marginLeft: -4, marginRight: -4 }, children: open3.map((issue2) => /* @__PURE__ */ jsxs12(
         ui18.pressable,
         {
           label: `${issue2.key} ${issue2.title}`,
           tooltip: "Add to the prompt",
-          onClick: () => ui18.prefill({ append: true, prompt: `Work on @flux-issues:${issue2.key} (${issue2.title}). Run \`swarm flux start ${issue2.key}\` first so the issue tracks this thread.` }),
+          onClick: () => ui18.prefill({ append: true, prompt: prompt(issue2) }),
           style: { flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 4, paddingRight: 4, borderRadius: "control", transition: { duration: 100, colors: true }, hover: { backgroundColor: "hover" } },
           children: [
             /* @__PURE__ */ jsx13(PriorityIcon, { priority: issue2.priority, size: 14 }),
