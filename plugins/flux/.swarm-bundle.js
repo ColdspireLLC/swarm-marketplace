@@ -18246,7 +18246,7 @@ var require_core = __commonJS({
 });
 
 // main.tsx
-import swarm3, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui18 } from "swarm";
+import swarm4, { call as call5, hook, on as on2, settings as settings2, tool, ui as ui18 } from "swarm";
 
 // src/pictures.ts
 import { ui as ui3 } from "swarm";
@@ -81556,7 +81556,7 @@ async function projectFor(flux2, issue2) {
 }
 
 // src/follow.ts
-import { call as call3, on } from "swarm";
+import swarm3, { call as call3, on } from "swarm";
 
 // src/requeststatus.ts
 function requestStatus(status, state, opened) {
@@ -81568,17 +81568,31 @@ function requestStatus(status, state, opened) {
 }
 
 // src/follow.ts
+async function followed(thread) {
+  let info;
+  try {
+    info = await call3("ThreadInfo", { thread });
+  } catch {
+    info = void 0;
+  }
+  if (info) {
+    const meta3 = await swarm3.threads.metadata(thread);
+    return { meta: meta3, opened: Boolean(info.request), state: info.requestState ?? "" };
+  }
+  const detail2 = await call3("Thread", { thread });
+  return { meta: detail2.thread?.pluginMeta?.flux, opened: Boolean(detail2.thread?.pr), state: detail2.live?.mr?.State ?? "" };
+}
 function watchMergeRequests(hub2) {
   const pending = /* @__PURE__ */ new Map();
   const check2 = async (thread) => {
-    let detail2;
+    let f2;
     try {
       await call3("RefreshMergeRequest", { thread });
-      detail2 = await call3("Thread", { thread });
+      f2 = await followed(thread);
     } catch {
       return;
     }
-    const meta3 = detail2.thread?.pluginMeta?.flux;
+    const meta3 = f2.meta;
     const issueId = typeof meta3?.issueId === "string" ? meta3.issueId : "";
     const issueKey = typeof meta3?.issueKey === "string" ? meta3.issueKey : "";
     if (!issueId && !issueKey) return;
@@ -81590,9 +81604,7 @@ function watchMergeRequests(hub2) {
     }
     const issue2 = issueId && flux2.issue(issueId) || issueKey && flux2.findIssue(issueKey);
     if (!issue2) return;
-    const state = detail2.live?.mr?.State ?? "";
-    const opened = Boolean(detail2.thread?.pr);
-    const status = requestStatus(issue2.status, state, opened);
+    const status = requestStatus(issue2.status, f2.state, f2.opened);
     if (status !== issue2.status) void flux2.updateIssue(issue2.id, { status }).catch(() => {
     });
   };
@@ -84626,10 +84638,10 @@ var linksShown = "";
 function syncIssueLinks() {
   const links = issueLinks();
   const key = links.join("\n");
-  if (!mentionsOn || key === linksShown || typeof swarm3.mentions.links !== "function") return;
+  if (!mentionsOn || key === linksShown || typeof swarm4.mentions.links !== "function") return;
   linksShown = key;
   try {
-    swarm3.mentions.links("flux-issues", links);
+    swarm4.mentions.links("flux-issues", links);
   } catch {
   }
 }
@@ -84761,7 +84773,7 @@ function activate() {
     }
   });
   try {
-    swarm3.mentions.provide({
+    swarm4.mentions.provide({
       id: "flux-issues",
       label: "Flux issues",
       // A sent message's @FLX-12 opens the issue's page, as does an agent's link to the issue in Flux.
