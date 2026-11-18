@@ -40,7 +40,7 @@ import {
 	type Dep,
 	type Opened,
 } from "./store";
-import { badge, columnStyle, deploymentTitle, empty, errorLine, fact, faint, fitted, howDeployed, iconOf, line, logBox, phone, phoneCard, problem, list, refresh, rowOf, searchField, sectionHead, setPhone, sourceText, top, loading, stats } from "./view";
+import { badge, columnStyle, deploymentTitle, empty, errorLine, fact, faint, fitted, howDeployed, iconOf, line, logBox, phone, phoneCard, problem, list, overviewBones, refresh, rowOf, searchField, sectionHead, setPhone, sourceText, top, loading, stats } from "./view";
 
 type View = { kind: "overview" } | { kind: "deployments" } | { kind: "project"; uuid: string } | { kind: "servers" };
 
@@ -460,7 +460,8 @@ function board(view: View, base: string, open: string, head = false): Child {
 		body = empty("alert-circle", "Coolify didn't answer", state.err, <ui.button onClick={() => void readList()}>Try again</ui.button>);
 		search = false;
 	} else if (!state.list) {
-		body = loading("Reading Coolify…", true);
+		// The overview's shape while it comes, as the page's skeleton is, so nothing moves.
+		body = view.kind === "overview" && !phone.on ? overviewBones() : loading("Reading Coolify…", true);
 	} else if (state.list.length === 0 && view.kind !== "servers") {
 		body = empty("cube", "Nothing deployed yet", "Coolify has nothing this token may see.", agentsCanSetUp() ? <ui.button onClick={() => ask(undefined, setupPrompt())}>Set up an app with an agent…</ui.button> : undefined);
 	} else if (phone.on && view.kind === "deployments") {

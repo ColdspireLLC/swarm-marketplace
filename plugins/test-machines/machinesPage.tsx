@@ -238,8 +238,43 @@ function updateBadge() {
 	ui.navBadge(NAV, next ? { text: next } : null);
 }
 
+/** A bone of the page's shape while it comes: a line or a mark still to come. */
+const bone = (width: number | `${number}%`, height = 10): Child => <ui.box style={{ width, height, flexShrink: 0, borderRadius: 4, backgroundColor: "hover", animation: { name: "shimmer" } }} />;
+
+/** The page's shape before Swarm has its first render (ui.nav's skeleton): a section of tiles as body() lays them out, each its screen's shimmer, its name and who has it, and its buttons. */
+function pageBones(): Child {
+	return (
+		<ui.box style={{ flex: 1, minHeight: 0, overflow: "hidden", padding: "s7 s8" }}>
+			<ui.box style={{ gap: 10 }}>
+				<ui.box style={{ flexDirection: "row", height: 20, alignItems: "center", paddingLeft: 2 }}>{bone(90, 12)}</ui.box>
+				<ui.box style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, alignItems: "flex-start" }}>
+					{[0, 1].map((i) => (
+						<ui.box key={i} style={{ width: COMPUTER_W, maxWidth: "100%", borderRadius: "card", backgroundColor: "raised", border: "1px solid border", overflow: "hidden" }}>
+							<ui.box style={{ width: COMPUTER_W, aspectRatio: "16 / 10", backgroundColor: "hover", animation: { name: "shimmer" } }} />
+							<ui.box style={{ padding: "s4 s5 s5", gap: 8 }}>
+								<ui.box style={{ gap: 7, paddingTop: 2, paddingBottom: 3 }}>
+									{bone(["46%", "38%"][i] as `${number}%`, 12)}
+									{bone("30%")}
+									{bone(["72%", "60%"][i] as `${number}%`)}
+								</ui.box>
+								<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", height: 28 }}>
+									{bone(84, 24)}
+									<ui.spacer />
+									{bone(20, 20)}
+									{bone(20, 20)}
+									{bone(20, 20)}
+								</ui.box>
+							</ui.box>
+						</ui.box>
+					))}
+				</ui.box>
+			</ui.box>
+		</ui.box>
+	);
+}
+
 export function registerMachinesPage() {
-	ui.nav({ id: NAV, title: "Test machines", icon: "laptop-mobile", order: 60, fill: true, items: [], render: ({ args }) => (args.slot === "head" ? head(args.compact === "1") : body(args.compact === "1", args.path)) });
+	ui.nav({ id: NAV, title: "Test machines", icon: "laptop-mobile", order: 60, fill: true, items: [], skeleton: pageBones(), render: ({ args }) => (args.slot === "head" ? head(args.compact === "1") : body(args.compact === "1", args.path)) });
 	// Turns change in many places (a call, a timeout, a turn's end): the badge looks every 2 s, and only says a change.
 	setInterval(updateBadge, 2000);
 }

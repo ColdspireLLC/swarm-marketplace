@@ -17,13 +17,22 @@ import { registerContext } from "./context";
 import { renderPage } from "./page";
 import { mcpRoute, settingsPage } from "./settings";
 import { conn, forget, PAGE, readList, stopWatching, syncNav, watch } from "./store";
-import { registerLogOverlay } from "./view";
+import { overviewBones, registerLogOverlay } from "./view";
 
 export function activate() {
 	registerCli();
 	// The rail and Settings draw a plugin's SVG by the name it shares it as.
 	ui.shareIcon({ id: "logo", path: "coolify.svg" });
-	ui.nav({ id: PAGE, title: "Coolify", icon: "coolify:logo", order: 50, fill: true, bare: true, items: [], render: renderPage });
+	ui.nav({ id: PAGE, title: "Coolify", icon: "coolify:logo", order: 50, fill: true, bare: true, items: [],
+		// Its shape until Swarm has its first render: the overview's, as it comes.
+		skeleton: (
+			<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
+				<ui.box style={{ height: 20, flexShrink: 0 }} />
+				{overviewBones()}
+			</ui.box>
+		),
+		render: renderPage,
+	});
 	ui.page({ id: PAGE, title: "Coolify", icon: "coolify:logo", render: settingsPage });
 	registerContext();
 	registerLogOverlay();

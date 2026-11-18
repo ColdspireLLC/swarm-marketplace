@@ -82900,6 +82900,9 @@ function customized(options) {
   return options.grouping !== d.grouping || options.ordering !== d.ordering || options.showClosed !== d.showClosed || options.showEmptyGroups !== d.showEmptyGroups || options.showSubIssues !== d.showSubIssues || options.properties.length !== d.properties.length || options.properties.some((p) => !d.properties.includes(p));
 }
 var EDGE = 16;
+function PageBones() {
+  return /* @__PURE__ */ jsx11(ui16.box, { style: { position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }, children: displayOf().layout === "list" ? /* @__PURE__ */ jsx11(ListBones, { edge: EDGE }) : /* @__PURE__ */ jsx11(BoardBones, { edge: EDGE }) });
+}
 var bar = { flex: 1, minWidth: 0, height: "100%", flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: EDGE - 8, paddingRight: EDGE - 4, media: [{ minWidth: 768, style: { paddingLeft: 20 - 8, paddingRight: 16 } }] };
 var ghostChip = { height: 28, flexShrink: 0, paddingLeft: 8, paddingRight: 8, gap: 6, flexDirection: "row", alignItems: "center", borderRadius: "control", backgroundColor: "transparent", hover: { backgroundColor: "hover" }, checked: { backgroundColor: "hover" } };
 var NEW_W = 94;
@@ -84696,6 +84699,8 @@ function activate() {
     sections: true,
     itemMenus: true,
     search: "Find a view",
+    // Its shape until Swarm has its first render: the first sync's.
+    skeleton: /* @__PURE__ */ jsx13(PageBones, {}),
     items: navItems(flux),
     // Its projects drag up and down the sidebar, as Flux's.
     onItemMove: ({ item, index }) => {

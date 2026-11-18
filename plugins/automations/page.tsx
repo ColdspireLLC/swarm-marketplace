@@ -9,7 +9,7 @@ import { describeCron, formatDuration, nextCron, parseCron, stamp } from "./cron
 import { EditError, setEnabled } from "./edit";
 import { draft, fill, Form, openForm } from "./form";
 import { askAgent, IDEAS, type Idea } from "./ideas";
-import { cardStyle, columnStyle, doing, empty, fact, faint, heading, insetLine, line, mark, NAV, phone, project, projectNames, relative, RUN, setPhone, upcoming, runMark, runTip, soft, state, STATE, strip, title, top, type State } from "./parts";
+import { card, cardStyle, column, columnStyle, doing, empty, fact, faint, heading, insetLine, line, mark, NAV, phone, project, projectNames, relative, RUN, setPhone, upcoming, runMark, runTip, soft, state, STATE, strip, title, top, type State } from "./parts";
 import { start } from "./runner";
 import { activeRun, automations, remove, runs, type Automation, type Run } from "./store";
 
@@ -497,12 +497,58 @@ export function syncNav() {
 	ui.navBadge(NAV, failing ? { text: String(failing) } : null);
 }
 
+/** A bone of the page's shape while it comes: a line or a mark still to come. */
+const bone = (width: number | `${number}%`, height = 10, style?: Style): Child => (
+	<ui.box style={{ width, height, flexShrink: 0, borderRadius: 4, backgroundColor: "hover", animation: { name: "shimmer" }, ...style }} />
+);
+
+/** The page's shape before Swarm has its first render (ui.nav's skeleton): the list's island as list() lays it out, its title and New, then groups of rows in cards. */
+function pageBones(): Child {
+	return (
+		<ui.box style={{ flexDirection: "row", flexGrow: 1, minHeight: 0, gap: 6, alignItems: "stretch" }}>
+			<ui.island key="list" style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, minHeight: 0 }}>
+				<ui.box style={{ flexGrow: 1, minHeight: 0 }}>
+					<ui.box style={top} />
+					<ui.box style={{ ...column, flexShrink: 0, paddingBottom: 12 }}>
+						<ui.box style={{ flexDirection: "row", minHeight: 28, alignItems: "center" }}>
+							{bone(140, 18)}
+							<ui.spacer />
+							{bone(62, 24)}
+						</ui.box>
+					</ui.box>
+					<ui.box style={{ ...column, gap: 4, overflow: "hidden" }}>
+						{[[58], [44, 66]].map((rows, g) => [
+							<ui.box key={"head-" + g} style={{ flexDirection: "row", height: 28, alignItems: "center", paddingLeft: 4, marginTop: g ? 16 : 0 }}>
+								{bone(84)}
+							</ui.box>,
+							<ui.box key={"rows-" + g} style={card}>
+								{rows.map((w, i) => (
+									<ui.box key={i} style={{ minHeight: 60, flexDirection: "row", gap: 12, alignItems: "center", padding: "8 14 8 12", borderTop: i ? "1px solid divider" : undefined }}>
+										{bone(16, 16, { marginLeft: 5, marginRight: 5 })}
+										<ui.box style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, gap: 8 }}>
+											{bone(`${w / 2}%`)}
+											{bone(`${w}%`)}
+										</ui.box>
+										{bone(40, 12)}
+										{bone(30, 18, { borderRadius: 9, marginLeft: 36 })}
+									</ui.box>
+								))}
+							</ui.box>,
+						])}
+					</ui.box>
+				</ui.box>
+			</ui.island>
+		</ui.box>
+	);
+}
+
 export function registerPage() {
 	ui.nav({
 		id: NAV,
 		title: "Automations",
 		icon: "clock",
 		islands: true,
+		skeleton: pageBones(),
 		// On a phone, New is a plus at the end of the bar over the page.
 		head: true,
 		render: ({ args }) => {
