@@ -101,6 +101,51 @@ export function stats(items: { value: string; label: string; tone?: "green" | "a
 	);
 }
 
+/** A bone of a loading shape: a line or a mark still to come. */
+export const bone = (width: number | `${number}%`, height = 10, style?: Style): Child => (
+	<ui.box style={{ width, height, flexShrink: 0, borderRadius: 4, backgroundColor: "hover", animation: { name: "shimmer" }, ...style }} />
+);
+
+/** The overview's shape while Coolify is first read, as the page lays it out: the search, the counts, and rows in cards under their headings. */
+export function overviewBones(): Child {
+	const rows = (widths: number[]) => (
+		<ui.card padding="s0" gap="s0">
+			{widths.map((w, i) => (
+				<ui.box key={i} style={{ flexDirection: "row", gap: 10, alignItems: "center", padding: "s4 s5", minHeight: 51, borderTop: i ? "1px solid divider" : undefined }}>
+					{bone(14, 14)}
+					<ui.box style={{ flex: 1, minWidth: 0, gap: 7 }}>
+						{bone(`${w}%`)}
+						{bone(`${w * 0.7}%`, 8)}
+					</ui.box>
+					{bone(52, 18)}
+				</ui.box>
+			))}
+		</ui.card>
+	);
+	return (
+		<ui.box style={{ ...columnStyle(), flexGrow: 1, minHeight: 0, overflow: "hidden", gap: 16 }}>
+			{bone("100%", 28, { marginBottom: -4 })}
+			<ui.card padding="s0" gap="s0" style={{ flexDirection: "row" }}>
+				{[0, 1, 2, 3].map((i) => [
+					i ? <ui.box key={`line-${i}`} style={{ width: 1, flexShrink: 0, alignSelf: "stretch", backgroundColor: "divider" }} /> : null,
+					<ui.box key={i} style={{ flex: 1, minWidth: 0, padding: "s4 s5", gap: 8 }}>
+						{bone(36, 16)}
+						{bone(64, 8)}
+					</ui.box>,
+				])}
+			</ui.card>
+			<ui.box style={{ gap: 8 }}>
+				{bone(110)}
+				{rows([34])}
+			</ui.box>
+			<ui.box style={{ gap: 8 }}>
+				{bone(130)}
+				{rows([52, 44, 60, 38])}
+			</ui.box>
+		</ui.box>
+	);
+}
+
 /** Swarm's refresh: busy turns its icon, not the button. */
 export const refresh = (reading: boolean, run: () => unknown): Child => <ui.iconButton icon="refresh" label="Refresh" busy={reading} onClick={run} />;
 

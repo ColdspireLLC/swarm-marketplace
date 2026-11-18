@@ -532,6 +532,15 @@ function customized(options: DisplayOptions): boolean {
 // filter, start and end on it.
 const EDGE = 16;
 
+/** The page's shape before Swarm has its first render (ui.nav's skeleton): the board's or the list's, as the first sync draws it. */
+export function PageBones() {
+	return (
+		<ui.box style={{ position: "relative", flex: 1, height: "100%", minHeight: 0, minWidth: 0, width: "100%", gap: 0 }}>
+			{displayOf().layout === "list" ? <ListBones edge={EDGE} /> : <BoardBones edge={EDGE} />}
+		</ui.box>
+	);
+}
+
 /** The title bar's own shell, the board's and an issue's alike: its height, and its content's edges lined up with the page's. */
 const bar = { flex: 1, minWidth: 0, height: "100%", flexDirection: "row", gap: 6, alignItems: "center", paddingLeft: EDGE - 8, paddingRight: EDGE - 4, media: [{ minWidth: 768, style: { paddingLeft: 20 - 8, paddingRight: 16 } }] } satisfies Style;
 

@@ -15,7 +15,7 @@ import { CLOSED_STATUSES, PRIORITY_LEVEL, STATUS_LABELS, type Status } from "./s
 import { watchMergeRequests } from "./src/follow";
 import { hub } from "./src/hub";
 import { issueImages } from "./src/images";
-import { FluxPage, NewIssue, closeCreate, navItems, syncNav, unstarted } from "./src/page";
+import { FluxPage, NewIssue, PageBones, closeCreate, navItems, syncNav, unstarted } from "./src/page";
 import { threadInstructions } from "./src/prompt";
 import { FluxSettings, refreshProjects } from "./src/settings";
 import { ProjectDialog, closeProject, moveProject, openNewProject } from "./src/projects";
@@ -214,6 +214,8 @@ export function activate() {
 		sections: true,
 		itemMenus: true,
 		search: "Find a view",
+		// Its shape until Swarm has its first render: the first sync's.
+		skeleton: <PageBones />,
 		items: navItems(flux),
 		// Its projects drag up and down the sidebar, as Flux's.
 		onItemMove: ({ item, index }) => {
