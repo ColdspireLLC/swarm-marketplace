@@ -2,7 +2,7 @@
 // an application is built from, a resource by the name a command gives,
 // Coolify's times, and what --json leaves out.
 import { expect, test } from "swarm/testing";
-import { builtFrom, displayName, find, parseDotenv, parseTime, repoPath, toDotenv, withoutSecrets, type Place, type Resource } from "./coolify";
+import { builtFrom, displayName, find, news, parseDotenv, parseTime, repoPath, toDotenv, withoutSecrets, type Deployment, type Place, type Resource } from "./coolify";
 
 const app = (r: Partial<Resource>): Resource => ({ uuid: "u", name: "n", type: "application", status: "running:healthy", ...r });
 
@@ -41,6 +41,20 @@ test("Coolify's times, and --json without secrets", () => {
 	expect(Number.isNaN(parseTime(""))).toBe(true);
 	const out = withoutSecrets({ name: "web", fqdn: "https://web.example.com", http_basic_auth_password: "pw", manual_webhook_secret_github: "s", docker_compose_raw: "x", git_repository: "acme/web" });
 	expect(Object.keys(out).sort()).toEqual(["fqdn", "git_repository", "name"]);
+});
+
+// The thread's row shows an application only while it's news: one
+// running, even one that just deployed, stays off it.
+test("an application is news to its threads while it deploys, fails or isn't running", () => {
+	const dep = (status: string): Deployment => ({ deployment_uuid: "d", status, created_at: new Date().toISOString() });
+	expect(news("running:healthy", dep("finished"), false)).toBe(false);
+	expect(news("running:healthy", undefined, false)).toBe(false);
+	expect(news("running:unknown", dep("finished"), false)).toBe(false);
+	expect(news("", dep("finished"), false)).toBe(false);
+	expect(news("running:healthy", dep("finished"), true)).toBe(true);
+	expect(news("running:healthy", dep("failed"), false)).toBe(true);
+	expect(news("running:unhealthy", dep("finished"), false)).toBe(true);
+	expect(news("exited:unhealthy", undefined, false)).toBe(true);
 });
 
 test("a pasted .env: comments, export, quotes over lines, and back again", () => {

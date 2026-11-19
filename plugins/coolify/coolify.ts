@@ -296,6 +296,18 @@ export function statusOf(status: string): { label: string; tone: Tone; running: 
 /** Whether a deployment is still going. */
 export const deploying = (d: Deployment) => d.status === "queued" || d.status === "in_progress";
 
+/**
+ * Whether an application is news to a thread, above its composer: it's
+ * deploying, its last deploy failed, or it isn't Running (of a status
+ * Coolify knows). One running, however lately it deployed, is nothing to
+ * say: the toast said a deploy ended, and the thread's row leaves it out.
+ */
+export function news(status: string, last: Deployment | undefined, deployingNow: boolean): boolean {
+	if (deployingNow || last?.status === "failed") return true;
+	const s = statusOf(status);
+	return s.tone !== "green" && s.label !== "Unknown";
+}
+
 /** A deployment's status as a word and a tone. */
 export function deploymentStatus(status: string): { label: string; tone: Tone | "accent" } {
 	switch (status) {
