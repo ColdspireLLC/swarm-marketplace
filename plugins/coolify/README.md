@@ -33,9 +33,13 @@ A self-hosted [Coolify](https://coolify.io) in Swarm, through its API (v4,
   rail's button counts what's deploying.
 - **In a thread** of a project Coolify deploys (its origin is an
   application's git repository, or a docker image's application's image
-  path is under it): a segment above the composer, the application's
-  state and last deployment, Deploy at its end, each of its applications
-  under it; and a note to the agent naming them.
+  path is under it): a segment above the composer while there's news, an
+  application deploying, failing or not Running, with its state and last
+  deployment, Deploy at its end, each of its applications under it; none
+  while they run. Deploy to
+  Coolify, in the palette and the composer's / (with the application's
+  name, of several), deploys from any of them. And a note to the agent
+  naming them.
 - **Its page of Settings** connects it, and lets agents use Coolify's MCP
   server (Coolify 4.5 on) through the plugin's route on this machine,
   which adds the token: the agents' configuration has a key of the

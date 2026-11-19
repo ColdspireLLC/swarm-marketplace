@@ -2,7 +2,7 @@ Your self-hosted Coolify in Swarm. Its page has an overview of what's running, w
 
 Every deployment is watched, whoever started it, including a push's webhook, and a toast says how it ended. When one fails, Ask an agent to fix it opens a thread with the failing log, in the project the app is built from.
 
-In a thread of a project Coolify deploys, the app's state and last deployment sit above the composer with a Deploy button, and the agent knows which app it is: swarm coolify deploy --wait is all it takes.
+In a thread of a project Coolify deploys, Deploy to Coolify is in the palette and the composer's /. While the app is deploying, failing or not running, its state sits above the composer with a Deploy button. The agent knows which app it is: swarm coolify deploy --wait is all it takes.
 
 Agents get swarm coolify (list, show, deploy, start, stop, restart, rollback, deployments, deployment-log, logs, env, env-set, env-unset) and a skill. Turn on Let agents set things up and they also get Coolify's own MCP server (Coolify 4.5 or later), to create apps, databases and services; requests go through Swarm, which adds the token, so it never lands in an agent's configuration.
 

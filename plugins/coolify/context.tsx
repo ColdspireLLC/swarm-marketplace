@@ -1,14 +1,16 @@
-// Coolify in a thread: a segment of the row above the composer, in a
-// project whose repository Coolify deploys: a dot on its icon saying how
-// its applications are doing (pulsing while one deploys), then its first
-// application's name, its state only when that isn't Running, and when it
-// last deployed while that's within the hour, with Deploy at its end and each of its applications
-// under it while it's open; and a note to the thread's agent
-// naming them, so "deploy it" needs no lookup.
+// Coolify in a thread, of a project whose repository Coolify deploys: a
+// segment of the row above the composer while there's news (one of its
+// applications deploying, failing or not Running), and none while they
+// run. It has a dot on its icon saying how they're doing (pulsing while
+// one deploys), the name of the one that's news, its state, when a
+// failed deploy failed, Deploy at its end, and each of its applications under it
+// while it's open. Deploy to Coolify, in the palette and the composer's /,
+// deploys from any of the project's threads. And a note to the thread's
+// agent naming them, so "deploy it" needs no lookup.
 import { agents, ui, type Child } from "swarm";
 import * as api from "./coolify";
 import type { Resource } from "./coolify";
-import { conn, deployingNow, lastDeployment, linkedTo, openedOf, PAGE, placeOf, press, threadProject } from "./store";
+import { conn, deployingNow, lastDeployment, linkedTo, openedOf, PAGE, placeOf, press, threadProject, threadProjectNow } from "./store";
 import { dot, faint, line } from "./view";
 
 type State = { tone: api.Tone | "accent"; label: string };
@@ -34,14 +36,21 @@ function worst(apps: Resource[]): State {
 	return w;
 }
 
-/** How long a deploy stays news on the row: long enough to see a push went out, not so long it's noise. */
+const isNews = (r: Resource) => api.news(r.status, lastDeployment(r.uuid), deployingNow(r.uuid));
+
+/** The application the row names: the worst of those that are news, the first of them on a tie. */
+function headline(apps: Resource[]): Resource | undefined {
+	let best: Resource | undefined;
+	for (const r of apps.filter(isNews)) if (!best || rank[stateOf(r).tone] > rank[stateOf(best).tone]) best = r;
+	return best;
+}
+
+/** How long a failed deploy's time shows beside it. */
 const RECENT = 60 * 60 * 1000;
 
 /**
- * What the row says after the name: nothing while it's running and its
- * last deploy is old news, the dot says that; when it deployed while
- * that's recent; and a state that isn't Running in its tone, a failed
- * deploy's time beside it while that's recent too.
+ * What the row says after the name: a state that isn't Running in its
+ * tone, a failed deploy's time beside it while that's recent.
  */
 function said(r: Resource): Child[] {
 	const s = stateOf(r);
@@ -51,7 +60,7 @@ function said(r: Resource): Child[] {
 	const out: Child[] = [];
 	if (s.tone !== "green") out.push(<ui.text key="s" style={{ color: s.tone === "muted" ? "text2" : s.tone, flexShrink: 0, whiteSpace: "nowrap" }}>{s.label}</ui.text>);
 	const failed = last?.status === "failed";
-	if (recent && (failed || s.tone === "green")) out.push(<ui.text key="w" style={{ ...faint, ...line }}>{failed ? api.ago(last.created_at) : `deployed ${api.ago(last.created_at)}`}</ui.text>);
+	if (recent && failed) out.push(<ui.text key="w" style={{ ...faint, ...line }}>{api.ago(last.created_at)}</ui.text>);
 	return out;
 }
 
@@ -65,6 +74,19 @@ function deploy(r: Resource) {
 	const c = conn();
 	if (!c) return;
 	void press(r, openedOf(r), "deploy");
+}
+
+/** Deploy to Coolify, from a thread: its project's application, or of several the one named. */
+async function deployFrom(thread: string, named: string) {
+	if (!conn()) return ui.toast("Coolify isn't connected: Settings, Coolify.");
+	const project = await threadProjectNow(thread);
+	const apps = linkedTo(project);
+	if (!apps.length) return ui.toast("Coolify doesn't deploy this thread's project.");
+	const want = named.trim().toLowerCase();
+	const r = apps.length === 1 && !want ? apps[0] : apps.find((x) => [x.uuid, x.name, api.displayName(x), nameOf(x, apps)].some((n) => n.toLowerCase() === want));
+	if (!r) return ui.toast(`Name one: ${apps.map((x) => nameOf(x, apps)).join(", ")}.`);
+	if (deployingNow(r.uuid)) return ui.toast(`${nameOf(r, apps)} is deploying already.`);
+	deploy(r);
 }
 
 // single is the details of a project's one application: its last
@@ -102,8 +124,8 @@ export function registerContext() {
 		summary: ({ thread }) => {
 			if (!conn()) return null;
 			const apps = linkedTo(threadProject(thread));
-			if (!apps.length) return null;
-			const r = apps[0]!;
+			const r = headline(apps);
+			if (!r) return null;
 			return (
 				<ui.box label={`${nameOf(r, apps)}, ${stateOf(r).label}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
 					<ui.text style={{ ...line, fontWeight: 500 }}>{nameOf(r, apps)}</ui.text>
@@ -159,6 +181,10 @@ export function registerContext() {
 			);
 		},
 	});
+
+	// The row's Deploy, while the row says nothing: from the palette, or
+	// the composer's / with the application's name when there are several.
+	ui.command({ id: "deploy", title: "Deploy to Coolify", detail: "This thread's project's application", icon: "rocket", hint: "[app]", palette: true, slash: true, thread: true, run: ({ thread, text }) => deployFrom(thread, text) });
 
 	// The thread's agent is told which applications its project deploys to.
 	agents.instructions(({ project }) => {
