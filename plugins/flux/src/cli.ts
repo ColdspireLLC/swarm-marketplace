@@ -3,7 +3,7 @@
 // output. Run from an agent's shell, a command knows its thread
 // (io.thread): an issue's key defaults to the thread's issue, a comment is
 // its agent's, and start attaches the thread.
-import { call, command, type CommandIO } from "swarm";
+import { call, command, type CommandIO, type ThreadInfo } from "swarm";
 import { agentLogo } from "./agentlogos";
 import type { CommentAgent } from "./agent";
 import { describe } from "./client";
@@ -85,10 +85,24 @@ export interface Context {
 }
 
 /** What a thread is, for its commands: its project, and its agent for comments. */
+/**
+ * A thread without its timeline, which can be tens of MB, past what a
+ * plugin's memory takes: ThreadInfo, or from a Swarm before it the whole
+ * thread's.
+ */
+async function threadInfo(thread: string): Promise<ThreadInfo> {
+	try {
+		return await call("ThreadInfo", { thread });
+	} catch {
+		const d = await call("Thread", { thread });
+		return { ...d.info, machine: d.thread?.machine ?? "" };
+	}
+}
+
 async function context(io: CommandIO): Promise<Context> {
 	if (!io.thread) return { thread: "", project: "", agent: null };
 	try {
-		const d = await call("Thread", { thread: io.thread });
+		const d = { info: await threadInfo(io.thread) };
 		const names: Record<string, string> = { claude: "Claude Code", cursor: "Cursor", grok: "Grok Build", fake: "Demo agent" };
 		return {
 			thread: io.thread,

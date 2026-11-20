@@ -7,7 +7,7 @@ import { call } from "swarm";
 import * as android from "./android";
 import * as access from "./access";
 import { elementLines } from "./elements";
-import { bring } from "./transfer";
+import { bring, threadInfo } from "./transfer";
 import * as ios from "./ios";
 import { SimError } from "./ios";
 import { IDLE_MS, PoolError, type Platform, type Slot } from "./pool";
@@ -40,9 +40,8 @@ const waitMs = (wait?: number) => Math.min(30, Math.max(0, wait ?? 4)) * 60_000;
 /** The thread's turn just now, for a hold that an end of an earlier turn, heard late, mustn't end. */
 async function turnOf(thread: string): Promise<number | undefined> {
 	try {
-		const d = (await call("Thread", { thread })) as { info?: { turns?: number; status?: string } } | null;
-		const i = d?.info;
-		if (i && typeof i.turns === "number") return i.turns + (i.status === "idle" || i.status === "error" ? 1 : 0);
+		const i = await threadInfo(thread);
+		if (typeof i.turns === "number") return i.turns + (i.status === "idle" || i.status === "error" ? 1 : 0);
 	} catch {}
 	return undefined;
 }

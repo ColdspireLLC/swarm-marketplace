@@ -79948,10 +79948,18 @@ function parse3(argv, spec) {
 }
 var str = (v2) => typeof v2 === "string" ? v2 : void 0;
 var list = (v2) => Array.isArray(v2) ? v2 : [];
+async function threadInfo(thread) {
+  try {
+    return await call("ThreadInfo", { thread });
+  } catch {
+    const d = await call("Thread", { thread });
+    return { ...d.info, machine: d.thread?.machine ?? "" };
+  }
+}
 async function context(io) {
   if (!io.thread) return { thread: "", project: "", agent: null };
   try {
-    const d = await call("Thread", { thread: io.thread });
+    const d = { info: await threadInfo(io.thread) };
     const names = { claude: "Claude Code", cursor: "Cursor", grok: "Grok Build", fake: "Demo agent" };
     return {
       thread: io.thread,
@@ -81886,7 +81894,7 @@ async function connect(name, form, target, done) {
 // src/threads.ts
 import { ui as ui14 } from "swarm";
 var known = ui14.state(/* @__PURE__ */ new Map());
-function threadInfo(id2) {
+function threadInfo2(id2) {
   return known.value.get(id2);
 }
 function setThreads(list2) {
@@ -83145,7 +83153,7 @@ function SubIssueChip({ done, total }) {
   ] });
 }
 function AgentChip({ issue: issue2 }) {
-  const busy = issue2.threadIds.some((id2) => threadInfo(id2)?.working);
+  const busy = issue2.threadIds.some((id2) => threadInfo2(id2)?.working);
   const count = issue2.threadIds.length;
   return /* @__PURE__ */ jsxs10(ui16.box, { label: busy ? "An agent is working on this" : `${count} thread${count === 1 ? "" : "s"}`, style: { ...field, border: busy ? "1px solid color-mix(in srgb, green 40%, transparent)" : "1px solid border" }, children: [
     /* @__PURE__ */ jsx11(ui16.box, { style: { width: 6, height: 6, borderRadius: "full", backgroundColor: busy ? "green" : "text3", ...busy ? { animation: { name: "pulse" } } : {} } }),
@@ -84239,7 +84247,7 @@ function PropertyRail({ flux: flux2, issue: issue2, project, members: members2 }
     /* @__PURE__ */ jsxs10(ui16.box, { style: { gap: 4 }, children: [
       /* @__PURE__ */ jsx11(ui16.text, { style: { ...railHeading, paddingBottom: 4 }, children: "Agents" }),
       issue2.threadIds.map((id2) => {
-        const thread = threadInfo(id2);
+        const thread = threadInfo2(id2);
         return /* @__PURE__ */ jsxs10(ui16.box, { style: { flexDirection: "row", gap: 2, alignItems: "center" }, children: [
           /* @__PURE__ */ jsxs10(ui16.pressable, { label: thread?.title || "Archived thread", onClick: () => ui16.openThread(id2), style: { flex: 1, minWidth: 0, flexDirection: "row", gap: 8, alignItems: "center", height: 32, paddingLeft: 6, paddingRight: 6, borderRadius: "control", hover: { backgroundColor: "hover" } }, children: [
             /* @__PURE__ */ jsx11(ui16.box, { style: { width: 14, alignItems: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx11(ui16.box, { style: { width: 8, height: 8, borderRadius: "full", backgroundColor: thread?.working ? "green" : "text3", ...thread?.working ? { animation: { name: "pulse" } } : {} } }) }),
@@ -84585,7 +84593,7 @@ function issueView(flux2, issue2, thread) {
       labels: flux2.labels(),
       me: flux2.me?.id,
       url: flux2.issueUrl(issue2),
-      working: issue2.threadIds.some((t) => threadInfo(t)?.working),
+      working: issue2.threadIds.some((t) => threadInfo2(t)?.working),
       edits: { update: (patch) => flux2.updateIssue(issue2.id, patch) },
       onTask: (n, done) => flux2.replaceDescription(issue2.id, tickTask(d.descriptionMarkdown, n, done)),
       detach: thread && issue2.threadIds.includes(thread) ? () => flux2.detach(issue2.id, thread) : void 0,

@@ -6,6 +6,7 @@
 import { call, ui, type Child } from "swarm";
 import { fill, openForm } from "./form";
 import { line, NAV, relative, state } from "./parts";
+import { threadInfo } from "./runner";
 import { automations, runs, type Automation } from "./store";
 
 /** The automation a thread belongs to: one that re-prompts it, else the one whose run started it. */
@@ -76,7 +77,7 @@ export function registerThread() {
 			if (!thread) return;
 			// To the page at once, while the click is the user's; the thread's name follows.
 			openForm();
-			const info = (await call("Thread", { thread })).info;
+			const info = await threadInfo(thread);
 			fill({ target: info });
 		},
 	});
