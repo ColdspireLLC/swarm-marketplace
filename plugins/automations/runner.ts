@@ -3,7 +3,7 @@
 // target thread) and ends as that thread's turn ends; a script run runs
 // the script here and ends with it, handing what it printed to an agent
 // where the automation has a prompt. One run of an automation at a time.
-import { call, process, threads, type Project } from "swarm";
+import { call, process, threads, type Project, type ThreadInfo } from "swarm";
 import { afterRun, afterStart, dueNow, silent, soonest } from "./plan";
 import { activeRun, addRun, automations, runOnThread, save, updateRun, type Automation, type Run, type RunStatus, type Trigger } from "./store";
 
@@ -48,11 +48,24 @@ export async function scriptDir(a: Automation): Promise<string | undefined> {
 	return p && !p.machine ? p.path : undefined;
 }
 
+/**
+ * A thread without its timeline, which can be tens of MB, past what a
+ * plugin's memory takes: ThreadInfo, or from a Swarm before it the whole
+ * thread's.
+ */
+export async function threadInfo(thread: string): Promise<ThreadInfo> {
+	try {
+		return await call("ThreadInfo", { thread });
+	} catch {
+		const d = await call("Thread", { thread });
+		return { ...d.info, machine: d.thread?.machine ?? "" };
+	}
+}
+
 /** Whether a thread can be told: there, and not archived. */
 async function threadThere(id: string): Promise<boolean> {
 	try {
-		const d = await call("Thread", { thread: id });
-		return !!d.info && !d.info.archived;
+		return !(await threadInfo(id)).archived;
 	} catch {
 		return false;
 	}
@@ -185,11 +198,11 @@ export async function settle() {
 			continue;
 		}
 		try {
-			const d = await call("Thread", { thread: run.thread });
-			const s = d.info.status;
-			if (d.info.archived) await finish(run, "skipped", "Its thread was archived");
-			else if (s === "error") await finish(run, "failed", d.info.error || "The agent failed");
-			else if (s === "idle" && !d.info.queued) await finish(run, "ok", "The agent finished");
+			const info = await threadInfo(run.thread);
+			const s = info.status;
+			if (info.archived) await finish(run, "skipped", "Its thread was archived");
+			else if (s === "error") await finish(run, "failed", info.error || "The agent failed");
+			else if (s === "idle" && !info.queued) await finish(run, "ok", "The agent finished");
 		} catch {
 			await finish(run, "skipped", "Its thread is gone");
 		}

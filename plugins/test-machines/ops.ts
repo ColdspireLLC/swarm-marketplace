@@ -6,7 +6,7 @@ import { discover, found, unusedLine } from "./discover";
 import { call, fs } from "swarm";
 import { DriverError, elementLines, type Check, type Machine, type Shot } from "./drivers";
 import { carried, carriedRefusal, isTestApp, refusedApp, sensitive } from "./rules";
-import { adb, drivers, forTurn, jobs, keep, machineNamed, message, recording, refresh, showLine, sleep, st, title, turns, turnsOf, waitMs, withMachine, type Job } from "./state";
+import { adb, drivers, forTurn, jobs, keep, machineNamed, message, recording, refresh, showLine, sleep, st, title, threadWhere, turns, turnsOf, waitMs, withMachine, type Job } from "./state";
 import { USER } from "./turns";
 
 /** What an action gives back: its words, a screenshot, and whether it failed (an exit code for a command's). */
@@ -310,7 +310,7 @@ export function normalPath(p: string): string {
  */
 async function localPaths(thread: string, paths: string[]): Promise<string[]> {
 	if (thread === USER) return paths;
-	const t = ((await call("Thread", { thread })) as { thread?: { dir?: string; machine?: string } | null }).thread;
+	const t = await threadWhere(thread);
 	if (t?.machine) throw new DriverError("Your thread runs on another computer: its files aren't on the one Swarm runs on. Copy them with machine_run there, or with your own tools.");
 	const dir = t?.dir ? normalPath(t.dir) : "";
 	if (!dir) throw new DriverError("Your thread has no folder to copy files from or to.");

@@ -2,16 +2,40 @@
 // the simulators run on: the same computer, nothing to do; else through
 // Swarm, in chunks a command's output holds (16 MB at most, so 8 MB of a
 // file base64'd), checked by their SHA-256 at the end.
-import { call, process, type RunResult } from "swarm";
+import { call, process, type RunResult, type ThreadInfo } from "swarm";
 import { SimError } from "./devices";
 import { joinedMachines, runAt, sh, type Where } from "./where";
+
+/**
+ * A thread without its timeline, which can be tens of MB, past what a
+ * plugin's memory takes: ThreadInfo, or from a Swarm before it the whole
+ * thread's.
+ */
+export async function threadInfo(thread: string): Promise<ThreadInfo> {
+	try {
+		return await call("ThreadInfo", { thread });
+	} catch {
+		const d = await call("Thread", { thread });
+		return { ...d.info, machine: d.thread?.machine ?? "" };
+	}
+}
+
+/**
+ * The computer a thread runs on, "" for Swarm's own, and its folder there:
+ * from a Swarm whose ThreadInfo doesn't say its machine, the whole thread's.
+ */
+export async function threadWhere(thread: string): Promise<{ machine: string; dir: string }> {
+	const i = await threadInfo(thread);
+	if (typeof i.machine === "string") return { machine: i.machine, dir: i.dir };
+	const t = (await call("Thread", { thread })).thread;
+	return { machine: t?.machine ?? "", dir: t?.dir ?? i.dir };
+}
 
 /** The thread's computer, as runAt reaches it, and what to call it. */
 export async function threadPlace(thread: string): Promise<Where & { host: string }> {
 	let machine = "";
 	try {
-		const d = (await call("Thread", { thread })) as { thread?: { machine?: string } | null } | null;
-		machine = d?.thread?.machine ?? "";
+		machine = (await threadWhere(thread)).machine;
 	} catch {}
 	const all = (await call("Machines", {}).catch(() => [])) as { id: string; name: string; server?: boolean }[];
 	if (!machine) {

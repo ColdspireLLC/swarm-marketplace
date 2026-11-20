@@ -2,7 +2,7 @@
 // line (turns.ts), the threads' titles, the screenshots the panel shows,
 // the recordings and the jobs running. Tracked (ui.store), so the panel
 // renders as they change.
-import { call, settings, ui } from "swarm";
+import { call, settings, ui, type ThreadInfo } from "swarm";
 import { Desktop } from "./desktop";
 import { ADB, BB, Demo, DriverError, SSH, userHas, WDA, type Driver, type Machine, type Shot } from "./drivers";
 import { base64 } from "./png";
@@ -113,6 +113,31 @@ export function waitMs(min: number | undefined) {
 }
 
 /**
+ * A thread without its timeline, which can be tens of MB, past what a
+ * plugin's memory takes: ThreadInfo, or from a Swarm before it the whole
+ * thread's.
+ */
+export async function threadInfo(thread: string): Promise<ThreadInfo> {
+	try {
+		return await call("ThreadInfo", { thread });
+	} catch {
+		const d = await call("Thread", { thread });
+		return { ...d.info, machine: d.thread?.machine ?? "" };
+	}
+}
+
+/**
+ * The computer a thread runs on, "" for Swarm's own, and its folder there:
+ * from a Swarm whose ThreadInfo doesn't say its machine, the whole thread's.
+ */
+export async function threadWhere(thread: string): Promise<{ machine: string; dir: string }> {
+	const i = await threadInfo(thread);
+	if (typeof i.machine === "string") return { machine: i.machine, dir: i.dir };
+	const t = (await call("Thread", { thread })).thread;
+	return { machine: t?.machine ?? "", dir: t?.dir ?? i.dir };
+}
+
+/**
  * Runs work on a machine: in thread's turn, waiting in line for it, when
  * exclusive; beside whoever has it else. The user's runs at once, beside
  * whoever has it, as bb's: they come first. A driver whose own queue
@@ -127,9 +152,8 @@ export async function forTurn(t: Turns, thread: string) {
 	if (thread === USER) return;
 	let turn: number | undefined;
 	try {
-		const d = (await call("Thread", { thread })) as { info?: { turns?: number; status?: string } } | null;
-		const i = d?.info;
-		if (i && typeof i.turns === "number") turn = i.turns + (i.status === "idle" || i.status === "error" ? 1 : 0);
+		const i = await threadInfo(thread);
+		if (typeof i.turns === "number") turn = i.turns + (i.status === "idle" || i.status === "error" ? 1 : 0);
 	} catch {
 		// Not known: any end of its turns ends the hold, as before.
 	}

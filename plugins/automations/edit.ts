@@ -10,7 +10,7 @@
 import { call, threads, type ThreadInfo } from "swarm";
 import { CronError, nextCron, parseCron, parseDuration } from "./cron";
 import { APPROVALS, capApproval, nextTime } from "./plan";
-import { META, projects, SCRIPT_TIMEOUT_MAX } from "./runner";
+import { META, projects, SCRIPT_TIMEOUT_MAX, threadInfo as readThreadInfo } from "./runner";
 import { automations, newId, runOnThread, save, type Automation, type Interpreter, type Mode } from "./store";
 
 export const INTERPRETERS: Interpreter[] = ["sh", "bash", "node", "python3"];
@@ -55,7 +55,7 @@ export interface Spec {
 
 async function threadInfo(id: string): Promise<ThreadInfo | null> {
 	try {
-		return (await call("Thread", { thread: id })).info;
+		return await readThreadInfo(id);
 	} catch {
 		return null;
 	}
@@ -64,7 +64,7 @@ async function threadInfo(id: string): Promise<ThreadInfo | null> {
 /** The agent's thread, as far as it may make automations: refused where it may not. */
 async function agentThread(who: Who): Promise<ThreadInfo | null> {
 	if (who.user) return null;
-	if (!who.thread) return { id: "", project: "", title: "", provider: "", approval: "ask", status: "", dir: "", turns: 0, created: "", updated: "" };
+	if (!who.thread) return { id: "", project: "", title: "", provider: "", approval: "ask", status: "", dir: "", machine: "", turns: 0, created: "", updated: "" };
 	const meta = await threads.metadata(who.thread).catch(() => ({}) as { [k: string]: unknown });
 	if (meta[META]) throw new EditError("A thread an automation started can't make or change automations.", "forbidden", "Ask the user to, in Automations.");
 	if (runOnThread(who.thread)) throw new EditError("This thread is running an automation's turn: it can make or change automations once that turn ends.", "forbidden");
