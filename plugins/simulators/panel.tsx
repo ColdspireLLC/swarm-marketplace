@@ -2,14 +2,14 @@
 // own simulators first, their last screen and their live view, then every
 // agent simulator, who has it and who waits), and the row above the
 // composer while the thread holds one.
-import { ui, type Child, type Color } from "swarm";
+import { storage, ui, type Child, type Color } from "swarm";
 import * as ops from "./ops";
 import { PLATFORM_NAME } from "./ops";
 import type { Slot } from "./pool";
 import { info, key, liveLink, placed, pool, shots, slimOn, title, view } from "./state";
 import { handBack, handBackKey, lend, loans, takeBack, takenOver, takeOver, takeOverKey } from "./control";
 import { recording } from "./captures";
-import { current, markWatched, page, refreshIfStale } from "./mine";
+import { boot, current, markWatched, page, refreshIfStale } from "./mine";
 import type { Device } from "./picker";
 
 /** How long, said short: "3 min", "1 h 5 min". */
@@ -100,10 +100,12 @@ function mineCard(s: Slot, thread: string, compact = false): Child {
 
 /** The user's own simulator in a thread's panel: lent to it (with Take back), or there to lend. */
 function yoursCard(thread: string, compact: boolean): Child {
-	refreshIfStale(15_000);
+	refreshIfStale(30_000);
 	const l = loans.now;
 	const lentHere = l?.thread === thread;
-	const d: Device | undefined = lentHere ? l!.device : current();
+	// The one lent to the thread; else the one picked in this thread's panel, while it's there; else the page's.
+	const pickedHere = (storage.get<Record<string, string>>("threadDevice") ?? {})[thread];
+	const d: Device | undefined = lentHere ? l!.device : (page.devices.find((x) => x.id === pickedHere && !x.agent) ?? current());
 	if (!d || d.agent) return null;
 	const running = page.devices.find((x) => x.id === d.id)?.state === "Booted" || lentHere;
 	const machine = page.machine[d.platform];
@@ -114,7 +116,29 @@ function yoursCard(thread: string, compact: boolean): Child {
 		<ui.box key="yours" style={{ gap: compact ? 12 : 10 }}>
 			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
-					<ui.text style={{ fontWeight: 600, ...line }}>{`Your ${d.name}`}</ui.text>
+					{lentHere ? (
+						<ui.text style={{ fontWeight: 600, ...line }}>{`Your ${d.name}`}</ui.text>
+					) : (
+						<ui.menu label={`Your ${d.name}`} kind="ghost" size="sm" search="Search your simulators" style={{ alignSelf: "flex-start", marginLeft: -8 }}>
+							{() =>
+								page.devices
+									.filter((x) => !x.agent)
+									.sort((a, b) => Number(b.state === "Booted") - Number(a.state === "Booted") || a.name.localeCompare(b.name, undefined, { numeric: true }))
+									.map((x) => (
+										<ui.item
+											key={x.id}
+											label={x.name}
+											detail={`${x.os} · ${x.state === "Booted" ? "Running" : "Shut down: picking it boots it"}`}
+											checked={x.id === d.id}
+											onClick={() => {
+												storage.set("threadDevice", { ...(storage.get<Record<string, string>>("threadDevice") ?? {}), [thread]: x.id });
+												if (x.state === "Shutdown") void boot(x);
+											}}
+										/>
+									))
+							}
+						</ui.menu>
+					)}
 					<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{lentHere ? (took ? "Lent to this thread · you took over" : `Lent to this thread · ${lasted(l!.since)}`) : l ? `Lent to ${title(l.thread)}` : running ? "Yours: agents don't use it" : "Shut down"}</ui.text>
 				</ui.box>
 				{lentHere ? (

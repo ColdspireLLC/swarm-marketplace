@@ -39,13 +39,24 @@ const persist = () => storage.set(SAVE, caps.list);
 /** The recording under way, if one is: one at a time. */
 export const recording = ui.store({ now: null as null | { id: string; device: Device; at: number; pid: string; thread?: string; stopping?: boolean } });
 
+/**
+ * A clip over 30 MB made smaller in place, as Swarm plays, saves and
+ * sends 32 MB at most: H.264 within 1920×1080, then 1280×720 (avconvert,
+ * every Mac's), else ffmpeg where there is one; as it was where neither
+ * makes it smaller.
+ */
+const SHRINK = `shrink() { for p in Preset1920x1080 Preset1280x720; do [ "$(wc -c < "$f")" -gt 31457280 ] || return 0
+    if command -v avconvert >/dev/null; then avconvert -s "$f" -o "$f.small.mp4" -p $p --replace >/dev/null 2>&1
+    elif command -v ffmpeg >/dev/null; then ffmpeg -loglevel error -y -i "$f" -vf "scale='min(1080,iw)':-2" -c:v libx264 -crf 28 -an "$f.small.mp4"; fi
+    [ -s "$f.small.mp4" ] && [ "$(wc -c < "$f.small.mp4")" -lt "$(wc -c < "$f")" ] && mv "$f.small.mp4" "$f"; rm -f "$f.small.mp4"; done; }; shrink`;
+
 /** The folder captures go in where the simulator runs. */
 const DIR = `d="$HOME/Library/Caches"; [ -d "$d" ] || d="\${XDG_CACHE_HOME:-$HOME/.cache}"; d="$d/swarm-simulators/captures"; mkdir -p "$d"`;
 
-/** Makes a JPEG of $1 at $2 (400 px on its longer side), as the host can: sips on a Mac, ffmpeg elsewhere; a video's first frame through qlmanage or ffmpeg. */
+/** Makes a JPEG of $1 at $2 (400 px on its longer side), as the host can: sips on a Mac, ffmpeg elsewhere; a video's first frame through qlmanage (given 10 s: it can hang on a file it can't read) or ffmpeg. */
 const THUMB = `thumb() { src="$1"; out="$2"
   case "$src" in
-  *.mp4) if command -v qlmanage >/dev/null; then t=$(mktemp -d "\${TMPDIR:-/tmp}/swarm-thumb.XXXXXX"); qlmanage -t -s 400 -o "$t" "$src" >/dev/null 2>&1; p=$(ls "$t"/*.png 2>/dev/null | head -1); [ -n "$p" ] && sips -s format jpeg -s formatOptions 70 "$p" --out "$out" >/dev/null 2>&1; rm -rf "$t"
+  *.mp4) if command -v qlmanage >/dev/null; then t=$(mktemp -d "\${TMPDIR:-/tmp}/swarm-thumb.XXXXXX"); ( qlmanage -t -s 400 -o "$t" "$src" >/dev/null 2>&1 & q=$!; for i in $(seq 50); do kill -0 $q 2>/dev/null || break; sleep 0.2; done; kill $q 2>/dev/null ); p=$(ls "$t"/*.png 2>/dev/null | head -1); [ -n "$p" ] && sips -s format jpeg -s formatOptions 70 "$p" --out "$out" >/dev/null 2>&1; rm -rf "$t"
     elif command -v ffmpeg >/dev/null; then ffmpeg -loglevel error -y -i "$src" -frames:v 1 -vf "scale='if(gt(iw,ih),400,-2)':'if(gt(iw,ih),-2,400)'" "$out"; fi;;
   *) if command -v sips >/dev/null; then sips -Z 400 -s format jpeg -s formatOptions 70 "$src" --out "$out" >/dev/null 2>&1
     elif command -v ffmpeg >/dev/null; then ffmpeg -loglevel error -y -i "$src" -vf "scale='if(gt(iw,ih),400,-2)':'if(gt(iw,ih),-2,400)'" "$out"; else cp "$src" "$out"; fi;;
@@ -72,21 +83,71 @@ function remember<T>(m: Map<string, T>, k: string, v: T, max: number) {
 	while (m.size > max) m.delete(m.keys().next().value!);
 }
 
-/** A capture's thumbnail, fetched the first time it's asked for; undefined meanwhile. */
+/**
+ * The thumbnails kept with the plugin (a few KB each, the newest
+ * THUMBS_KEPT): the strip shows them at once, the simulators' computer
+ * asleep or not.
+ */
+const THUMBS = "thumbs";
+const THUMBS_KEPT = 300;
+let kept: Record<string, string> = storage.get<Record<string, string>>(THUMBS) ?? {};
+let saving: ReturnType<typeof setTimeout> | undefined;
+
+function keepThumb(id: string, b: Uint8Array) {
+	let bin = "";
+	for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode(...b.subarray(i, i + 0x8000));
+	kept[id] = btoa(bin);
+	// Saved once for a burst (a strip's worth fetched together).
+	clearTimeout(saving);
+	saving = setTimeout(() => {
+		const newest = new Set(caps.list.slice(0, THUMBS_KEPT).map((c) => c.id));
+		kept = Object.fromEntries(Object.entries(kept).filter(([k]) => newest.has(k)));
+		storage.set(THUMBS, kept);
+	}, 500);
+}
+
+/** Thumbnails to fetch, by platform: fetched together, one command for a strip of them. */
+const pending = new Map<Device["platform"], Set<string>>();
+let flushing: ReturnType<typeof setTimeout> | undefined;
+
+async function flush() {
+	flushing = undefined;
+	const all = [...pending];
+	pending.clear();
+	for (const [p, ids] of all) {
+		const list = [...ids].slice(0, 100);
+		try {
+			const { w } = await hostOf(p);
+			const o = await mac(w, `${DIR}; for id; do f="$d/$id.thumb.jpg"; [ -f "$f" ] || f=$(ls "$d/$id".png "$d/$id".mp4 2>/dev/null | head -1); [ -n "$f" ] && [ -f "$f" ] && { printf '%s ' "$id"; base64 < "$f" | tr -d '\\n'; echo; }; done; exit 0`, list, { timeout: 60_000 });
+			for (const l of o.split("\n")) {
+				const sp = l.indexOf(" ");
+				if (sp < 1) continue;
+				const id = l.slice(0, sp);
+				const b = unbase64(l.slice(sp + 1));
+				if (!b.length) continue;
+				remember(thumbs, id, b, 120);
+				keepThumb(id, b);
+			}
+		} catch {
+		} finally {
+			for (const id of list) fetching.delete(id);
+		}
+	}
+}
+
+/** A capture's thumbnail: kept, else fetched with the others the strip asks for; undefined meanwhile. */
 export function thumbOf(c: Capture): Uint8Array | undefined {
 	const t = thumbs.get(c.id);
 	if (t || fetching.has(c.id) || !c.size) return t;
+	if (kept[c.id]) {
+		const b = unbase64(kept[c.id]!);
+		remember(thumbs, c.id, b, 120);
+		return b;
+	}
 	fetching.add(c.id);
-	void (async () => {
-		try {
-			const { w } = await hostOf(c.platform);
-			const b = unbase64(await mac(w, `${DIR}; base64 < "$d/$1.thumb.jpg" 2>/dev/null || base64 < "$d/$1.$2"`, [c.id, c.kind], { timeout: 30_000 }));
-			if (b.length) remember(thumbs, c.id, b, 80);
-		} catch {
-		} finally {
-			fetching.delete(c.id);
-		}
-	})();
+	if (!pending.has(c.platform)) pending.set(c.platform, new Set());
+	pending.get(c.platform)!.add(c.id);
+	flushing ??= setTimeout(() => void flush(), 0);
 	return undefined;
 }
 
@@ -127,7 +188,10 @@ export async function screenshot(d: Device, o: { thread?: string; title?: string
 	const [size = "0", head = "", ...rest] = o2.split("\n");
 	const { width, height } = pngSize(unbase64(head));
 	const thumb = unbase64(rest.join(""));
-	if (thumb.length) remember(thumbs, id, thumb, 80);
+	if (thumb.length) {
+		remember(thumbs, id, thumb, 120);
+		keepThumb(id, thumb);
+	}
 	const c: Capture = { id, kind: "png", device: d.id, name: d.name, platform: d.platform, at: Date.now(), size: Number(size) || 1, w: width || undefined, h: height || undefined, thread: o.thread, title: o.title };
 	add(c);
 	void prune();
@@ -175,12 +239,18 @@ export async function stopRecording(): Promise<Capture | string> {
 				: `"$4" -s "$3" shell pkill -INT screenrecord; for i in $(seq 100); do kill -0 "$2" 2>/dev/null || break; sleep 0.1; done; sleep 0.5; "$4" -s "$3" pull /sdcard/swarm-$1.mp4 "$f" >/dev/null && "$4" -s "$3" shell rm -f /sdcard/swarm-$1.mp4`;
 		const o = await mac(
 			w,
-			`${DIR}; ${THUMB}; f="$d/$1.mp4"; ${stop}; rm -f "$d/$1.log"; [ -s "$f" ] || { echo "the recording made no clip" >&2; exit 3; }; thumb "$f" "$d/$1.thumb.jpg"; wc -c < "$f" | tr -d ' '`,
+			`${DIR}; ${THUMB}; f="$d/$1.mp4"; ${stop}; rm -f "$d/$1.log"; [ -s "$f" ] || { echo "the recording made no clip" >&2; exit 3; }; ${SHRINK}; thumb "$f" "$d/$1.thumb.jpg"; wc -c < "$f" | tr -d ' '; base64 < "$d/$1.thumb.jpg" 2>/dev/null | tr -d '\\n'`,
 			[r.id, r.pid, r.device.serial ?? "", adb ?? ""],
 			{ timeout: 60_000 },
 		);
 		const c = caps.list.find((x) => x.id === r.id);
-		const done: Capture = { ...(c ?? { id: r.id, kind: "mp4", device: r.device.id, name: r.device.name, platform: r.device.platform, at: r.at }), size: Number(o.trim().split("\n").pop()) || 1, secs: Math.round((Date.now() - r.at) / 1000) } as Capture;
+		const [size = "0", thumb = ""] = o.trim().split("\n").slice(-2);
+		const t = unbase64(thumb);
+		if (t.length) {
+			remember(thumbs, r.id, t, 120);
+			keepThumb(r.id, t);
+		}
+		const done: Capture = { ...(c ?? { id: r.id, kind: "mp4", device: r.device.id, name: r.device.name, platform: r.device.platform, at: r.at }), size: Number(size) || 1, secs: Math.round((Date.now() - r.at) / 1000) } as Capture;
 		add(done);
 		void prune();
 		return done;
@@ -209,7 +279,9 @@ export async function remove(ids: string[]) {
 	for (const c of gone) {
 		thumbs.delete(c.id);
 		fulls.delete(c.id);
+		delete kept[c.id];
 	}
+	storage.set(THUMBS, kept);
 }
 
 /** Keeps the newest captureLimit within captureBudget MB; the rest go. */

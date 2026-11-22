@@ -34,6 +34,9 @@ const ANDROID_KEYS: Key[] = [
 	{ name: "rotate", label: "Rotate", icon: "redo", tip: "Turn it between portrait and landscape" },
 ];
 
+/** sim_drive's steps, for what's said of one it can't take. */
+export const STEPS = "tap X Y, doubletap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], scroll up|down|left|right [X Y], pinch X Y SCALE, type TEXT, key NAME, rotate, wait MS (screenshot pixels)";
+
 /** A device's screen as Swarm drives it from the plugin (swarm.machines.screen), where this Swarm can. */
 export interface DeviceScreen {
 	press(name: string): Promise<void>;

@@ -7,7 +7,7 @@
 // actions (ops.ts). A thread's simulators go back as its turn ends. The
 // panel and the row above the composer show them (panel.tsx); Swarm's
 // window shows one live (swarm://screen).
-import { hook, on, schedule, settings, ui } from "swarm";
+import { hook, on, schedule, settings, storage, ui } from "swarm";
 import { registerCli } from "./cli";
 import * as ops from "./ops";
 import { loans, threadGone } from "./control";
@@ -30,7 +30,14 @@ export function activate() {
 	on("event", (e) => {
 		if (e.type === "thread.renamed" || e.type === "thread.created") void learnTitles();
 		// A thread that goes takes its loan and its ask with it.
-		if ((e.type === "thread.archived" || e.type === "thread.deleted") && (e as { thread?: string }).thread) threadGone((e as { thread: string }).thread);
+		if ((e.type === "thread.archived" || e.type === "thread.deleted") && e.thread) {
+			threadGone(e.thread);
+			const picked = storage.get<Record<string, string>>("threadDevice") ?? {};
+			if (picked[e.thread]) {
+				delete picked[e.thread];
+				storage.set("threadDevice", picked);
+			}
+		}
 	});
 	settings.onChange(() => view.v++);
 	// Each minute: idle holders bumped for those waiting, idle simulators shut down.

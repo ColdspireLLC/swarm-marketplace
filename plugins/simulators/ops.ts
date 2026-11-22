@@ -349,27 +349,93 @@ async function placed(s: Slot, w: Where, steps: string[]): Promise<string[]> {
 	});
 }
 
-/** Steps only Swarm's own input does (a simulator's keys past WebDriverAgent's, a true rotation, a pinch), where it can. */
-const HID = /^(rotate|pinch\s|key\s+(apps|keyboard|swipe-home|lock|recents|back|power|home)\b)/i;
-
-/** Runs a step on Swarm's own input: rotate, pinch X Y SCALE (screenshot pixels), key NAME. */
-async function hidStep(scr: hw.DeviceScreen, step: string, size: () => Promise<{ width: number; height: number }>) {
+/**
+ * Runs a step on Swarm's own input (swarm.machines.screen): every kind
+ * sim_drive takes, in screenshot pixels (what sim_capture shows) made
+ * fractions of the screen. False where it has no way (volume keys): the
+ * driver's then.
+ */
+async function hidStep(scr: hw.DeviceScreen, step: string, size: () => Promise<{ width: number; height: number }>): Promise<boolean> {
 	const [op = "", ...rest] = step.trim().split(/\s+/);
-	if (/^rotate$/i.test(op)) return scr.rotate();
-	if (/^key$/i.test(op)) return scr.press(rest[0]!.toLowerCase());
-	const [x, y, k] = rest.map(Number);
-	if (![x, y, k].every((v) => Number.isFinite(v)) || !(k! > 0)) throw new SimError(`${step}: pinch X Y SCALE (2 zooms in, 0.5 out)`);
-	const { width, height } = await size();
-	return scr.pinch({ x: x! / width, y: y! / height }, k!);
+	const n = rest.map(Number);
+	const at = async (x: number, y: number) => {
+		const { width, height } = await size();
+		return { x: Math.min(1, Math.max(0, x / width)), y: Math.min(1, Math.max(0, y / height)) };
+	};
+	const need = (k: number) => {
+		if (n.length < k || n.slice(0, k).some((v) => !Number.isFinite(v))) throw new SimError(`${step}: ${hw.STEPS}`);
+	};
+	switch (op.toLowerCase()) {
+		case "tap": {
+			need(2);
+			const p = await at(n[0]!, n[1]!);
+			await scr.tap(p.x, p.y);
+			return true;
+		}
+		case "doubletap": {
+			need(2);
+			const p = await at(n[0]!, n[1]!);
+			await scr.tap(p.x, p.y);
+			await scr.tap(p.x, p.y);
+			return true;
+		}
+		case "long": {
+			need(2);
+			const p = await at(n[0]!, n[1]!);
+			await scr.swipe(p, p, n[2] || 800);
+			return true;
+		}
+		case "swipe": {
+			need(4);
+			await scr.swipe(await at(n[0]!, n[1]!), await at(n[2]!, n[3]!), n[4] || 300);
+			return true;
+		}
+		case "scroll": {
+			const d = { up: [0, 1 / 3], down: [0, -1 / 3], left: [1 / 3, 0], right: [-1 / 3, 0] }[(rest[0] ?? "").toLowerCase()];
+			if (!d) throw new SimError(`${step}: scroll up|down|left|right [X Y]`);
+			const from = Number.isFinite(n[1]) && Number.isFinite(n[2]) ? await at(n[1]!, n[2]!) : { x: 0.5, y: 0.5 };
+			await scr.swipe(from, { x: Math.min(1, Math.max(0, from.x + d[0]!)), y: Math.min(1, Math.max(0, from.y + d[1]!)) }, 150);
+			return true;
+		}
+		case "pinch": {
+			need(3);
+			if (!(n[2]! > 0)) throw new SimError(`${step}: pinch X Y SCALE (2 zooms in, 0.5 out)`);
+			await scr.pinch(await at(n[0]!, n[1]!), n[2]!);
+			return true;
+		}
+		case "type":
+			await scr.type(step.trim().slice(4).trimStart());
+			return true;
+		case "rotate":
+			await scr.rotate();
+			return true;
+		case "key": {
+			const k = (rest[0] ?? "").toLowerCase();
+			if (/^(home|apps|lock|keyboard|swipe-home|back|recents|power)$/.test(k)) await scr.press(k === "recents" ? "recents" : k);
+			else if (/^(enter|return|delete|backspace|tab|escape|space|up|down|left|right)$/.test(k)) await scr.key(k === "return" ? "enter" : k === "delete" ? "backspace" : k);
+			else return false;
+			return true;
+		}
+		case "wait":
+			await new Promise((r) => setTimeout(r, Math.min(n[0] || 500, 10_000)));
+			return true;
+	}
+	throw new SimError(`no step ${op}: ${hw.STEPS}`);
 }
 
 export async function drive(thread: string, platform: string | undefined, steps: string[], o: { capture?: boolean; wait?: number }): Promise<Out> {
 	const { v: data, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
 		steps = await placed(s, w, steps);
 		const scr = w.ssh ? null : hw.screenOf(w.machine ?? "server", s.platform === "ios" ? { simulator: info(s).udid } : { phone: info(s).serial });
-		let size: { width: number; height: number } | null = null;
-		const sizeOf = async () => (size ??= pngSize(scr ? await scr.shot() : await shoot(s, w)));
-		// In order: runs of the driver's steps, and between them Swarm's own where it can.
+		// The screenshot's size the agent's points are in: the last one taken, else one now; again after a turn.
+		const known: { size: { width: number; height: number } | null } = { size: null };
+		const sizeOf = async () => {
+			if (known.size) return known.size;
+			const last = shots.get(key(s));
+			known.size = pngSize(last && Date.now() - last.at < 60_000 ? last.data : await shoot(s, w));
+			return known.size;
+		};
+		// In order: Swarm's own input where it has it (each step the user's Take over stops), the driver's otherwise.
 		let run: string[] = [];
 		const flush = async () => {
 			if (!run.length) return;
@@ -377,13 +443,24 @@ export async function drive(thread: string, platform: string | undefined, steps:
 			else await android.drive(w, await sdkOf(w), info(s).serial!, run);
 			run = [];
 		};
+		let own = !!scr;
 		for (const step of steps) {
-			if (scr && HID.test(step.trim())) {
-				await flush();
-				await hidStep(scr, step, sizeOf);
-			} else if (/^pinch\s/i.test(step.trim())) {
-				throw new SimError("A pinch needs a newer Swarm, which drives the simulator's own input.");
-			} else run.push(step);
+			checkDriving(s, info(s).name);
+			if (own) {
+				try {
+					if (await hidStep(scr!, step, sizeOf)) {
+						if (/^rotate\b/i.test(step.trim()) && known.size) known.size = { width: known.size.height, height: known.size.width };
+						continue;
+					}
+				} catch (e) {
+					if (e instanceof SimError) throw e;
+					// The machine's Swarm can't (older than the window's): the driver for the rest.
+					if (/^(rotate|pinch|key\s+(apps|keyboard|swipe-home))/i.test(step.trim())) throw e;
+					own = false;
+				}
+			} else if (/^pinch\s/i.test(step.trim())) throw new SimError("A pinch needs a newer Swarm, which drives the simulator's own input.");
+			run.push(step);
+			await flush();
 		}
 		await flush();
 		return o.capture ? shoot(s, w) : undefined;

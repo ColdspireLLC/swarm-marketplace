@@ -50,7 +50,7 @@ const machineOf = (w: Where) => (w.ssh ? "" : (w.machine ?? "server"));
 // ---- Listing ----
 
 /** Lists them again where the last list is older than maxAge. */
-export function refreshIfStale(maxAge = 5000) {
+export function refreshIfStale(maxAge = 30_000) {
 	if (page.loading || Date.now() - page.at < maxAge) return;
 	void refresh();
 }
