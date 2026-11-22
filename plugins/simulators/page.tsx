@@ -56,7 +56,20 @@ function pickerItems(cur: Device | undefined): Child[] {
 	return out;
 }
 
-function picker(cur: Device | undefined, compact: boolean): Child {
+/**
+ * Whether Swarm's own bar names the device over its live view: a Swarm
+ * before UI format 21's bare screen draws one, which a phone's page then
+ * has in place of its own row (the name and how it is, twice otherwise).
+ */
+const swarmBar = (cur: Device | undefined) => !!cur && cur.state === "Booted" && !page.busy[cur.id] && !!page.machine[cur.platform] && !hw.canBare() && (ui.format ?? 0) >= 17;
+
+function picker(cur: Device | undefined, compact: boolean, iconOnly = false): Child {
+	if (iconOnly)
+		return (
+			<ui.menu icon={cur ? iconOf(cur) : "mobile"} kind="ghost" size="sm" search="Search simulators" onChange={(q) => (page.query = q)} tooltip="Choose a simulator">
+				{() => pickerItems(cur)}
+			</ui.menu>
+		);
 	return (
 		<ui.menu label={cur ? shortName(cur) : "Choose a simulator"} icon={cur ? iconOf(cur) : "mobile"} kind="ghost" size="sm" search="Search simulators" onChange={(q) => (page.query = q)} wide={!compact}>
 			{() => pickerItems(cur)}
@@ -305,10 +318,10 @@ function head(compact: boolean): Child {
 	const cur = current();
 	return (
 		<ui.box style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
-			{compact ? null : picker(cur, compact)}
+			{compact ? (swarmBar(cur) ? picker(cur, compact, true) : null) : picker(cur, compact)}
 			{!compact && cur ? <ui.text style={{ fontSize: "small", color: "text3", ...line }}>{[cur.os, isTwinName(cur.name) ? "120 Hz" : "", page.place].filter(Boolean).join(" · ")}</ui.text> : null}
 			{compact ? null : <ui.spacer />}
-			{compact ? null : recordingPill()}
+			{compact && !swarmBar(cur) ? null : recordingPill()}
 			{moreMenu(cur, compact)}
 		</ui.box>
 	);
@@ -477,8 +490,9 @@ function body(compact: boolean): Child {
 	const busyLine = cur && page.busy[cur.id] && cur.state === "Booted" ? `${page.busy[cur.id]}…` : said;
 	return (
 		<ui.box style={{ flex: 1, minHeight: 0 }}>
-			{compact ? (
-				// On a phone the bar has the page's title: the picker is the page's first row.
+			{compact && !swarmBar(cur) ? (
+				// On a phone the bar has the page's title: the picker is the page's first row (where Swarm's
+				// own bar over the live view names the device, the picker's in the page's bar instead).
 				<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 4, padding: "6px 12px 0 8px", minHeight: 44 }}>
 					{picker(cur, compact)}
 					{cur ? (
