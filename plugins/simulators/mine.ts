@@ -6,7 +6,8 @@
 import { settings, storage, ui } from "swarm";
 export type { Device } from "./picker";
 import { sdk as findSdk, type Sdk } from "./android";
-import { mac } from "./ios";
+import { mac, setting as iosSetting } from "./ios";
+import { openURL as androidOpenURL, setting as androidSetting } from "./android";
 import { pngSize, unbase64 } from "./devices";
 import { chooseDevice, iosDevices, isAgentName, TWIN_SCRIPT, TWIN_SUFFIX, twinTypeId, type Device, type Used } from "./picker";
 import { message, where } from "./state";
@@ -294,6 +295,59 @@ export function toggleLook(d: Device) {
 			if (a && d.serial) await mac(a.w, `"$1" -s "$2" shell cmd uimode night "$3"`, [a.s.adb, d.serial, next === "dark" ? "yes" : "no"]);
 		}
 	});
+}
+
+/** A device setting, as the agents' tools change theirs: text-size, location, status-bar… */
+export function deviceSetting(d: Device, what: string, value: string, busy = "Changing it") {
+	return doing(d, busy, async () => {
+		if (d.platform === "ios") await iosSetting(await iosAt(), d.id, what, value);
+		else {
+			const a = await androidAt();
+			if (!a || !d.serial) throw new Error("it isn't running");
+			await androidSetting(a.w, a.s, d.serial, what, value);
+		}
+		if (what === "status-bar") cleanBars.set(d.id, value !== "clear");
+	});
+}
+
+/** Devices whose status bar shows 9:41 and full bars, as set from the page. */
+export const cleanBars = ui.store(new Map<string, boolean>(), { shallow: true });
+
+/** Opens a URL or deep link on it, as tapping a link would. */
+export function openURL(d: Device, url: string) {
+	return doing(d, "Opening it", async () => {
+		if (d.platform === "ios") await mac(await iosAt(), `xcrun simctl openurl "$1" "$2"`, [d.id, url]);
+		else {
+			const a = await androidAt();
+			if (!a || !d.serial) throw new Error("it isn't running");
+			await androidOpenURL(a.w, a.s, d.serial, url);
+		}
+	});
+}
+
+// ---- Unused ----
+
+/** When each device was last on screen live (the page, a thread's panel). */
+const watched = new Map<string, number>();
+export const markWatched = (id: string) => void watched.set(id, Date.now());
+
+/** How long a device the user watched may go unwatched before Shut down when unused shuts it down. */
+export const UNUSED_MS = 30 * 60_000;
+
+/**
+ * Each minute, with Shut down when unused on: the user's own simulators
+ * the page showed, unwatched for UNUSED_MS, shut down (not one lent, nor
+ * one recording). Only those the page showed: one used in Simulator.app
+ * alone is the user's business.
+ */
+export async function sweepUnused(busy: (d: Device) => boolean, now = Date.now()) {
+	if (settings.get("shutdownUnused") !== true) return;
+	for (const d of page.devices) {
+		const at = watched.get(d.id);
+		if (d.agent || d.state !== "Booted" || at === undefined || now - at < UNUSED_MS || busy(d)) continue;
+		watched.delete(d.id);
+		await shutdown(d);
+	}
 }
 
 // ---- Its shape ----

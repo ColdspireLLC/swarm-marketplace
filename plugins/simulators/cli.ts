@@ -9,6 +9,9 @@ import { PoolError } from "./pool";
 import { ANDROID_CATEGORIES, ANDROID_SETTINGS } from "./slimandroid";
 import { IOS_CATEGORIES } from "./slimios";
 import * as mine from "./mine";
+import * as caps from "./captures";
+import * as control from "./control";
+import { examine, said as doctorSaid } from "./doctor";
 import { canTwin, isTwinName, shelves } from "./picker";
 import { info, key, pool, quoted } from "./state";
 
@@ -256,6 +259,83 @@ export function registerCli() {
 					const err = await mine.toggleLook(d);
 					if (err) throw new PluginCliError(err, { code: "simulator" });
 					return { stdout: `${d.name} is ${mine.looks.get(d.id)} now.\n` };
+				},
+			}),
+			captures: cliCommand({
+				summary: "Your screenshots and recordings, as the Simulator page's strip has them; delete ID… removes some",
+				positionals: [{ name: "action", description: "delete, to remove the ids that follow" }, { name: "ids", variadic: true }],
+				options: { json: { type: "boolean", description: "Print JSON" } },
+				run: async ({ positionals, options }, io) => {
+					if (positionals.action === "delete") {
+						userOnly(io);
+						const ids = (positionals.ids as string[] | undefined) ?? [];
+						await caps.remove(ids);
+						return { stdout: `Deleted ${ids.length}.\n` };
+					}
+					if (options.json) return { stdout: JSON.stringify(caps.caps.list, null, 2) + "\n" };
+					const lines = caps.caps.list.map((c) => `${c.id}  ${c.kind === "mp4" ? `recording ${c.secs ?? 0}s` : "screenshot"}  ${c.name}  ${new Date(c.at).toISOString().slice(0, 16).replace("T", " ")}${c.title ? `  ${c.title}` : ""}`);
+					return { stdout: (lines.join("\n") || "No captures.") + "\n" };
+				},
+			}),
+			screenshot: cliCommand({
+				summary: "Take a screenshot of one of your simulators (the page's when left out) into your captures",
+				positionals: [{ name: "device", description: "A name, a UDID, or an AVD's name" }],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					await mine.refresh();
+					const d = positionals.device ? await device(positionals.device) : mine.current();
+					if (!d || d.state !== "Booted") throw new PluginCliError("No running simulator: swarm simulators open one first.", { code: "not_running" });
+					const c = await caps.screenshot(d);
+					return { stdout: `Saved ${c.id}, a screenshot of ${d.name}, to your captures.\n` };
+				},
+			}),
+			record: cliCommand({
+				summary: "Record one of your simulators into your captures: start [device], then stop (up to 3 minutes)",
+				positionals: [{ name: "action", required: true, description: "start or stop" }, { name: "device", description: "A name, a UDID, or an AVD's name" }],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					if (positionals.action === "stop") {
+						const c = await caps.stopRecording();
+						if (typeof c === "string") throw new PluginCliError(c, { code: "simulator" });
+						return { stdout: `Saved ${c.id}, ${c.secs ?? 0} s of ${c.name}, to your captures.\n` };
+					}
+					await mine.refresh();
+					const d = positionals.device ? await device(positionals.device) : mine.current();
+					if (!d || d.state !== "Booted") throw new PluginCliError("No running simulator: swarm simulators open one first.", { code: "not_running" });
+					const e = await caps.startRecording(d);
+					if (e) throw new PluginCliError(e, { code: "simulator" });
+					return { stdout: `Recording ${d.name}: swarm simulators record stop keeps it.\n` };
+				},
+			}),
+			lend: cliCommand({
+				summary: "Lend one of your simulators (the page's when left out) to a thread: its agent uses it, with your apps and data, until you take it back",
+				positionals: [{ name: "thread", required: true, description: "The thread's id" }, { name: "device", description: "A name, a UDID, or an AVD's name" }],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					await mine.refresh();
+					const d = positionals.device ? await device(positionals.device) : mine.current();
+					if (!d || d.agent || d.state !== "Booted") throw new PluginCliError("Lend a running simulator of yours: swarm simulators open one first.", { code: "not_running" });
+					control.lend(String(positionals.thread), d);
+					return { stdout: `Lent ${d.name} to ${quoted(String(positionals.thread))}.\n` };
+				},
+			}),
+			takeback: cliCommand({
+				summary: "Take your lent simulator back",
+				run: (_a, io) => {
+					userOnly(io);
+					const l = control.loans.now;
+					if (!l) return { stdout: "Nothing is lent.\n" };
+					control.takeBack();
+					return { stdout: `Took ${l.device.name} back from ${quoted(l.thread)}.\n` };
+				},
+			}),
+			doctor: cliCommand({
+				summary: "Everything the simulators need, checked where they run: the Mac, Xcode, runtimes, disk, the live view, Android's SDK; with the fix of each",
+				options: { json: { type: "boolean", description: "Print JSON" } },
+				run: async ({ options }) => {
+					const checks = await examine();
+					if (options.json) return { stdout: JSON.stringify(checks, null, 2) + "\n" };
+					return { stdout: doctorSaid(checks) + "\n", exitCode: checks.some((c) => c.ok === false) ? 1 : 0 };
 				},
 			}),
 			slimming: cliCommand({

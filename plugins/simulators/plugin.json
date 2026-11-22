@@ -40,6 +40,43 @@
 			"hidden": true
 		},
 		{
+			"key": "captureLimit",
+			"title": "Captures kept",
+			"type": "number",
+			"default": 100,
+			"min": 1,
+			"max": 1000,
+			"description": "How many screenshots and recordings the Simulator page keeps; older ones are deleted.",
+			"hidden": true
+		},
+		{
+			"key": "captureBudget",
+			"title": "Captures' disk budget",
+			"type": "number",
+			"default": 2048,
+			"min": 64,
+			"max": 51200,
+			"unit": "MB",
+			"description": "The most the captures take on the simulators' computer; the oldest go past it.",
+			"hidden": true
+		},
+		{
+			"key": "shutdownUnused",
+			"title": "Shut down when unused",
+			"type": "toggle",
+			"default": false,
+			"description": "Shut your own simulator down after 30 minutes with nobody watching it on the Simulator page: about 2 GB of memory back. Opening it boots it again.",
+			"hidden": true
+		},
+		{
+			"key": "instantReopen",
+			"title": "Instant reopen",
+			"type": "toggle",
+			"default": false,
+			"description": "Keep your simulator's live view streaming for up to an hour after you leave the page, so it shows at once when you come back. A little of the Mac's CPU meanwhile.",
+			"hidden": true
+		},
+		{
 			"key": "iosAgents",
 			"title": "iOS simulators for agents",
 			"type": "number",
@@ -204,7 +241,7 @@
 		{
 			"name": "sim_capture",
 			"title": "Screenshot your simulator",
-			"description": "A screenshot of your simulator's screen, at its pixels, which sim_drive takes. show: also give a Markdown image line to put in your reply, which shows it in the thread.",
+			"description": "A screenshot of your simulator's screen, at its pixels, which sim_drive takes. show: also give a Markdown image line to put in your reply, which shows it in the thread. keep: save it to the user's captures on their Simulator page too (only when they ask). settle: wait that long first, for an animation to end.",
 			"input": {
 				"type": "object",
 				"properties": {
@@ -217,7 +254,7 @@
 						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
 					},
 					"show": {
-						"type": "boolean",
+						"type": "toggle",
 						"description": "Show it to the user: a Markdown image line for your reply."
 					},
 					"wait": {
@@ -225,11 +262,24 @@
 						"minimum": 0,
 						"maximum": 30,
 						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					},
+					"keep": {
+						"type": "toggle",
+						"description": "Save it to the user's captures (their Simulator page) as well: only when the user asks for it."
+					},
+					"settle": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 5000,
+						"description": "Milliseconds to wait before taking it, for an animation to finish."
+					},
+					"label": {
+						"type": "string",
+						"description": "What it shows, kept with it in the captures."
 					}
 				},
 				"required": []
-			},
-			"readOnly": true
+			}
 		},
 		{
 			"name": "sim_describe",
@@ -260,7 +310,7 @@
 		{
 			"name": "sim_drive",
 			"title": "Drive your simulator",
-			"description": "Taps, swipes, keys and text on your simulator, in screenshot pixels, one step per entry: tap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], type TEXT, key NAME (iOS: home, enter, lock, volumeup, volumedown; Android: home, back, enter, recents, delete, tab, power), wait MS. capture: a screenshot after.",
+			"description": "Taps, swipes, keys and text on your simulator, in screenshot pixels, one step per entry: tap X Y, doubletap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], scroll up|down|left|right [X Y], type TEXT, key NAME (iOS: home, enter, lock, volumeup, volumedown; Android: home, back, enter, recents, delete, tab, power), rotate (portrait ↔ landscape), wait MS. tap, doubletap and long take an element's name in quotes instead of X Y: tap \"Sign in\", as sim_describe names it. capture: a screenshot after.",
 			"input": {
 				"type": "object",
 				"properties": {
@@ -282,7 +332,7 @@
 						"maxItems": 40
 					},
 					"capture": {
-						"type": "boolean",
+						"type": "toggle",
 						"description": "Return a screenshot after the steps."
 					},
 					"wait": {
@@ -294,6 +344,48 @@
 				},
 				"required": [
 					"steps"
+				]
+			}
+		},
+		{
+			"name": "sim_record",
+			"title": "Record your simulator",
+			"description": "Record your simulator's screen for the user, up to 3 minutes: start with a title (what it shows), do it, then stop, which gives a line to put in your reply that shows the clip. keep: save it to the user's captures too (only when they ask).",
+			"input": {
+				"type": "object",
+				"properties": {
+					"platform": {
+						"type": "string",
+						"enum": [
+							"ios",
+							"android"
+						],
+						"description": "ios (an iOS simulator) or android (an Android emulator). Left out: the one you hold, else ios."
+					},
+					"action": {
+						"type": "string",
+						"enum": [
+							"start",
+							"stop"
+						]
+					},
+					"title": {
+						"type": "string",
+						"description": "What the clip shows: needed to start."
+					},
+					"keep": {
+						"type": "toggle",
+						"description": "Save the clip to the user's captures as well: only when the user asks."
+					},
+					"wait": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 30,
+						"description": "Minutes to wait in line when every agent simulator of the platform is another thread's (default 4; 0 not to wait)."
+					}
+				},
+				"required": [
+					"action"
 				]
 			}
 		},
@@ -350,7 +442,7 @@
 		{
 			"name": "sim_device",
 			"title": "Your simulator itself",
-			"description": "Change your simulator: appearance (dark|light), text-size (iOS: extra-small … accessibility-extra-extra-extra-large; Android: a font scale, 1.3), location (LAT,LON, or clear), permission (grant|revoke|reset SERVICE, with app), push (the payload's JSON, with app; iOS), status-bar (clean, or clear). Or shutdown, reboot, erase (no apps, no data), measure (its memory).",
+			"description": "Change your simulator: appearance (dark|light), text-size (iOS: extra-small … accessibility-extra-extra-extra-large; Android: a font scale, 1.3), location (LAT,LON, or clear), permission (grant|revoke|reset SERVICE, with app), push (the payload's JSON, with app; iOS), status-bar (clean, or clear). Or shutdown, reboot, erase (no apps, no data), measure (its memory). borrow: ask the user to lend you their own simulator, value saying why (a bug that only shows with their data, signed in); they answer in the thread, and once they lend it your calls use it.",
 			"input": {
 				"type": "object",
 				"properties": {
@@ -374,7 +466,8 @@
 							"shutdown",
 							"reboot",
 							"erase",
-							"measure"
+							"measure",
+							"borrow"
 						]
 					},
 					"value": {
@@ -416,7 +509,7 @@
 						"minLength": 1
 					},
 					"root": {
-						"type": "boolean",
+						"type": "toggle",
 						"description": "Android: as root."
 					},
 					"timeout": {

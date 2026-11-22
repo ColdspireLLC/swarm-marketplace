@@ -276,7 +276,7 @@ async function scale(w: Where, port: number, udid: string): Promise<number> {
 	return size?.width ? shot.width / size.width : 3;
 }
 
-export const IOS_STEPS = "tap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], type TEXT, key home|enter|lock|volumeup|volumedown, wait MS (screenshot pixels)";
+export const IOS_STEPS = "tap X Y, doubletap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], scroll up|down|left|right [X Y], type TEXT, key home|enter|lock|volumeup|volumedown, rotate, wait MS (screenshot pixels; a tap, doubletap or long takes \"Label\" for an element's, as sim_describe names it)";
 
 /** Runs input steps, in screenshot pixels. */
 export async function drive(w: Where, n: number, udid: string, steps: string[]) {
@@ -286,12 +286,32 @@ export async function drive(w: Where, n: number, udid: string, steps: string[]) 
 	for (const step of steps) {
 		const [op = "", ...rest] = step.trim().split(/\s+/);
 		const num = rest.map(Number);
-		const xy = { tap: 2, long: 2, swipe: 4 }[op.toLowerCase()] ?? 0;
+		const xy = { tap: 2, doubletap: 2, long: 2, swipe: 4 }[op.toLowerCase()] ?? 0;
 		if (rest.length < xy || num.slice(0, xy).some((v) => !Number.isFinite(v))) throw new SimError(`${step}: ${IOS_STEPS}`);
 		switch (op.toLowerCase()) {
 			case "tap":
 				await inSession(w, port, udid, "POST", "/wda/tap", { x: pt(rest[0]!), y: pt(rest[1]!) });
 				break;
+			case "doubletap":
+				await inSession(w, port, udid, "POST", "/wda/doubleTap", { x: pt(rest[0]!), y: pt(rest[1]!) });
+				break;
+			case "scroll": {
+				// A finger's flick the other way, a third of the screen, from the point (the middle when not given).
+				const size = await inSession(w, port, udid, "GET", "/window/size");
+				const W = Number(size?.width) || 400;
+				const H = Number(size?.height) || 860;
+				const x = Number.isFinite(num[1]) ? pt(rest[1]!) : W / 2;
+				const y = Number.isFinite(num[2]) ? pt(rest[2]!) : H / 2;
+				const d = { up: [0, H / 3], down: [0, -H / 3], left: [W / 3, 0], right: [-W / 3, 0] }[(rest[0] ?? "").toLowerCase()];
+				if (!d) throw new SimError(`${step}: scroll up|down|left|right [X Y]`);
+				await inSession(w, port, udid, "POST", "/wda/dragfromtoforduration", { fromX: x, fromY: y, toX: x + d[0]!, toY: y + d[1]!, duration: 0.15 });
+				break;
+			}
+			case "rotate": {
+				const now = await inSession(w, port, udid, "GET", "/orientation").catch(() => "PORTRAIT");
+				await inSession(w, port, udid, "POST", "/orientation", { orientation: String(now).toUpperCase() === "PORTRAIT" ? "LANDSCAPE" : "PORTRAIT" });
+				break;
+			}
 			case "long":
 				await inSession(w, port, udid, "POST", "/wda/touchAndHold", { x: pt(rest[0]!), y: pt(rest[1]!), duration: (num[2] || 800) / 1000 });
 				break;
