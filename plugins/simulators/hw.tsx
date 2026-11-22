@@ -81,10 +81,12 @@ export async function describe(scr: DeviceScreen, shot: () => Promise<Uint8Array
 			size ??= pngSize(await shot());
 			[x, y, w, h] = [x * size.width, y * size.height, w * size.width, h * size.height];
 		}
-		const label = String(e.label ?? e.title ?? e.value ?? "").trim();
+		// Swarm's: its label, else its value (a field's text), else its id.
+		const label = String(e.label || e.title || e.value || e.id || "").trim();
 		if (!label) continue;
 		const role = String(e.role ?? e.type ?? "").replace(/^(AX|XCUIElementType)/, "").toLowerCase();
-		out.push({ role, label, x, y, w, h, action: typeof e.actionable === "boolean" ? e.actionable : typeof e.action === "boolean" ? e.action : /button|cell|link|switch|textfield|searchfield|tab|key|slider|picker|icon|menuitem/.test(role) });
+		// A disabled one is listed, as not taking a tap.
+		out.push({ role, label, x, y, w, h, action: e.enabled === false ? false : typeof e.actionable === "boolean" ? e.actionable : typeof e.action === "boolean" ? e.action : /button|cell|link|switch|textfield|searchfield|tab|key|slider|picker|icon|menuitem/.test(role) });
 	}
 	return out;
 }
