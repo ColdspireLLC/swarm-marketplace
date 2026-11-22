@@ -592,7 +592,7 @@ function controls(d: Device, compact: boolean): Child {
 	items.push(tool("images", compact ? "Captures" : `Captures${caps.list.length ? ` ${caps.list.length}` : ""}`, () => setStrip(compact, !shown), { compact, active: shown, tip: shown ? "Hide the captures" : "Show the captures" }));
 	return (
 		<ui.box style={{ alignItems: "center", paddingTop: compact ? 6 : 12 }}>
-			<ui.box style={compact ? { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 2 } : { flexDirection: "row", alignItems: "center", gap: 2, padding: 3, borderRadius: 999, backgroundColor: "raised", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.06)" }}>{items}</ui.box>
+			<ui.box style={compact ? { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 2 } : { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 2, padding: 3, borderRadius: 18, backgroundColor: "raised", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.06)", maxWidth: "100%" }}>{items}</ui.box>
 		</ui.box>
 	);
 }

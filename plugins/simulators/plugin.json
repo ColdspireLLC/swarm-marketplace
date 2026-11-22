@@ -310,7 +310,7 @@
 		{
 			"name": "sim_drive",
 			"title": "Drive your simulator",
-			"description": "Taps, swipes, keys and text on your simulator, in screenshot pixels, one step per entry: tap X Y, doubletap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], scroll up|down|left|right [X Y], type TEXT, key NAME (iOS: home, enter, lock, volumeup, volumedown; Android: home, back, enter, recents, delete, tab, power), rotate (portrait ↔ landscape), wait MS. tap, doubletap and long take an element's name in quotes instead of X Y: tap \"Sign in\", as sim_describe names it. capture: a screenshot after.",
+			"description": "Taps, swipes, keys and text on your simulator, in screenshot pixels, one step per entry: tap X Y, doubletap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], scroll up|down|left|right [X Y], pinch X Y SCALE (2 zooms in, 0.5 out), type TEXT, key NAME (iOS: home, apps (the app switcher), lock, keyboard (shows or hides the on-screen keyboard), swipe-home, enter, volumeup, volumedown; Android: home, back, recents, enter, delete, tab, power), rotate (portrait ↔ landscape), wait MS. tap, doubletap and long take an element's name in quotes instead of X Y: tap \"Sign in\", as sim_describe names it. capture: a screenshot after.",
 			"input": {
 				"type": "object",
 				"properties": {

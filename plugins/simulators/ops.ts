@@ -16,6 +16,8 @@ import { IOS_CATEGORIES, iosLabelsOff, keptNote } from "./slimios";
 import { info, keepAndroid, keepIOS, key, liveLink, message, pool, quoted, setInfo, shots, slimOn, title, where } from "./state";
 import type { Where } from "./where";
 import { settings } from "swarm";
+import * as hw from "./hw";
+import { pngSize } from "./devices";
 import * as captures from "./captures";
 import { borrow, checkDriving, isLoan, lentTo, loanNote, loans, sweepLoan, takenOver } from "./control";
 import type { Device } from "./picker";
@@ -347,11 +349,43 @@ async function placed(s: Slot, w: Where, steps: string[]): Promise<string[]> {
 	});
 }
 
+/** Steps only Swarm's own input does (a simulator's keys past WebDriverAgent's, a true rotation, a pinch), where it can. */
+const HID = /^(rotate|pinch\s|key\s+(apps|keyboard|swipe-home|lock|recents|back|power|home)\b)/i;
+
+/** Runs a step on Swarm's own input: rotate, pinch X Y SCALE (screenshot pixels), key NAME. */
+async function hidStep(scr: hw.DeviceScreen, step: string, size: () => Promise<{ width: number; height: number }>) {
+	const [op = "", ...rest] = step.trim().split(/\s+/);
+	if (/^rotate$/i.test(op)) return scr.rotate();
+	if (/^key$/i.test(op)) return scr.press(rest[0]!.toLowerCase());
+	const [x, y, k] = rest.map(Number);
+	if (![x, y, k].every((v) => Number.isFinite(v)) || !(k! > 0)) throw new SimError(`${step}: pinch X Y SCALE (2 zooms in, 0.5 out)`);
+	const { width, height } = await size();
+	return scr.pinch({ x: x! / width, y: y! / height }, k!);
+}
+
 export async function drive(thread: string, platform: string | undefined, steps: string[], o: { capture?: boolean; wait?: number }): Promise<Out> {
 	const { v: data, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
 		steps = await placed(s, w, steps);
-		if (s.platform === "ios") await ios.drive(w, s.n, info(s).udid!, steps);
-		else await android.drive(w, await sdkOf(w), info(s).serial!, steps);
+		const scr = w.ssh ? null : hw.screenOf(w.machine ?? "server", s.platform === "ios" ? { simulator: info(s).udid } : { phone: info(s).serial });
+		let size: { width: number; height: number } | null = null;
+		const sizeOf = async () => (size ??= pngSize(scr ? await scr.shot() : await shoot(s, w)));
+		// In order: runs of the driver's steps, and between them Swarm's own where it can.
+		let run: string[] = [];
+		const flush = async () => {
+			if (!run.length) return;
+			if (s.platform === "ios") await ios.drive(w, s.n, info(s).udid!, run);
+			else await android.drive(w, await sdkOf(w), info(s).serial!, run);
+			run = [];
+		};
+		for (const step of steps) {
+			if (scr && HID.test(step.trim())) {
+				await flush();
+				await hidStep(scr, step, sizeOf);
+			} else if (/^pinch\s/i.test(step.trim())) {
+				throw new SimError("A pinch needs a newer Swarm, which drives the simulator's own input.");
+			} else run.push(step);
+		}
+		await flush();
 		return o.capture ? shoot(s, w) : undefined;
 	});
 	return { text: join(intro, `Done on ${info(slot).name}: ${steps.join("; ")}.`), shot: data ? { data, mimeType: "image/png" } : undefined };

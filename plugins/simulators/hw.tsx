@@ -7,7 +7,8 @@ import * as swarm from "swarm";
 import { call, settings, ui, type Child, type IconName } from "swarm";
 import type { Device } from "./picker";
 
-const api = swarm as any;
+/** Swarm's API, as its default export has it (machines is there, not a named export). */
+const api = ((swarm as any).default ?? swarm) as any;
 const UI = ui as any;
 
 // ---- Hardware keys ----
@@ -33,25 +34,41 @@ const ANDROID_KEYS: Key[] = [
 	{ name: "rotate", label: "Rotate", icon: "redo", tip: "Turn it between portrait and landscape" },
 ];
 
-/** Swarm's API for a screen's input, where it has one. */
-const screenApi = () => api.screen as undefined | { press?: Function; rotate?: Function };
+/** A device's screen as Swarm drives it from the plugin (swarm.machines.screen), where this Swarm can. */
+export interface DeviceScreen {
+	press(name: string): Promise<void>;
+	rotate(): Promise<void>;
+	tap(x: number, y: number): Promise<void>;
+	swipe(from: { x: number; y: number }, to: { x: number; y: number }, ms?: number): Promise<void>;
+	pinch(at: { x: number; y: number }, scale: number): Promise<void>;
+	type(text: string): Promise<void>;
+	key(name: string): Promise<void>;
+	shot(): Promise<Uint8Array>;
+}
+
+/** The device's screen, through Swarm, or null on a Swarm that can't. machine: the id ui.screen takes ("server" for its own). */
+export function screenOf(machine: string, target: { simulator?: string; phone?: string }): DeviceScreen | null {
+	const m = api.machines as undefined | { screen?: (machine: string, device: object) => DeviceScreen };
+	if (typeof m?.screen !== "function" || (!target.simulator && !target.phone)) return null;
+	return m.screen(machine === "server" ? "" : machine, target);
+}
+
+const canDrive = () => typeof (api.machines as any)?.screen === "function";
 
 /** The keys the pill shows for a device: where Swarm can press them from here. */
 export function keysFor(d: Device): Key[] {
-	const s = screenApi();
-	if (!s?.press) return [];
+	if (!canDrive()) return [];
 	return d.platform === "ios" ? IOS_KEYS : ANDROID_KEYS;
 }
 
-/** Presses one of its keys; why not, or null. */
+/** Presses one of its keys (rotate turns it); why not, or null. */
 export async function press(d: Device, name: string): Promise<string | null> {
-	const s = screenApi();
-	if (!s?.press) return "This Swarm can't press a simulator's keys from here: update it.";
+	const machine = (await import("./mine")).page.machine[d.platform] || "server";
+	const s = screenOf(machine, d.platform === "ios" ? { simulator: d.id } : { phone: d.serial });
+	if (!s) return "This Swarm can't press a simulator's keys from here: update it.";
 	try {
-		const target = d.platform === "ios" ? { simulator: d.id } : { phone: d.serial };
-		const machine = (await import("./mine")).page.machine[d.platform] || "server";
-		if (name === "rotate" && s.rotate) await s.rotate({ machine, ...target });
-		else await s.press({ machine, ...target }, name);
+		if (name === "rotate") await s.rotate();
+		else await s.press(name);
 		return null;
 	} catch (e) {
 		return e instanceof Error ? e.message : String(e);
