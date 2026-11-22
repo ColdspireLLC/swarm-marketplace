@@ -4,6 +4,10 @@
 import { call, settings, ui } from "swarm";
 import { sdk as findSdk } from "./android";
 import { mac } from "./ios";
+import * as swarm from "swarm";
+
+/** Whether this Swarm drives a device's screen itself (swarm.machines.screen). */
+const drivesScreens = () => typeof (((swarm as any).default ?? swarm) as any).machines?.screen === "function";
 import { message, where } from "./state";
 import type { Where } from "./where";
 
@@ -23,7 +27,7 @@ xcrun simctl list runtimes available 2>/dev/null | grep -c '^iOS' | sed 's/^/run
 df -Pk "$HOME" | awk 'NR==2 {print "free " int($4/1024)}'
 sw_vers -productVersion 2>/dev/null | sed 's/^/macos /'
 uname -m | sed 's/^/arch /'
-[ -d "$HOME/Library/Caches/swarm-simulators/wda" ] && echo "wda built"; exit 0`;
+exit 0`;
 
 async function iosChecks(w: Where): Promise<Check[]> {
 	const out: Check[] = [];
@@ -47,7 +51,7 @@ async function iosChecks(w: Where): Promise<Check[]> {
 	out.push(rts ? { what: "iOS runtimes", ok: true, said: `${rts} installed` } : { what: "iOS runtimes", ok: false, said: "None", fix: "Xcode, Settings, Components: install an iOS simulator runtime." });
 	const free = Number(v("free")) || 0;
 	out.push({ what: "Disk", ok: free > 20_000 ? true : free > 8_000 ? "warn" : false, said: `${(free / 1024).toFixed(1)} GB free`, fix: free > 20_000 ? undefined : "Each simulator takes a few GB, and a boot fails on a full disk: free some space (xcrun simctl delete unavailable clears old ones)." });
-	out.push(o.includes("wda built") ? { what: "WebDriverAgent", ok: true, said: "Built, for agents' taps and reading the screen" } : { what: "WebDriverAgent", ok: "warn", said: "Not built yet", fix: "Built the first time an agent drives a simulator (a few minutes, once)." });
+	out.push(drivesScreens() ? { what: "Agents' input", ok: true, said: "Swarm taps, types and reads its simulators itself" } : { what: "Agents' input", ok: "warn", said: "This Swarm can't drive a simulator itself yet", fix: "Update Swarm: until then agents look at iOS simulators (screenshots, apps, settings) but don't tap them." });
 	return out;
 }
 

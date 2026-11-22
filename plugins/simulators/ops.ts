@@ -6,7 +6,7 @@
 import { call } from "swarm";
 import * as android from "./android";
 import * as access from "./access";
-import { elementLines } from "./elements";
+import { elementLines, type Element } from "./elements";
 import { bring, copy, removeOn, samePlace, tempOn, threadInfo, threadPlace, threadWhere } from "./transfer";
 import * as ios from "./ios";
 import { SimError } from "./ios";
@@ -329,16 +329,30 @@ export async function capture(thread: string, platform: string | undefined, o: {
 }
 
 export async function describe(thread: string, platform: string | undefined, o: { wait?: number }): Promise<Out> {
-	const { v: list, slot, intro } = await withSim(thread, platform, o, async (s, w) => (s.platform === "ios" ? ios.describe(w, s.n, info(s).udid!) : android.describe(w, await sdkOf(w), info(s).serial!)));
+	const { v: list, slot, intro } = await withSim(thread, platform, o, (s, w) => elementsOf(s, w));
 	if (!list.length) return { text: join(intro, `${info(slot).name} shows nothing named: look with sim_capture.`) };
 	return { text: join(intro, `${info(slot).name}'s screen, ${list.length} element(s), at screenshot pixels (tap them with sim_drive):\n${elementLines(list)}`) };
+}
+
+/** Swarm's way into a slot's screen, where this Swarm drives a device's screen (swarm.machines.screen); null where it can't. */
+const screenOfSlot = (s: Slot, w: Where) => (w.ssh ? null : hw.screenOf(w.machine ?? "server", s.platform === "ios" ? { simulator: info(s).udid } : { phone: info(s).serial }));
+
+/** What an iOS simulator needs that this Swarm hasn't: said to the agent, with what it can do meanwhile. */
+const NEEDS_SWARM = "This Swarm can't drive or read an iOS simulator's screen itself yet (a newer Swarm does, swarm!875): sim_capture, sim_app and sim_device work meanwhile; tell the user it needs updating.";
+
+/** The screen as named elements: Swarm's own reading of a simulator (describe), uiautomator on Android. */
+async function elementsOf(s: Slot, w: Where): Promise<Element[]> {
+	if (s.platform === "android") return android.describe(w, await sdkOf(w), info(s).serial!);
+	const scr = screenOfSlot(s, w);
+	if (!scr || !hw.canDescribe(scr)) throw new SimError(NEEDS_SWARM.replace("drive or read", "read"));
+	return hw.describe(scr, () => shoot(s, w));
 }
 
 /** Steps that name an element ("tap \"Sign in\""), with its middle's point in its place, as the screen says them now. */
 async function placed(s: Slot, w: Where, steps: string[]): Promise<string[]> {
 	const named = /^(tap|doubletap|long)\s+(?:"([^"]+)"|@(\S.*?))(\s+\d+)?\s*$/i;
 	if (!steps.some((x) => named.test(x.trim()))) return steps;
-	const list = s.platform === "ios" ? await ios.describe(w, s.n, info(s).udid!) : await android.describe(w, await sdkOf(w), info(s).serial!);
+	const list = await elementsOf(s, w);
 	return steps.map((x) => {
 		const m = named.exec(x.trim());
 		if (!m) return x;
@@ -426,7 +440,8 @@ async function hidStep(scr: hw.DeviceScreen, step: string, size: () => Promise<{
 export async function drive(thread: string, platform: string | undefined, steps: string[], o: { capture?: boolean; wait?: number }): Promise<Out> {
 	const { v: data, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
 		steps = await placed(s, w, steps);
-		const scr = w.ssh ? null : hw.screenOf(w.machine ?? "server", s.platform === "ios" ? { simulator: info(s).udid } : { phone: info(s).serial });
+		const scr = screenOfSlot(s, w);
+		if (!scr && s.platform === "ios") throw new SimError(NEEDS_SWARM);
 		// The screenshot's size the agent's points are in: the last one taken, else one now; again after a turn.
 		const known: { size: { width: number; height: number } | null } = { size: null };
 		const sizeOf = async () => {
@@ -435,12 +450,12 @@ export async function drive(thread: string, platform: string | undefined, steps:
 			known.size = pngSize(last && Date.now() - last.at < 60_000 ? last.data : await shoot(s, w));
 			return known.size;
 		};
-		// In order: Swarm's own input where it has it (each step the user's Take over stops), the driver's otherwise.
+		// In order: Swarm's own input (each step the user's Take over stops); on Android, adb's input where Swarm hasn't its own.
 		let run: string[] = [];
 		const flush = async () => {
 			if (!run.length) return;
-			if (s.platform === "ios") await ios.drive(w, s.n, info(s).udid!, run);
-			else await android.drive(w, await sdkOf(w), info(s).serial!, run);
+			if (s.platform === "ios") throw new SimError(`${run.join("; ")}: Swarm's input can't take that on an iOS simulator (${hw.STEPS}).`);
+			await android.drive(w, await sdkOf(w), info(s).serial!, run);
 			run = [];
 		};
 		let own = !!scr;
@@ -453,8 +468,8 @@ export async function drive(thread: string, platform: string | undefined, steps:
 						continue;
 					}
 				} catch (e) {
-					if (e instanceof SimError) throw e;
-					// The machine's Swarm can't (older than the window's): the driver for the rest.
+					if (e instanceof SimError || s.platform === "ios") throw e;
+					// The phone's machine can't (a Swarm older than the window's): adb for the rest.
 					if (/^(rotate|pinch|key\s+(apps|keyboard|swipe-home))/i.test(step.trim())) throw e;
 					own = false;
 				}
@@ -576,8 +591,7 @@ async function power(thread: string, platform: string | undefined, action: "shut
 			if (s.platform === "ios") {
 				const udid = info(s).udid ?? (await ios.devices(w)).find((d) => d.name.startsWith(ios.agentPrefix(s.n)))?.udid;
 				if (udid) {
-					await ios.stopWDA(w, udid);
-					await (action === "erase" ? ios.erase(w, udid) : ios.shutdown(w, udid));
+						await (action === "erase" ? ios.erase(w, udid) : ios.shutdown(w, udid));
 				}
 			} else {
 				const sdk = await sdkOf(w);
@@ -636,7 +650,6 @@ export async function sweep() {
 		try {
 			const w = await where(s.platform);
 			if (s.platform === "ios") {
-				await ios.stopWDA(w, i.udid!);
 				await ios.shutdown(w, i.udid!);
 			} else await android.shutdown(w, await sdkOf(w), s.n);
 			setInfo(s, { booted: false, serial: undefined });
@@ -656,6 +669,7 @@ export async function look() {
 			const w = await where(p);
 			if (p === "ios") {
 				if (w.label === "no Mac") continue;
+				void ios.forgetWDA(w);
 				const list = await ios.devices(w);
 				for (const s of pool.slots.filter((x) => x.platform === "ios")) {
 					const d = list.find((x) => x.name.startsWith(ios.agentPrefix(s.n)));

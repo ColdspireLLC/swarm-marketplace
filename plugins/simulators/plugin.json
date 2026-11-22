@@ -284,7 +284,7 @@
 		{
 			"name": "sim_describe",
 			"title": "Read your simulator's screen",
-			"description": "Your simulator's screen as named elements (buttons, fields, cells, text) and the point to tap each, in screenshot pixels: cheaper and surer than a screenshot to find where to tap. iOS through WebDriverAgent (a few minutes to build the first time), Android through uiautomator.",
+			"description": "Your simulator's screen as named elements (buttons, fields, cells, text) and the point to tap each, in screenshot pixels: cheaper and surer than a screenshot to find where to tap. iOS through Swarm's own reading of the simulator's accessibility, Android through uiautomator.",
 			"input": {
 				"type": "object",
 				"properties": {

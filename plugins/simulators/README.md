@@ -13,10 +13,12 @@ leases and simslim's and avdslim's slimming.
 - **iOS** (`ios.ts`): `Swarm agent N · <model>` simulators in the default
   device set (so `xcodebuild -destination id=…` and `expo run:ios` find
   them), made with `simctl create`; screenshots with `simctl io`; apps and
-  settings with `simctl`; touches and the screen's elements through
-  WebDriverAgent, built once for the simulator on the Mac
-  (`~/Library/Caches/swarm-simulators/wda`) and run per slot on port
-  8300+N.
+  settings with `simctl`; touches, keys, rotation, pinch and the
+  screen's elements through Swarm itself (`swarm.machines.screen`, its
+  media module's SimulatorKit input and accessibility): no WebDriverAgent.
+  A Swarm without it lets agents look (screenshots, apps, settings) but
+  not tap. An older plugin's WebDriverAgent build and runs on the Mac are
+  removed as it starts.
 - **Android** (`android.ts`): `swarm_agent_N` AVDs in
   `~/.swarm-simulators/avd` (never the user's), written as their two files
   (no avdmanager, no Java), booted headless with the host's GPU, driven
@@ -61,6 +63,6 @@ them; `open`, `boot`, `shutdown`, `erase`, `delete`, `create`, `twin` and
 touches (Watch live, `swarm://screen/<machine>?phone=<serial>` or
 `?simulator=<UDID>`). An iOS simulator's comes from Swarm's core: the media
 module's `SimulatorScreens` reads its framebuffer and sends it touches and
-keys through SimulatorKit, no WebDriverAgent. Agents' own `sim_drive` and
-`sim_describe` on iOS use WebDriverAgent, which plugins reach and which
-reads the screen as elements.
+keys through SimulatorKit. Agents' `sim_drive` and `sim_describe` go the
+same way, through `swarm.machines.screen`; on Android, adb's input and
+uiautomator where Swarm hasn't its own.

@@ -6,6 +6,8 @@
 import * as swarm from "swarm";
 import { call, settings, ui, type Child, type IconName } from "swarm";
 import type { Device } from "./picker";
+import { pngSize } from "./devices";
+import type { Element } from "./elements";
 
 /** Swarm's API, as its default export has it (machines is there, not a named export). */
 const api = ((swarm as any).default ?? swarm) as any;
@@ -47,6 +49,8 @@ export interface DeviceScreen {
 	type(text: string): Promise<void>;
 	key(name: string): Promise<void>;
 	shot(): Promise<Uint8Array>;
+	/** A Swarm with it reads the screen as accessibility elements. */
+	describe?(): Promise<unknown[]>;
 }
 
 /** The device's screen, through Swarm, or null on a Swarm that can't. machine: the id ui.screen takes ("server" for its own). */
@@ -54,6 +58,35 @@ export function screenOf(machine: string, target: { simulator?: string; phone?: 
 	const m = api.machines as undefined | { screen?: (machine: string, device: object) => DeviceScreen };
 	if (typeof m?.screen !== "function" || (!target.simulator && !target.phone)) return null;
 	return m.screen(machine === "server" ? "" : machine, target);
+}
+
+/** Whether this Swarm reads a device's screen as elements. */
+export const canDescribe = (scr: DeviceScreen) => typeof scr.describe === "function";
+
+/**
+ * The screen's elements as Swarm reads them, as describe and named taps
+ * take them: kind, name, box in screenshot pixels, and whether it takes a
+ * tap. Swarm's frames are in the screen's pixels or fractions of it; the
+ * latter are scaled to the screenshot the agent sees.
+ */
+export async function describe(scr: DeviceScreen, shot: () => Promise<Uint8Array>): Promise<Element[]> {
+	const raw = (await scr.describe!()) as any[];
+	let size: { width: number; height: number } | null = null;
+	const out: Element[] = [];
+	for (const e of raw) {
+		const f = e.frame ?? e.rect ?? e;
+		let x = Number(f.x), y = Number(f.y), w = Number(f.width ?? f.w), h = Number(f.height ?? f.h);
+		if (![x, y, w, h].every(Number.isFinite) || w <= 0 || h <= 0) continue;
+		if (x <= 1 && y <= 1 && w <= 1 && h <= 1) {
+			size ??= pngSize(await shot());
+			[x, y, w, h] = [x * size.width, y * size.height, w * size.width, h * size.height];
+		}
+		const label = String(e.label ?? e.title ?? e.value ?? "").trim();
+		if (!label) continue;
+		const role = String(e.role ?? e.type ?? "").replace(/^(AX|XCUIElementType)/, "").toLowerCase();
+		out.push({ role, label, x, y, w, h, action: typeof e.actionable === "boolean" ? e.actionable : typeof e.action === "boolean" ? e.action : /button|cell|link|switch|textfield|searchfield|tab|key|slider|picker|icon|menuitem/.test(role) });
+	}
+	return out;
 }
 
 const canDrive = () => typeof (api.machines as any)?.screen === "function";
