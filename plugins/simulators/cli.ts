@@ -94,6 +94,26 @@ export function registerCli() {
 					return act(io, (t) => ops.release(t, which));
 				},
 			}),
+			capture: cliCommand({
+				summary: "A screenshot of your simulator: --out writes it to a file on your computer; --show prints a line for your reply that shows it; --keep saves it to the user's captures (only when they ask)",
+				positionals: [platform],
+				options: {
+					out: { type: "string", description: "A file to write the PNG to, on your computer (relative to your folder)" },
+					show: { type: "boolean", description: "Print a Markdown line for your reply that shows it" },
+					keep: { type: "boolean", description: "Save it to the user's captures too" },
+					settle: { type: "duration", defaultUnit: "ms", description: "Wait this long first, for an animation to end (at most 5s)" },
+					label: { type: "string", description: "What it shows, kept with it" },
+					...wait,
+				},
+				run: ({ positionals, options }, io) =>
+					act(io, async (t) => {
+						const settle = typeof options.settle === "number" ? options.settle : undefined;
+						const p = positionals.platform as string | undefined;
+						if (options.out) return ops.captureTo(t, p, String(options.out), { settle, keep: !!options.keep, label: options.label as string | undefined, wait: minutes(options.wait) });
+						const o = await ops.capture(t, p, { show: !!options.show, keep: !!options.keep, settle, label: options.label as string | undefined, wait: minutes(options.wait) });
+						return { text: o.text + (options.show ? "" : "\n(--out writes the picture to a file; --show prints a line that shows it.)") };
+					}),
+			}),
 			describe: cliCommand({
 				summary: "Your simulator's screen as named elements and where to tap them",
 				positionals: [platform],
@@ -267,8 +287,9 @@ export function registerCli() {
 				options: { json: { type: "boolean", description: "Print JSON" } },
 				run: async ({ positionals, options }, io) => {
 					if (positionals.action === "delete") {
-						userOnly(io);
 						const ids = (positionals.ids as string[] | undefined) ?? [];
+						// An agent deletes only what it took itself.
+						if (!(io.user && !io.thread) && !ids.every((id) => caps.caps.list.find((c) => c.id === id)?.thread === io.thread)) userOnly(io);
 						await caps.remove(ids);
 						return { stdout: `Deleted ${ids.length}.\n` };
 					}

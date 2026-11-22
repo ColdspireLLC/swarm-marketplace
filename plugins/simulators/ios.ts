@@ -309,7 +309,10 @@ export async function drive(w: Where, n: number, udid: string, steps: string[]) 
 			}
 			case "rotate": {
 				const now = await inSession(w, port, udid, "GET", "/orientation").catch(() => "PORTRAIT");
-				await inSession(w, port, udid, "POST", "/orientation", { orientation: String(now).toUpperCase() === "PORTRAIT" ? "LANDSCAPE" : "PORTRAIT" });
+				await inSession(w, port, udid, "POST", "/orientation", { orientation: String(now).toUpperCase() === "PORTRAIT" ? "LANDSCAPE" : "PORTRAIT" }).catch((e: unknown) => {
+					if (/rotate/i.test(String(e))) throw new SimError("It didn't turn: an iPhone's home screen and portrait-only apps stay upright. Rotate in an app that turns.");
+					throw e;
+				});
 				break;
 			}
 			case "long":

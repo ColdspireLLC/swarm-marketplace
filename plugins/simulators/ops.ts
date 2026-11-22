@@ -7,7 +7,7 @@ import { call } from "swarm";
 import * as android from "./android";
 import * as access from "./access";
 import { elementLines } from "./elements";
-import { bring, threadInfo } from "./transfer";
+import { bring, copy, removeOn, samePlace, tempOn, threadInfo, threadPlace, threadWhere } from "./transfer";
 import * as ios from "./ios";
 import { SimError } from "./ios";
 import { IDLE_MS, PoolError, type Platform, type Slot } from "./pool";
@@ -609,4 +609,26 @@ export async function record(thread: string, platform: string | undefined, actio
 		return { text: `Recorded ${c.secs ?? 0} s of ${c.name}${o.keep ? ", saved to the user's captures" : ""}. Put this line in your reply, on a line of its own, to show it:\n${line}` };
 	}
 	throw new SimError("start (with a title) or stop.");
+}
+
+/** A screenshot of the thread's simulator written to a file on the thread's computer (relative to its folder); its path. */
+export async function captureTo(thread: string, platform: string | undefined, out: string, o: { settle?: number; keep?: boolean; label?: string; wait?: number }): Promise<Out> {
+	const { v: dest, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
+		if (o.settle) await new Promise((r) => setTimeout(r, Math.min(5000, Math.max(0, o.settle!))));
+		const tmp = await tempOn(w, "screenshot.png");
+		try {
+			if (s.platform === "ios") await ios.mac(w, `xcrun simctl io "$1" screenshot --type=png "$2" >/dev/null 2>&1 || { echo "it isn't running" >&2; exit 3; }`, [info(s).udid!, tmp]);
+			else await ios.mac(w, `"$1" -s "$2" exec-out screencap -p > "$3"`, [(await sdkOf(w)).adb, info(s).serial!, tmp]);
+			const t = await threadPlace(thread);
+			const { dir } = await threadWhere(thread);
+			const dest = /^(\/|[A-Za-z]:[\\/]|~)/.test(out) ? out : `${dir.replace(/[\\/]$/, "")}/${out}`;
+			if (samePlace(t, w)) await ios.mac(w, `mkdir -p "$(dirname "$2")" && cp "$1" "$2"`, [tmp, dest]);
+			else await copy(w, tmp, t, dest);
+			return dest;
+		} finally {
+			await removeOn(w, tmp);
+		}
+	});
+	if (o.keep) await captures.screenshot(deviceOf(slot), { thread, title: o.label });
+	return { text: join(intro, `Wrote ${info(slot).name}'s screen to ${dest}${o.keep ? ", and saved it to the user's captures" : ""}.`) };
 }
