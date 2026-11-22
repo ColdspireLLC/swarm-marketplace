@@ -253,7 +253,7 @@ function moreMenu(d: Device | undefined, compact = false): Child {
 	const dark = d ? looks.get(d.id) === "dark" : false;
 	const shown = stripShown(compact);
 	return (
-		<ui.menu label="More" icon="more" kind="ghost" size="sm" wide>
+		<ui.menu icon="more" tooltip="More" kind="ghost" size="sm" wide>
 			{() => [
 				...rest.map((k) => <ui.item key={"k" + k.name} label={k.label} icon={k.icon} detail={k.tip} disabled={busy} onClick={() => void hw.press(d!, k.name).then((e) => e && (page.error = e))} />),
 				rest.length ? <ui.item key="dark" label={dark ? "Light appearance" : "Dark appearance"} icon={dark ? "sun" : "moon"} disabled={busy} onClick={() => void toggleLook(d!)} /> : null,
