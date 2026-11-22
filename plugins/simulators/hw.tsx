@@ -65,8 +65,9 @@ const sizes = ui.store(new Map<string, { w: number; h: number }>(), { shallow: t
 export const sizeOf = (d: Device) => sizes.get(d.id);
 
 /** Whether the live view draws without its bar, and says the device's size. */
-export const canBare = () => typeof BARE_FORMAT === "number" && (ui.format ?? 0) >= BARE_FORMAT;
-let BARE_FORMAT: number | undefined;
+/** UI format 21 brought ui.screen's bare, keep and onSize, and the file asks and ui.video. */
+const MEDIA_FORMAT = 21;
+export const canBare = () => (ui.format ?? 0) >= MEDIA_FORMAT;
 
 export function screen(props: Record<string, unknown>, d: Device): Child {
 	return (
@@ -76,7 +77,7 @@ export function screen(props: Record<string, unknown>, d: Device): Child {
 			{...({
 				bare: true,
 				keep: settings.get("instantReopen") === true ? 3600 : undefined,
-				onSize: (w: number, h: number) => {
+				onSize: ({ width: w, height: h }: { width: number; height: number }) => {
 					const was = sizes.get(d.id);
 					if (w > 0 && h > 0 && (was?.w !== w || was?.h !== h)) sizes.set(d.id, { w, h });
 				},
@@ -87,11 +88,12 @@ export function screen(props: Record<string, unknown>, d: Device): Child {
 
 // ---- Captures ----
 
-let MEDIA_FORMAT: number | undefined;
-const hasMedia = () => typeof MEDIA_FORMAT === "number" && (ui.format ?? 0) >= MEDIA_FORMAT;
+const hasMedia = () => (ui.format ?? 0) >= MEDIA_FORMAT;
+/** The most a file ask or a picture takes (Swarm's asset limit). */
+export const MAX_BYTES = 32 * 1024 * 1024;
 
 export const canPlay = () => hasMedia() && typeof UI.video === "function";
-export const video = (data: Uint8Array, poster?: Uint8Array): Child => UI.video({ src: data, poster, style: { width: "100%", height: "100%" } });
+export const video = (data: Uint8Array, _poster?: Uint8Array): Child => UI.video(data, { alt: "The recording", style: { width: "100%", height: "100%" } });
 
 export const canCopyImage = () => hasMedia() && typeof UI.copyImage === "function";
 export const copyImage = (data: Uint8Array) => UI.copyImage(data);

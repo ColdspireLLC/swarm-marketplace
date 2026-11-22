@@ -27,7 +27,11 @@ const DOCTOR = "simulators-doctor";
 const line = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
 
 /** A device's name as a row says it: a twin's without its "(120 Hz)", which its badge says. */
-const shortName = (d: Device) => (isTwinName(d.name) ? d.name.slice(0, -TWIN_SUFFIX.length) : d.name);
+function shortName(d: Device): string {
+	const agent = /^(Swarm|bb) agent (\d+) · (.*)$/.exec(d.name);
+	if (agent) return `${agent[1] === "bb" ? "bb agent" : "Agent"} ${agent[2]} · ${agent[3]!.replace(TWIN_SUFFIX, "")}`;
+	return isTwinName(d.name) ? d.name.slice(0, -TWIN_SUFFIX.length) : d.name;
+}
 
 function ago(at: number, now: number) {
 	const s = Math.max(0, (now - at) / 1000);
@@ -447,7 +451,8 @@ function viewerBody(): Child {
 	}
 	const t = thumbOf(c);
 	const pic = c.kind === "png" ? b : undefined;
-	const video = c.kind === "mp4" && b && hw.canPlay() ? hw.video(b, t) : null;
+	const tooBig = !!b && b.length > hw.MAX_BYTES;
+	const video = c.kind === "mp4" && b && !tooBig && hw.canPlay() ? hw.video(b, t) : null;
 	const close = () => ui.hideOverlay(VIEWER);
 	return (
 		<ui.box style={{ padding: "0 s6 s6", gap: 14 }}>
@@ -459,7 +464,7 @@ function viewerBody(): Child {
 				{video ?? (pic || t ? <ui.image src={(pic ?? t)!} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} /> : <ui.spinner />)}
 				{c.kind === "mp4" && !video ? (
 					<ui.box style={{ position: "absolute", bottom: 12, padding: "4px 10px", borderRadius: 6, backgroundColor: "rgba(0,0,0,0.65)" }}>
-						<ui.text style={{ fontSize: "small", color: "white" }}>{b ? "Save it to play it: this Swarm doesn't play clips here yet" : "Fetching the clip…"}</ui.text>
+						<ui.text style={{ fontSize: "small", color: "white" }}>{!b ? "Fetching the clip…" : tooBig ? "Too long to play here: it's on the simulators' computer" : "Update Swarm to play clips here"}</ui.text>
 					</ui.box>
 				) : null}
 			</ui.box>
@@ -488,8 +493,8 @@ function viewerBody(): Child {
 						}}
 					/>
 				) : null}
-				{hw.canSaveBytes() ? <ui.button label="Save…" icon="download" kind="soft" disabled={!b} onClick={() => b && hw.saveBytes(`${c.name.replace(/[^\w .()-]+/g, "")} ${new Date(c.at).toISOString().slice(0, 19).replace(/[T:]/g, "-")}.${c.kind}`, b)} /> : null}
-				{hw.canAttach() ? attachMenu(c, b) : null}
+				{hw.canSaveBytes() ? <ui.button label="Save…" icon="download" kind="soft" disabled={!b || tooBig} onClick={() => b && hw.saveBytes(`${c.name.replace(/[^\w .()-]+/g, "")} ${new Date(c.at).toISOString().slice(0, 19).replace(/[T:]/g, "-")}.${c.kind}`, b)} /> : null}
+				{hw.canAttach() ? attachMenu(c, tooBig ? undefined : b) : null}
 			</ui.box>
 		</ui.box>
 	);
