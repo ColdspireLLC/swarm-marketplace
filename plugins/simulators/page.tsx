@@ -261,13 +261,21 @@ function deviceMenu(d: Device, busy: boolean): Child {
 }
 
 /** More: the device's settings and a link, the 120 Hz copy, then what ends its session. */
-function moreMenu(d: Device | undefined): Child {
+function moreMenu(d: Device | undefined, compact = false): Child {
 	const busy = !!(d && page.busy[d.id]);
 	const mine = d && !d.agent;
 	const on = mine && d.state === "Booted";
+	// On a phone, what the row under the device leaves out.
+	const rest = compact && on && hw.keysFor(d).length ? hw.keysFor(d).slice(3) : [];
+	const dark = d ? looks.get(d.id) === "dark" : false;
+	const shown = stripShown(compact);
 	return (
 		<ui.menu label="More" icon="more" kind="ghost" size="sm" wide>
 			{() => [
+				...rest.map((k) => <ui.item key={"k" + k.name} label={k.label} icon={k.icon} detail={k.tip} disabled={busy} onClick={() => void hw.press(d!, k.name).then((e) => e && (page.error = e))} />),
+				rest.length ? <ui.item key="dark" label={dark ? "Light appearance" : "Dark appearance"} icon={dark ? "sun" : "moon"} disabled={busy} onClick={() => void toggleLook(d!)} /> : null,
+				rest.length ? <ui.item key="caps" label="Captures" icon="images" detail={caps.list.length ? `${caps.list.length} screenshots and recordings` : "Screenshots and recordings you take"} checked={shown} onClick={() => setStrip(compact, !shown)} /> : null,
+				rest.length ? <ui.separator key="s0" /> : null,
 				on ? deviceMenu(d, busy) : null,
 				on ? (
 					<ui.item
@@ -329,8 +337,8 @@ function head(compact: boolean): Child {
 			{compact ? null : picker(cur, compact)}
 			{!compact && cur ? <ui.text style={{ fontSize: "small", color: "text3", ...line }}>{[cur.os, isTwinName(cur.name) ? "120 Hz" : "", page.place].filter(Boolean).join(" · ")}</ui.text> : null}
 			{compact ? null : <ui.spacer />}
-			{recordingPill()}
-			{moreMenu(cur)}
+			{compact ? null : recordingPill()}
+			{moreMenu(cur, compact)}
 		</ui.box>
 	);
 }
@@ -531,6 +539,7 @@ function attachMenu(c: Capture, b: Uint8Array | undefined): Child {
 
 /** A control of the pill: its icon and its name, the name under the icon on a phone. */
 function tool(icon: IconName, label: string, onClick: () => unknown, o: { disabled?: boolean; tip?: string; tone?: "red" | "accent"; compact?: boolean; active?: boolean } = {}): Child {
+	// On a phone each takes an even share of the row, as a tab bar's do.
 	const color = o.disabled ? "text3" : (o.tone ?? "text");
 	return (
 		<ui.pressable
@@ -544,16 +553,17 @@ function tool(icon: IconName, label: string, onClick: () => unknown, o: { disabl
 				alignItems: "center",
 				justifyContent: "center",
 				gap: o.compact ? 3 : 6,
-				minWidth: o.compact ? 52 : undefined,
-				minHeight: o.compact ? 48 : 30,
-				padding: o.compact ? "4px 2px" : "0 10px",
+				flex: o.compact ? 1 : undefined,
+				minWidth: o.compact ? 0 : undefined,
+				minHeight: o.compact ? 52 : 30,
+				padding: o.compact ? "6px 0 5px" : "0 10px",
 				borderRadius: o.compact ? 10 : 999,
 				backgroundColor: o.active ? "hover" : "transparent",
 				hover: o.disabled ? undefined : { backgroundColor: "hover" },
 			}}
 		>
-			<ui.icon icon={icon} style={{ width: o.compact ? 18 : 14, height: o.compact ? 18 : 14, color }} />
-			<ui.text style={{ fontSize: o.compact ? "caption" : "small", fontWeight: 500, color, whiteSpace: "nowrap" }}>{label}</ui.text>
+			<ui.icon icon={icon} style={{ width: o.compact ? 20 : 14, height: o.compact ? 20 : 14, color }} />
+			<ui.text style={{ fontSize: o.compact ? "caption" : "small", fontWeight: 500, color, whiteSpace: "nowrap", ...(o.compact ? { color: o.disabled ? "text3" : (o.tone ?? "text2") } : {}) }}>{label}</ui.text>
 		</ui.pressable>
 	);
 }
@@ -586,15 +596,21 @@ function controls(d: Device, compact: boolean): Child {
 				? tool("stop", rec!.stopping ? "Saving…" : "Stop", () => void stopNow(), { tone: "red", compact, disabled: rec!.stopping, tip: "Stop recording and keep the clip" })
 				: tool("video", "Record", () => void startRecording(d).then((e) => e && (page.error = e)), { disabled: busy || !!rec, compact, tip: rec ? `${rec.device.name} is being recorded` : `Record ${d.name}'s screen, up to 3 minutes` }),
 		);
-		for (const k of hw.keysFor(d)) items.push(tool(k.icon, k.label, () => void hw.press(d, k.name).then((e) => e && (page.error = e)), { disabled: busy, compact, tip: k.tip }));
-		items.push(tool(dark ? "sun" : "moon", dark ? "Light" : "Dark", () => void toggleLook(d), { disabled: busy, compact, tip: `Switch ${d.name} to its ${dark ? "light" : "dark"} appearance` }));
+		for (const k of keysShown(d, compact)) items.push(tool(k.icon, k.label, () => void hw.press(d, k.name).then((e) => e && (page.error = e)), { disabled: busy, compact, tip: k.tip }));
+		if (!compact || !hw.keysFor(d).length) items.push(tool(dark ? "sun" : "moon", dark ? "Light" : "Dark", () => void toggleLook(d), { disabled: busy, compact, tip: `Switch ${d.name} to its ${dark ? "light" : "dark"} appearance` }));
 	}
-	items.push(tool("images", compact ? "Captures" : `Captures${caps.list.length ? ` ${caps.list.length}` : ""}`, () => setStrip(compact, !shown), { compact, active: shown, tip: shown ? "Hide the captures" : "Show the captures" }));
+	if (!compact || !hw.keysFor(d).length || d.agent) items.push(tool("images", compact ? "Captures" : `Captures${caps.list.length ? ` ${caps.list.length}` : ""}`, () => setStrip(compact, !shown), { compact, active: shown, tip: shown ? "Hide the captures" : "Show the captures" }));
 	return (
-		<ui.box style={{ alignItems: "center", paddingTop: compact ? 6 : 12 }}>
-			<ui.box style={compact ? { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 2 } : { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 2, padding: 3, borderRadius: 18, backgroundColor: "raised", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.06)", maxWidth: "100%" }}>{items}</ui.box>
+		<ui.box style={{ alignItems: compact ? "stretch" : "center", alignSelf: "stretch", paddingTop: compact ? 10 : 12 }}>
+			<ui.box style={compact ? { flexDirection: "row", alignItems: "center", padding: "2px 4px", borderRadius: 16, backgroundColor: "color-mix(in srgb, text 5%, bg)" } : { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 2, padding: 3, borderRadius: 18, backgroundColor: "raised", border: "1px solid border", boxShadow: "0 1px 2px rgba(0,0,0,0.06)", maxWidth: "100%" }}>{items}</ui.box>
 		</ui.box>
 	);
+}
+
+/** The keys in the pill: all of them on a computer; on a phone the first three (Home, Apps, Rotate; Back, Home, Apps), the rest in More. */
+function keysShown(d: Device, compact: boolean) {
+	const all = hw.keysFor(d);
+	return compact ? all.slice(0, 3) : all;
 }
 
 // ---- The page ----
@@ -637,17 +653,15 @@ function live(d: Device, compact: boolean): Child {
 	const bare = hw.canBare();
 	// The device's shape: its picture, and Swarm's bar over it (about 36 px) where the view has one.
 	const shape = size ? { aspectRatio: bare ? size.w / size.h : size.w / (size.h + (size.w * 36) / 400), maxWidth: "100%" as const } : { alignSelf: "stretch" as const };
-	const pad = compact ? 6 : 9;
+	const pad = compact ? 5 : 9;
 	// A device's corners, as its screen's: rounder on a phone than on an iPad.
-	const radius = /iPad/.test(d.name) ? 18 : compact ? 30 : 44;
+	const radius = /iPad/.test(d.name) ? 18 : compact ? 34 : 44;
 	return (
-		<ui.box style={{ flex: 1, minHeight: 0, alignItems: "center", padding: compact ? "s3 s4 0" : "s6 s6 0" }}>
+		<ui.box style={{ flex: 1, minHeight: 0, alignItems: "center", padding: compact ? "8px 12px 10px" : "s6 s6 0" }}>
 			<ui.box style={{ flex: 1, minHeight: 0, alignSelf: "stretch", alignItems: "center" }}>
 				{bare ? (
-					// A bezel of its own round the screen, as the device has.
-					<ui.box style={{ height: "100%", ...shape, padding: pad, borderRadius: radius + pad, backgroundColor: "#0b0b0d", boxShadow: "0 0 0 1px rgba(255,255,255,0.08) inset, 0 10px 30px rgba(0,0,0,0.25)" }}>
-						{hw.screen({ machine, ...dev, watch: h ? title(h) : undefined, label: d.name, style: { flex: 1, borderRadius: radius } }, d)}
-					</ui.box>
+					// Swarm draws its bezel round the screen, fitted in the room at the device's shape, as the room and a rotation change.
+					hw.screen({ machine, ...dev, watch: h ? title(h) : undefined, label: d.name, bezel: pad, style: { flex: 1, alignSelf: "stretch", borderRadius: radius } }, d)
 				) : (
 					<ui.screen key={d.id} machine={machine} {...dev} watch={h ? title(h) : undefined} label={d.name} style={{ height: "100%", ...shape }} />
 				)}
@@ -686,14 +700,29 @@ function body(compact: boolean): Child {
 		<ui.box style={{ flex: 1, minHeight: 0 }}>
 			{compact ? (
 				// On a phone the bar has the page's title: the picker is the page's first row.
-				<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 6, padding: "s2 s4 0", minHeight: 44 }}>
+				<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 4, padding: "6px 12px 0 8px", minHeight: 44 }}>
 					{picker(cur, compact)}
-					{cur ? <ui.text style={{ fontSize: "small", color: "text3", ...line }}>{[cur.os, isTwinName(cur.name) ? "120 Hz" : ""].filter(Boolean).join(" · ")}</ui.text> : null}
+					{cur ? (
+						<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 5, flexShrink: 1, minWidth: 0 }}>
+							<ui.box style={{ width: 6, height: 6, borderRadius: 3, flexShrink: 0, backgroundColor: page.busy[cur.id] ? "accent" : cur.state === "Booted" ? "green" : "text3" }} />
+							<ui.text style={{ fontSize: "small", color: "text3", ...line }}>{[cur.os, isTwinName(cur.name) ? "120 Hz" : ""].filter(Boolean).join(" · ")}</ui.text>
+						</ui.box>
+					) : null}
+					<ui.spacer />
+					{recordingPill()}
 				</ui.box>
 			) : null}
 			{err}
 			{main}
-			<ui.box style={{ height: 22, alignItems: "center", justifyContent: "center" }}>{busyLine ? <ui.text style={{ fontSize: "small", color: "text2" }}>{busyLine}</ui.text> : null}</ui.box>
+			{compact ? (
+				busyLine ? (
+					<ui.box style={{ alignItems: "center", paddingBottom: 6 }}>
+						<ui.text style={{ fontSize: "small", color: "text2" }}>{busyLine}</ui.text>
+					</ui.box>
+				) : null
+			) : (
+				<ui.box style={{ height: 22, alignItems: "center", justifyContent: "center" }}>{busyLine ? <ui.text style={{ fontSize: "small", color: "text2" }}>{busyLine}</ui.text> : null}</ui.box>
+			)}
 			{stripShown(compact) ? capturesStrip(compact) : null}
 		</ui.box>
 	);
