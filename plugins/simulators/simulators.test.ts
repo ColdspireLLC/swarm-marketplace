@@ -1,5 +1,6 @@
 import { expect, test } from "swarm/test";
 import { avdFiles, pickImage, pickModel, stepsScript, type Runtime } from "./devices";
+import { canTwin, chooseDevice, iosDevices, osOf, shelves } from "./picker";
 import { Pool, PoolError } from "./pool";
 import { androidPackagesOff, androidSettingsSet, parseIni, slimmedPackages, slimScript, unslimScript } from "./slimandroid";
 import { IOS_CATEGORIES, iosLabelsOff, parseDisabled, parseKeep, slimmedLabels, slimmedPlist } from "./slimios";
@@ -148,4 +149,48 @@ test("the iOS model agents' simulators are made of", () => {
 	expect(pickModel(rts, "")?.type.name).toBe("iPhone 17 Pro");
 	expect(pickModel(rts, "iphone 16")?.runtime.version).toBe("18.6");
 	expect(pickModel(rts, "Pixel")).toBe(null);
+});
+
+// The Simulator page's devices: simctl's list read (agents' apart), the
+// picker's shelves (running, recent, then by OS, newest first; agents'
+// last), the device it opens on, and which can have a 120 Hz copy (a
+// ProMotion model with none yet on its runtime; bb's twins count).
+test("the page's devices: shelves, the default, 120 Hz copies", () => {
+	const rt = (v: string) => `com.apple.CoreSimulator.SimRuntime.${v}`;
+	const dt = (t: string) => `com.apple.CoreSimulator.SimDeviceType.${t}`;
+	const list = iosDevices(
+		JSON.stringify({
+			devices: {
+				[rt("iOS-26-5")]: [
+					{ udid: "A", name: "iPhone 17 Pro", state: "Shutdown", deviceTypeIdentifier: dt("iPhone-17-Pro") },
+					{ udid: "B", name: "iPhone 17", state: "Shutdown", deviceTypeIdentifier: dt("iPhone-17") },
+					{ udid: "C", name: "iPhone 17 (120 Hz)", state: "Shutdown", deviceTypeIdentifier: "dev.bb.simulator.SimDeviceType.120Hz.iPhone-17" },
+					{ udid: "D", name: "iPhone 16e", state: "Booted", deviceTypeIdentifier: dt("iPhone-16e") },
+					{ udid: "E", name: "Swarm agent 1 · iPhone 17 Pro", state: "Booted", deviceTypeIdentifier: dt("iPhone-17-Pro") },
+					{ udid: "F", name: "Gone", state: "Shutdown", isAvailable: false },
+				],
+				[rt("iOS-18-6")]: [{ udid: "G", name: "iPhone 16 Pro", state: "Shutdown", deviceTypeIdentifier: dt("iPhone-16-Pro") }],
+				[rt("watchOS-26-0")]: [{ udid: "H", name: "Apple Watch Series 11 (46mm)", state: "Shutdown" }],
+				[rt("xrOS-26-0")]: [{ udid: "I", name: "Apple Vision Pro", state: "Shutdown" }],
+			},
+		}),
+	);
+	expect(osOf(rt("iOS-26-5"))).toBe("iOS 26.5");
+	expect(list.map((d) => d.id)).not.toContain("F");
+	expect(list.find((d) => d.id === "E")!.agent).toBe(true);
+
+	const now = 10 * 24 * 3600_000;
+	const sh = shelves(list, { G: now - 3600_000, B: now - 30 * 24 * 3600_000 }, "", now);
+	expect(sh.map((s) => `${s.title}: ${s.devices.map((d) => d.id).join("")}`)).toEqual(["Running: D", "Recent: G", "iOS 26.5: ACB", "watchOS 26.0: H", "visionOS 26.0: I", "Agents': E"]);
+	expect(shelves(list, {}, "17 pro", now).flatMap((s) => s.devices.map((d) => d.id))).toEqual(["A", "E"]);
+
+	// Picked last, then the setting, then one running, then the newest iPhone (a twin first).
+	expect(chooseDevice(list, "G", "")!.id).toBe("G");
+	expect(chooseDevice(list, "gone", "iphone 17 pro")!.id).toBe("A");
+	expect(chooseDevice(list, undefined, "")!.id).toBe("D");
+	expect(chooseDevice(list.filter((d) => d.id !== "D"), undefined, "")!.id).toBe("C");
+
+	const can = (id: string) => canTwin(list.find((d) => d.id === id)!, list);
+	// iPhone 17 has bb's twin already; a 16e isn't ProMotion; an agent's isn't the user's.
+	expect(["A", "B", "C", "D", "E", "G"].filter(can)).toEqual(["A", "G"]);
 });

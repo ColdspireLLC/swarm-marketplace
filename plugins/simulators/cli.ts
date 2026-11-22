@@ -8,7 +8,31 @@ import * as ops from "./ops";
 import { PoolError } from "./pool";
 import { ANDROID_CATEGORIES, ANDROID_SETTINGS } from "./slimandroid";
 import { IOS_CATEGORIES } from "./slimios";
+import * as mine from "./mine";
+import { canTwin, isTwinName, shelves } from "./picker";
 import { info, key, pool, quoted } from "./state";
+
+/** Only the user, from their own terminal, acts on their own simulators: an agent has its own (take). */
+function userOnly(io: CommandIO) {
+	if (io.user && !io.thread) return;
+	throw new PluginCliError("Your own simulators are yours alone: an agent uses one of its own (swarm simulators take).", { code: "user_only", hint: "Run it from your terminal." });
+}
+
+/** One of the user's devices, named; listed again first. */
+async function device(q: unknown): Promise<mine.Device> {
+	await mine.refresh();
+	const d = mine.find(String(q ?? ""));
+	if (!d) throw new PluginCliError(`No simulator ${String(q ?? "")}: swarm simulators devices lists them.`, { code: "not_found" });
+	return d;
+}
+
+async function done(err: Promise<string | null>, said: string): Promise<CliResult> {
+	const e = await err;
+	if (e) throw new PluginCliError(e, { code: "simulator" });
+	return { stdout: said + "\n" };
+}
+
+const which = { name: "device", required: true, description: "A name, a UDID, or an AVD's name" };
 
 function threadOf(io: CommandIO): string {
 	if (io.thread) return io.thread;
@@ -118,6 +142,121 @@ export function registerCli() {
 				options: { to: { type: "string", description: "host:port, or a port on your computer" }, remove: { type: "boolean", description: "Undo it (all, with no port)" }, platform: { type: "enum", values: ["ios", "android"], description: "Which of yours" }, ...wait },
 				run: ({ positionals, options }, io) =>
 					act(io, (t) => ops.forward(t, options.platform as string | undefined, positionals.port === undefined ? undefined : Number(positionals.port), { to: options.to as string | undefined, remove: !!options.remove, wait: minutes(options.wait) })),
+			}),
+			devices: cliCommand({
+				summary: "Your own simulators and emulators, as the Simulator page lists them: running, recent, then by OS; the agents' last",
+				options: { json: { type: "boolean", description: "Print JSON" } },
+				run: async ({ options }) => {
+					await mine.refresh();
+					if (options.json) return { stdout: JSON.stringify({ place: mine.page.place, problem: mine.page.problem || undefined, shown: mine.current()?.id, devices: mine.page.devices }, null, 2) + "\n" };
+					const lines: string[] = [];
+					if (mine.page.problem) lines.push(mine.page.problem);
+					const cur = mine.current();
+					for (const sh of shelves(mine.page.devices, mine.saved().used, "", Date.now())) {
+						lines.push(`${sh.title}:`);
+						for (const d of sh.devices) lines.push(`  ${d.id === cur?.id ? "*" : " "} ${d.name}  ${[sh.title === d.os ? "" : d.os, d.state, canTwin(d, mine.page.devices) ? "can have a 120 Hz copy" : ""].filter(Boolean).join(" · ")}  ${d.platform === "ios" ? d.id : d.id.slice(4)}`);
+					}
+					if (!lines.length) lines.push("No simulators.");
+					return { stdout: lines.join("\n") + "\n" };
+				},
+			}),
+			open: cliCommand({
+				summary: "Show one of your simulators on the Simulator page, booting it if it's shut down",
+				positionals: [which],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					return done(mine.pick(d), `${d.name} is on the Simulator page${d.state === "Shutdown" ? ", booted" : ""}.`);
+				},
+			}),
+			boot: cliCommand({
+				summary: "Boot one of your simulators and wait until it's up",
+				positionals: [which],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					return done(mine.boot(d), `${d.name} is running.`);
+				},
+			}),
+			shutdown: cliCommand({
+				summary: "Shut one of your simulators down",
+				positionals: [which],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					return done(mine.shutdown(d), `${d.name} is shut down.`);
+				},
+			}),
+			erase: cliCommand({
+				summary: "Erase one of your simulators: its apps, data and settings gone, as new",
+				positionals: [which],
+				options: { yes: { type: "boolean", description: "It can't be undone: say yes" } },
+				run: async ({ positionals, options }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					if (!options.yes) throw new PluginCliError(`Erasing ${d.name} can't be undone: add --yes.`, { code: "confirm" });
+					return done(mine.erase(d), `${d.name} is erased.`);
+				},
+			}),
+			delete: cliCommand({
+				summary: "Delete one of your simulators for good",
+				positionals: [which],
+				options: { yes: { type: "boolean", description: "It can't be undone: say yes" } },
+				run: async ({ positionals, options }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					if (d.agent) throw new PluginCliError(`${d.name} is an agent's: the pool makes and keeps those.`, { code: "agent" });
+					if (!options.yes) throw new PluginCliError(`Deleting ${d.name} can't be undone: add --yes.`, { code: "confirm" });
+					return done(mine.remove(d), `${d.name} is deleted.`);
+				},
+			}),
+			create: cliCommand({
+				summary: "Make an iOS simulator of a model on a runtime, and show it on the Simulator page",
+				positionals: [{ name: "model", required: true, description: "The model: iPhone 17 Pro" }],
+				options: { os: { type: "string", description: "The runtime: iOS 26.5 (the newest iOS when left out)" }, name: { type: "string", description: "Its name (the model's when left out)" } },
+				run: async ({ positionals, options }, io) => {
+					userOnly(io);
+					mine.catalog.at = 0;
+					await mine.loadCatalog();
+					const c = mine.catalog.value;
+					if (!c) throw new PluginCliError(mine.catalog.problem || "No runtimes.", { code: "simulator" });
+					const os = String(options.os ?? "").toLowerCase();
+					const rt = os ? c.runtimes.find((r) => r.name.toLowerCase() === os || r.name.toLowerCase().startsWith(os)) : c.runtimes[0];
+					if (!rt) throw new PluginCliError(`No runtime ${os}: ${c.runtimes.map((r) => r.name).join(", ")}.`, { code: "not_found" });
+					const m = String(positionals.model).toLowerCase();
+					const t = rt.types.find((x) => x.name.toLowerCase() === m) ?? rt.types.find((x) => x.name.toLowerCase().startsWith(m));
+					if (!t) throw new PluginCliError(`${rt.name} has no ${positionals.model}: ${rt.types.map((x) => x.name).join(", ")}.`, { code: "not_found" });
+					const name = String(options.name ?? t.name);
+					const err = await mine.create(name, t.id, rt.id);
+					if (err) throw new PluginCliError(err, { code: "simulator" });
+					return { stdout: `Made ${name} (${t.name}, ${rt.name}), booting on the Simulator page.\n` };
+				},
+			}),
+			twin: cliCommand({
+				summary: "Make a 120 Hz copy of one of your ProMotion simulators (a twin whose display runs at 120 Hz), and boot it",
+				positionals: [which],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					if (isTwinName(d.name)) throw new PluginCliError(`${d.name} runs at 120 Hz already.`, { code: "twin" });
+					if (!canTwin(d, mine.page.devices)) throw new PluginCliError(`${d.name} can't have one: only ProMotion models (iPhone 13 Pro and later Pros, iPhone 17 and later, iPhone Air, iPad Pro) on iOS, and one copy a model and runtime.`, { code: "twin" });
+					return done(mine.makeTwin(d), `Made a 120 Hz copy of ${d.name}, running.`);
+				},
+			}),
+			appearance: cliCommand({
+				summary: "Switch one of your simulators between light and dark",
+				positionals: [which, { name: "look", description: "dark or light (the other one when left out)" }],
+				run: async ({ positionals }, io) => {
+					userOnly(io);
+					const d = await device(positionals.device);
+					await mine.readLook(d);
+					const want = positionals.look as string | undefined;
+					if (want && want !== "dark" && want !== "light") throw new PluginCliError("dark or light.", { code: "usage" });
+					if (want && mine.looks.get(d.id) === want) return { stdout: `${d.name} is ${want} already.\n` };
+					const err = await mine.toggleLook(d);
+					if (err) throw new PluginCliError(err, { code: "simulator" });
+					return { stdout: `${d.name} is ${mine.looks.get(d.id)} now.\n` };
+				},
 			}),
 			slimming: cliCommand({
 				summary: "What slimming turns off, by category: the ids the Keep settings take",

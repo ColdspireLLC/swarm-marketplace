@@ -3,8 +3,9 @@
 	"id": "simulators",
 	"name": "Simulators",
 	"version": "0.1.5",
-	"description": "iOS simulators and Android emulators of the agents' own, one thread's each, slim: about a third of the memory, so more of them run at once. Screenshots, touches, apps and device settings through tools, live in Swarm's window.",
+	"description": "Your own iOS simulators and Android emulators on a page, live, with a picker, new ones and 120 Hz copies; and the agents' own, one thread's each, slim: about a third of the memory, so more of them run at once. Screenshots, touches, apps and device settings through tools.",
 	"adds": [
+		"Page",
 		"Side panel",
 		"Settings page",
 		"Composer status",
@@ -29,6 +30,15 @@
 		"storage": true
 	},
 	"settings": [
+		{
+			"key": "defaultDevice",
+			"title": "Default device",
+			"type": "text",
+			"default": "",
+			"placeholder": "iPhone 17 Pro",
+			"description": "The simulator the Simulator page opens on: a name or a UDID. Empty: the one you picked last, else one running, else the newest iPhone.",
+			"hidden": true
+		},
 		{
 			"key": "iosAgents",
 			"title": "iOS simulators for agents",

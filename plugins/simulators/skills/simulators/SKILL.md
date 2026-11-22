@@ -76,5 +76,12 @@ it.
 ## The command line
 
 `swarm simulators status | take | release | describe | drive | app |
-device | slimming` does the same from your shell, on your thread's
-simulator; `--help` at each level.
+device | shell | files | forward | slimming` does the same from your
+shell, on your thread's simulator; `--help` at each level.
+
+`swarm simulators devices` lists the user's own simulators and
+emulators, as their Simulator page does (`--json` too). They're the
+user's: look, don't touch. Booting, erasing, deleting or making one
+(`open`, `boot`, `shutdown`, `erase`, `delete`, `create`, `twin`,
+`appearance`) is theirs to run, from their terminal or the page; an
+agent is refused.

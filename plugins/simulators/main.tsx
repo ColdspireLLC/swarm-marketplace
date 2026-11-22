@@ -10,6 +10,7 @@
 import { hook, on, schedule, settings, ui } from "swarm";
 import { registerCli } from "./cli";
 import * as ops from "./ops";
+import { registerPage } from "./page";
 import { registerPanel } from "./panel";
 import { settingsPage } from "./settingsPage";
 import { learnTitles, restore, view } from "./state";
@@ -20,6 +21,7 @@ export function activate() {
 	registerTools();
 	registerCli();
 	registerPanel();
+	registerPage();
 	ui.page({ id: "simulators", title: "Simulators", icon: "mobile", render: settingsPage });
 	hook("turnEnd", ({ thread, turn }) => ops.turnEnded(thread, turn));
 	on("event", (e) => {

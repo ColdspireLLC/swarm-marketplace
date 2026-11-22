@@ -40,6 +40,23 @@ leases and simslim's and avdslim's slimming.
   to the thread's (`access.ts`). Test machines leaves the agents'
   emulators out, so only the thread holding one drives it.
 
+**The Simulator page** (`page.tsx`, `mine.ts`; the rules in
+`picker.ts`, tested): the user's own simulators, after bb's Simulator.
+The device picker in the title bar lists them running first, then
+recent, then by OS (Android's own AVDs too, and the agents' last, to
+watch), with a search and New simulator (a model of a runtime,
+`simctl create`). Picking one shows it live, filling the page in its own
+shape, booting it first where it's shut down; the page opens on the one
+picked last, else the Default device setting, else one running, else the
+newest iPhone. Under it, Dark/Light and Shut down; More has a 120 Hz
+copy, Erase and Delete (both asked first). A 120 Hz copy is a twin, as
+bb makes them: the model's device type copied into
+`~/Library/Developer/CoreSimulator/Profiles/DeviceTypes` with its main
+display at 120 Hz, and a "… (120 Hz)" simulator of it; bb's twin types,
+there already, are used as they are. `swarm simulators devices` lists
+them; `open`, `boot`, `shutdown`, `erase`, `delete`, `create`, `twin` and
+`appearance` act on them from the user's terminal only.
+
 **Live**: Swarm's window shows a slot's simulator live and takes its
 touches (Watch live, `swarm://screen/<machine>?phone=<serial>` or
 `?simulator=<UDID>`). An iOS simulator's comes from Swarm's core: the media
