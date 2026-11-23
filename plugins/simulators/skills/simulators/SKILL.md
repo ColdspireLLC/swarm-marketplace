@@ -37,11 +37,29 @@ minutes, default 4).
    the device does.
 3. `sim_app launch TARGET` (bundle id or package), or `openurl` a deep link.
 4. `sim_describe` for the elements and where to tap; `sim_drive` with
-   steps in screenshot pixels (`tap X Y`, `swipe X1 Y1 X2 Y2`,
-   `type TEXT`, `key home`); `capture: true` for a screenshot after.
-5. `sim_capture` with `show: true` to show the user what you saw: put the
-   line it gives in your reply.
+   steps in screenshot pixels (`tap X Y`, `doubletap X Y`, `long X Y`,
+   `swipe X1 Y1 X2 Y2`, `scroll down`, `type TEXT`, `key home`,
+   `rotate`), or an element by its name (`tap "Sign in"`); `capture:
+   true` for a screenshot after. `sim_capture settle: 500` waits for an
+   animation first.
+5. Show the user: `sim_capture show: true` for what you saw, or
+   `sim_record start` with a `title`, do it, `sim_record stop` for a clip
+   (up to 3 minutes); put the line each gives in your reply. `keep: true`
+   also saves it to their captures (the Simulator page): only when they
+   ask.
 6. `sim_release` when done early; your turn ending gives it back anyway.
+
+## The user's own simulator
+
+Yours is a fresh one; theirs has their apps, accounts and data. When the
+task needs theirs (a bug that only shows signed in, "look at what I have
+open"), `sim_device borrow` with `value` saying why: they're asked in the
+thread, and once they lend it, your calls on that platform use theirs.
+Look and test; never sign in or out of their accounts, change their
+settings past what the task needs, or delete their apps or data. You
+can't shut it down or erase it; they take it back when they like. When
+the user takes over a simulator you have, your calls on it are refused
+until they hand it back: wait, or say so in your reply.
 
 ## Commands and files on it
 
@@ -76,5 +94,12 @@ it.
 ## The command line
 
 `swarm simulators status | take | release | describe | drive | app |
-device | slimming` does the same from your shell, on your thread's
-simulator; `--help` at each level.
+device | shell | files | forward | slimming` does the same from your
+shell, on your thread's simulator; `--help` at each level.
+
+`swarm simulators devices` lists the user's own simulators and
+emulators, as their Simulator page does (`--json` too). They're the
+user's: look, don't touch. Booting, erasing, deleting or making one
+(`open`, `boot`, `shutdown`, `erase`, `delete`, `create`, `twin`,
+`appearance`) is theirs to run, from their terminal or the page; an
+agent is refused.

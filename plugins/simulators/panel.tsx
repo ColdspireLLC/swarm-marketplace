@@ -2,11 +2,21 @@
 // own simulators first, their last screen and their live view, then every
 // agent simulator, who has it and who waits), and the row above the
 // composer while the thread holds one.
-import { ui, type Child, type Color } from "swarm";
+import { storage, ui, type Child, type Color } from "swarm";
 import * as ops from "./ops";
 import { PLATFORM_NAME } from "./ops";
 import type { Slot } from "./pool";
 import { info, key, liveLink, placed, pool, shots, slimOn, title, view } from "./state";
+import { handBack, handBackKey, lend, loans, takeBack, takenOver, takeOver, takeOverKey } from "./control";
+import { recording } from "./captures";
+import { boot, current, markWatched, page, refreshIfStale } from "./mine";
+import type { Device } from "./picker";
+
+/** How long, said short: "3 min", "1 h 5 min". */
+function lasted(since: number): string {
+	const m = Math.max(0, Math.floor((ui.now() - since) / 60_000));
+	return m < 1 ? "under a minute" : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ""}`;
+}
 
 const line = { flexShrink: 1, minWidth: 0, textOverflow: "ellipsis", whiteSpace: "nowrap" } as const;
 
@@ -59,15 +69,22 @@ function mineCard(s: Slot, thread: string, compact = false): Child {
 			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: compact ? "center" : "flex-start" }}>
 				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
 					<ui.text style={{ fontWeight: 600, ...line }}>{i.name}</ui.text>
-					<ui.text style={compact ? { fontSize: "small", color: "text2" } : { fontSize: "small", color: "text2", ...line }}>{`${PLATFORM_NAME[s.platform]} · ${held ? stateOf(s) : "given back, kept for this thread"}${w ? ` · ${w.label}` : ""}`}</ui.text>
+					<ui.text style={compact ? { fontSize: "small", color: "text2" } : { fontSize: "small", color: "text2", ...line }}>{`${PLATFORM_NAME[s.platform]} · ${held ? (takenOver.has(key(s)) ? "you took over: the agent waits" : `${stateOf(s)}, ${lasted(s.holder!.since)}`) : "given back, kept for this thread"}${w ? ` · ${w.label}` : ""}`}</ui.text>
 					{held && s.holder?.note ? <ui.text style={{ fontSize: "small", color: "text2" }}>{s.holder.note}</ui.text> : null}
 				</ui.box>
+				{held ? (
+					takenOver.has(key(s)) ? (
+						<ui.button label="Let the agent drive" icon="bot" kind="soft" size="sm" onClick={() => handBack(s)} />
+					) : (
+						<ui.button label="Take over" icon="hand" kind="soft" size="sm" onClick={() => takeOver(s)} />
+					)
+				) : null}
 				{held ? <ui.iconButton icon="stop" label="Give it back: the agent's turn on it ends" onClick={() => ops.endTurn(s)} /> : null}
 			</ui.box>
 			{i.problem ? <ui.text style={{ fontSize: "small", color: "red" }}>{i.problem}</ui.text> : null}
 			{machine && device && i.booted && (ui.format ?? 0) >= 17 ? (
 				// On a phone, narrower than the phone, so the whole of its screen is on the phone's.
-				<ui.screen machine={machine} {...device} watch={held ? "this thread's agent" : undefined} label={i.name} style={compact ? { alignSelf: "center", width: 190 } : { alignSelf: "center", width: "100%", maxWidth: 380 }} />
+				<ui.screen machine={machine} {...device} watch={held && !takenOver.has(key(s)) ? "this thread's agent" : undefined} label={i.name} style={compact ? { alignSelf: "center", width: 190 } : { alignSelf: "center", width: "100%", maxWidth: 380 }} />
 			) : (
 				<ui.box style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
 					{screen(s, true, false, compact)}
@@ -77,6 +94,64 @@ function mineCard(s: Slot, thread: string, compact = false): Child {
 					</ui.box>
 				</ui.box>
 			)}
+		</ui.box>
+	);
+}
+
+/** The user's own simulator in a thread's panel: lent to it (with Take back), or there to lend. */
+function yoursCard(thread: string, compact: boolean): Child {
+	refreshIfStale(30_000);
+	const l = loans.now;
+	const lentHere = l?.thread === thread;
+	// The one lent to the thread; else the one picked in this thread's panel, while it's there; else the page's.
+	const pickedHere = (storage.get<Record<string, string>>("threadDevice") ?? {})[thread];
+	const d: Device | undefined = lentHere ? l!.device : (page.devices.find((x) => x.id === pickedHere && !x.agent) ?? current());
+	if (!d || d.agent) return null;
+	const running = page.devices.find((x) => x.id === d.id)?.state === "Booted" || lentHere;
+	const machine = page.machine[d.platform];
+	const dev = d.platform === "ios" ? { simulator: d.id } : d.serial ? { phone: d.serial } : null;
+	const took = takenOver.has(`${d.platform}:0`);
+	if (running) markWatched(d.id);
+	return (
+		<ui.box key="yours" style={{ gap: compact ? 12 : 10 }}>
+			<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+				<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+					{lentHere ? (
+						<ui.text style={{ fontWeight: 600, ...line }}>{`Your ${d.name}`}</ui.text>
+					) : (
+						<ui.menu label={`Your ${d.name}`} kind="ghost" size="sm" search="Search your simulators" style={{ alignSelf: "flex-start", marginLeft: -8 }}>
+							{() =>
+								page.devices
+									.filter((x) => !x.agent)
+									.sort((a, b) => Number(b.state === "Booted") - Number(a.state === "Booted") || a.name.localeCompare(b.name, undefined, { numeric: true }))
+									.map((x) => (
+										<ui.item
+											key={x.id}
+											label={x.name}
+											detail={`${x.os} · ${x.state === "Booted" ? "Running" : "Shut down: picking it boots it"}`}
+											checked={x.id === d.id}
+											onClick={() => {
+												storage.set("threadDevice", { ...(storage.get<Record<string, string>>("threadDevice") ?? {}), [thread]: x.id });
+												if (x.state === "Shutdown") void boot(x);
+											}}
+										/>
+									))
+							}
+						</ui.menu>
+					)}
+					<ui.text style={{ fontSize: "small", color: "text2", ...line }}>{lentHere ? (took ? "Lent to this thread · you took over" : `Lent to this thread · ${lasted(l!.since)}`) : l ? `Lent to ${title(l.thread)}` : running ? "Yours: agents don't use it" : "Shut down"}</ui.text>
+				</ui.box>
+				{lentHere ? (
+					<>
+						{took ? <ui.button label="Let the agent drive" icon="bot" kind="soft" size="sm" onClick={() => handBackKey(`${d.platform}:0`)} /> : <ui.button label="Take over" icon="hand" kind="soft" size="sm" onClick={() => takeOverKey(`${d.platform}:0`)} />}
+						<ui.button label="Take back" kind="primary" size="sm" onClick={() => takeBack()} />
+					</>
+				) : running && !l ? (
+					<ui.button label="Lend to this thread" icon="mobile" kind="soft" size="sm" onClick={() => lend(thread, d)} />
+				) : null}
+			</ui.box>
+			{lentHere ? <ui.text style={{ fontSize: "small", color: "text2" }}>Its agent uses your simulator, with your apps and data, in place of one of its own. It can't shut it down or erase it.</ui.text> : null}
+			{running && machine && dev && (ui.format ?? 0) >= 17 ? <ui.screen machine={machine} {...dev} watch={lentHere && !took ? "this thread's agent" : undefined} label={d.name} style={compact ? { alignSelf: "center", width: 190 } : { alignSelf: "center", width: "100%", maxWidth: 380 }} /> : null}
 		</ui.box>
 	);
 }
@@ -132,6 +207,12 @@ function compactPanel(thread: string, mine: Slot[], others: Slot[], waiting: typ
 	return (
 		<ui.scroll style={{ flex: 1 }}>
 			<ui.box style={{ padding: "12px 16px 24px", gap: 20 }}>
+				{loans.now?.thread === thread || !mine.length ? (
+					<ui.box style={{ gap: 8 }}>
+						{heading("Yours")}
+						<ui.box style={{ borderRadius: 10, backgroundColor: CARD, padding: 16 }}>{yoursCard(thread, true)}</ui.box>
+					</ui.box>
+				) : null}
 				{mine.length ? (
 					<ui.box style={{ gap: 8 }}>
 						{heading("This thread's", again)}
@@ -215,6 +296,8 @@ export function registerPanel() {
 						</ui.box>
 						{mine.map((s) => mineCard(s, thread))}
 						{mine.length ? <ui.divider /> : null}
+						{loans.now?.thread === thread || !mine.length ? yoursCard(thread, false) : null}
+						{loans.now?.thread === thread || !mine.length ? <ui.divider /> : null}
 						{others.length ? (
 							<ui.box style={{ gap: 4 }}>
 								<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2" }}>Agents' simulators</ui.text>
@@ -239,15 +322,36 @@ export function registerPanel() {
 			void view.v;
 			const mine = pool.heldBy(thread);
 			const waits = pool.waiting.filter((w) => w.thread === thread);
-			if (!mine.length && !waits.length) return null;
+			const lent = loans.now?.thread === thread ? loans.now : null;
+			const rec = recording.now?.thread === thread ? recording.now : null;
+			if (!mine.length && !waits.length && !lent) return null;
+			if (rec) {
+				return (
+					<ui.box label={`Recording ${rec.device.name}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+						<ui.box style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: "red", animation: { name: "pulse" }, flexShrink: 0 }} />
+						<ui.text style={{ fontWeight: 500, color: "red", flexShrink: 0 }}>Recording</ui.text>
+						<ui.text style={{ fontWeight: 500, ...line }}>{rec.device.name}</ui.text>
+						<ui.text style={{ color: "text3", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{`${Math.floor((ui.now(1000) - rec.at) / 60000)}:${String(Math.floor(((ui.now(1000) - rec.at) / 1000) % 60)).padStart(2, "0")}`}</ui.text>
+					</ui.box>
+				);
+			}
+			if (lent && !mine.length) {
+				return (
+					<ui.box label={`Using your ${lent.device.name}, lent`} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
+						<ui.text style={{ fontWeight: 500, color: "accent", flexShrink: 0 }}>Using your</ui.text>
+						<ui.text style={{ fontWeight: 500, ...line }}>{lent.device.name}</ui.text>
+						<ui.text style={{ color: "text3", flexShrink: 0 }}>{`lent ${lasted(lent.since)} ago`}</ui.text>
+					</ui.box>
+				);
+			}
 			const s = mine[0];
-			const verb = s ? (info(s).busy ? info(s).busy[0]!.toUpperCase() + info(s).busy.slice(1) : s.running ? "Using" : "Holding") : "Waiting for";
+			const verb = s ? (info(s).busy ? info(s).busy[0]!.toUpperCase() + info(s).busy.slice(1) : takenOver.has(key(s)) ? "You took over" : s.running ? "Using" : "Holding") : "Waiting for";
 			const name = s ? info(s).name : waits[0]!.platform === "ios" ? "an iOS simulator" : "an Android emulator";
 			return (
 				<ui.box label={`${verb} ${name}`} style={{ flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 }}>
 					<ui.text style={{ fontWeight: 500, color: s ? (s.running || info(s).busy ? "accent" : "text2") : "amber", flexShrink: 0 }}>{verb}</ui.text>
 					<ui.text style={{ fontWeight: 500, ...line }}>{name}</ui.text>
-					{s ? <ui.text style={{ color: "text3", flexShrink: 0 }}>{"goes back when this turn ends"}</ui.text> : null}
+					{s ? <ui.text style={{ color: "text3", flexShrink: 0 }}>{`${lasted(s.holder!.since)} · goes back when this turn ends`}</ui.text> : null}
 					{mine.length > 1 ? <ui.text style={{ color: "text3", flexShrink: 0 }}>{`+${mine.length - 1}`}</ui.text> : null}
 				</ui.box>
 			);
@@ -260,6 +364,7 @@ export function registerPanel() {
 		action: ({ thread }) => {
 			void view.v;
 			const mine = pool.heldBy(thread);
+			if (!mine.length && loans.now?.thread === thread) return <ui.button label="Take back" size="sm" kind="ghost" onClick={() => takeBack()} />;
 			if (!mine.length) return null;
 			const w = placed.get(mine[0]!.platform);
 			const live = w ? liveLink(w, mine[0]!, title(thread)) : "";

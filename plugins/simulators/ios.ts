@@ -1,9 +1,8 @@
 // iOS simulators, on a Mac: simctl for the devices, their apps and
-// settings, and WebDriverAgent, built once for the simulator and run on
-// each agent simulator on a port of its own, for touches and reading the
-// screen. Everything runs on the Mac (where.ts), through Swarm.
+// settings. Their touches, keys and elements are Swarm's own, through
+// swarm.machines.screen (ops.ts, hw.tsx). Everything runs on the Mac
+// (where.ts), through Swarm.
 import { iosKeepsOverrides, disabledPath, slimmedLabels, slimmedPlist } from "./slimios";
-import { MAX_ELEMENTS, type Element } from "./elements";
 import { pickModel, pngSize, SimError, unbase64, type Runtime } from "./devices";
 export { SimError, unbase64 } from "./devices";
 export type { Runtime } from "./devices";
@@ -188,155 +187,15 @@ xcrun simctl privacy "$1" reset all 2>/dev/null; xcrun simctl location "$1" clea
 	);
 }
 
-// ---- WebDriverAgent ----
+// ---- What was WebDriverAgent ----
 
-/** Where WebDriverAgent's built for the simulator, on the Mac, kept across restarts. */
-const WDA = "$HOME/Library/Caches/swarm-simulators/wda";
-/** Slot n's WebDriverAgent listens on this port of the Mac (simulators share its network). */
-export const wdaPort = (n: number) => 8300 + n;
-
-/** Builds WebDriverAgent for the simulator where it isn't: no signing needed, a few minutes the first time. */
-export async function buildWDA(w: Where) {
-	await mac(
-		w,
-		`set -e; mkdir -p ${WDA}; cd ${WDA}
-ls Build/Products/*iphonesimulator*.xctestrun >/dev/null 2>&1 && exit 0
-[ -d src/.git ] || git clone -q --depth 1 https://github.com/appium/WebDriverAgent src
-xcrun xcodebuild build-for-testing -project src/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination "generic/platform=iOS Simulator" -derivedDataPath ${WDA} CODE_SIGNING_ALLOWED=NO > build.log 2>&1 || { tail -30 build.log; exit 1; }`,
-		[],
-		{ timeout: 600_000 },
-	);
-}
-
-const sessions = new Map<string, string>();
-
-async function wdaHTTP(w: Where, port: number, method: string, path: string, body?: unknown, timeoutS = 60): Promise<any> {
-	const r = await runAt(w, "curl", ["-sS", "-g", "--max-time", String(timeoutS), "-X", method, "-H", "Content-Type: application/json", ...(body === undefined ? [] : ["--data-binary", "@-"]), `http://127.0.0.1:${port}${path}`], {
-		input: body === undefined ? undefined : JSON.stringify(body),
-		timeout: (timeoutS + 5) * 1000,
-	});
-	if (r.code !== 0) throw new SimError(`WebDriverAgent isn't answering (${out(r) || `curl ${r.code}`})`);
-	const v = JSON.parse(r.stdout)?.value;
-	if (v && typeof v === "object" && "error" in v) throw new SimError(`WebDriverAgent: ${v.message || v.error}`);
-	return v;
-}
-
-/** WebDriverAgent on slot n's simulator, started (and built) where it isn't answering. */
-export async function wda(w: Where, n: number, udid: string): Promise<number> {
-	const port = wdaPort(n);
-	const ok = await wdaHTTP(w, port, "GET", "/status", undefined, 3).then(
-		() => true,
-		() => false,
-	);
-	if (ok) return port;
-	sessions.delete(udid);
-	await buildWDA(w);
-	await mac(
-		w,
-		`x=$(ls ${WDA}/Build/Products/*iphonesimulator*.xctestrun | head -1)
-pkill -f "swarm-sim-wda-$1" 2>/dev/null
-TEST_RUNNER_USE_PORT=$2 nohup xcrun xcodebuild test-without-building -xctestrun "$x" -destination "id=$1" -derivedDataPath "${WDA}/run-$1" SWARM_TAG=swarm-sim-wda-$1 < /dev/null > "${WDA}/run-$1.log" 2>&1 &
-for i in $(seq 90); do curl -s --max-time 1 "http://127.0.0.1:$2/status" >/dev/null && exit 0; sleep 1; done
-echo "WebDriverAgent didn't start in 90 s: ${WDA}/run-$1.log on the Mac says why" >&2; exit 1`,
-		[udid, String(port)],
-		{ timeout: 180_000 },
-	);
-	return port;
-}
-
-/** Stops slot n's WebDriverAgent (as its simulator shuts down). */
-export async function stopWDA(w: Where, udid: string) {
-	sessions.delete(udid);
-	await mac(w, `pkill -f "swarm-sim-wda-$1" 2>/dev/null; exit 0`, [udid]).catch(() => {});
-}
-
-async function inSession(w: Where, port: number, udid: string, method: string, path: string, body?: unknown): Promise<any> {
-	const s = async () => {
-		let id = sessions.get(udid);
-		if (!id) {
-			id = String((await wdaHTTP(w, port, "POST", "/session", { capabilities: { alwaysMatch: {} } }))?.sessionId ?? "");
-			if (!id) throw new SimError("WebDriverAgent made no session.");
-			sessions.set(udid, id);
-		}
-		return id;
-	};
-	try {
-		return await wdaHTTP(w, port, method, `/session/${await s()}${path}`, body);
-	} catch (e) {
-		if (!(e instanceof SimError) || !/session/i.test(e.message)) throw e;
-		sessions.delete(udid);
-		return wdaHTTP(w, port, method, `/session/${await s()}${path}`, body);
-	}
-}
-
-/** Screenshot pixels per WebDriverAgent point. */
-async function scale(w: Where, port: number, udid: string): Promise<number> {
-	const size = await inSession(w, port, udid, "GET", "/window/size");
-	const shot = pngSize(await screenshot(w, udid));
-	return size?.width ? shot.width / size.width : 3;
-}
-
-export const IOS_STEPS = "tap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], type TEXT, key home|enter|lock|volumeup|volumedown, wait MS (screenshot pixels)";
-
-/** Runs input steps, in screenshot pixels. */
-export async function drive(w: Where, n: number, udid: string, steps: string[]) {
-	const port = await wda(w, n, udid);
-	const k = await scale(w, port, udid);
-	const pt = (v: string) => Number(v) / k;
-	for (const step of steps) {
-		const [op = "", ...rest] = step.trim().split(/\s+/);
-		const num = rest.map(Number);
-		const xy = { tap: 2, long: 2, swipe: 4 }[op.toLowerCase()] ?? 0;
-		if (rest.length < xy || num.slice(0, xy).some((v) => !Number.isFinite(v))) throw new SimError(`${step}: ${IOS_STEPS}`);
-		switch (op.toLowerCase()) {
-			case "tap":
-				await inSession(w, port, udid, "POST", "/wda/tap", { x: pt(rest[0]!), y: pt(rest[1]!) });
-				break;
-			case "long":
-				await inSession(w, port, udid, "POST", "/wda/touchAndHold", { x: pt(rest[0]!), y: pt(rest[1]!), duration: (num[2] || 800) / 1000 });
-				break;
-			case "swipe":
-				await inSession(w, port, udid, "POST", "/wda/dragfromtoforduration", { fromX: pt(rest[0]!), fromY: pt(rest[1]!), toX: pt(rest[2]!), toY: pt(rest[3]!), duration: (num[4] || 300) / 1000 });
-				break;
-			case "type":
-				await inSession(w, port, udid, "POST", "/wda/keys", { value: [...step.trim().slice(4).trimStart()] });
-				break;
-			case "key": {
-				const name = (rest[0] ?? "").toLowerCase();
-				if (name === "home") await wdaHTTP(w, port, "POST", "/wda/homescreen");
-				else if (name === "enter" || name === "return") await inSession(w, port, udid, "POST", "/wda/keys", { value: ["\n"] });
-				else if (name === "lock") await inSession(w, port, udid, "POST", "/wda/lock");
-				else if (name === "volumeup" || name === "volumedown") await inSession(w, port, udid, "POST", "/wda/pressButton", { name: name === "volumeup" ? "volumeUp" : "volumeDown" });
-				else throw new SimError(`no key ${name}: home, enter, lock, volumeup, volumedown`);
-				break;
-			}
-			case "wait":
-				await new Promise((r) => setTimeout(r, Math.min(num[0] || 500, 10_000)));
-				break;
-			default:
-				throw new SimError(`no step ${op}: ${IOS_STEPS}`);
-		}
-	}
-}
-
-/** The screen as named elements, at screenshot pixels. */
-export async function describe(w: Where, n: number, udid: string): Promise<Element[]> {
-	const port = await wda(w, n, udid);
-	const k = await scale(w, port, udid);
-	const tree = await wdaHTTP(w, port, "GET", "/source?format=json", undefined, 90);
-	const list: Element[] = [];
-	const walk = (x: any) => {
-		if (!x || list.length >= MAX_ELEMENTS) return;
-		const label = String(x.label || x.name || x.value || "").trim();
-		const r = x.rect;
-		if (label && r && x.isVisible !== "0" && x.isVisible !== false && r.width > 0 && r.height > 0) {
-			const role = String(x.type || "").replace(/^XCUIElementType/, "").toLowerCase();
-			list.push({ role, label, x: r.x * k, y: r.y * k, w: r.width * k, h: r.height * k, action: /button|cell|link|switch|textfield|securetextfield|searchfield|tab|key|slider|picker|icon|menuitem/.test(role) });
-		}
-		for (const c of x.children ?? []) walk(c);
-	};
-	walk(tree);
-	return list;
+/**
+ * Where an older plugin built WebDriverAgent, and its runs' tag: Swarm
+ * drives and reads a simulator itself now (swarm.machines.screen), so
+ * they're stopped and removed as the plugin starts (no leftover files).
+ */
+export async function forgetWDA(w: Where) {
+	await mac(w, `pkill -f "swarm-sim-wda-" 2>/dev/null; pkill -f "swarm-simulators/wda" 2>/dev/null; rm -rf "$HOME/Library/Caches/swarm-simulators/wda"; exit 0`).catch(() => {});
 }
 
 export { sh };

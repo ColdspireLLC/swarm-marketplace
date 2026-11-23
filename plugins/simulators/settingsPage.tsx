@@ -6,6 +6,8 @@ import { settings, ui, type Child } from "swarm";
 import { ANDROID_CATEGORIES, ANDROID_SETTINGS, androidMemory } from "./slimandroid";
 import { IOS_CATEGORIES } from "./slimios";
 import { joinedMachines } from "./where";
+import { doctor, examine } from "./doctor";
+import { doctorBody } from "./page";
 
 /** Text settings being edited, saved with Enter or Save. */
 const draft = ui.store(new Map<string, string>(), { shallow: true });
@@ -81,8 +83,9 @@ function section(title: string, ...rows: Child[]): Child {
 	);
 }
 
-function toggle(key: string): Child {
-	return <ui.toggle checked={settings.get(key) !== false} onChange={(on) => void settings.set({ [key]: on })} />;
+function toggle(key: string, fallback = true): Child {
+	const on = fallback ? settings.get(key) !== false : settings.get(key) === true;
+	return <ui.toggle checked={on} onChange={(v) => void settings.set({ [key]: v })} />;
 }
 
 /**
@@ -167,8 +170,25 @@ export function settingsPage({ args }: { args: { [name: string]: string } }): Ch
 	return (
 		<ui.box style={{ gap: compact ? 24 : 20, maxWidth: 680 }}>
 			<ui.text style={{ color: "text2" }}>
-				Each agent gets an iOS simulator or Android emulator of its own, made and booted for it, until its turn ends. None of your simulators or their data are touched.
+				Your own simulators are on the Simulator page, live. Each agent gets an iOS simulator or Android emulator of its own, made and booted for it, until its turn ends; it uses yours only when you lend it.
 			</ui.text>
+			{section(
+				"Your simulators",
+				row("Default device", "The one the Simulator page opens on: a name or a UDID. Empty: the one you picked last, else one running, else the newest iPhone.", null, input("defaultDevice", "iPhone 17 Pro")),
+				row("Shut down when unused", "Shut your simulator down after 30 minutes with nobody watching it: about 2 GB of memory back. Opening it boots it again (about 20 s).", toggle("shutdownUnused", false)),
+				row("Instant reopen", "Keep the live view streaming for up to an hour after you leave, so it shows at once when you come back. A little of the Mac's CPU meanwhile.", toggle("instantReopen", false)),
+				row("Captures kept", "Screenshots and recordings the page keeps; older ones are deleted.", number("captureLimit", { min: 1, max: 1000, fallback: 100, label: "captures kept", unit: "" }), undefined, true),
+				row("Captures' disk budget", "The most they take on the simulators' computer; the oldest go past it.", number("captureBudget", { min: 1, max: 50, fallback: 2048, scale: 1024, label: "disk budget for captures", unit: "GB" }), undefined, true),
+			)}
+			{section(
+				"Doctor",
+				row(
+					"Check the setup",
+					"The Mac, Xcode, runtimes, disk, the live view, and Android's SDK, each with what fixes it.",
+					<ui.button label={doctor.busy ? "Checking…" : doctor.at ? "Check again" : "Check"} icon="heart-pulse" kind="soft" size="sm" disabled={doctor.busy} onClick={() => void examine()} />,
+					doctor.at || doctor.busy ? doctorBody(false) : undefined,
+				),
+			)}
 			{section(
 				"The agents' simulators",
 				row("iOS simulators", "How many agents may run at once, a thread's each: about 1 GB each slim, 3 GB stock.", number("iosAgents", { min: 0, max: 8, fallback: 2, label: "iOS simulators", unit: "" }), undefined, true),

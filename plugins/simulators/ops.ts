@@ -6,8 +6,8 @@
 import { call } from "swarm";
 import * as android from "./android";
 import * as access from "./access";
-import { elementLines } from "./elements";
-import { bring, threadInfo } from "./transfer";
+import { elementLines, type Element } from "./elements";
+import { bring, copy, removeOn, samePlace, tempOn, threadInfo, threadPlace, threadWhere } from "./transfer";
 import * as ios from "./ios";
 import { SimError } from "./ios";
 import { IDLE_MS, PoolError, type Platform, type Slot } from "./pool";
@@ -16,6 +16,11 @@ import { IOS_CATEGORIES, iosLabelsOff, keptNote } from "./slimios";
 import { info, keepAndroid, keepIOS, key, liveLink, message, pool, quoted, setInfo, shots, slimOn, title, where } from "./state";
 import type { Where } from "./where";
 import { settings } from "swarm";
+import * as hw from "./hw";
+import { pngSize } from "./devices";
+import * as captures from "./captures";
+import { borrow, checkDriving, isLoan, lentTo, loanNote, loans, sweepLoan, takenOver } from "./control";
+import type { Device } from "./picker";
 
 export interface Out {
 	text: string;
@@ -185,6 +190,13 @@ export async function mine(thread: string, p: Platform, o: { wait?: number; note
 	// A call answers within READY_WAIT, its time in line and the simulator's getting ready
 	// together: the agent's client gives up on a tool after a minute.
 	const start = Date.now();
+	// The user's own simulator, where they lent it to this thread: in place of one of the pool's.
+	const lent = lentTo(thread, p);
+	if (lent) {
+		const first = !loans.told;
+		loans.told = true;
+		return { slot: lent, w: await where(p), notes: first ? [loanNote()] : [], got: first };
+	}
 	const { slot, fresh } = await pool.take(thread, p, { waitMs: Math.min(waitMs(o.wait), READY_WAIT), note: o.note, turn: await turnOf(thread) });
 	const got = fresh || !info(slot).booted;
 	let notes: string[] = [];
@@ -220,6 +232,7 @@ export async function mine(thread: string, p: Platform, o: { wait?: number; note
 /** Who the simulator is: its name, its UDID or serial, and how to build for it. */
 function about(s: Slot, w: Where): string {
 	const i = info(s);
+	if (isLoan(s)) return s.platform === "ios" ? `${i.name}, UDID ${i.udid}, on ${w.label}: the user's own, lent to you.` : `${i.name}, adb serial ${i.serial}, on ${w.label}: the user's own, lent to you.`;
 	if (s.platform === "ios")
 		return [
 			`${i.name}, UDID ${i.udid}, on ${w.label}: yours alone until your turn ends.`,
@@ -261,6 +274,8 @@ export async function status(): Promise<Out> {
 		if (waiting.length) lines.push(`  Waiting: ${waiting.map((x) => quoted(x.thread)).join(", ")}`);
 		if (p === "android" && sdkProblem) lines.push(`  ${sdkProblem}`);
 	}
+	if (loans.now) lines.push(`The user's ${loans.now.device.name} is lent to ${quoted(loans.now.thread)}.`);
+	if (takenOver.size) lines.push(`The user took over: ${[...takenOver].join(", ")}; the agents' calls on those wait until they hand them back.`);
 	return { text: lines.join("\n") };
 }
 
@@ -268,6 +283,7 @@ export async function status(): Promise<Out> {
 async function withSim<T>(thread: string, platform: string | undefined, o: { wait?: number }, fn: (s: Slot, w: Where) => Promise<T>): Promise<{ v: T; slot: Slot; w: Where; intro: string }> {
 	const p = platformOf(thread, platform);
 	const { slot, w, notes, got } = await mine(thread, p, o);
+	checkDriving(slot, info(slot).name);
 	let v: T;
 	try {
 		v = await pool.using(slot, () => fn(slot, w));
@@ -290,30 +306,178 @@ async function shoot(s: Slot, w: Where): Promise<Uint8Array> {
 const join = (...parts: (string | undefined)[]) => parts.filter(Boolean).join("\n\n");
 
 /** Keeps a picture with the thread, for its reply to show: the Markdown line. */
-export async function showLine(thread: string, data: Uint8Array, caption: string): Promise<string> {
+export async function showLine(thread: string, data: Uint8Array, caption: string, _kind: "png" | "mp4" = "png"): Promise<string> {
 	let bin = "";
 	for (let i = 0; i < data.length; i += 0x8000) bin += String.fromCharCode(...data.subarray(i, i + 0x8000));
 	const path = await call("KeepMedia", { thread, file: btoa(bin) });
 	return `![${caption.replace(/[[\]]/g, "")}](<${path.replace(/\\/g, "/")}>)`;
 }
 
-export async function capture(thread: string, platform: string | undefined, o: { show?: boolean; wait?: number }): Promise<Out> {
-	const { v: data, slot, intro } = await withSim(thread, platform, o, shoot);
+export async function capture(thread: string, platform: string | undefined, o: { show?: boolean; keep?: boolean; settle?: number; label?: string; wait?: number }): Promise<Out> {
+	const { v: data, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
+		// Let an animation finish first, where asked.
+		if (o.settle) await new Promise((r) => setTimeout(r, Math.min(5000, Math.max(0, o.settle!))));
+		return shoot(s, w);
+	});
 	const notes = [`${info(slot).name}'s screen, at its pixels (what sim_drive takes).`];
+	if (o.keep) {
+		await captures.screenshot(deviceOf(slot), { thread, title: o.label });
+		notes.push("Saved to the user's captures, on the Simulator page.");
+	}
 	if (o.show) notes.push(`Put this line in your reply, on a line of its own, to show it:\n${await showLine(thread, data, `Screenshot of ${info(slot).name}`)}`);
 	return { text: join(intro, notes.join("\n")), shot: { data, mimeType: "image/png" } };
 }
 
 export async function describe(thread: string, platform: string | undefined, o: { wait?: number }): Promise<Out> {
-	const { v: list, slot, intro } = await withSim(thread, platform, o, async (s, w) => (s.platform === "ios" ? ios.describe(w, s.n, info(s).udid!) : android.describe(w, await sdkOf(w), info(s).serial!)));
+	const { v: list, slot, intro } = await withSim(thread, platform, o, (s, w) => elementsOf(s, w));
 	if (!list.length) return { text: join(intro, `${info(slot).name} shows nothing named: look with sim_capture.`) };
 	return { text: join(intro, `${info(slot).name}'s screen, ${list.length} element(s), at screenshot pixels (tap them with sim_drive):\n${elementLines(list)}`) };
 }
 
+/** Swarm's way into a slot's screen, where this Swarm drives a device's screen (swarm.machines.screen); null where it can't. */
+const screenOfSlot = (s: Slot, w: Where) => (w.ssh ? null : hw.screenOf(w.machine ?? "server", s.platform === "ios" ? { simulator: info(s).udid } : { phone: info(s).serial }));
+
+/** What an iOS simulator needs that this Swarm hasn't: said to the agent, with what it can do meanwhile. */
+const NEEDS_SWARM = "This Swarm can't drive or read an iOS simulator's screen itself yet (a newer Swarm does, swarm!875): sim_capture, sim_app and sim_device work meanwhile; tell the user it needs updating.";
+
+/** The screen as named elements: Swarm's own reading of a simulator (describe), uiautomator on Android. */
+async function elementsOf(s: Slot, w: Where): Promise<Element[]> {
+	if (s.platform === "android") return android.describe(w, await sdkOf(w), info(s).serial!);
+	const scr = screenOfSlot(s, w);
+	if (!scr || !hw.canDescribe(scr)) throw new SimError(NEEDS_SWARM.replace("drive or read", "read"));
+	return hw.describe(scr, () => shoot(s, w));
+}
+
+/** Steps that name an element ("tap \"Sign in\""), with its middle's point in its place, as the screen says them now. */
+async function placed(s: Slot, w: Where, steps: string[]): Promise<string[]> {
+	const named = /^(tap|doubletap|long)\s+(?:"([^"]+)"|@(\S.*?))(\s+\d+)?\s*$/i;
+	if (!steps.some((x) => named.test(x.trim()))) return steps;
+	const list = await elementsOf(s, w);
+	return steps.map((x) => {
+		const m = named.exec(x.trim());
+		if (!m) return x;
+		const want = (m[2] ?? m[3] ?? "").trim().toLowerCase();
+		const e = list.find((el) => el.label.toLowerCase() === want) ?? list.find((el) => el.action && el.label.toLowerCase().includes(want)) ?? list.find((el) => el.label.toLowerCase().includes(want));
+		if (!e) throw new SimError(`Nothing named “${m[2] ?? m[3]}” on the screen: sim_describe lists what is.`);
+		return `${m[1]} ${Math.round(e.x + e.w / 2)} ${Math.round(e.y + e.h / 2)}${m[4] ?? ""}`;
+	});
+}
+
+/**
+ * Runs a step on Swarm's own input (swarm.machines.screen): every kind
+ * sim_drive takes, in screenshot pixels (what sim_capture shows) made
+ * fractions of the screen. False where it has no way (volume keys): the
+ * driver's then.
+ */
+async function hidStep(scr: hw.DeviceScreen, step: string, size: () => Promise<{ width: number; height: number }>): Promise<boolean> {
+	const [op = "", ...rest] = step.trim().split(/\s+/);
+	const n = rest.map(Number);
+	const at = async (x: number, y: number) => {
+		const { width, height } = await size();
+		return { x: Math.min(1, Math.max(0, x / width)), y: Math.min(1, Math.max(0, y / height)) };
+	};
+	const need = (k: number) => {
+		if (n.length < k || n.slice(0, k).some((v) => !Number.isFinite(v))) throw new SimError(`${step}: ${hw.STEPS}`);
+	};
+	switch (op.toLowerCase()) {
+		case "tap": {
+			need(2);
+			const p = await at(n[0]!, n[1]!);
+			await scr.tap(p.x, p.y);
+			return true;
+		}
+		case "doubletap": {
+			need(2);
+			const p = await at(n[0]!, n[1]!);
+			await scr.tap(p.x, p.y);
+			await scr.tap(p.x, p.y);
+			return true;
+		}
+		case "long": {
+			need(2);
+			const p = await at(n[0]!, n[1]!);
+			await scr.swipe(p, p, n[2] || 800);
+			return true;
+		}
+		case "swipe": {
+			need(4);
+			await scr.swipe(await at(n[0]!, n[1]!), await at(n[2]!, n[3]!), n[4] || 300);
+			return true;
+		}
+		case "scroll": {
+			const d = { up: [0, 1 / 3], down: [0, -1 / 3], left: [1 / 3, 0], right: [-1 / 3, 0] }[(rest[0] ?? "").toLowerCase()];
+			if (!d) throw new SimError(`${step}: scroll up|down|left|right [X Y]`);
+			const from = Number.isFinite(n[1]) && Number.isFinite(n[2]) ? await at(n[1]!, n[2]!) : { x: 0.5, y: 0.5 };
+			await scr.swipe(from, { x: Math.min(1, Math.max(0, from.x + d[0]!)), y: Math.min(1, Math.max(0, from.y + d[1]!)) }, 150);
+			return true;
+		}
+		case "pinch": {
+			need(3);
+			if (!(n[2]! > 0)) throw new SimError(`${step}: pinch X Y SCALE (2 zooms in, 0.5 out)`);
+			await scr.pinch(await at(n[0]!, n[1]!), n[2]!);
+			return true;
+		}
+		case "type":
+			await scr.type(step.trim().slice(4).trimStart());
+			return true;
+		case "rotate":
+			await scr.rotate();
+			return true;
+		case "key": {
+			const k = (rest[0] ?? "").toLowerCase();
+			if (/^(home|apps|lock|keyboard|swipe-home|back|recents|power)$/.test(k)) await scr.press(k === "recents" ? "recents" : k);
+			else if (/^(enter|return|delete|backspace|tab|escape|space|up|down|left|right)$/.test(k)) await scr.key(k === "return" ? "enter" : k === "delete" ? "backspace" : k);
+			else return false;
+			return true;
+		}
+		case "wait":
+			await new Promise((r) => setTimeout(r, Math.min(n[0] || 500, 10_000)));
+			return true;
+	}
+	throw new SimError(`no step ${op}: ${hw.STEPS}`);
+}
+
 export async function drive(thread: string, platform: string | undefined, steps: string[], o: { capture?: boolean; wait?: number }): Promise<Out> {
 	const { v: data, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
-		if (s.platform === "ios") await ios.drive(w, s.n, info(s).udid!, steps);
-		else await android.drive(w, await sdkOf(w), info(s).serial!, steps);
+		steps = await placed(s, w, steps);
+		const scr = screenOfSlot(s, w);
+		if (!scr && s.platform === "ios") throw new SimError(NEEDS_SWARM);
+		// The screenshot's size the agent's points are in: the last one taken, else one now; again after a turn.
+		const known: { size: { width: number; height: number } | null } = { size: null };
+		const sizeOf = async () => {
+			if (known.size) return known.size;
+			const last = shots.get(key(s));
+			known.size = pngSize(last && Date.now() - last.at < 60_000 ? last.data : await shoot(s, w));
+			return known.size;
+		};
+		// In order: Swarm's own input (each step the user's Take over stops); on Android, adb's input where Swarm hasn't its own.
+		let run: string[] = [];
+		const flush = async () => {
+			if (!run.length) return;
+			if (s.platform === "ios") throw new SimError(`${run.join("; ")}: Swarm's input can't take that on an iOS simulator (${hw.STEPS}).`);
+			await android.drive(w, await sdkOf(w), info(s).serial!, run);
+			run = [];
+		};
+		let own = !!scr;
+		for (const step of steps) {
+			checkDriving(s, info(s).name);
+			if (own) {
+				try {
+					if (await hidStep(scr!, step, sizeOf)) {
+						if (/^rotate\b/i.test(step.trim()) && known.size) known.size = { width: known.size.height, height: known.size.width };
+						continue;
+					}
+				} catch (e) {
+					if (e instanceof SimError || s.platform === "ios") throw e;
+					// The phone's machine can't (a Swarm older than the window's): adb for the rest.
+					if (/^(rotate|pinch|key\s+(apps|keyboard|swipe-home))/i.test(step.trim())) throw e;
+					own = false;
+				}
+			} else if (/^pinch\s/i.test(step.trim())) throw new SimError("A pinch needs a newer Swarm, which drives the simulator's own input.");
+			run.push(step);
+			await flush();
+		}
+		await flush();
 		return o.capture ? shoot(s, w) : undefined;
 	});
 	return { text: join(intro, `Done on ${info(slot).name}: ${steps.join("; ")}.`), shot: data ? { data, mimeType: "image/png" } : undefined };
@@ -391,6 +555,14 @@ export async function app(thread: string, platform: string | undefined, action: 
 /** The device itself: its settings, and shut down, reboot, erase, slim. */
 export async function device(thread: string, platform: string | undefined, action: string, value: string | undefined, o: { app?: string; wait?: number }): Promise<Out> {
 	if (action === "shutdown" || action === "reboot" || action === "erase") return power(thread, platform, action, o);
+	if (action === "borrow") {
+		const p = platformOf(thread, platform);
+		const { current: shown, page, refresh } = await import("./mine");
+		await refresh();
+		const d = [shown(), ...page.devices].find((x) => x && !x.agent && x.platform === p && x.state === "Booted");
+		if (!d) throw new SimError(`The user has no ${p === "ios" ? "iOS simulator" : "Android emulator"} of their own running to lend: ask them in your reply.`);
+		return { text: borrow(thread, d, value ?? "") };
+	}
 	const { v, intro } = await withSim(thread, platform, o, async (s, w) => {
 		const i = info(s);
 		if (action === "measure") {
@@ -410,6 +582,7 @@ export async function device(thread: string, platform: string | undefined, actio
  */
 async function power(thread: string, platform: string | undefined, action: "shutdown" | "reboot" | "erase", o: { wait?: number }): Promise<Out> {
 	const p = platformOf(thread, platform);
+	if (lentTo(thread, p)) throw new SimError(`${loans.now!.device.name} is the user's own, lent to you: you can't ${action === "erase" ? "erase" : action === "reboot" ? "reboot" : "shut down"} it.`);
 	const { slot: s } = await pool.take(thread, p, { waitMs: Math.min(waitMs(o.wait), READY_WAIT), turn: await turnOf(thread) });
 	const w = await where(p);
 	return pool.using(s, async () => {
@@ -418,8 +591,7 @@ async function power(thread: string, platform: string | undefined, action: "shut
 			if (s.platform === "ios") {
 				const udid = info(s).udid ?? (await ios.devices(w)).find((d) => d.name.startsWith(ios.agentPrefix(s.n)))?.udid;
 				if (udid) {
-					await ios.stopWDA(w, udid);
-					await (action === "erase" ? ios.erase(w, udid) : ios.shutdown(w, udid));
+						await (action === "erase" ? ios.erase(w, udid) : ios.shutdown(w, udid));
 				}
 			} else {
 				const sdk = await sdkOf(w);
@@ -469,6 +641,7 @@ export async function forward(thread: string, platform: string | undefined, port
  * couple of GB while it runs).
  */
 export async function sweep() {
+	sweepLoan();
 	const { idle } = pool.sweep();
 	for (const s of idle) {
 		const i = info(s);
@@ -477,7 +650,6 @@ export async function sweep() {
 		try {
 			const w = await where(s.platform);
 			if (s.platform === "ios") {
-				await ios.stopWDA(w, i.udid!);
 				await ios.shutdown(w, i.udid!);
 			} else await android.shutdown(w, await sdkOf(w), s.n);
 			setInfo(s, { booted: false, serial: undefined });
@@ -497,6 +669,7 @@ export async function look() {
 			const w = await where(p);
 			if (p === "ios") {
 				if (w.label === "no Mac") continue;
+				void ios.forgetWDA(w);
 				const list = await ios.devices(w);
 				for (const s of pool.slots.filter((x) => x.platform === "ios")) {
 					const d = list.find((x) => x.name.startsWith(ios.agentPrefix(s.n)));
@@ -531,3 +704,56 @@ export function endTurn(s: Slot) {
 }
 
 export { IDLE_MS, PoolError, liveLink, title };
+
+/** A slot's simulator as the page's devices are, for captures. */
+function deviceOf(s: Slot): Device {
+	const i = info(s);
+	return { id: s.platform === "ios" ? i.udid! : `avd:${android.avdName(s.n)}`, platform: s.platform, name: i.name, state: "Booted", os: "", serial: i.serial };
+}
+
+/**
+ * Records the thread's simulator for the user: start (a title for the
+ * clip), then stop, which gives the line that shows the clip in the reply;
+ * keep saves it to the user's captures too. Up to 3 minutes.
+ */
+export async function record(thread: string, platform: string | undefined, action: string, o: { title?: string; keep?: boolean; wait?: number }): Promise<Out> {
+	if (action === "start") {
+		if (!o.title?.trim()) throw new SimError("A recording needs a title: what it shows, for the user.");
+		const { v, slot, intro } = await withSim(thread, platform, o, async (s) => captures.startRecording(deviceOf(s), { thread, title: o.title!.trim() }));
+		if (v) throw new SimError(v);
+		return { text: join(intro, `Recording ${info(slot).name} (up to 3 minutes): do what it should show, then sim_record stop.`) };
+	}
+	if (action === "stop") {
+		const r = captures.recording.now;
+		if (!r || r.thread !== thread) throw new SimError("You're not recording: sim_record start first.");
+		const c = await captures.stopRecording();
+		if (typeof c === "string") throw new SimError(c);
+		const data = await captures.bytesOf(c);
+		const line = await showLine(thread, data, c.title || `Recording of ${c.name}`, "mp4");
+		if (!o.keep) await captures.remove([c.id]);
+		return { text: `Recorded ${c.secs ?? 0} s of ${c.name}${o.keep ? ", saved to the user's captures" : ""}. Put this line in your reply, on a line of its own, to show it:\n${line}` };
+	}
+	throw new SimError("start (with a title) or stop.");
+}
+
+/** A screenshot of the thread's simulator written to a file on the thread's computer (relative to its folder); its path. */
+export async function captureTo(thread: string, platform: string | undefined, out: string, o: { settle?: number; keep?: boolean; label?: string; wait?: number }): Promise<Out> {
+	const { v: dest, slot, intro } = await withSim(thread, platform, o, async (s, w) => {
+		if (o.settle) await new Promise((r) => setTimeout(r, Math.min(5000, Math.max(0, o.settle!))));
+		const tmp = await tempOn(w, "screenshot.png");
+		try {
+			if (s.platform === "ios") await ios.mac(w, `xcrun simctl io "$1" screenshot --type=png "$2" >/dev/null 2>&1 || { echo "it isn't running" >&2; exit 3; }`, [info(s).udid!, tmp]);
+			else await ios.mac(w, `"$1" -s "$2" exec-out screencap -p > "$3"`, [(await sdkOf(w)).adb, info(s).serial!, tmp]);
+			const t = await threadPlace(thread);
+			const { dir } = await threadWhere(thread);
+			const dest = /^(\/|[A-Za-z]:[\\/]|~)/.test(out) ? out : `${dir.replace(/[\\/]$/, "")}/${out}`;
+			if (samePlace(t, w)) await ios.mac(w, `mkdir -p "$(dirname "$2")" && cp "$1" "$2"`, [tmp, dest]);
+			else await copy(w, tmp, t, dest);
+			return dest;
+		} finally {
+			await removeOn(w, tmp);
+		}
+	});
+	if (o.keep) await captures.screenshot(deviceOf(slot), { thread, title: o.label });
+	return { text: join(intro, `Wrote ${info(slot).name}'s screen to ${dest}${o.keep ? ", and saved it to the user's captures" : ""}.`) };
+}

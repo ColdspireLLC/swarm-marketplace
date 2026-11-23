@@ -7,9 +7,13 @@
 // actions (ops.ts). A thread's simulators go back as its turn ends. The
 // panel and the row above the composer show them (panel.tsx); Swarm's
 // window shows one live (swarm://screen).
-import { hook, on, schedule, settings, ui } from "swarm";
+import { hook, on, schedule, settings, storage, ui } from "swarm";
 import { registerCli } from "./cli";
 import * as ops from "./ops";
+import { loans, threadGone } from "./control";
+import { recording } from "./captures";
+import { sweepUnused } from "./mine";
+import { registerPage } from "./page";
 import { registerPanel } from "./panel";
 import { settingsPage } from "./settingsPage";
 import { learnTitles, restore, view } from "./state";
@@ -20,14 +24,27 @@ export function activate() {
 	registerTools();
 	registerCli();
 	registerPanel();
+	registerPage();
 	ui.page({ id: "simulators", title: "Simulators", icon: "mobile", render: settingsPage });
 	hook("turnEnd", ({ thread, turn }) => ops.turnEnded(thread, turn));
 	on("event", (e) => {
 		if (e.type === "thread.renamed" || e.type === "thread.created") void learnTitles();
+		// A thread that goes takes its loan and its ask with it.
+		if ((e.type === "thread.archived" || e.type === "thread.deleted") && e.thread) {
+			threadGone(e.thread);
+			const picked = storage.get<Record<string, string>>("threadDevice") ?? {};
+			if (picked[e.thread]) {
+				delete picked[e.thread];
+				storage.set("threadDevice", picked);
+			}
+		}
 	});
 	settings.onChange(() => view.v++);
 	// Each minute: idle holders bumped for those waiting, idle simulators shut down.
-	schedule("sweep", "* * * * *", () => ops.sweep());
+	schedule("sweep", "* * * * *", async () => {
+		await ops.sweep();
+		await sweepUnused((d) => loans.now?.device.id === d.id || recording.now?.device.id === d.id);
+	});
 	void learnTitles();
 	void ops.look();
 }

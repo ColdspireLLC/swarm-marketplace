@@ -37,7 +37,8 @@ export function registerTools() {
 	simTool<P>("sim_status", () => ops.status());
 	simTool<P & { note?: string }>("sim_take", (a, ctx) => ops.take(ctx.thread, a.platform, a));
 	simTool<P>("sim_release", (a, ctx) => ops.release(ctx.thread, a.platform));
-	simTool<P & { show?: boolean }>("sim_capture", (a, ctx) => ops.capture(ctx.thread, a.platform, a));
+	simTool<P & { show?: boolean; keep?: boolean; settle?: number; label?: string }>("sim_capture", (a, ctx) => ops.capture(ctx.thread, a.platform, a));
+	simTool<P & { action: string; title?: string; keep?: boolean }>("sim_record", (a, ctx) => ops.record(ctx.thread, a.platform, a.action, a));
 	simTool<P>("sim_describe", (a, ctx) => ops.describe(ctx.thread, a.platform, a));
 	simTool<P & { steps: string[]; capture?: boolean }>("sim_drive", (a, ctx) => ops.drive(ctx.thread, a.platform, a.steps, a));
 	simTool<P & { action: string; target?: string; args?: string[] }>("sim_app", (a, ctx) => ops.app(ctx.thread, a.platform, a.action, a.target, a));

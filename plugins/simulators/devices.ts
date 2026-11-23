@@ -106,8 +106,8 @@ export function avdFiles(home: string, name: string, n: number, image: string, s
 	};
 }
 
-export const ANDROID_STEPS = "tap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], type TEXT, key home|back|enter|recents|delete|tab|power|volumeup|volumedown, wait MS (screenshot pixels)";
-const KEYS: Record<string, string> = { home: "HOME", back: "BACK", enter: "ENTER", recents: "APP_SWITCH", delete: "DEL", tab: "TAB", power: "POWER", volumeup: "VOLUME_UP", volumedown: "VOLUME_DOWN", escape: "ESCAPE" };
+export const ANDROID_STEPS = "tap X Y, doubletap X Y, long X Y [MS], swipe X1 Y1 X2 Y2 [MS], scroll up|down|left|right [X Y], type TEXT, key home|back|enter|recents|delete|tab|power|volumeup|volumedown, rotate, wait MS (screenshot pixels; a tap, doubletap or long takes \"Label\" for an element's, as sim_describe names it)";
+const KEYS: Record<string, string> = { apps: "APP_SWITCH", home: "HOME", back: "BACK", enter: "ENTER", recents: "APP_SWITCH", delete: "DEL", tab: "TAB", power: "POWER", volumeup: "VOLUME_UP", volumedown: "VOLUME_DOWN", escape: "ESCAPE" };
 
 /** Input steps as one script of `input` commands for the guest. */
 export function stepsScript(steps: string[]): string {
@@ -115,12 +115,27 @@ export function stepsScript(steps: string[]): string {
 	for (const step of steps) {
 		const [op = "", ...rest] = step.trim().split(/\s+/);
 		const n = rest.map(Number);
-		const xy = { tap: 2, long: 2, swipe: 4 }[op.toLowerCase()] ?? 0;
+		const xy = { tap: 2, doubletap: 2, long: 2, swipe: 4 }[op.toLowerCase()] ?? 0;
 		if (rest.length < xy || n.slice(0, xy).some((v) => !Number.isFinite(v))) throw new SimError(`${step}: ${ANDROID_STEPS}`);
 		const r = (v: number) => String(Math.round(v));
 		switch (op.toLowerCase()) {
 			case "tap":
 				lines.push(`input tap ${r(n[0]!)} ${r(n[1]!)}`);
+				break;
+			case "doubletap":
+				lines.push(`input tap ${r(n[0]!)} ${r(n[1]!)}; input tap ${r(n[0]!)} ${r(n[1]!)}`);
+				break;
+			case "scroll": {
+				const dir = (rest[0] ?? "").toLowerCase();
+				if (!["up", "down", "left", "right"].includes(dir)) throw new SimError(`${step}: scroll up|down|left|right [X Y]`);
+				// The screen's size from wm, the point its middle unless given; a flick a third of the way.
+				const at = Number.isFinite(n[1]) && Number.isFinite(n[2]) ? `x=${r(n[1]!)}; y=${r(n[2]!)}` : `x=$((W/2)); y=$((H/2))`;
+				const to = { up: "x2=$x; y2=$((y+H/3))", down: "x2=$x; y2=$((y-H/3))", left: "x2=$((x+W/3)); y2=$y", right: "x2=$((x-W/3)); y2=$y" }[dir];
+				lines.push(`s=$(wm size | tail -1 | sed 's/.*: //'); W=\${s%x*}; H=\${s#*x}; ${at}; ${to}; input swipe $x $y $x2 $y2 150`);
+				break;
+			}
+			case "rotate":
+				lines.push(`settings put system accelerometer_rotation 0; r=$(settings get system user_rotation); settings put system user_rotation $(( (\${r:-0} + 1) % 2 ))`);
 				break;
 			case "long":
 				lines.push(`input swipe ${r(n[0]!)} ${r(n[1]!)} ${r(n[0]!)} ${r(n[1]!)} ${r(n[2] || 800)}`);

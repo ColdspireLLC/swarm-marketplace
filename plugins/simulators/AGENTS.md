@@ -19,6 +19,19 @@ localhost reach your dev server (Metro) wherever the simulators run: no
 copying by hand, no forwarders of your own, no adb from another tool on
 it.
 
+`sim_drive` taps an element by its name too (`tap "Sign in"`), and has
+doubletap, scroll, rotate and long presses. To show the user what you
+did, `sim_capture show` a screenshot or `sim_record` a clip (a title
+first, then stop), and put the line it gives in your reply; `keep` saves
+it to the user's captures, only when they ask.
+
+The user's own simulators are theirs. When the task needs one (a bug that
+only shows signed in, "look at what I have open"), `sim_device borrow`
+with why asks them; once they lend it, your calls use it, with their
+apps and data: never sign in or out of their accounts or delete their
+data, and you can't shut it down or erase it. When they take over a
+simulator, your calls on it wait until they hand it back.
+
 Look before you act on a screen you haven't seen this turn (`sim_describe`
 for where to tap, `sim_capture` to see it). The simulators are slim:
 services they rarely need are off (on iOS Siri, Spotlight, widgets,
