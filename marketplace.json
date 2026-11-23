@@ -151,7 +151,7 @@
     {
       "id": "simulators",
       "displayName": "Simulators",
-      "description": "iOS simulators and Android emulators of each agent's own, slimmed to about a third of the memory: screenshots, elements, touches, apps and device settings through tools, and the thread's simulator live in its side panel.",
+      "description": "Your own iOS simulators and Android emulators on a page, live: a picker, new ones and 120 Hz copies, screenshots and recordings, and lending one to a thread. And each agent's own, slimmed to about a third of the memory: screenshots, elements, touches, apps and device settings through tools.",
       "icon": "plugins/simulators/icon.svg",
       "tags": [
         "testing",
@@ -167,11 +167,12 @@
         "git": {
           "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
           "subdir": "plugins/simulators",
-          "range": "^0.1.0",
+          "range": "^0.2.0",
           "tagPrefix": "simulators/"
         }
       },
       "adds": [
+        "Page",
         "Side panel",
         "Settings page",
         "Composer status",
