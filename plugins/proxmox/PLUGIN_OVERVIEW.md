@@ -1,0 +1,7 @@
+Your Proxmox VE server or cluster in Swarm. Its page has an overview of the cluster: nodes online, guests running, CPU and memory, what needs attention (a node offline, a guest locked, a storage almost full), the busiest guests and the last tasks. Browse every VM and container by node, filtered and searched by name, vmid or tag, the cluster's tasks with their logs, each storage and how full it is, and each node with its usage, graphs, versions and syslog.
+
+Open a VM or container to start, shut down, reboot, pause or stop it, open its console in Proxmox, see its CPU, memory, network and disk graphs over the last hour, day or week, its IP addresses, its hardware and notes, and its tasks. Take snapshots, with a VM's memory if you like, roll back to one or delete one. Whatever takes a guest down asks first, and each action follows its task to the end and tells you how it went.
+
+Agents get swarm proxmox (status, list, show, start, shutdown, reboot, stop, suspend, resume, snapshots, snapshot, rollback, delete-snapshot, nodes, storage, tasks, task-log) and a skill that has them ask you before they take a guest down or roll it back. The token stays in your keychain: they never see it.
+
+Connect it in Settings, Proxmox, with its address and an API token from Datacenter, Permissions, API Tokens. Proxmox's own self-signed certificate is shown by its fingerprint, to compare with the one in Proxmox, and trusted once you say so: that certificate alone. It works with Proxmox VE 7 and 8, on your own network, over Tailscale or behind a proxy.

@@ -1,0 +1,60 @@
+{
+  "$schema": "./plugin.schema.json",
+  "id": "proxmox",
+  "name": "Proxmox",
+  "version": "0.1.0",
+  "description": "Your Proxmox VE in Swarm: the cluster's nodes, VMs and containers with their graphs; start, shut down, reboot and snapshot them; tasks and their logs; and agents that do the same with swarm proxmox.",
+  "adds": [
+    "App page",
+    "Settings page",
+    "Agent skill",
+    "Agent instructions"
+  ],
+  "icon": "proxmox.svg",
+  "main": "main.tsx",
+  "permissions": {
+    "required": [
+      "network:*"
+    ],
+    "network": [
+      "*"
+    ],
+    "localNetwork": true
+  },
+  "settings": [
+    {
+      "key": "url",
+      "title": "Proxmox address",
+      "type": "text",
+      "default": "",
+      "placeholder": "https://pve.local:8006",
+      "description": "The address you open Proxmox at. Proxmox's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "tokenId",
+      "title": "API token ID",
+      "type": "text",
+      "default": "",
+      "description": "USER@REALM!NAME. Proxmox's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "secret",
+      "title": "API token secret",
+      "type": "secret",
+      "description": "Proxmox's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "certificate",
+      "title": "Trusted certificate",
+      "type": "text",
+      "default": "",
+      "description": "The fingerprint of Proxmox's own certificate, trusted in place of a certificate authority's. Proxmox's page of Settings sets it.",
+      "hidden": true
+    }
+  ],
+  "skills": "skills",
+  "instructions": "AGENTS.md"
+}

@@ -1,0 +1,4 @@
+node_modules/
+.swarm-bundle.js
+*.zip
+test-shots/

@@ -27,6 +27,7 @@ which is where Swarm reads it:
 | [Flux](plugins/flux) | Flux issues in Swarm, for you and your agents. |
 | [Test machines](plugins/test-machines) | Shared test machines and phones for your agents, one thread at a time. |
 | [Automations](plugins/automations) | Scheduled work: an agent's prompt or a script, on a cron or once. |
+| [Proxmox](plugins/proxmox) | Your Proxmox VE: nodes, VMs and containers, snapshots and tasks, for you and your agents. |
 
 Swarm's own plugins, Inline visualizations, Plugin development and the
 Thread list, come with Swarm, not here: they're updated with Swarm, and

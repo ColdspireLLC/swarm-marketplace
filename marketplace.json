@@ -93,6 +93,43 @@
       }
     },
     {
+      "id": "proxmox",
+      "displayName": "Proxmox",
+      "description": "Your Proxmox VE in Swarm: nodes, VMs and containers with their graphs; start, shut down, reboot and snapshot them; tasks and their logs; and agents that do the same.",
+      "icon": "plugins/proxmox/proxmox.svg",
+      "tags": [
+        "proxmox",
+        "homelab",
+        "virtualization",
+        "agents"
+      ],
+      "author": "Coldspire",
+      "overview": "plugins/proxmox/PLUGIN_OVERVIEW.md",
+      "source": {
+        "git": {
+          "url": "https://github.com/ColdspireLLC/swarm-marketplace.git",
+          "subdir": "plugins/proxmox",
+          "range": "^0.1.0",
+          "tagPrefix": "proxmox/"
+        }
+      },
+      "adds": [
+        "App page",
+        "Settings page",
+        "Agent skill",
+        "Agent instructions"
+      ],
+      "permissions": {
+        "required": [
+          "network:*"
+        ],
+        "network": [
+          "*"
+        ],
+        "localNetwork": true
+      }
+    },
+    {
       "id": "test-machines",
       "displayName": "Test machines",
       "description": "Shared test machines and phones for your agents, one thread at a time on each screen: screenshots, elements, input, apps, files, recordings, with you first and sensitive apps off limits.",
