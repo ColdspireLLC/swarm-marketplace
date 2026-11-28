@@ -50,5 +50,8 @@
     }
   ],
   "skills": "skills",
-  "instructions": "AGENTS.md"
+  "instructions": "AGENTS.md",
+  "engines": {
+    "swarm": ">=0.3.0"
+  }
 }
