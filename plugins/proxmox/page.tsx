@@ -407,15 +407,26 @@ function graphsOf(key: string, rrd: api.Point[] | undefined, node: boolean): Chi
 	return out;
 }
 
-/** An open console, in Swarm's terminal, where its guest or node is; Disconnect ends it. */
-function consoleTab(con: OpenConsole): Child {
+/**
+ * An open console, in Swarm's terminal, where its guest or node is;
+ * Disconnect ends it. On a phone, whose window has no terminals yet,
+ * Proxmox's own page is a tap away, the width of the row.
+ */
+function consoleTab(con: OpenConsole, inProxmox: string): Child {
 	return (
 		<ui.box style={{ gap: 8 }}>
 			<ui.terminal key={`term-${con.id}`} terminal={con.id} label={con.title} style={{ height: phone.on ? 360 : 460 }} />
-			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-				<ui.text style={{ ...faint, ...line, flex: 1 }}>{`${con.title}. Click it to type; Proxmox ends it as you log out.`}</ui.text>
-				<ui.button size="sm" kind="ghost" icon="x" onClick={() => con.close()}>Disconnect</ui.button>
-			</ui.box>
+			{phone.on ? (
+				<ui.box style={{ flexDirection: "row", gap: 8 }}>
+					<ui.button kind="secondary" icon="external" href={inProxmox} style={{ flex: 1 }}>Open in Proxmox</ui.button>
+					<ui.button kind="secondary" icon="x" onClick={() => con.close()} style={{ flex: 1 }}>Disconnect</ui.button>
+				</ui.box>
+			) : (
+				<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+					<ui.text style={{ ...faint, ...line, flex: 1 }}>{`${con.title}. Click it to type; Proxmox ends it as you log out.`}</ui.text>
+					<ui.button size="sm" kind="ghost" icon="x" onClick={() => con.close()}>Disconnect</ui.button>
+				</ui.box>
+			)}
 		</ui.box>
 	);
 }
@@ -501,7 +512,7 @@ function nodeView(name: string, base: string, open: string): Child {
 	if (o.tab === "shell" && !shell) o.tab = "summary";
 	const tabs = [{ value: "summary", label: "Summary" }, ...(shell ? [{ value: "shell", label: "Shell" }] : []), { value: "guests", label: "Guests" }, { value: "disks", label: "Disks" }, { value: "syslog", label: "Syslog" }];
 	let body: Child;
-	if (o.tab === "shell" && shell) body = consoleTab(shell);
+	if (o.tab === "shell" && shell) body = consoleTab(shell, api.nodeShellUrl(c, name));
 	else if (o.tab === "guests") body = guestsView(base, open, name);
 	else if (o.tab === "disks") body = disksTab(name, o);
 	else if (o.tab === "syslog") {
@@ -803,7 +814,8 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 	const doing = (w: string) => o.busy === w;
 	const wide = phone.on ? { flex: 1 } : undefined;
 	const con = consoles.get(`${g.type}/${g.vmid}`);
-	const tabs = [{ value: "summary", label: "Summary" }, ...(con ? [{ value: "console", label: "Console" }] : []), { value: "hardware", label: "Hardware" }, ...(g.template ? [] : [{ value: "snapshots", label: phone.on ? "Snaps" : "Snapshots" }]), { value: "backups", label: "Backups" }, { value: "tasks", label: "Tasks" }];
+	// A phone's tabs fill its width, in words short enough that six fit.
+	const tabs = [{ value: "summary", label: phone.on ? "Info" : "Summary" }, ...(con ? [{ value: "console", label: "Console" }] : []), { value: "hardware", label: phone.on ? "Specs" : "Hardware" }, ...(g.template ? [] : [{ value: "snapshots", label: phone.on ? "Snaps" : "Snapshots" }]), { value: "backups", label: phone.on ? "Backup" : "Backups" }, { value: "tasks", label: "Tasks" }];
 	if (!tabs.some((t) => t.value === o.tab)) o.tab = "summary";
 	const askFirst: Record<string, [string, string, string]> = {
 		shutdown: [`Shut ${api.guestName(g)} down?`, "It's asked to shut down as its own power button would, and stays off until it's started again.", "Shut down"],
@@ -851,8 +863,10 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 								)
 							) : null}
 							{running ? <ui.button icon="stop" disabled={!!o.busy} onClick={() => void (o.confirm = "shutdown")} style={wide}>{doing("shutdown") ? "Shutting down…" : "Shut down"}</ui.button> : null}
-							{running ? <ui.button icon="refresh" disabled={!!o.busy} onClick={() => void (o.confirm = "reboot")} style={wide}>{doing("reboot") ? "Rebooting…" : "Reboot"}</ui.button> : null}
+							{/* On a phone two take the row, wide enough for their words: Reboot is in More. */}
+							{running && !phone.on ? <ui.button icon="refresh" disabled={!!o.busy} onClick={() => void (o.confirm = "reboot")} style={wide}>{doing("reboot") ? "Rebooting…" : "Reboot"}</ui.button> : null}
 							<ui.menu label={phone.on ? "" : "More actions"} tooltip="More actions" icon="more" kind={phone.on ? "secondary" : "ghost"}>
+								{running && phone.on ? <ui.item icon="refresh" label="Reboot…" onClick={() => void (o.confirm = "reboot")} /> : null}
 								{running && g.type === "qemu" ? <ui.item icon="pause" label="Pause" onClick={() => void press(g, o, "suspend")} /> : null}
 								<ui.item icon="camera" label="Take snapshot…" onClick={() => { o.tab = "snapshots"; o.snapForm = { name: "", description: "", vmstate: false }; }} />
 								<ui.item icon="archive" label="Back up now…" onClick={() => { o.tab = "backups"; openForm(g, o, "backup"); }} />
@@ -871,7 +885,7 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 
 					<ui.segmented style={{ alignSelf: phone.on ? "stretch" : "flex-start" }} label="Tabs" value={o.tab} options={tabs} onChange={(v) => void (o.tab = v as OpenedGuest["tab"])} />
 					{o.tab === "summary" ? summaryTab(g, o) : null}
-					{o.tab === "console" && con ? consoleTab(con) : null}
+					{o.tab === "console" && con ? consoleTab(con, api.consoleUrl(c, g)) : null}
 					{o.tab === "hardware" ? hardwareTab(g, o) : null}
 					{o.tab === "snapshots" ? snapshotsTab(g, o) : null}
 					{o.tab === "backups" ? backupsTab(g, o) : null}
