@@ -41,9 +41,13 @@ export function drivers(): Driver[] {
 
 /** The machines, as the drivers have them now. */
 let refreshes = 0;
-export async function refresh(): Promise<Machine[]> {
-	// The latest refresh counts, as settings change while one runs.
-	const n = ++refreshes;
+let latest: Promise<Machine[]> = Promise.resolve([]);
+export function refresh(): Promise<Machine[]> {
+	latest = look(++refreshes);
+	return latest;
+}
+
+async function look(n: number): Promise<Machine[]> {
 	const found: Machine[] = [];
 	const problems: string[] = [];
 	for (const d of drivers()) {
@@ -53,7 +57,10 @@ export async function refresh(): Promise<Machine[]> {
 			problems.push(`${d.name}: ${message(e)}`);
 		}
 	}
-	if (n !== refreshes) return st.machines;
+	// The latest refresh counts, as settings change while one runs: one
+	// it overtook answers with its machines, not with st.machines, which
+	// it hasn't set yet (empty, as the plugin starts).
+	if (n !== refreshes) return latest;
 	for (const m of found) {
 		if (turns.has(m.id)) continue;
 		const t = new Turns(m.name, () => void m.driver.released(m).catch(() => {}));
