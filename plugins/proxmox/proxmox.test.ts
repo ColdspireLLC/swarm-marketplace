@@ -30,7 +30,15 @@ const rrd = (n: number) =>
 
 // proxmox stands in for a Proxmox VE: its token, its cluster, and the
 // tasks its actions start, which end as soon as they're asked about.
-async function proxmox(t: T) {
+// The password sign-in's: a user with a second factor, the code it takes, and the ticket it gives.
+const USER = "admin@pve";
+const PASSWORD = "hunter2";
+const CODE = "123456";
+const TICKET = "PVE:admin@pve:6747AB12::signed";
+
+async function proxmox(t: T, cluster = "homelab") {
+	// Its own copy of the tasks: a test adds to them.
+	const clusterTasks = TASKS.map((x) => ({ ...x }));
 	const snaps: { name: string; description?: string; snaptime?: number; vmstate?: number; parent?: string; running?: number }[] = [
 		{ name: "before-upgrade", description: "Before apt full-upgrade", snaptime: now - 86400 * 3 },
 		{ name: "current", description: "You are here!", running: 1 },
@@ -52,9 +60,22 @@ async function proxmox(t: T) {
 		return { json: { data: u } };
 	};
 	const srv = await t.server((req: Request) => {
-		if (req.headers["authorization"] !== `PVEAPIToken=${TOKEN_ID}=${SECRET}`) return { status: 401, body: "" };
 		const p = req.path.replace(/^\/api2\/json/, "");
 		const form = new URLSearchParams(req.body);
+		if (p === "/access/ticket" && req.method === "POST") {
+			if (form.get("username") !== USER) return { status: 401, body: "" };
+			if (form.get("tfa-challenge") === "PVE:partial") return form.get("password") === `totp:${CODE}` ? { json: { data: { ticket: TICKET, CSRFPreventionToken: "csrf1", username: USER } } } : { status: 401, body: "" };
+			if (form.get("password") === TICKET) return { json: { data: { ticket: TICKET, CSRFPreventionToken: "csrf1", username: USER } } };
+			if (form.get("password") === PASSWORD) return { json: { data: { ticket: "PVE:partial", CSRFPreventionToken: "", username: USER, NeedTFA: 1 } } };
+			return { status: 401, body: "" };
+		}
+		const byToken = req.headers["authorization"] === `PVEAPIToken=${TOKEN_ID}=${SECRET}`;
+		const byTicket = (req.headers["cookie"] ?? "").includes(`PVEAuthCookie=${encodeURIComponent(TICKET)}`) && (req.method === "GET" || req.headers["csrfpreventiontoken"] === "csrf1");
+		if (!byToken && !byTicket) return { status: 401, body: "" };
+		if (p === "/nodes/pve1/disks/list") return { json: { data: [{ devpath: "/dev/nvme0n1", model: "Samsung SSD 980 PRO 1TB", serial: "S5GXNX0R123", size: 1000 * GiB, type: "nvme", health: "PASSED", wearout: 97, used: "LVM" }, { devpath: "/dev/sda", model: "WDC WD40EFRX", serial: "WD-WCC7K1", size: 4000 * GiB, type: "hdd", health: "FAILED", wearout: "N/A", used: "ZFS" }] } };
+		if (p === "/nodes/pve1/disks/smart") return { json: { data: { health: "FAILED", type: "ata", attributes: [{ id: 5, name: "Reallocated_Sector_Ct", value: 1, worst: 1, threshold: 140, raw: "2016", fail: "FAILING_NOW" }, { id: 9, name: "Power_On_Hours", value: 40, worst: 40, threshold: 0, raw: "44123", fail: "-" }] } } };
+		const term = /^\/nodes\/pve1(?:\/(?:lxc|qemu)\/\d+)?\/termproxy$/.exec(p);
+		if (term && req.method === "POST") return { json: { data: { port: 5900, ticket: "PVEVNC:x", user: TOKEN_ID } } };
 		if (p === "/version") return { json: { data: { version: "8.2.4", release: "8.2" } } };
 		if (p === "/cluster/resources") return { json: { data: resources } };
 		if (p === "/cluster/nextid") return { json: { data: "104" } };
@@ -84,8 +105,8 @@ async function proxmox(t: T) {
 		const mig = /^\/nodes\/pve1\/(qemu|lxc)\/(\d+)\/migrate$/.exec(p);
 		if (mig && req.method === "POST") return started(mig[1] === "qemu" ? "qmigrate" : "vzmigrate", mig[2]!);
 		if (p === "/nodes/pve1/qemu/100/config" && req.method === "PUT") return { json: { data: null } };
-		if (p === "/cluster/status") return { json: { data: [{ type: "cluster", name: "homelab", quorate: 1, nodes: 2 }, { type: "node", name: "pve1", online: 1 }, { type: "node", name: "pve2", online: 0 }] } };
-		if (p === "/cluster/tasks") return { json: { data: TASKS } };
+		if (p === "/cluster/status") return { json: { data: [{ type: "cluster", name: cluster, quorate: 1, nodes: 2 }, { type: "node", name: "pve1", online: 1 }, { type: "node", name: "pve2", online: 0 }] } };
+		if (p === "/cluster/tasks") return { json: { data: clusterTasks } };
 		if (p === "/nodes/pve1/status") return { json: { data: { cpu: 0.18, wait: 0.01, cpuinfo: { model: "AMD Ryzen 9 5950X 16-Core Processor", cpus: 32, sockets: 1 }, loadavg: ["1.20", "0.98", "0.80"], memory: { total: 64 * GiB, used: 22 * GiB }, swap: { total: 8 * GiB, used: 0 }, rootfs: { total: 100 * GiB, used: 40 * GiB }, uptime: 864000, pveversion: "pve-manager/8.2.4/faa83925c9641325", kversion: "Linux 6.8.8-2-pve #1 SMP PREEMPT_DYNAMIC" } } };
 		if (p === "/nodes/pve1/rrddata" || /^\/nodes\/pve1\/(qemu|lxc)\/\d+\/rrddata$/.test(p)) return { json: { data: rrd(70) } };
 		if (p === "/nodes/pve1/syslog") return { json: { data: [{ n: 1, t: "Nov 25 04:00:01 pve1 systemd[1]: Started pvesr.service." }] } };
@@ -106,15 +127,18 @@ async function proxmox(t: T) {
 		const ts = /^\/nodes\/pve1\/tasks\/([^/]+)\/(status|log)$/.exec(p);
 		if (ts) {
 			const u = decodeURIComponent(ts[1]!);
-			const exit = tasks.get(u) ?? TASKS.find((x) => x.upid === u)?.status;
+			const exit = tasks.get(u) ?? clusterTasks.find((x) => x.upid === u)?.status;
 			if (exit === undefined) return { status: 500, body: "" };
 			if (ts[2] === "status") return { json: { data: { status: "stopped", exitstatus: exit } } };
 			return { json: { data: [{ n: 1, t: "task started by HA resource agent" }, { n: 2, t: exit }] } };
 		}
 		return { status: 501, body: "" };
 	});
-	return srv;
+	return Object.assign(srv, { tasks: clusterTasks });
 }
+
+/** A server's entry, as Settings keeps it, for a test that starts connected. */
+const tokenServer = (id: string, name: string, url: string) => ({ id, name, url, certificate: "", auth: "token", who: TOKEN_ID });
 
 test("the command line: lists, shows, and runs actions to their task's end", async (t) => {
 	const none = await t.run("list");
@@ -122,11 +146,10 @@ test("the command line: lists, shows, and runs actions to their task's end", asy
 	expect(none.stderr).toContain("Proxmox isn't connected");
 
 	const srv = await proxmox(t);
-	await t.set("url", srv.url);
-	await t.set("tokenId", TOKEN_ID);
-	await t.set("secret", "wrong");
+	await t.set("servers", JSON.stringify([{ id: "s1", name: "homelab", url: srv.url, certificate: "", auth: "token", who: TOKEN_ID }]));
+	await t.set("secrets", JSON.stringify({ s1: { secret: "wrong" } }));
 	expect((await t.run("list")).stderr).toContain("Proxmox refused the token");
-	await t.set("secret", SECRET);
+	await t.set("secrets", JSON.stringify({ s1: { secret: SECRET } }));
 
 	const status = await t.run("status");
 	expect(status.stdout).toContain("Proxmox VE 8.2.4, cluster homelab.");
@@ -217,6 +240,7 @@ test("the page: connect, the overview, a VM's tabs and actions, a node", async (
 	await w.see("Nodes of homelab");
 	await w.see("pve2 is offline");
 	await w.see("local-lvm on pve1 is 95% full");
+	await w.see("/dev/sda on pve1: SMART says it's failing");
 	await w.see("Busiest now");
 	await w.see("Start windows");
 	await w.screenshot("proxmox-overview");
@@ -312,4 +336,104 @@ test("the page: connect, the overview, a VM's tabs and actions, a node", async (
 
 	const log = (await t.log()).join("\n");
 	expect(log).not.toMatch(/error|threw/i);
+});
+
+// A second server signed in with a password and a TOTP code, the sidebar
+// switching between them, a node's disks and their SMART, and a
+// container's console opened in Swarm's terminal.
+test("several servers, a password with a second factor, disks and a console", async (t) => {
+	const home = await proxmox(t);
+	const lab = await proxmox(t, "lab");
+	await t.set("servers", JSON.stringify([tokenServer("s1", "homelab", home.url)]));
+	await t.set("secrets", JSON.stringify({ s1: { secret: SECRET } }));
+	const w = await t.window();
+	await w.resize(1440, 900);
+	await w.settings("Proxmox");
+	await w.click("Add server");
+	await w.click("https://pve.local:8006");
+	await w.type(lab.url);
+	await w.click("Name");
+	await w.click(new URL(lab.url).hostname);
+	await w.type("lab");
+	await w.click("Password");
+	await w.click("root@pam");
+	await w.type(USER);
+	await w.click("Its password");
+	await w.type(PASSWORD);
+	await w.click("Connect");
+	await w.see("From your authenticator app: Proxmox asks for a second factor.");
+	await w.click("123456");
+	await w.type(CODE);
+	await w.screenshot("proxmox-totp");
+	await w.click("Connect");
+	await w.see("Connected to lab, Proxmox VE 8.2.4.");
+	await w.see("As admin@pve, with its password");
+	await w.screenshot("proxmox-servers");
+	// What it asked after signing in went with the ticket, and a change with its CSRF token too.
+	expect(lab.requests.some((r) => r.path === "/api2/json/cluster/resources" && (r.headers["cookie"] ?? "").includes("PVEAuthCookie="))).toBe(true);
+
+	// The new one shows; the sidebar switches back.
+	await w.click("Proxmox");
+	await w.see("Nodes of lab");
+	await w.click("homelab");
+	await w.see("Nodes of homelab");
+	await w.screenshot("proxmox-switch");
+
+	// A node's disks: a failing one, and its SMART.
+	await w.click("pve1");
+	await w.see("Load average");
+	await w.click("Disks");
+	await w.see("Failing");
+	await w.see("3% worn");
+	await w.click("/dev/sda, Failing");
+	await w.see("Reallocated Sector Ct");
+	await w.screenshot("proxmox-disks");
+
+	// A container's console: Proxmox's proxy, then Swarm's terminal.
+	await w.click("VMs & containers");
+	await w.click("db, Running");
+	await w.click("Console");
+	await t.until(() => home.requests.some((r) => r.method === "POST" && r.path === "/api2/json/nodes/pve1/lxc/101/termproxy"), { what: "the console's proxy" });
+	// Here no WebSocket answers (console.test.ts has the protocol): why shows, and its terminal goes.
+	await w.see("The console didn't connect");
+	await w.screenshot("proxmox-console");
+
+	// The command line takes either server.
+	expect((await t.run("status", "--server", "lab")).stdout).toContain("cluster lab.");
+	expect((await t.run("servers")).stdout).toMatch(/\* homelab .*\n {2}lab /);
+});
+
+// Every server's backups are watched, the page open or not: a failure
+// since the last look is a toast, once; none from before is.
+test("a failed backup on any server is a toast", async (t) => {
+	const clock = await t.clock();
+	const home = await proxmox(t);
+	home.tasks.push({ upid: upid("vzdump", "102", 40), node: "pve1", type: "vzdump", id: "102", user: "root@pam", starttime: now - 7200, endtime: now - 7000, status: "TASK ERROR: an old failure" });
+	await t.set("servers", JSON.stringify([tokenServer("s1", "homelab", home.url)]));
+	await t.set("secrets", JSON.stringify({ s1: { secret: SECRET } }));
+	const w = await t.window();
+	await clock.advance(3 * 60_000);
+	await t.idle();
+	home.tasks.push({ upid: upid("vzdump", "101", 41), node: "pve1", type: "vzdump", id: "101", user: "root@pam", starttime: now + 60, endtime: now + 120, status: "TASK ERROR: job failed with err -5 - Input/output error" });
+	await clock.advance(3 * 60_000);
+	await w.see("A backup of 101 on homelab failed: job failed with err -5 - Input/output error.");
+	expect(await w.has("an old failure")).toBe(false);
+});
+
+// Back after its ticket lapsed (Swarm closed past two hours), a server
+// with a second factor asks for a code where the page is, and carries on.
+test("a lapsed sign-in asks for a code on the page", async (t) => {
+	const lab = await proxmox(t, "lab");
+	await t.set("servers", JSON.stringify([{ id: "s2", name: "lab", url: lab.url, certificate: "", auth: "password", who: USER }]));
+	await t.set("secrets", JSON.stringify({ s2: { secret: PASSWORD, ticket: "PVE:lapsed", csrf: "old", at: Date.now() - 3 * 3600_000 } }));
+	const w = await t.window();
+	await w.click("Proxmox");
+	await w.see("Sign in to lab again");
+	await w.click("123456");
+	await w.type(CODE);
+	await w.screenshot("proxmox-signin-again");
+	await w.click("Sign in");
+	await w.see("Nodes of lab");
+	// Its new ticket is kept, not asked for again.
+	expect((await t.run("status")).stdout).toContain("cluster lab.");
 });

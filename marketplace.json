@@ -95,7 +95,7 @@
     {
       "id": "proxmox",
       "displayName": "Proxmox",
-      "description": "Your Proxmox VE in Swarm: nodes, VMs and containers with their graphs; start, shut down, reboot and snapshot them; tasks and their logs; and agents that do the same.",
+      "description": "Your Proxmox VE servers in Swarm: nodes, VMs and containers with their graphs and consoles; power, snapshots, backups, clones and moves; disks' health; and agents that do the same.",
       "icon": "plugins/proxmox/proxmox.svg",
       "tags": [
         "proxmox",
@@ -117,7 +117,8 @@
         "App page",
         "Settings page",
         "Agent skill",
-        "Agent instructions"
+        "Agent instructions",
+        "Consoles"
       ],
       "permissions": {
         "required": [
@@ -126,7 +127,9 @@
         "network": [
           "*"
         ],
-        "localNetwork": true
+        "localNetwork": true,
+        "terminal": true,
+        "storage": true
       }
     },
     {

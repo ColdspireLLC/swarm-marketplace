@@ -11,6 +11,8 @@ import { settings, ui } from "swarm";
 import { registerCli } from "./cli";
 import { renderPage } from "./page";
 import { settingsPage } from "./settings";
+import { shape } from "./servers";
+import { checkBackups, stopWatchingBackups, watchBackups } from "./watch";
 import { conn, forget, PAGE, readList, stopAll, syncNav } from "./store";
 import { registerLogOverlay } from "./view";
 
@@ -20,9 +22,10 @@ export function activate() {
 	ui.nav({ id: PAGE, title: "Proxmox", icon: "proxmox:logo", order: 51, fill: true, bare: true, items: [], render: renderPage });
 	ui.page({ id: PAGE, title: "Proxmox", icon: "proxmox:logo", render: settingsPage });
 	registerLogOverlay();
-	let was = `${settings.get("url")}\n${settings.get("tokenId")}\n${settings.get("secret")}\n${settings.get("certificate")}`;
-	settings.onChange((v) => {
-		const now = `${v.url}\n${v.tokenId}\n${v.secret}\n${v.certificate}`;
+	// A ticket kept as a sign-in renews it changes nothing shown.
+	let was = shape();
+	settings.onChange(() => {
+		const now = shape();
 		if (now === was) return ui.update();
 		was = now;
 		forget();
@@ -31,8 +34,11 @@ export function activate() {
 	});
 	syncNav();
 	if (conn()) void readList();
+	// Every server's backups: the first look is where failures are told from.
+	void checkBackups().finally(watchBackups);
 }
 
 export function deactivate() {
 	stopAll();
+	stopWatchingBackups();
 }

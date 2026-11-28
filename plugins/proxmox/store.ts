@@ -2,7 +2,9 @@
 // current while it shows: the cluster's resources, its status, the recent
 // tasks, and what's read of a guest or a node opened. The tasks started
 // here are watched until they end, with a toast as each does.
-import { settings, ui } from "swarm";
+import { ui } from "swarm";
+import { openConsole, type ConsoleOf, type OpenConsole } from "./console";
+import { connOf, current, servers } from "./servers";
 import * as api from "./pve";
 import type { Address, Backup, BackupMode, ClusterStatus, Conn, Guest, GuestStatus, NodeStatus, NodeStorage, Point, Power, Resource, Snapshot, Task } from "./pve";
 
@@ -10,12 +12,10 @@ export const PAGE = "proxmox";
 /** How old the resources are read again, while the page shows. */
 export const STALE = 10_000;
 
+/** The current server's Conn, or null with none. */
 export function conn(): Conn | null {
-	const url = String(settings.get("url") ?? "").trim();
-	const tokenId = String(settings.get("tokenId") ?? "").trim();
-	const secret = String(settings.get("secret") ?? "").trim();
-	const certificate = String(settings.get("certificate") ?? "").trim();
-	return url && tokenId && secret ? { url, tokenId, secret, certificate } : null;
+	const s = current();
+	return s ? connOf(s) : null;
 }
 
 export const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -32,7 +32,7 @@ export type GuestForm =
 	| { kind: "restore"; volid: string; asNew: boolean; newid: string };
 
 export interface OpenedGuest {
-	tab: "summary" | "hardware" | "snapshots" | "backups" | "tasks";
+	tab: "summary" | "console" | "hardware" | "snapshots" | "backups" | "tasks";
 	status?: GuestStatus;
 	config?: Record<string, string | number>;
 	configErr: string;
@@ -56,7 +56,12 @@ export interface OpenedGuest {
 
 /** What's read of a node opened. */
 export interface OpenedNode {
-	tab: "summary" | "guests" | "syslog";
+	tab: "summary" | "shell" | "guests" | "disks" | "syslog";
+	disks?: api.Disk[];
+	disksErr: string;
+	/** Each disk's SMART, as read, or why it couldn't be; the one opened. */
+	smart: Map<string, api.Smart | string>;
+	openDisk: string;
 	status?: NodeStatus;
 	statusErr: string;
 	rrd?: Point[];
@@ -77,6 +82,8 @@ export const state = {
 	err: "",
 	/** Why the certificate stopped the last read: the one Proxmox showed, for Settings to offer. */
 	certificate: "",
+	/** The current server's ticket lapsed and Proxmox wants a TOTP code to sign in again. */
+	needsCode: false,
 	reading: false,
 	at: 0,
 	search: "",
@@ -96,6 +103,9 @@ export const state = {
 	backupsReading: false,
 	/** Each node's storages that take backups, as the Back up form offers them. */
 	backupStores: new Map<string, NodeStorage[]>(),
+	/** Disks of the online nodes that are failing or worn out, read every ten minutes, for the overview. */
+	badDisks: [] as { node: string; devpath: string; label: string }[],
+	disksAt: 0,
 	/** When the page last drew: it's kept current while it shows. */
 	shownAt: 0,
 };
@@ -120,9 +130,11 @@ export async function readList() {
 		state.version = v.version;
 		state.err = "";
 		state.certificate = "";
+		state.needsCode = false;
 	} catch (e) {
 		state.err = message(e);
 		state.certificate = e instanceof api.PveError ? e.certificate : "";
+		state.needsCode = e instanceof api.PveError && e.code === "tfa";
 	}
 	state.reading = false;
 	syncNav();
@@ -378,7 +390,7 @@ export const TASK_POLL = { every: 1000 };
 export function openedNode(node: string): OpenedNode {
 	let o = state.nodes.get(node);
 	if (!o) {
-		o = { tab: "summary", statusErr: "", rrdFor: "", timeframe: "hour", syslogErr: "", at: 0, busy: "", actErr: "", confirm: "" };
+		o = { tab: "summary", statusErr: "", rrdFor: "", timeframe: "hour", syslogErr: "", disksErr: "", smart: new Map(), openDisk: "", at: 0, busy: "", actErr: "", confirm: "" };
 		state.nodes.set(node, o);
 	}
 	return o;
@@ -404,6 +416,46 @@ export async function readNode(node: string, o: OpenedNode, _all = true) {
 			},
 		),
 	]);
+	ui.update();
+}
+
+export async function readDisks(node: string, o: OpenedNode) {
+	const c = conn();
+	if (!c) return;
+	try {
+		o.disks = (await api.disks(c, node)).sort((a, b) => a.devpath.localeCompare(b.devpath, undefined, { numeric: true }));
+		o.disksErr = "";
+	} catch (e) {
+		o.disksErr = message(e);
+	}
+	ui.update();
+}
+
+/** Every online node's disks, for those failing or worn out. A node it may not read is left out. */
+export async function readBadDisks() {
+	const c = conn();
+	if (!c) return;
+	state.disksAt = Date.now();
+	const bad: typeof state.badDisks = [];
+	for (const n of nodes().filter((x) => x.status === "online")) {
+		const ds = await api.disks(c, n.node!).catch(() => [] as api.Disk[]);
+		for (const d of ds) {
+			const st = api.diskState(d);
+			if (st.bad) bad.push({ node: n.node!, devpath: d.devpath, label: st.label });
+		}
+	}
+	state.badDisks = bad;
+	ui.update();
+}
+
+export async function readSmart(node: string, o: OpenedNode, disk: string) {
+	const c = conn();
+	if (!c) return;
+	try {
+		o.smart.set(disk, await api.smart(c, node, disk));
+	} catch (e) {
+		o.smart.set(disk, message(e));
+	}
 	ui.update();
 }
 
@@ -436,6 +488,36 @@ export async function nodePower(node: string, o: OpenedNode, command: "reboot" |
 	void readList();
 }
 
+// ---- Consoles ----
+
+/** The consoles open, by what they're of (lxc/101, qemu/100, node/pve1), as their pages show them; the ones opening. */
+export const consoles = new Map<string, OpenConsole>();
+export const opening = new Set<string>();
+
+export const consoleKey = (of: ConsoleOf) => (of.kind === "node" ? `node/${of.node}` : `${of.kind}/${of.vmid}`);
+
+/** Opens a console, shown where its guest or node is; fail says why it couldn't. One a guest has open already is shown again. */
+export async function startConsole(of: ConsoleOf, fail: (why: string) => void, shown?: () => void) {
+	const c = conn();
+	const key = consoleKey(of);
+	if (!c || opening.has(key)) return;
+	if (consoles.has(key)) return shown?.();
+	opening.add(key);
+	ui.update();
+	try {
+		const open = await openConsole(c, of, () => {
+			if (consoles.get(key) === open) consoles.delete(key);
+			ui.update();
+		});
+		consoles.set(key, open);
+		shown?.();
+	} catch (e) {
+		fail(/permission check failed|may not/i.test(message(e)) ? `${message(e)} A console needs VM.Console (Sys.Console for a node's shell).` : message(e));
+	}
+	opening.delete(key);
+	ui.update();
+}
+
 // ---- The sidebar ----
 
 /** The page's rows in the sidebar: the overview, the guests, each node, storage, tasks. */
@@ -449,6 +531,8 @@ export function navItems() {
 		{ id: "backups", title: "Backups", icon: "archive" as const, path: "backups" },
 		{ id: "storage", title: "Storage", icon: "hard-drive" as const, path: "storage" },
 		...nodes().map((n) => ({ id: "n-" + n.node, title: n.node ?? "", icon: "server" as const, path: `n/${encodeURIComponent(n.node ?? "")}`, section: "Nodes", badge: n.status !== "online" ? "Offline" : undefined })),
+		// With more than one, each server: choosing one shows it.
+		...(servers().length > 1 ? servers().map((s) => ({ id: "s-" + s.id, title: s.name, icon: "house-cloud" as const, path: `server/${s.id}`, section: "Servers", badge: s.id === current()?.id ? "Shown" : undefined })) : []),
 	];
 }
 
@@ -467,11 +551,17 @@ export function forget() {
 	state.version = "";
 	state.err = "";
 	state.certificate = "";
+	state.needsCode = false;
 	state.tasks = undefined;
 	state.guests.clear();
 	state.nodes.clear();
 	state.backups = undefined;
 	state.backupStores.clear();
+	state.badDisks = [];
+	state.disksAt = 0;
 	state.started.clear();
+	// Another server's consoles: closed.
+	for (const c of consoles.values()) c.close();
+	consoles.clear();
 	syncNav();
 }

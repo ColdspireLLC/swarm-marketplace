@@ -1,7 +1,8 @@
 # Proxmox
 
-A Proxmox VE server or cluster in Swarm, through its API (`/api2/json`)
-and an API token.
+Proxmox VE servers and clusters in Swarm, through their API
+(`/api2/json`), signed in with an API token or a user's password (and a
+TOTP code where there's a second factor).
 
 - **Its page** (the rail's Proxmox), with a sidebar of views:
   - **Overview**: nodes online, guests running, the cluster's CPU and
@@ -36,9 +37,23 @@ and an API token.
   task to its end, with a toast, or says why it failed.
 - **Kept current** while the page shows: the resources every 10 s, and
   the guest or node opened.
-- **Its page of Settings** connects it: the address (a bare host is
-  `https://HOST:8006`), the token's ID and its secret (kept in the
-  keychain). Proxmox's own certificate, which no authority signed, is
+- **Several servers**: each one named, in Settings; the sidebar's
+  Servers switch between them, and every command takes `--server`.
+  Each server's backups are watched every three minutes, the page open
+  or not, and a backup that fails is a toast saying where and why.
+- **Consoles in Swarm**: a container's Console, a node's Shell, and a
+  VM's serial console (with a `serial0`), each a tab where its guest or
+  node is, Swarm's own terminal typed into in place (`ui.terminal`),
+  through Proxmox's terminal proxy (`console.ts`; its protocol in
+  `consoleproto.ts`). A VM's screen opens in Proxmox's page.
+- **A node's disks**: each one's model, size, wear and SMART health; a
+  failing or worn-out one under the overview's Needs attention; its
+  SMART attributes, or what smartctl printed, under it.
+- **Its page of Settings** connects them: the address (a bare host is
+  `https://HOST:8006`), and a token's ID and secret, or a user and
+  password: a ticket, renewed hourly with itself, so a second factor's
+  code is asked only when it lapses (Swarm closed past two hours), on
+  the page. Secrets and tickets are kept in the keychain. Proxmox's own certificate, which no authority signed, is
   shown by its fingerprint to compare with the one in Proxmox, and
   trusted once the user says so: that one alone, by Swarm's
   `fetch(url, { certificate })`. Another one later is shown, not taken.
@@ -54,6 +69,8 @@ and an API token.
 - `store.ts`: what's read, kept current, and the actions.
 - `page.tsx`, `view.tsx`: the page, its meters and graphs.
   `actions.tsx`: backups, clone, move and edit, and the Backups view.
+- `servers.ts`: the servers, their secrets and which is shown.
+  `watch.ts`: the backups' watch.
 - `settings.tsx`: its page of Settings. `cli.ts`: the command line.
   `skills/proxmox/SKILL.md`, `AGENTS.md`: for agents.
 

@@ -25,7 +25,13 @@ import {
 	PAGE,
 	press,
 	readGuest,
+	consoles,
+	opening,
 	readAllBackups,
+	readBadDisks,
+	readDisks,
+	readSmart,
+	startConsole,
 	readList,
 	readNode,
 	readSnapshots,
@@ -40,6 +46,9 @@ import {
 	type OpenedNode,
 	type Timeframe,
 } from "./store";
+import { hasSerial, type OpenConsole } from "./console";
+import { current, servers, setCurrent } from "./servers";
+import { codeCard } from "./settings";
 import { backupsTab, backupsView, guestForm, openForm, otherNodes } from "./actions";
 import { badge, columnStyle, empty, fact, faint, graph, line, list, loading, logBox, phone, problem, refresh, rowOf, searchField, sectionHead, setPhone, stats, top, usage, meter, confirmBox, type Series } from "./view";
 
@@ -221,10 +230,12 @@ function overview(base: string, open: string): Child {
 	const running = real.filter((g) => g.status === "running");
 	const cpu = online.reduce((a, n) => a + (n.cpu ?? 0) * (n.maxcpu ?? 0), 0) / Math.max(1, online.reduce((a, n) => a + (n.maxcpu ?? 0), 0));
 	const mem = api.frac(online.reduce((a, n) => a + (n.mem ?? 0), 0), online.reduce((a, n) => a + (n.maxmem ?? 0), 0));
-	const attention: { g?: Guest; text: string; r?: Resource }[] = [
+	if (Date.now() - state.disksAt > 10 * 60_000) void readBadDisks();
+	const attention: { g?: Guest; text: string; r?: Resource; node?: string }[] = [
 		...ns.filter((n) => n.status !== "online").map((n) => ({ r: n, text: `${n.node} is offline` })),
 		...all.filter((g) => g.lock).map((g) => ({ g, text: api.guestState(g).label })),
 		...storages().filter((s) => s.status === "available" && (api.frac(s.disk, s.maxdisk) ?? 0) >= 0.9).map((s) => ({ r: s, text: `${s.storage} on ${s.node} is ${api.pct(api.frac(s.disk, s.maxdisk))} full` })),
+		...state.badDisks.map((d) => ({ node: d.node, text: `${d.devpath} on ${d.node}: ${d.label === "Failing" ? "SMART says it's failing" : d.label}` })),
 	];
 	const busiest = running.slice().sort((a, b) => (b.cpu ?? 0) * (b.maxcpu ?? 1) - (a.cpu ?? 0) * (a.maxcpu ?? 1)).slice(0, 5);
 	if (state.tasks === undefined && !state.tasksAt) void readTasks();
@@ -396,6 +407,86 @@ function graphsOf(key: string, rrd: api.Point[] | undefined, node: boolean): Chi
 	return out;
 }
 
+/** An open console, in Swarm's terminal, where its guest or node is; Disconnect ends it. */
+function consoleTab(con: OpenConsole): Child {
+	return (
+		<ui.box style={{ gap: 8 }}>
+			<ui.terminal key={`term-${con.id}`} terminal={con.id} label={con.title} style={{ height: phone.on ? 360 : 460 }} />
+			<ui.box style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+				<ui.text style={{ ...faint, ...line, flex: 1 }}>{`${con.title}. Click it to type; Proxmox ends it as you log out.`}</ui.text>
+				<ui.button size="sm" kind="ghost" icon="x" onClick={() => con.close()}>Disconnect</ui.button>
+			</ui.box>
+		</ui.box>
+	);
+}
+
+/** A disk's SMART, opened under its row: its attributes, or what smartctl printed. */
+function smartOf(o: OpenedNode, d: api.Disk): Child {
+	const s = o.smart.get(d.devpath);
+	if (s === undefined) return loading("Reading its SMART…");
+	if (typeof s === "string") return problem(s);
+	if (s.attributes?.length)
+		return (
+			<ui.box style={{ gap: 2 }}>
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: 22 }}>
+					<ui.text style={{ ...faint, width: 28, textAlign: "right" }}>ID</ui.text>
+					<ui.text style={{ ...faint, flex: 1 }}>Attribute</ui.text>
+					<ui.text style={{ ...faint, width: 90, textAlign: "right" }}>Value / limit</ui.text>
+					<ui.text style={{ ...faint, width: 120, textAlign: "right" }}>Raw</ui.text>
+				</ui.box>
+				{s.attributes.map((a) => (
+					<ui.box key={`${a.id}-${a.name}`} style={{ flexDirection: "row", gap: 8, alignItems: "center", minHeight: 22 }}>
+						<ui.text style={{ ...faint, width: 28, textAlign: "right" }}>{String(a.id ?? "")}</ui.text>
+						<ui.text style={{ ...line, flex: 1, color: a.fail && a.fail !== "-" ? "red" : "text2" }}>{a.name.replace(/_/g, " ")}</ui.text>
+						<ui.text style={{ ...faint, width: 90, textAlign: "right" }}>{`${a.value ?? "—"} / ${a.threshold ?? "—"}`}</ui.text>
+						<ui.text style={{ fontFamily: "mono", fontSize: 11, color: "text3", width: 120, textAlign: "right", ...line }}>{a.raw ?? ""}</ui.text>
+					</ui.box>
+				))}
+			</ui.box>
+		);
+	return s.text ? logBox(`smart-${d.devpath}`, s.text, 320, { title: `${d.devpath}: SMART` }) : <ui.text style={faint}>Its SMART says nothing more.</ui.text>;
+}
+
+function disksTab(node: string, o: OpenedNode): Child {
+	if (o.disks === undefined && !o.disksErr) void readDisks(node, o);
+	if (o.disksErr && !o.disks) return problem(/permission|may not/i.test(o.disksErr) ? `${o.disksErr} Disks need Sys.Audit on the node.` : o.disksErr);
+	if (!o.disks) return loading("Reading its disks…");
+	if (!o.disks.length) return <ui.text style={{ color: "text3", padding: 12 }}>No disks.</ui.text>;
+	return (
+		<ui.box style={{ gap: 6 }}>
+			{sectionHead("Disks", refresh(false, () => { o.smart.clear(); void readDisks(node, o); }))}
+			{list(
+				o.disks.map((d) => {
+					const st = api.diskState(d);
+					const open = o.openDisk === d.devpath;
+					return (
+						<ui.box key={d.devpath} style={{ minWidth: 0 }}>
+							<ui.pressable
+								label={`${d.devpath}, ${st.label}`}
+								checked={open}
+								onClick={() => {
+									o.openDisk = open ? "" : d.devpath;
+									if (!open && !o.smart.has(d.devpath)) void readSmart(node, o, d.devpath);
+								}}
+								style={{ ...rowOf(), checked: {} }}
+							>
+								<ui.icon icon="hard-drive" style={{ width: 15, height: 15, color: "text2", flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
+								<ui.box style={{ flex: 1, minWidth: 0, gap: 2 }}>
+									<ui.text style={{ fontWeight: 500, ...line }}>{`${d.devpath}${d.model ? ` · ${d.model}` : ""}`}</ui.text>
+									<ui.text style={{ ...faint, ...line }}>{[api.bytes(d.size), (d.type ?? "").toUpperCase(), typeof d.wearout === "number" ? `${100 - d.wearout}% worn` : "", d.used ?? "unused", d.serial ?? ""].filter(Boolean).join(" · ")}</ui.text>
+								</ui.box>
+								{badge(st.tone, st.label)}
+								<ui.icon icon={open ? "chevron-down" : "chevron-right"} style={{ width: 12, height: 12, color: "text3" }} />
+							</ui.pressable>
+							{open ? <ui.box style={{ padding: phone.on ? "4 12 14" : "s2 s5 s4", minWidth: 0 }}>{smartOf(o, d)}</ui.box> : null}
+						</ui.box>
+					);
+				}),
+			)}
+		</ui.box>
+	);
+}
+
 function nodeView(name: string, base: string, open: string): Child {
 	const n = nodeByName(name);
 	if (!n) return empty("server", "Not in the cluster", `Proxmox has no node ${name}, or this token can't see it.`);
@@ -406,9 +497,13 @@ function nodeView(name: string, base: string, open: string): Child {
 	const online = n.status === "online";
 	const c = conn()!;
 	const wide = phone.on ? { flex: 1 } : undefined;
-	const tabs = [{ value: "summary", label: "Summary" }, { value: "guests", label: "Guests" }, { value: "syslog", label: "Syslog" }];
+	const shell = consoles.get(`node/${name}`);
+	if (o.tab === "shell" && !shell) o.tab = "summary";
+	const tabs = [{ value: "summary", label: "Summary" }, ...(shell ? [{ value: "shell", label: "Shell" }] : []), { value: "guests", label: "Guests" }, { value: "disks", label: "Disks" }, { value: "syslog", label: "Syslog" }];
 	let body: Child;
-	if (o.tab === "guests") body = guestsView(base, open, name);
+	if (o.tab === "shell" && shell) body = consoleTab(shell);
+	else if (o.tab === "guests") body = guestsView(base, open, name);
+	else if (o.tab === "disks") body = disksTab(name, o);
 	else if (o.tab === "syslog") {
 		if (o.syslog === undefined && !o.syslogErr) void readSyslog(name, o);
 		body = o.syslogErr ? problem(o.syslogErr) : o.syslog === undefined ? loading("Reading the syslog…") : (
@@ -456,9 +551,11 @@ function nodeView(name: string, base: string, open: string): Child {
 				{badge(api.nodeState(n).tone, api.nodeState(n).label)}
 				<ui.text style={faint}>{[`${guests().filter((g) => g.node === name).length} guests`, n.maxcpu ? `${n.maxcpu} CPUs` : "", api.bytes(n.maxmem)].filter(Boolean).join(" · ")}</ui.text>
 				<ui.spacer />
-				{online ? <ui.button size="sm" icon="terminal" href={api.nodeShellUrl(c, name)} style={wide}>Shell</ui.button> : null}
+				{online ? <ui.button size="sm" icon="terminal" onClick={() => void startConsole({ kind: "node", node: name, name }, (e) => void (o.actErr = e), () => void (o.tab = "shell"))} disabled={opening.has(`node/${name}`)} style={wide}>{opening.has(`node/${name}`) ? "Connecting…" : "Shell"}</ui.button> : null}
 				{online ? (
 					<ui.menu label={phone.on ? "" : "Power"} icon="more" size="sm" kind={phone.on ? "secondary" : "ghost"} tooltip="Reboot or shut down">
+						<ui.item icon="external" label="Shell in Proxmox" href={api.nodeShellUrl(c, name)} />
+						<ui.separator />
 						<ui.item icon="refresh" label="Reboot…" onClick={() => void (o.confirm = "reboot")} />
 						<ui.item icon="stop" label="Shut down…" danger onClick={() => void (o.confirm = "shutdown")} />
 					</ui.menu>
@@ -484,7 +581,7 @@ function nodeView(name: string, base: string, open: string): Child {
 
 function board(view: View, base: string, open: string, head = false): Child {
 	const c = conn();
-	let title = clusterName() || "Overview";
+	let title = (servers().length > 1 ? current()?.name : "") || clusterName() || "Overview";
 	let count = "";
 	let search = true;
 	let body: Child;
@@ -506,6 +603,9 @@ function board(view: View, base: string, open: string, head = false): Child {
 	if (head) return phone.on ? phoneHead(end) : titleBar(title, count, ...(c ? end : []));
 	if (!c) {
 		body = empty("server", "Connect Proxmox", "Give its address and an API token, and its nodes, VMs and containers show here.", <ui.link label="Connect in Settings…" href={settingsHref} />);
+		search = false;
+	} else if (state.needsCode && !state.list) {
+		body = <ui.box style={{ ...columnStyle(), marginTop: "auto", marginBottom: "auto" }}>{codeCard()}</ui.box>;
 		search = false;
 	} else if (state.err && !state.list) {
 		body = empty("alert-circle", "Proxmox didn't answer", state.err, state.certificate ? <ui.link label="Trust its certificate in Settings…" href={settingsHref} /> : <ui.button onClick={() => void readList()}>Try again</ui.button>);
@@ -563,7 +663,8 @@ function summaryTab(g: Guest, o: OpenedGuest): Child {
 	if (running) facts.push(fact("Network", <ui.text style={{ color: "text2" }}>{`${api.bytes(s?.netin ?? g.netin)} in, ${api.bytes(s?.netout ?? g.netout)} out since it started`}</ui.text>));
 	if (s?.ha?.managed) facts.push(fact("High availability", <ui.text style={{ color: "text2" }}>{s.ha.state ?? "Managed"}</ui.text>));
 	if (g.pool) facts.push(fact("Pool", <ui.text style={{ color: "text2" }}>{g.pool}</ui.text>));
-	const diskKnown = g.type === "lxc" || (s?.disk ?? g.disk ?? 0) > 0;
+	// A VM's disk use is known only through its agent; a container's, as Proxmox reads it.
+	const diskKnown = (s?.maxdisk ?? g.maxdisk ?? 0) > 0 && (g.type === "lxc" || (s?.disk ?? g.disk ?? 0) > 0);
 	return (
 		<ui.box style={{ gap: 14 }}>
 			{running ? (
@@ -701,7 +802,8 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 	const running = g.status === "running" && !paused;
 	const doing = (w: string) => o.busy === w;
 	const wide = phone.on ? { flex: 1 } : undefined;
-	const tabs = [{ value: "summary", label: "Summary" }, { value: "hardware", label: "Hardware" }, ...(g.template ? [] : [{ value: "snapshots", label: phone.on ? "Snaps" : "Snapshots" }]), { value: "backups", label: "Backups" }, { value: "tasks", label: "Tasks" }];
+	const con = consoles.get(`${g.type}/${g.vmid}`);
+	const tabs = [{ value: "summary", label: "Summary" }, ...(con ? [{ value: "console", label: "Console" }] : []), { value: "hardware", label: "Hardware" }, ...(g.template ? [] : [{ value: "snapshots", label: phone.on ? "Snaps" : "Snapshots" }]), { value: "backups", label: "Backups" }, { value: "tasks", label: "Tasks" }];
 	if (!tabs.some((t) => t.value === o.tab)) o.tab = "summary";
 	const askFirst: Record<string, [string, string, string]> = {
 		shutdown: [`Shut ${api.guestName(g)} down?`, "It's asked to shut down as its own power button would, and stays off until it's started again.", "Shut down"],
@@ -737,7 +839,17 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 						<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
 							{!running && !paused ? <ui.button kind="primary" icon="play" disabled={!!o.busy} onClick={() => void press(g, o, "start")} style={wide}>{doing("start") ? "Starting…" : "Start"}</ui.button> : null}
 							{paused ? <ui.button kind="primary" icon="play" disabled={!!o.busy} onClick={() => void press(g, o, "resume")} style={wide}>{doing("resume") ? "Resuming…" : "Resume"}</ui.button> : null}
-							{running ? <ui.button icon="terminal" href={api.consoleUrl(c, g)} style={wide}>Console</ui.button> : null}
+							{running && g.type === "lxc" ? <ui.button icon="terminal" onClick={() => void startConsole({ kind: "lxc", node: g.node, vmid: g.vmid, name: api.guestName(g) }, (e) => void (o.actErr = e), () => void (o.tab = "console"))} disabled={opening.has(`lxc/${g.vmid}`)} style={wide}>{opening.has(`lxc/${g.vmid}`) ? "Connecting…" : "Console"}</ui.button> : null}
+							{running && g.type === "qemu" ? (
+								hasSerial(o.config) ? (
+									<ui.menu label="Console" icon="terminal" kind="secondary" tooltip="Open its console" style={wide}>
+										<ui.item icon="terminal" label="Serial console, in Swarm" onClick={() => void startConsole({ kind: "qemu", node: g.node, vmid: g.vmid, name: api.guestName(g) }, (e) => void (o.actErr = e), () => void (o.tab = "console"))} />
+										<ui.item icon="external" label="Its screen, in Proxmox" href={api.consoleUrl(c, g)} />
+									</ui.menu>
+								) : (
+									<ui.button icon="external" href={api.consoleUrl(c, g)} tooltip="Its screen, in Proxmox's page: give it a serial port for a console in Swarm" style={wide}>Console</ui.button>
+								)
+							) : null}
 							{running ? <ui.button icon="stop" disabled={!!o.busy} onClick={() => void (o.confirm = "shutdown")} style={wide}>{doing("shutdown") ? "Shutting down…" : "Shut down"}</ui.button> : null}
 							{running ? <ui.button icon="refresh" disabled={!!o.busy} onClick={() => void (o.confirm = "reboot")} style={wide}>{doing("reboot") ? "Rebooting…" : "Reboot"}</ui.button> : null}
 							<ui.menu label={phone.on ? "" : "More actions"} tooltip="More actions" icon="more" kind={phone.on ? "secondary" : "ghost"}>
@@ -759,6 +871,7 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 
 					<ui.segmented style={{ alignSelf: phone.on ? "stretch" : "flex-start" }} label="Tabs" value={o.tab} options={tabs} onChange={(v) => void (o.tab = v as OpenedGuest["tab"])} />
 					{o.tab === "summary" ? summaryTab(g, o) : null}
+					{o.tab === "console" && con ? consoleTab(con) : null}
 					{o.tab === "hardware" ? hardwareTab(g, o) : null}
 					{o.tab === "snapshots" ? snapshotsTab(g, o) : null}
 					{o.tab === "backups" ? backupsTab(g, o) : null}
@@ -776,6 +889,15 @@ export function renderPage({ args }: RenderContext): Child {
 	if (view.kind === "node" && state.list && !nodeByName(view.node)) {
 		view = { kind: "overview" };
 		base = "";
+	}
+	// A server chosen in the sidebar: shown, from its overview, its row
+	// staying chosen. Not a navTo in a render, which the window doesn't take.
+	const chosen = /^server\/([^/]+)$/.exec(args.path ?? "");
+	if (chosen) {
+		if (chosen[1] !== current()?.id && servers().some((s) => s.id === chosen[1])) setCurrent(chosen[1]!);
+		view = { kind: "overview" };
+		base = "";
+		open = "";
 	}
 	if (args.slot === "head") return board(view, base, open, true);
 	if (args.slot) return null;

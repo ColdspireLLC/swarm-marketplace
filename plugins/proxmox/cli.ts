@@ -2,10 +2,19 @@
 import { cliCommand, defineCli, PluginCliError, type CommandIO } from "swarm";
 import * as api from "./pve";
 import type { Conn, Guest, Power, Resource } from "./pve";
-import { conn, TASK_POLL } from "./store";
+import { connOf, current, serverNamed, servers } from "./servers";
+import { TASK_POLL } from "./store";
 
-function need(): Conn {
-	const c = conn();
+/** The server a command names (--server), else the one shown: how to reach it, or null when there's none. */
+function connFor(server: unknown): Conn | null {
+	if (!servers().length) return null;
+	const s = serverNamed(server ? String(server) : undefined);
+	if (!s) throw new PluginCliError(`No server is ${server}: ${servers().map((x) => x.name).join(", ")}.`, { code: "no_server", hint: "swarm proxmox servers" });
+	return connOf(s);
+}
+
+function needFor(server: unknown): Conn {
+	const c = connFor(server);
 	if (!c) throw new PluginCliError("Proxmox isn't connected.", { code: "not_connected", hint: "Connect it in Swarm: Settings, Proxmox." });
 	return c;
 }
@@ -13,15 +22,15 @@ function need(): Conn {
 const json = { json: { type: "boolean", description: "Print JSON, for a script or another command to read." } } as const;
 const guestArg = { name: "guest", description: "A VM's or container's vmid or name", required: true };
 
-/** Wraps a command's run: Proxmox's refusals as the CLI's errors. */
-function guard<A extends unknown[]>(fn: (...a: A) => Promise<void | number>) {
-	return async (...a: A) => {
+/** Wraps a command's run: need is its server's Conn (--server's), and Proxmox's refusals are the CLI's errors. */
+function guard<I extends { options: Record<string, unknown> }>(fn: (input: I, io: CommandIO, need: () => Conn) => Promise<void | number>) {
+	return async (input: I, io: CommandIO) => {
 		try {
-			return await fn(...a);
+			return await fn(input, io, () => needFor(input.options.server));
 		} catch (e) {
 			if (e instanceof api.PveError) {
 				const code = e.certificate ? "certificate" : e.status === 401 ? "unauthorized" : e.status === 403 ? "forbidden" : e.status === 404 ? "not_found" : "proxmox_error";
-				throw new PluginCliError(e.message, { code, hint: e.certificate ? "Trust its certificate in Swarm: Settings, Proxmox." : undefined });
+				throw new PluginCliError(e.message, { code, hint: e.certificate ? "Trust its certificate in Swarm: Settings, Proxmox." : e.code === "tfa" ? "Sign in again in Swarm: Settings, Proxmox." : undefined });
 			}
 			throw e;
 		}
@@ -76,7 +85,7 @@ function powerCommand(what: Power, summary: string, done: string) {
 		summary,
 		positionals: [guestArg],
 		options: noWait,
-		run: guard(async ({ positionals, options }, io) => {
+		run: guard(async ({ positionals, options }, io, need) => {
 			const c = need();
 			const g = await guestOf(c, positionals.guest as string);
 			const upid = await api.power(c, g, what);
@@ -86,14 +95,23 @@ function powerCommand(what: Power, summary: string, done: string) {
 }
 
 export function registerCli() {
-	defineCli({
-		summary: "Your Proxmox VE: its nodes, VMs and containers; start, shut down, reboot and stop them; snapshots, backups, clones, moves and settings; and tasks with their logs. GUEST is a vmid or a name.",
-		commands: {
+	const commands: Record<string, ReturnType<typeof cliCommand>> = {
+			servers: cliCommand({
+				summary: "The Proxmox servers Swarm knows, and which one commands act on unless --server names another",
+				options: json,
+				run: guard(async ({ options }, io) => {
+					const cur = current();
+					const rows = servers().map((s) => ({ id: s.id, name: s.name, url: api.baseOf(s.url), as: s.who, current: s.id === cur?.id }));
+					if (options.json) return io.print(JSON.stringify(rows));
+					if (!rows.length) return io.print("None: connect one in Swarm, Settings, Proxmox.");
+					for (const r of rows) io.print(`${r.current ? "*" : " "} ${r.name.padEnd(16)} ${r.url}  as ${r.as}`);
+				}),
+			}),
 			status: cliCommand({
 				summary: "Whether Proxmox is connected, its version, and how its nodes and guests stand",
 				options: json,
-				run: guard(async ({ options }, io) => {
-					const c = conn();
+				run: guard(async ({ options }, io, need) => {
+					const c = connFor(options.server);
 					if (!c) {
 						if (options.json) return io.print(JSON.stringify({ connected: false }));
 						return io.print("Not connected: connect it in Swarm, Settings, Proxmox.");
@@ -116,7 +134,7 @@ export function registerCli() {
 					running: { type: "boolean", description: "Only those running" },
 					stopped: { type: "boolean", description: "Only those not running" },
 				},
-				run: guard(async ({ options }, io) => {
+				run: guard(async ({ options }, io, need) => {
 					const c = need();
 					let gs = (await api.resources(c)).filter(api.isGuest).sort((a, b) => a.vmid - b.vmid);
 					if (options.node) gs = gs.filter((g) => g.node === options.node);
@@ -131,7 +149,7 @@ export function registerCli() {
 				summary: "A guest's state, use, addresses, hardware and snapshots",
 				positionals: [guestArg],
 				options: json,
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const [st, cfg, snaps, addrs] = await Promise.all([
@@ -162,7 +180,7 @@ export function registerCli() {
 				summary: "A guest's snapshots",
 				positionals: [guestArg],
 				options: json,
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const snaps = (await api.snapshots(c, g)).filter((s) => s.name !== "current").sort((a, b) => (a.snaptime ?? 0) - (b.snaptime ?? 0));
@@ -175,7 +193,7 @@ export function registerCli() {
 				summary: "Take a snapshot of a guest",
 				positionals: [guestArg, { name: "name", description: "Its name: a letter, then letters, digits, - or _", required: true }],
 				options: { ...noWait, description: { type: "string", description: "What it's before" }, memory: { type: "boolean", description: "A running VM's memory too, so a rollback resumes it running" } },
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const name = positionals.name as string;
@@ -188,7 +206,7 @@ export function registerCli() {
 				summary: "Roll a guest back to a snapshot: what changed since is lost",
 				positionals: [guestArg, { name: "name", description: "The snapshot", required: true }],
 				options: noWait,
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const upid = await api.rollback(c, g, positionals.name as string);
@@ -199,7 +217,7 @@ export function registerCli() {
 				summary: "Delete a guest's snapshot",
 				positionals: [guestArg, { name: "name", description: "The snapshot", required: true }],
 				options: noWait,
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const upid = await api.deleteSnapshot(c, g, positionals.name as string);
@@ -210,7 +228,7 @@ export function registerCli() {
 				summary: "Backups, newest first: a guest's, or every guest's last one",
 				positionals: [{ name: "guest", description: "A vmid or name; every guest's last backup when left out" }],
 				options: json,
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const list = await api.resources(c);
 					const online = list.filter((r) => r.type === "node" && r.status === "online").map((r) => r.node!);
@@ -239,7 +257,7 @@ export function registerCli() {
 					storage: { type: "string", description: "The storage to back up to; its node's Proxmox Backup Server, else its first that takes backups, when left out" },
 					mode: { type: "enum", values: ["snapshot", "suspend", "stop"], default: "snapshot", description: "snapshot keeps it running; suspend pauses it; stop shuts it down and starts it again" },
 				},
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const stores = await api.nodeStorages(c, g.node, "backup");
@@ -259,7 +277,7 @@ export function registerCli() {
 					linked: { type: "boolean", description: "From a template: share its disks, not copy them" },
 					node: { type: "string", description: "The node to make it on" },
 				},
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					if (options.linked && !g.template) throw new PluginCliError("Only a template's clone can be linked.", { code: "not_template" });
@@ -274,7 +292,7 @@ export function registerCli() {
 				summary: "Move a guest to another node: a running VM live, a running container by restarting it there",
 				positionals: [guestArg, { name: "node", description: "The node to move it to", required: true }],
 				options: noWait,
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const target = positionals.node as string;
@@ -293,7 +311,7 @@ export function registerCli() {
 					onboot: { type: "enum", values: ["yes", "no"], description: "Whether it starts as its node does" },
 					tags: { type: "string", description: "Its tags, separated by commas or spaces, in place of those it has; \"\" for none" },
 				},
-				run: guard(async ({ positionals, options }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const g = await guestOf(c, positionals.guest as string);
 					const ch: api.Changes = {};
@@ -313,7 +331,7 @@ export function registerCli() {
 			nodes: cliCommand({
 				summary: "The cluster's nodes: state, uptime, CPU and memory",
 				options: json,
-				run: guard(async ({ options }, io) => {
+				run: guard(async ({ options }, io, need) => {
 					const c = need();
 					const nodes = (await api.resources(c)).filter((r) => r.type === "node").sort((a, b) => (a.node ?? "").localeCompare(b.node ?? ""));
 					if (options.json) return io.print(JSON.stringify(nodes.map((n) => ({ node: n.node, status: n.status, uptime: n.uptime ?? null, cpu: n.cpu ?? null, cpus: n.maxcpu ?? null, memory: n.mem ?? null, maxMemory: n.maxmem ?? null, disk: n.disk ?? null, maxDisk: n.maxdisk ?? null }))));
@@ -323,7 +341,7 @@ export function registerCli() {
 			storage: cliCommand({
 				summary: "Each storage of each node, and how full it is",
 				options: json,
-				run: guard(async ({ options }, io) => {
+				run: guard(async ({ options }, io, need) => {
 					const c = need();
 					const ss = (await api.resources(c)).filter((r: Resource) => r.type === "storage");
 					if (options.json) return io.print(JSON.stringify(ss.map((s) => ({ storage: s.storage, node: s.node, type: s.plugintype ?? null, content: (s.content ?? "").split(",").filter(Boolean), shared: !!s.shared, status: s.status, used: s.disk ?? null, total: s.maxdisk ?? null }))));
@@ -338,7 +356,7 @@ export function registerCli() {
 					failed: { type: "boolean", description: "Only those that failed" },
 					limit: { type: "number", description: "How many at most (20)", default: 20 },
 				},
-				run: guard(async ({ options }, io) => {
+				run: guard(async ({ options }, io, need) => {
 					const c = need();
 					let ts = (await api.tasks(c)).sort((a, b) => b.starttime - a.starttime);
 					if (options.guest) {
@@ -355,13 +373,18 @@ export function registerCli() {
 			"task-log": cliCommand({
 				summary: "A task's log",
 				positionals: [{ name: "upid", description: "The task's UPID, as tasks and the actions print it", required: true }],
-				run: guard(async ({ positionals }, io) => {
+				run: guard(async ({ positionals, options }, io, need) => {
 					const c = need();
 					const upid = positionals.upid as string;
 					if (!/^UPID:/.test(upid)) throw new PluginCliError(`${upid} isn't a task's UPID: they start UPID:.`, { code: "bad_upid", hint: "swarm proxmox tasks" });
 					for (const l of await api.taskLog(c, upid)) io.print(l.t);
 				}),
 			}),
-		},
+	};
+	// Every command acts on the server --server names, else the one shown.
+	for (const c of Object.values(commands)) c.options = { ...c.options, server: { type: "string", description: "The server, by its name in Swarm; the one shown in Swarm when left out (swarm proxmox servers)" } };
+	defineCli({
+		summary: "Your Proxmox VE: its nodes, VMs and containers; start, shut down, reboot and stop them; snapshots, backups, clones, moves and settings; and tasks with their logs. GUEST is a vmid or a name; --server picks one of several servers.",
+		commands,
 	});
 }

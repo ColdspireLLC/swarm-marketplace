@@ -8,7 +8,8 @@
     "App page",
     "Settings page",
     "Agent skill",
-    "Agent instructions"
+    "Agent instructions",
+    "Consoles"
   ],
   "icon": "proxmox.svg",
   "main": "main.tsx",
@@ -19,39 +20,32 @@
     "network": [
       "*"
     ],
-    "localNetwork": true
+    "localNetwork": true,
+    "terminal": true,
+    "storage": true
   },
   "settings": [
     {
-      "key": "url",
-      "title": "Proxmox address",
+      "key": "servers",
+      "title": "Servers",
       "type": "text",
       "default": "",
-      "placeholder": "https://pve.local:8006",
-      "description": "The address you open Proxmox at. Proxmox's page of Settings sets it.",
+      "description": "The Proxmox servers: each one's name, address, how it signs in and the certificate trusted. Proxmox's page of Settings sets it.",
       "hidden": true
     },
     {
-      "key": "tokenId",
-      "title": "API token ID",
-      "type": "text",
-      "default": "",
-      "description": "USER@REALM!NAME. Proxmox's page of Settings sets it.",
-      "hidden": true
-    },
-    {
-      "key": "secret",
-      "title": "API token secret",
+      "key": "secrets",
+      "title": "Their secrets",
       "type": "secret",
-      "description": "Proxmox's page of Settings sets it.",
+      "description": "Each server's token secret or password, and the ticket it last gave. Proxmox's page of Settings sets it.",
       "hidden": true
     },
     {
-      "key": "certificate",
-      "title": "Trusted certificate",
+      "key": "current",
+      "title": "Current server",
       "type": "text",
       "default": "",
-      "description": "The fingerprint of Proxmox's own certificate, trusted in place of a certificate authority's. Proxmox's page of Settings sets it.",
+      "description": "The server the page and the command line act on. The page's sidebar chooses it.",
       "hidden": true
     }
   ],

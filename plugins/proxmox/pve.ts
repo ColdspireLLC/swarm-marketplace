@@ -4,30 +4,49 @@
 // and tasks with their logs.
 //
 // It's reached with an API token (Datacenter, Permissions, API Tokens),
-// which needs no CSRF token. Proxmox makes its own certificate as it's
-// installed: the user trusts it once, by its fingerprint, and every fetch
-// carries it (Swarm's init.certificate).
+// which needs no CSRF token, or a user's password: a ticket, which lives
+// two hours and is renewed with itself each hour, so that a user with a
+// second factor (TOTP) gives a code only when it has lapsed. Proxmox
+// makes its own certificate as it's installed: the user trusts it once,
+// by its fingerprint, and every fetch carries it (Swarm's
+// init.certificate).
 
-/** A Proxmox to reach: its address, an API token's ID and secret, and the certificate trusted, if it's its own. */
+/** How the plugin signs in to a Proxmox: an API token, or a user's password and the ticket it gave. */
+export type Auth =
+	| { kind: "token"; /** USER@REALM!TOKENID, as root@pam!swarm. */ tokenId: string; secret: string }
+	| { kind: "password"; /** USER@REALM, as root@pam. */ user: string; password: string; ticket: string; csrf: string; /** When the ticket was given, in ms. */ at: number };
+
+/** A Proxmox to reach: its address, how to sign in, and the certificate trusted, if it's its own. */
 export interface Conn {
+	/** Its ID in the plugin's list of servers; "" for one being tried. */
+	id: string;
+	name: string;
 	url: string;
-	/** USER@REALM!TOKENID, as root@pam!swarm. */
-	tokenId: string;
-	secret: string;
 	/** sha256:… of the certificate trusted in place of a certificate authority's, or "". */
 	certificate: string;
+	auth: Auth;
+	/** Told a new ticket, to keep. */
+	onTicket?: (ticket: string, csrf: string, at: number) => void;
 }
 
-/** What Proxmox said no to: its HTTP status (0 for none reached) and why; certificate is the one it showed, when that's why. */
+/** What Proxmox said no to: its HTTP status (0 for none reached) and why; certificate is the one it showed, when that's why; code "tfa" when it wants a second factor. */
 export class PveError extends Error {
 	constructor(
 		message: string,
 		readonly status: number,
 		readonly certificate = "",
+		readonly code = "",
 	) {
 		super(message);
 	}
 }
+
+/** Who the plugin is to Proxmox: a token's ID, or a user. */
+export const whoOf = (a: Auth) => (a.kind === "token" ? a.tokenId : a.user);
+
+/** A ticket lives two hours: renewed after one. */
+const TICKET_RENEW = 60 * 60_000;
+const TICKET_LIFE = 2 * 60 * 60_000 - 5 * 60_000;
 
 /** A VM (qemu) or a container (lxc). */
 export type GuestType = "qemu" | "lxc";
@@ -211,20 +230,33 @@ export function tokenIdProblem(id: string): string {
 
 const plain = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-/** Asks Proxmox: GET, or POST/PUT/DELETE with a form. Its data, or a PveError. */
-export async function req<T>(c: Conn, method: string, path: string, form?: Record<string, string | number | boolean | undefined>): Promise<T> {
+/** The headers that sign a request in: the token, or the ticket's cookie (and, but for GET, its CSRF token). */
+export function authHeaders(c: Conn, method = "GET"): Record<string, string> {
+	const a = c.auth;
+	if (a.kind === "token") return { Authorization: `PVEAPIToken=${a.tokenId.trim()}=${a.secret.trim()}` };
+	const h: Record<string, string> = { Cookie: `PVEAuthCookie=${encodeURIComponent(a.ticket)}` };
+	if (method !== "GET") h.CSRFPreventionToken = a.csrf;
+	return h;
+}
+
+const formOf = (form: Record<string, string | number | boolean | undefined>) => {
+	const p = new URLSearchParams();
+	for (const [k, v] of Object.entries(form)) if (v !== undefined) p.set(k, typeof v === "boolean" ? (v ? "1" : "0") : String(v));
+	return p.toString();
+};
+
+/** One fetch, its answer's data or a PveError. */
+async function send<T>(c: Conn, method: string, path: string, headers: Record<string, string>, form?: Record<string, string | number | boolean | undefined>): Promise<{ status: number; data?: T; why?: string }> {
 	const url = `${baseOf(c.url)}/api2/json${path}`;
-	const headers: Record<string, string> = { Authorization: `PVEAPIToken=${c.tokenId.trim()}=${c.secret.trim()}`, Accept: "application/json" };
+	const h: Record<string, string> = { Accept: "application/json", ...headers };
 	let body: string | undefined;
 	if (form) {
-		const p = new URLSearchParams();
-		for (const [k, v] of Object.entries(form)) if (v !== undefined) p.set(k, typeof v === "boolean" ? (v ? "1" : "0") : String(v));
-		body = p.toString();
-		headers["Content-Type"] = "application/x-www-form-urlencoded";
+		body = formOf(form);
+		h["Content-Type"] = "application/x-www-form-urlencoded";
 	}
 	let res: Response;
 	try {
-		res = await fetch(url, { method, headers, body, timeout: 30_000, ...(c.certificate ? { certificate: c.certificate } : {}) });
+		res = await fetch(url, { method, headers: h, body, timeout: 30_000, ...(c.certificate ? { certificate: c.certificate } : {}) });
 	} catch (e) {
 		const cert = (e as { certificate?: string }).certificate ?? "";
 		if (cert) {
@@ -244,15 +276,66 @@ export async function req<T>(c: Conn, method: string, path: string, form?: Recor
 		} catch {
 			// Not JSON.
 		}
-		if (res.status === 401) throw new PveError("Proxmox refused the token: check its ID and secret.", 401);
-		if (res.status === 403 || /permission check failed/i.test(why)) throw new PveError(`The token may not do that: ${why}. Give it the role in Proxmox, Datacenter, Permissions (or turn off its privilege separation).`, 403);
-		throw new PveError(why, res.status);
+		return { status: res.status, why };
 	}
 	try {
-		return (JSON.parse(text) as { data: T }).data;
+		return { status: res.status, data: (JSON.parse(text) as { data: T }).data };
 	} catch {
 		throw new PveError(`Proxmox answered with something not JSON: ${text.slice(0, 120)}`, res.status);
 	}
+}
+
+/** Sign-ins under way, by server and user: requests that need one at once wait for the same. */
+const signingIn = new Map<string, Promise<void>>();
+
+/**
+ * Gets a password's Conn a ticket: renewed with the ticket it has while
+ * that lives, else from the password, with otp, the TOTP code, where
+ * Proxmox asks for a second factor (a PveError of code "tfa" without it).
+ */
+export function login(c: Conn, otp = "", fresh = false): Promise<void> {
+	const a = c.auth;
+	if (a.kind !== "password") return Promise.resolve();
+	const key = `${baseOf(c.url)}\n${a.user}`;
+	const was = signingIn.get(key);
+	if (was && !otp) return was;
+	const p = (async () => {
+		const renew = !fresh && a.ticket && Date.now() - a.at < TICKET_LIFE;
+		let r = await send<{ ticket: string; CSRFPreventionToken: string; NeedTFA?: number }>(c, "POST", "/access/ticket", {}, { username: a.user, password: renew ? a.ticket : a.password });
+		if (r.status === 401 && renew) r = await send(c, "POST", "/access/ticket", {}, { username: a.user, password: a.password });
+		if (r.status === 401) throw new PveError("Proxmox refused the user name or password.", 401);
+		if (!r.data) throw new PveError(r.why ?? "Proxmox didn't sign in.", r.status);
+		let d = r.data;
+		if (d.NeedTFA) {
+			if (!otp) throw new PveError("Proxmox asks for a code from your authenticator app.", 401, "", "tfa");
+			const t = await send<{ ticket: string; CSRFPreventionToken: string }>(c, "POST", "/access/ticket", {}, { username: a.user, "tfa-challenge": d.ticket, password: `totp:${otp.replace(/\s+/g, "")}` });
+			if (!t.data) throw new PveError("Proxmox didn't take that code: try the next one.", t.status, "", "tfa");
+			d = { ...t.data };
+		}
+		a.ticket = d.ticket;
+		a.csrf = d.CSRFPreventionToken;
+		a.at = Date.now();
+		c.onTicket?.(a.ticket, a.csrf, a.at);
+	})().finally(() => signingIn.delete(key));
+	signingIn.set(key, p);
+	return p;
+}
+
+/** Asks Proxmox: GET, or POST/PUT/DELETE with a form. Its data, or a PveError. */
+export async function req<T>(c: Conn, method: string, path: string, form?: Record<string, string | number | boolean | undefined>): Promise<T> {
+	const a = c.auth;
+	if (a.kind === "password" && (!a.ticket || Date.now() - a.at > TICKET_RENEW)) await login(c);
+	let r = await send<T>(c, method, path, authHeaders(c, method), form);
+	// A ticket Proxmox no longer takes (it restarted, or it was taken back): once more, signed in again.
+	if (r.status === 401 && a.kind === "password") {
+		await login(c, "", true);
+		r = await send<T>(c, method, path, authHeaders(c, method), form);
+	}
+	if (r.status === 401) throw new PveError(a.kind === "token" ? "Proxmox refused the token: check its ID and secret." : "Proxmox refused the user name or password.", 401);
+	const why = r.why ?? "";
+	if (r.status === 403 || /permission check failed/i.test(why)) throw new PveError(`${a.kind === "token" ? "The token" : a.user} may not do that: ${why}. Give ${a.kind === "token" ? "it" : "them"} the role in Proxmox, Datacenter, Permissions${a.kind === "token" ? " (or turn off its privilege separation)" : ""}.`, 403);
+	if (r.data === undefined && r.why !== undefined) throw new PveError(why, r.status);
+	return r.data as T;
 }
 
 const enc = encodeURIComponent;
@@ -622,3 +705,45 @@ export const backupWhen = (b: Backup) => (b.ctime ? new Date(b.ctime * 1000).toL
 
 /** Whether a tag is one Proxmox takes: letters, digits and - _ + . */
 export const tagOk = (t: string) => /^[a-z0-9_][a-z0-9_\-+.]*$/i.test(t);
+
+// ---- A node's disks ----
+
+/** A disk of a node, as Proxmox lists it. */
+export interface Disk {
+	devpath: string;
+	model?: string;
+	serial?: string;
+	vendor?: string;
+	size?: number;
+	/** ssd, hdd, nvme, usb, unknown. */
+	type?: string;
+	/** What SMART says: PASSED, OK, FAILED, UNKNOWN. */
+	health?: string;
+	/** An SSD's life left, in percent; N/A for none. */
+	wearout?: number | string;
+	/** What's on it: LVM, ZFS, partitions, mounted… */
+	used?: string;
+	rpm?: number;
+}
+
+export interface Smart {
+	health?: string;
+	/** ata: attributes; text: NVMe's and the like, as smartctl prints it. */
+	type?: string;
+	attributes?: { id?: string | number; name: string; value?: string | number; worst?: string | number; threshold?: string | number; raw?: string; fail?: string }[];
+	text?: string;
+}
+
+export const disks = (c: Conn, node: string) => req<Disk[]>(c, "GET", `/nodes/${enc(node)}/disks/list`);
+export const smart = (c: Conn, node: string, disk: string) => req<Smart>(c, "GET", `/nodes/${enc(node)}/disks/smart?disk=${enc(disk)}`);
+
+/** A disk's state, as a badge says it: failing SMART, worn, or well. */
+export function diskState(d: Disk): { label: string; tone: Tone; bad: boolean } {
+	const h = (d.health ?? "").toUpperCase();
+	if (h && h !== "PASSED" && h !== "OK" && h !== "UNKNOWN") return { label: "Failing", tone: "red", bad: true };
+	const left = typeof d.wearout === "number" ? d.wearout : Number.NaN;
+	if (left <= 10) return { label: `${100 - left}% worn`, tone: "red", bad: true };
+	if (left <= 25) return { label: `${100 - left}% worn`, tone: "amber", bad: false };
+	if (h === "UNKNOWN" || !h) return { label: "Not known", tone: "muted", bad: false };
+	return { label: "Healthy", tone: "green", bad: false };
+}
