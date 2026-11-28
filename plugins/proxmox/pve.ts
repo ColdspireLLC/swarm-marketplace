@@ -490,3 +490,135 @@ function osLabel(t: string): string {
 	const map: Record<string, string> = { l26: "Linux 2.6 – 6.x", l24: "Linux 2.4", win11: "Windows 11/2022/2025", win10: "Windows 10/2016/2019", win8: "Windows 8/2012", win7: "Windows 7/2008 R2", other: "Other", solaris: "Solaris", debian: "Debian", ubuntu: "Ubuntu", alpine: "Alpine", centos: "CentOS", fedora: "Fedora", archlinux: "Arch Linux", nixos: "NixOS", opensuse: "openSUSE", unmanaged: "Unmanaged" };
 	return map[t] ?? t;
 }
+
+// ---- Backups, clones, migrations, configuration ----
+
+/** A backup, as a storage lists it. */
+export interface Backup {
+	/** local:backup/vzdump-qemu-100-2026_11_25-04_00_01.vma.zst, or pbs:backup/vm/100/2026-11-25T04:00:01Z. */
+	volid: string;
+	vmid?: number;
+	size?: number;
+	ctime?: number;
+	format?: string;
+	/** qemu or lxc. */
+	subtype?: string;
+	notes?: string;
+	protected?: number;
+	verification?: { state?: string };
+	/** Which storage, and a node it's read from. */
+	storage: string;
+	node: string;
+}
+
+/** A storage of a node: what it holds and how full it is. */
+export interface NodeStorage {
+	storage: string;
+	type: string;
+	content: string;
+	active?: number;
+	enabled?: number;
+	shared?: number;
+	avail?: number;
+	total?: number;
+	used?: number;
+}
+
+export type BackupMode = "snapshot" | "suspend" | "stop";
+
+export const nextId = async (c: Conn) => Number(await req<string | number>(c, "GET", "/cluster/nextid"));
+export const nodeStorages = (c: Conn, node: string, content?: string) => req<NodeStorage[]>(c, "GET", `/nodes/${enc(node)}/storage${content ? `?content=${content}&enabled=1` : ""}`);
+
+/** A storage's backups, of one guest or every one. */
+export async function storageBackups(c: Conn, node: string, storage: string, vmid?: number): Promise<Backup[]> {
+	const list = await req<Omit<Backup, "storage" | "node">[]>(c, "GET", `/nodes/${enc(node)}/storage/${enc(storage)}/content?content=backup${vmid ? `&vmid=${vmid}` : ""}`);
+	return list.map((b) => ({ ...b, vmid: b.vmid !== undefined ? Number(b.vmid) : vmidOfVolid(b.volid), storage, node }));
+}
+
+/**
+ * Every backup the nodes given can reach, of one guest or all, newest
+ * first: each storage that holds backups, once, though a shared one
+ * (Proxmox Backup Server, NFS) shows on every node.
+ */
+export async function backups(c: Conn, nodes: string[], vmid?: number): Promise<Backup[]> {
+	const seen = new Set<string>();
+	const out: Backup[] = [];
+	for (const node of nodes) {
+		const stores = (await nodeStorages(c, node, "backup").catch(() => [] as NodeStorage[])).filter((s) => s.active !== 0);
+		for (const s of stores) {
+			if (s.shared && seen.has(`store:${s.storage}`)) continue;
+			seen.add(`store:${s.storage}`);
+			for (const b of await storageBackups(c, node, s.storage, vmid).catch(() => [] as Backup[])) {
+				if (seen.has(b.volid)) continue;
+				seen.add(b.volid);
+				out.push(b);
+			}
+		}
+	}
+	return out.sort((a, b) => (b.ctime ?? 0) - (a.ctime ?? 0));
+}
+
+/** The vmid a backup's name says, where its storage doesn't. */
+export function vmidOfVolid(volid: string): number | undefined {
+	const m = /vzdump-(?:qemu|lxc|openvz)-(\d+)-/.exec(volid) ?? /backup\/(?:vm|ct)\/(\d+)\//.exec(volid);
+	return m ? Number(m[1]) : undefined;
+}
+
+/** Backs a guest up now, to a storage: its task's UPID. Proxmox Backup Server compresses on its own. */
+export const backupNow = (c: Conn, g: Guest, storage: string, mode: BackupMode, pbs: boolean, notes = "{{guestname}}") =>
+	req<string>(c, "POST", `/nodes/${enc(g.node)}/vzdump`, { vmid: g.vmid, storage, mode, compress: pbs ? undefined : "zstd", "notes-template": notes || undefined, remove: 0 });
+
+/**
+ * Restores a backup: over the guest of its vmid (force, which must be
+ * stopped), or as a new guest of a new vmid. A container needs a storage
+ * for its root disk; a VM's disks go back where they were.
+ */
+export function restore(c: Conn, node: string, type: GuestType, volid: string, vmid: number, opts: { force?: boolean; storage?: string; unique?: boolean }) {
+	if (type === "qemu") return req<string>(c, "POST", `/nodes/${enc(node)}/qemu`, { vmid, archive: volid, force: opts.force || undefined, unique: opts.unique || undefined, storage: opts.storage || undefined });
+	return req<string>(c, "POST", `/nodes/${enc(node)}/lxc`, { vmid, ostemplate: volid, restore: 1, force: opts.force || undefined, unique: opts.unique || undefined, storage: opts.storage || undefined });
+}
+
+/** Deletes a backup: a task's UPID, or null where Proxmox does it at once. */
+export const deleteBackup = (c: Conn, b: Backup) => req<string | null>(c, "DELETE", `/nodes/${enc(b.node)}/storage/${enc(b.storage)}/content/${enc(b.volid)}`);
+
+/** Clones a guest to a new vmid: a full copy, or linked to a template's disks. */
+export const clone = (c: Conn, g: Guest, newid: number, name: string, full: boolean, target?: string) =>
+	req<string>(c, "POST", `${guestPath(g)}/clone`, { newid, [g.type === "qemu" ? "name" : "hostname"]: name || undefined, full: full ? 1 : 0, target: target && target !== g.node ? target : undefined });
+
+/** Moves a guest to another node: a running VM live, a running container by restarting it there. */
+export const migrate = (c: Conn, g: Guest, target: string, running: boolean) =>
+	req<string>(c, "POST", `${guestPath(g)}/migrate`, g.type === "qemu" ? { target, online: running ? 1 : undefined, "with-local-disks": 1 } : { target, restart: running ? 1 : undefined });
+
+/** What can be changed of a guest here. */
+export interface Changes {
+	cores?: number;
+	memory?: number;
+	onboot?: boolean;
+	tags?: string[];
+	name?: string;
+}
+
+/** Changes a guest's configuration. A running VM takes cores and memory at its next start, unless it hotplugs them. */
+export function setConfig(c: Conn, g: Guest, ch: Changes) {
+	const form: Record<string, string | number | boolean | undefined> = {
+		cores: ch.cores,
+		memory: ch.memory,
+		onboot: ch.onboot,
+		tags: ch.tags ? ch.tags.join(";") : undefined,
+		[g.type === "qemu" ? "name" : "hostname"]: ch.name || undefined,
+	};
+	if (ch.tags && !ch.tags.length) {
+		form.tags = undefined;
+		form.delete = "tags";
+	}
+	return req<null>(c, "PUT", `${guestPath(g)}/config`, form);
+}
+
+/** The storage a container's root disk is on, from its configuration (local-lvm:vm-101-disk-0,size=8G). */
+export const rootStorage = (cfg: Record<string, string | number> | undefined) => (cfg?.rootfs ? String(cfg.rootfs).split(":")[0] : undefined);
+
+/** A backup's name, in words: when it was taken. */
+export const backupWhen = (b: Backup) => (b.ctime ? new Date(b.ctime * 1000).toLocaleString() : b.volid.split("/").pop() ?? b.volid);
+
+/** Whether a tag is one Proxmox takes: letters, digits and - _ + . */
+export const tagOk = (t: string) => /^[a-z0-9_][a-z0-9_\-+.]*$/i.test(t);

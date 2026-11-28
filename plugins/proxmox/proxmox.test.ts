@@ -36,6 +36,15 @@ async function proxmox(t: T) {
 		{ name: "current", description: "You are here!", running: 1 },
 	];
 	const tasks = new Map<string, string>();
+	// Its own copy: a clone adds a guest.
+	const resources = RESOURCES.map((r) => ({ ...r }));
+	const BACKUPS: Record<string, { volid: string; vmid: number; ctime: number; size: number; notes?: string; protected?: number; verification?: { state: string } }[]> = {
+		local: [
+			{ volid: "local:backup/vzdump-qemu-100-2026_11_24-03_00_02.vma.zst", vmid: 100, ctime: now - 86400, size: 3.1 * GiB, notes: "web" },
+			{ volid: "local:backup/vzdump-lxc-101-2026_11_01-03_00_02.tar.zst", vmid: 101, ctime: now - 24 * 86400, size: 0.6 * GiB, protected: 1 },
+		],
+		pbs: [{ volid: "pbs:backup/vm/100/2026-11-25T03:00:00Z", vmid: 100, ctime: now - 3600, size: 3.2 * GiB, verification: { state: "ok" } }],
+	};
 	let n = 10;
 	const started = (type: string, id: string, exit = "OK") => {
 		const u = upid(type, id, n++);
@@ -47,7 +56,34 @@ async function proxmox(t: T) {
 		const p = req.path.replace(/^\/api2\/json/, "");
 		const form = new URLSearchParams(req.body);
 		if (p === "/version") return { json: { data: { version: "8.2.4", release: "8.2" } } };
-		if (p === "/cluster/resources") return { json: { data: RESOURCES } };
+		if (p === "/cluster/resources") return { json: { data: resources } };
+		if (p === "/cluster/nextid") return { json: { data: "104" } };
+		if (p === "/nodes/pve1/storage") return { json: { data: [{ storage: "local", type: "dir", content: "iso,backup,vztmpl", active: 1, total: 100 * GiB, avail: 60 * GiB }, { storage: "pbs", type: "pbs", content: "backup", active: 1, shared: 1, total: 2000 * GiB, avail: 1500 * GiB }] } };
+		const content = /^\/nodes\/pve1\/storage\/([^/]+)\/content(?:\/(.+))?$/.exec(p);
+		if (content) {
+			const list = BACKUPS[content[1]!] ?? [];
+			if (req.method === "DELETE") {
+				const at = list.findIndex((b) => b.volid === decodeURIComponent(content[2]!));
+				list.splice(at, 1);
+				return started("imgdel", "");
+			}
+			const vmid = new URLSearchParams(req.query).get("vmid");
+			return { json: { data: list.filter((b) => !vmid || String(b.vmid) === vmid).map((b) => ({ ...b, content: "backup", format: "vma.zst" })) } };
+		}
+		if (p === "/nodes/pve1/vzdump" && req.method === "POST") {
+			BACKUPS[form.get("storage")!]!.unshift({ volid: `${form.get("storage")}:backup/vm/${form.get("vmid")}/now`, vmid: Number(form.get("vmid")), ctime: now, size: GiB });
+			return started("vzdump", form.get("vmid")!);
+		}
+		if ((p === "/nodes/pve1/qemu" || p === "/nodes/pve1/lxc") && req.method === "POST") return started(p.endsWith("qemu") ? "qmrestore" : "vzrestore", form.get("vmid")!);
+		const cl = /^\/nodes\/pve1\/(qemu|lxc)\/(\d+)\/clone$/.exec(p);
+		if (cl && req.method === "POST") {
+			const from = resources.find((r) => r.vmid === Number(cl[2]))!;
+			resources.push({ ...from, id: `${cl[1]}/${form.get("newid")}`, vmid: Number(form.get("newid")), name: form.get("name") ?? form.get("hostname") ?? "", template: 0, status: "stopped" } as (typeof resources)[number]);
+			return started(cl[1] === "qemu" ? "qmclone" : "vzclone", cl[2]!);
+		}
+		const mig = /^\/nodes\/pve1\/(qemu|lxc)\/(\d+)\/migrate$/.exec(p);
+		if (mig && req.method === "POST") return started(mig[1] === "qemu" ? "qmigrate" : "vzmigrate", mig[2]!);
+		if (p === "/nodes/pve1/qemu/100/config" && req.method === "PUT") return { json: { data: null } };
 		if (p === "/cluster/status") return { json: { data: [{ type: "cluster", name: "homelab", quorate: 1, nodes: 2 }, { type: "node", name: "pve1", online: 1 }, { type: "node", name: "pve2", online: 0 }] } };
 		if (p === "/cluster/tasks") return { json: { data: TASKS } };
 		if (p === "/nodes/pve1/status") return { json: { data: { cpu: 0.18, wait: 0.01, cpuinfo: { model: "AMD Ryzen 9 5950X 16-Core Processor", cpus: 32, sockets: 1 }, loadavg: ["1.20", "0.98", "0.80"], memory: { total: 64 * GiB, used: 22 * GiB }, swap: { total: 8 * GiB, used: 0 }, rootfs: { total: 100 * GiB, used: 40 * GiB }, uptime: 864000, pveversion: "pve-manager/8.2.4/faa83925c9641325", kversion: "Linux 6.8.8-2-pve #1 SMP PREEMPT_DYNAMIC" } } };
@@ -129,6 +165,29 @@ test("the command line: lists, shows, and runs actions to their task's end", asy
 	expect(sent.get("vmstate")).toBeNull();
 	expect((await t.run("snapshot", "web", "1bad")).stderr).toContain("isn't a snapshot's name");
 
+	// Backups: every guest's last one, then one guest's; and one now, to Proxmox Backup Server.
+	const all = await t.run("backups");
+	expect(all.stdout).toContain("100    web                    last 1h ago on pbs, 2 in all");
+	expect(all.stdout).toContain("102    windows                never backed up");
+	const backup = await t.run("backup", "db");
+	expect(backup.stdout).toContain("Backed up db to pbs.");
+	const dump = new URLSearchParams(srv.requests.find((r) => r.path.endsWith("/vzdump"))!.body);
+	expect([dump.get("vmid"), dump.get("storage"), dump.get("mode"), dump.get("compress")]).toEqual(["101", "pbs", "snapshot", null]);
+
+	const clone = await t.run("clone", "debian-template", "--name", "app", "--linked");
+	expect(clone.stdout).toContain("Made app (104) from debian-template.");
+	const cl = new URLSearchParams(srv.requests.find((r) => r.path.endsWith("/clone"))!.body);
+	expect([cl.get("newid"), cl.get("name"), cl.get("full")]).toEqual(["104", "app", "0"]);
+	expect((await t.run("clone", "web", "--linked")).stderr).toContain("Only a template's clone can be linked.");
+
+	const set = await t.run("set", "web", "--cores", "2", "--tags", "prod, api");
+	expect(set.stdout).toContain("new cores and memory take hold at its next start");
+	const put = new URLSearchParams(srv.requests.find((r) => r.method === "PUT")!.body);
+	expect([put.get("cores"), put.get("tags"), put.get("memory")]).toEqual(["2", "prod;api", null]);
+
+	expect((await t.run("migrate", "web", "pve2")).stdout).toContain("Moved web to pve2.");
+	expect(new URLSearchParams(srv.requests.find((r) => r.path.endsWith("/migrate"))!.body).get("online")).toBe("1");
+
 	const tasks = await t.run("tasks", "--failed");
 	expect(tasks.stdout).toContain("Start 102");
 	expect(tasks.stdout).not.toContain("Backup 101");
@@ -192,11 +251,49 @@ test("the page: connect, the overview, a VM's tabs and actions, a node", async (
 	await w.see("Took snapshot pre-deploy of web.");
 	await w.see("pre-deploy");
 
-	// Templates apart from the guests that run.
+	// The Backups view: who's never been backed up; a guest from it opens on its backups.
+	await w.click("Backups");
+	await w.see("2 never backed up, 1 not in the last week.");
+	await w.screenshot("proxmox-backups");
+	await w.click("web, last backed up 1h ago");
+	await w.see("Verified");
+
+	// Back up now to the storage it picks, then restore one as a new guest.
+	await w.click("Back up now");
+	await w.see("Snapshot: it keeps running");
+	await w.screenshot("proxmox-backup");
+	await w.click("Back up now");
+	await w.see("Backed up web to pbs.");
+	await w.click(`Act on the backup of ${new Date((now - 86400) * 1000).toLocaleString()}`);
+	await w.click("Restore…");
+	await w.see("A copy of web as it was then, beside it, with new MAC addresses.");
+	await w.screenshot("proxmox-restore");
+	await w.click("Over web");
+	await w.see("web is running: shut it down first.");
+	await w.click("Cancel");
+
+	// Its settings, from Hardware.
+	await w.click("Hardware");
+	await w.click("Edit name, cores, memory and tags");
+	await w.click("Start it when its node starts");
+	await w.screenshot("proxmox-edit");
+	await w.click("Save");
+	await w.see("Saved web.");
+	expect(new URLSearchParams(srv.requests.find((r) => r.method === "PUT")!.body).get("onboot")).toBe("0");
+
+	// Templates apart from the guests that run; a new guest from one.
 	await w.click("VMs & containers");
 	await w.click("Templates");
 	await t.until(async () => !(await w.has("windows")), { what: "the templates alone" });
-	await w.see("debian-template");
+	await w.click("debian-template, Template");
+	await w.click("New guest from it");
+	await w.see("New guest from debian-template");
+	await w.screenshot("proxmox-clone");
+	await w.click("Create");
+	await w.see("Created debian-template-clone (104).");
+	// The new guest opens, stopped: the template's pane has no Start.
+	await w.see("Start");
+	await w.see("debian-template-clone");
 
 	await w.click("Storage");
 	await w.see("lvmthin");

@@ -4,7 +4,7 @@
 // here are watched until they end, with a toast as each does.
 import { settings, ui } from "swarm";
 import * as api from "./pve";
-import type { Conn, Guest, GuestStatus, NodeStatus, Point, Resource, Snapshot, Task, Address, ClusterStatus, Power } from "./pve";
+import type { Address, Backup, BackupMode, ClusterStatus, Conn, Guest, GuestStatus, NodeStatus, NodeStorage, Point, Power, Resource, Snapshot, Task } from "./pve";
 
 export const PAGE = "proxmox";
 /** How old the resources are read again, while the page shows. */
@@ -23,8 +23,16 @@ export const message = (e: unknown) => (e instanceof Error ? e.message : String(
 export type Timeframe = "hour" | "day" | "week";
 
 /** What's read of a guest opened. */
+/** A form open over a guest's tabs: what it asks, as typed. */
+export type GuestForm =
+	| { kind: "backup"; storage: string; mode: BackupMode }
+	| { kind: "clone"; newid: string; name: string; full: boolean; target: string }
+	| { kind: "migrate"; target: string }
+	| { kind: "edit"; name: string; cores: string; memory: string; onboot: boolean; tags: string }
+	| { kind: "restore"; volid: string; asNew: boolean; newid: string };
+
 export interface OpenedGuest {
-	tab: "summary" | "hardware" | "snapshots" | "tasks";
+	tab: "summary" | "hardware" | "snapshots" | "backups" | "tasks";
 	status?: GuestStatus;
 	config?: Record<string, string | number>;
 	configErr: string;
@@ -41,6 +49,9 @@ export interface OpenedGuest {
 	/** An action that asks first: stop, reboot, rollback:NAME, delete:NAME. */
 	confirm: string;
 	snapForm?: { name: string; description: string; vmstate: boolean };
+	backups?: Backup[];
+	backupsErr: string;
+	form?: GuestForm;
 }
 
 /** What's read of a node opened. */
@@ -78,6 +89,13 @@ export const state = {
 	started: new Map<string, string>(),
 	/** A task's log opened, in the Tasks view: its UPID and lines. */
 	taskLog: { upid: "", text: "", err: "" },
+	/** Every guest's backups, for the Backups view. */
+	backups: undefined as Backup[] | undefined,
+	backupsErr: "",
+	backupsAt: 0,
+	backupsReading: false,
+	/** Each node's storages that take backups, as the Back up form offers them. */
+	backupStores: new Map<string, NodeStorage[]>(),
 	/** When the page last drew: it's kept current while it shows. */
 	shownAt: 0,
 };
@@ -183,7 +201,7 @@ export async function readTaskLog(upid: string) {
 export function openedGuest(g: Guest): OpenedGuest {
 	let o = state.guests.get(g.id);
 	if (!o) {
-		o = { tab: "summary", configErr: "", rrdFor: "", timeframe: "hour", snapsErr: "", at: 0, busy: "", actErr: "", confirm: "" };
+		o = { tab: "summary", configErr: "", rrdFor: "", timeframe: "hour", snapsErr: "", backupsErr: "", at: 0, busy: "", actErr: "", confirm: "" };
 		state.guests.set(g.id, o);
 	}
 	return o;
@@ -196,10 +214,17 @@ export async function readGuest(g: Guest, o: OpenedGuest, all = true) {
 	o.at = Date.now();
 	const jobs: Promise<unknown>[] = [
 		api.guestStatus(c, g).then((s) => void (o.status = s)).catch(() => undefined),
-		api.guestRrd(c, g, o.timeframe).then((r) => {
-			o.rrd = r;
-			o.rrdFor = o.timeframe;
-		}).catch(() => undefined),
+		api.guestRrd(c, g, o.timeframe).then(
+			(r) => {
+				o.rrd = r;
+				o.rrdFor = o.timeframe;
+			},
+			// None to draw: "No data yet", not a spinner for ever.
+			() => {
+				o.rrd = [];
+				o.rrdFor = o.timeframe;
+			},
+		),
 	];
 	if (all || !o.config)
 		jobs.push(
@@ -234,58 +259,110 @@ const powerWords: Record<Power, [string, string]> = {
 	resume: ["Resuming", "resumed"],
 };
 
-/** Runs a power action on a guest, and follows its task to its end. */
-export async function press(g: Guest, o: OpenedGuest, what: Power) {
+/**
+ * Runs an action on a guest that starts a task, follows it to its end,
+ * and reads again what it changed: busy names it while it runs; onOk
+ * runs as it ends well (a form closes, the page goes to what it made),
+ * then done is the toast, last, so that what comes after it starts from
+ * where the action left the page.
+ */
+export async function act(g: Guest, o: OpenedGuest, busy: string, start: (c: Conn) => Promise<string | null>, done: string, after?: () => Promise<unknown>, onOk?: () => void) {
 	const c = conn();
-	if (!c || o.busy) return;
-	o.busy = what;
+	if (!c || o.busy) return false;
+	o.busy = busy;
 	o.actErr = "";
 	o.confirm = "";
 	ui.update();
+	let ok = false;
 	try {
-		const upid = await api.power(c, g, what);
-		await follow(c, upid, `${api.guestName(g)} ${powerWords[what][1]}`, `${powerWords[what][0]} ${api.guestName(g)}`);
+		const upid = await start(c);
+		if (upid) await follow(c, upid, busy);
+		ok = true;
 	} catch (e) {
 		o.actErr = message(e);
 	}
 	o.busy = "";
 	await readList();
-	await readGuest(g, o, false);
+	await Promise.all([readGuest(g, o, false), after?.()]);
+	if (ok) {
+		onOk?.();
+		ui.toast(`${done}.`);
+	}
+	return ok;
+}
+
+/** Runs a power action on a guest, and follows its task to its end. */
+export function press(g: Guest, o: OpenedGuest, what: Power) {
+	return act(g, o, what, (c) => api.power(c, g, what), `${api.guestName(g)} ${powerWords[what][1]}`);
 }
 
 /** Takes, rolls back to or deletes a snapshot, following its task. */
 export async function snapAction(g: Guest, o: OpenedGuest, what: "take" | "rollback" | "delete", name: string, description = "", vmstate = false) {
-	const c = conn();
-	if (!c || o.busy) return;
-	o.busy = `${what}:${name}`;
-	o.actErr = "";
-	o.confirm = "";
-	ui.update();
-	try {
-		const upid = what === "take" ? await api.snapshot(c, g, name, description, vmstate) : what === "rollback" ? await api.rollback(c, g, name) : await api.deleteSnapshot(c, g, name);
-		const done = what === "take" ? `Took snapshot ${name} of ${api.guestName(g)}` : what === "rollback" ? `Rolled ${api.guestName(g)} back to ${name}` : `Deleted snapshot ${name} of ${api.guestName(g)}`;
-		await follow(c, upid, done, done);
-		if (what === "take") o.snapForm = undefined;
-	} catch (e) {
-		o.actErr = message(e);
-	}
-	o.busy = "";
-	await readSnapshots(g, o);
-	void readList();
+	const done = what === "take" ? `Took snapshot ${name} of ${api.guestName(g)}` : what === "rollback" ? `Rolled ${api.guestName(g)} back to ${name}` : `Deleted snapshot ${name} of ${api.guestName(g)}`;
+	await act(
+		g,
+		o,
+		`${what}:${name}`,
+		(c) => (what === "take" ? api.snapshot(c, g, name, description, vmstate) : what === "rollback" ? api.rollback(c, g, name) : api.deleteSnapshot(c, g, name)),
+		done,
+		() => readSnapshots(g, o),
+		() => void (what === "take" && (o.snapForm = undefined)),
+	);
 }
 
-/**
- * Follows a task started here to its end: a toast saying how it ended,
- * and an error that says why it failed.
- */
-async function follow(c: Conn, upid: string, done: string, doing: string) {
+// ---- Backups ----
+
+/** A guest's backups, on every storage its node reaches. */
+export async function readGuestBackups(g: Guest, o: OpenedGuest) {
+	const c = conn();
+	if (!c) return;
+	try {
+		o.backups = await api.backups(c, [g.node], g.vmid);
+		o.backupsErr = "";
+	} catch (e) {
+		o.backupsErr = message(e);
+	}
+	ui.update();
+}
+
+/** Every guest's backups, on every storage the online nodes reach. */
+export async function readAllBackups() {
+	const c = conn();
+	if (!c || state.backupsReading) return;
+	state.backupsReading = true;
+	state.backupsAt = Date.now();
+	ui.update();
+	try {
+		state.backups = await api.backups(c, nodes().filter((n) => n.status === "online").map((n) => n.node!));
+		state.backupsErr = "";
+	} catch (e) {
+		state.backupsErr = message(e);
+	}
+	state.backupsReading = false;
+	ui.update();
+}
+
+/** The storages a node backs up to, read once. */
+export async function readBackupStores(node: string) {
+	const c = conn();
+	if (!c || state.backupStores.has(node)) return;
+	state.backupStores.set(node, []);
+	try {
+		state.backupStores.set(node, (await api.nodeStorages(c, node, "backup")).filter((s) => s.active !== 0));
+	} catch {
+		state.backupStores.delete(node);
+	}
+	ui.update();
+}
+
+/** Follows a task started here to its end: an error that says why, when it failed. */
+async function follow(c: Conn, upid: string, doing: string) {
 	state.started.set(upid, doing);
 	syncNav();
 	ui.update();
 	try {
 		const exit = await api.waitTask(c, upid, undefined, TASK_POLL.every);
 		if (!api.taskOk({ status: exit })) throw new Error(exit);
-		ui.toast(`${done}.`);
 	} finally {
 		state.started.delete(upid);
 		syncNav();
@@ -316,10 +393,16 @@ export async function readNode(node: string, o: OpenedNode, _all = true) {
 			o.status = s;
 			o.statusErr = "";
 		}).catch((e) => void (o.statusErr = message(e))),
-		api.nodeRrd(c, node, o.timeframe).then((r) => {
-			o.rrd = r;
-			o.rrdFor = o.timeframe;
-		}).catch(() => undefined),
+		api.nodeRrd(c, node, o.timeframe).then(
+			(r) => {
+				o.rrd = r;
+				o.rrdFor = o.timeframe;
+			},
+			() => {
+				o.rrd = [];
+				o.rrdFor = o.timeframe;
+			},
+		),
 	]);
 	ui.update();
 }
@@ -363,6 +446,7 @@ export function navItems() {
 		{ id: "overview", title: "Overview", icon: "house" as const, path: "" },
 		{ id: "guests", title: "VMs & containers", icon: "cubes" as const, path: "guests", badge: list.length ? `${running}/${list.filter((g) => !g.template).length}` : undefined },
 		{ id: "tasks", title: "Tasks", icon: "tasks" as const, path: "tasks", badge: state.started.size ? String(state.started.size) : undefined },
+		{ id: "backups", title: "Backups", icon: "archive" as const, path: "backups" },
 		{ id: "storage", title: "Storage", icon: "hard-drive" as const, path: "storage" },
 		...nodes().map((n) => ({ id: "n-" + n.node, title: n.node ?? "", icon: "server" as const, path: `n/${encodeURIComponent(n.node ?? "")}`, section: "Nodes", badge: n.status !== "online" ? "Offline" : undefined })),
 	];
@@ -386,6 +470,8 @@ export function forget() {
 	state.tasks = undefined;
 	state.guests.clear();
 	state.nodes.clear();
+	state.backups = undefined;
+	state.backupStores.clear();
 	state.started.clear();
 	syncNav();
 }

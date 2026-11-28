@@ -87,7 +87,7 @@ function powerCommand(what: Power, summary: string, done: string) {
 
 export function registerCli() {
 	defineCli({
-		summary: "Your Proxmox VE: its nodes, VMs and containers; start, shut down, reboot and stop them; snapshots; and tasks with their logs. GUEST is a vmid or a name.",
+		summary: "Your Proxmox VE: its nodes, VMs and containers; start, shut down, reboot and stop them; snapshots, backups, clones, moves and settings; and tasks with their logs. GUEST is a vmid or a name.",
 		commands: {
 			status: cliCommand({
 				summary: "Whether Proxmox is connected, its version, and how its nodes and guests stand",
@@ -204,6 +204,110 @@ export function registerCli() {
 					const g = await guestOf(c, positionals.guest as string);
 					const upid = await api.deleteSnapshot(c, g, positionals.name as string);
 					return runTask(c, upid, `Deleted snapshot ${positionals.name} of ${api.guestName(g)}`, !options["no-wait"], io);
+				}),
+			}),
+			backups: cliCommand({
+				summary: "Backups, newest first: a guest's, or every guest's last one",
+				positionals: [{ name: "guest", description: "A vmid or name; every guest's last backup when left out" }],
+				options: json,
+				run: guard(async ({ positionals, options }, io) => {
+					const c = need();
+					const list = await api.resources(c);
+					const online = list.filter((r) => r.type === "node" && r.status === "online").map((r) => r.node!);
+					if (positionals.guest) {
+						const g = api.findGuest(list, positionals.guest as string);
+						const bs = await api.backups(c, [g.node], g.vmid);
+						if (options.json) return io.print(JSON.stringify(bs.map((b) => ({ volid: b.volid, storage: b.storage, time: b.ctime ?? null, size: b.size ?? null, notes: b.notes ?? "", protected: !!b.protected, verified: b.verification?.state ?? null }))));
+						if (!bs.length) return io.print(`No backups of ${api.guestName(g)} on ${g.node}'s storage.`);
+						for (const b of bs) io.print(`${b.ctime ? new Date(b.ctime * 1000).toISOString().replace("T", " ").slice(0, 16) : "".padEnd(16)}  ${api.bytes(b.size).padEnd(9)} ${b.storage.padEnd(12)} ${b.volid}`);
+						return;
+					}
+					const bs = await api.backups(c, online);
+					const rows = list.filter(api.isGuest).filter((g) => !g.template).sort((a, b) => a.vmid - b.vmid).map((g) => {
+						const mine = bs.filter((b) => b.vmid === g.vmid);
+						return { vmid: g.vmid, name: g.name ?? null, backups: mine.length, last: mine[0]?.ctime ?? null, lastStorage: mine[0]?.storage ?? null };
+					});
+					if (options.json) return io.print(JSON.stringify(rows));
+					for (const r of rows) io.print(`${String(r.vmid).padEnd(6)} ${(r.name ?? "").padEnd(22)} ${r.last ? `last ${api.ago(r.last)} on ${r.lastStorage}, ${r.backups} in all` : "never backed up"}`);
+				}),
+			}),
+			backup: cliCommand({
+				summary: "Back a guest up now",
+				positionals: [guestArg],
+				options: {
+					...noWait,
+					storage: { type: "string", description: "The storage to back up to; its node's Proxmox Backup Server, else its first that takes backups, when left out" },
+					mode: { type: "enum", values: ["snapshot", "suspend", "stop"], default: "snapshot", description: "snapshot keeps it running; suspend pauses it; stop shuts it down and starts it again" },
+				},
+				run: guard(async ({ positionals, options }, io) => {
+					const c = need();
+					const g = await guestOf(c, positionals.guest as string);
+					const stores = await api.nodeStorages(c, g.node, "backup");
+					const store = options.storage ? stores.find((s) => s.storage === options.storage) : (stores.find((s) => s.type === "pbs") ?? stores[0]);
+					if (!store) throw new PluginCliError(options.storage ? `${g.node} has no storage ${options.storage} that takes backups: ${stores.map((s) => s.storage).join(", ") || "none"}.` : `No storage of ${g.node} takes backups.`, { code: "no_storage" });
+					const upid = await api.backupNow(c, g, store.storage, (options.mode as api.BackupMode) ?? "snapshot", store.type === "pbs");
+					return runTask(c, upid, `Backed up ${api.guestName(g)} to ${store.storage}`, !options["no-wait"], io);
+				}),
+			}),
+			clone: cliCommand({
+				summary: "Clone a guest, or make a new one from a template",
+				positionals: [guestArg],
+				options: {
+					...noWait,
+					name: { type: "string", description: "The new guest's name" },
+					vmid: { type: "number", description: "Its vmid; the next free one when left out" },
+					linked: { type: "boolean", description: "From a template: share its disks, not copy them" },
+					node: { type: "string", description: "The node to make it on" },
+				},
+				run: guard(async ({ positionals, options }, io) => {
+					const c = need();
+					const g = await guestOf(c, positionals.guest as string);
+					if (options.linked && !g.template) throw new PluginCliError("Only a template's clone can be linked.", { code: "not_template" });
+					const id = (options.vmid as number | undefined) ?? (await api.nextId(c));
+					const upid = await api.clone(c, g, id, (options.name as string) ?? "", !options.linked, options.node as string | undefined);
+					const code = await runTask(c, upid, `Made ${options.name ?? id} (${id}) from ${api.guestName(g)}`, !options["no-wait"], io);
+					if (code === 0 && !options["no-wait"]) io.print(`It's stopped: swarm proxmox start ${id}`);
+					return code;
+				}),
+			}),
+			migrate: cliCommand({
+				summary: "Move a guest to another node: a running VM live, a running container by restarting it there",
+				positionals: [guestArg, { name: "node", description: "The node to move it to", required: true }],
+				options: noWait,
+				run: guard(async ({ positionals, options }, io) => {
+					const c = need();
+					const g = await guestOf(c, positionals.guest as string);
+					const target = positionals.node as string;
+					if (target === g.node) return io.print(`${api.guestName(g)} is on ${target} already.`);
+					const upid = await api.migrate(c, g, target, g.status === "running");
+					return runTask(c, upid, `Moved ${api.guestName(g)} to ${target}`, !options["no-wait"], io);
+				}),
+			}),
+			set: cliCommand({
+				summary: "Change a guest's name, cores, memory, start at boot or tags",
+				positionals: [guestArg],
+				options: {
+					name: { type: "string", description: "Its new name" },
+					cores: { type: "number", description: "How many cores" },
+					memory: { type: "number", description: "Its memory, in MiB" },
+					onboot: { type: "enum", values: ["yes", "no"], description: "Whether it starts as its node does" },
+					tags: { type: "string", description: "Its tags, separated by commas or spaces, in place of those it has; \"\" for none" },
+				},
+				run: guard(async ({ positionals, options }, io) => {
+					const c = need();
+					const g = await guestOf(c, positionals.guest as string);
+					const ch: api.Changes = {};
+					if (options.name !== undefined) ch.name = options.name as string;
+					if (options.cores !== undefined) ch.cores = options.cores as number;
+					if (options.memory !== undefined) ch.memory = options.memory as number;
+					if (options.onboot !== undefined) ch.onboot = options.onboot === "yes";
+					if (options.tags !== undefined) ch.tags = String(options.tags).split(/[\s,;]+/).filter(Boolean);
+					if (!Object.keys(ch).length) throw new PluginCliError("Say what to change: --name, --cores, --memory, --onboot or --tags.", { code: "nothing" });
+					const bad = (ch.tags ?? []).find((t) => !api.tagOk(t));
+					if (bad) throw new PluginCliError(`${bad} isn't a tag: letters, digits and - _ + .`, { code: "bad_tag" });
+					await api.setConfig(c, g, ch);
+					io.print(`Changed ${api.guestName(g)}.`);
+					if (g.type === "qemu" && g.status === "running" && (ch.cores !== undefined || ch.memory !== undefined)) io.print("It's running: new cores and memory take hold at its next start, unless hotplug is on for them.");
 				}),
 			}),
 			nodes: cliCommand({

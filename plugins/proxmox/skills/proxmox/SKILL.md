@@ -1,6 +1,6 @@
 ---
 name: proxmox
-description: "Look at and act on the user's Proxmox VE: its nodes, VMs and containers, their state, use, addresses and hardware; start, shut down, reboot, stop, pause and resume them; take, roll back and delete snapshots; and read the cluster's tasks and their logs, with `swarm proxmox`. Use it when asked about a VM, a container, a homelab server or Proxmox itself."
+description: "Look at and act on the user's Proxmox VE: its nodes, VMs and containers, their state, use, addresses and hardware; start, shut down, reboot, stop, pause and resume them; snapshots and backups; clone, move and resize them; and read the cluster's tasks and their logs, with `swarm proxmox`. Use it when asked about a VM, a container, a homelab server or Proxmox itself."
 ---
 
 # Proxmox
@@ -59,8 +59,34 @@ Take a snapshot before you change a guest in a way that's hard to undo
 loses everything since the snapshot, and deleting one can't be undone:
 ask the user first, every time.
 
+## Backups
+
+```sh
+swarm proxmox backups               # every guest's last backup, and those never backed up
+swarm proxmox backups web           # one guest's, newest first, with their volume IDs
+swarm proxmox backup web [--storage pbs] [--mode snapshot|suspend|stop]
+```
+
+`backup` picks the node's Proxmox Backup Server, else its first storage
+that takes backups. `snapshot` mode keeps the guest running; `stop`
+takes it down, so ask first. Restoring replaces a guest or makes a new
+one: that's for the user, in Swarm's Proxmox page (the guest, Backups).
+
+## Clone, move, change
+
+```sh
+swarm proxmox clone debian-template --name app --linked   # a new VM from a template, sharing its disks
+swarm proxmox clone web --name web-test [--vmid 120] [--node pve2]
+swarm proxmox migrate web pve2      # a running VM moves live; a container restarts there
+swarm proxmox set web --cores 4 --memory 8192 --onboot yes --tags "prod web"
+```
+
+A clone is made stopped: start it after. A running VM takes new cores
+and memory at its next start, unless hotplug is on for them. Moving a
+guest, and taking its cores or memory down, are the user's to agree to.
+
 ## What it can't do
 
-Creating, cloning, migrating or deleting guests, changing their
-hardware, backups, and a node's reboot or shutdown are for the user, in
-Proxmox or Swarm's Proxmox page. Say what you'd do and leave it to them.
+Deleting guests, restoring backups, changing disks or networks, and a
+node's reboot or shutdown are for the user, in Proxmox or Swarm's
+Proxmox page. Say what you'd do and leave it to them.

@@ -12,6 +12,8 @@ and an API token.
     stopped, templates) and searched by name, vmid, tag or node.
   - **Tasks**: the cluster's recent tasks, running ones on top, each
     one's log.
+  - **Backups**: each guest's last backup, oldest first, those never
+    backed up or not in a week marked; a guest opens on its backups.
   - **Storage**: each storage of each node, and how full it is.
   - **Each node**: its CPU, memory, swap and root disk, CPU model, load,
     I/O wait, Proxmox and kernel versions, graphs (hour, day, week), its
@@ -20,12 +22,17 @@ and an API token.
 
   A guest opens beside the view: Start, Resume, Console (Proxmox's noVNC
   or xterm.js), Shut down, Reboot, and in More, Pause, Take snapshot,
-  Copy vmid, Stop at once; each that takes it down asks first. Its tabs:
+  Back up now, Clone, Move to another node, Edit, Copy vmid, Stop at
+  once; each that takes it down asks first. A template has New guest
+  from it (a linked clone, or a full copy). Its tabs:
   Summary (CPU, memory, disk, its addresses from the guest agent or the
   container, graphs of CPU, memory, network and disk I/O), Hardware
   (cores, memory, disks, networks, OS type, BIOS, agent, start at boot,
   its notes), Snapshots (take one, with a VM's memory if it runs; roll
-  back or delete one, after asking) and Tasks. Each action follows its
+  back or delete one, after asking), Backups (each one's storage, size,
+  verification; Back up now to a storage in a mode; Restore as a new
+  guest or over it once it's stopped; Delete, after asking) and Tasks.
+  Edit changes its name, cores, memory, tags and start at boot. Each action follows its
   task to its end, with a toast, or says why it failed.
 - **Kept current** while the page shows: the resources every 10 s, and
   the guest or node opened.
@@ -37,7 +44,8 @@ and an API token.
   `fetch(url, { certificate })`. Another one later is shown, not taken.
 - **For agents**, `swarm proxmox` (`status`, `list`, `show`, `start`,
   `shutdown`, `reboot`, `stop`, `suspend`, `resume`, `snapshots`,
-  `snapshot`, `rollback`, `delete-snapshot`, `nodes`, `storage`,
+  `snapshot`, `rollback`, `delete-snapshot`, `backups`, `backup`,
+  `clone`, `migrate`, `set`, `nodes`, `storage`,
   `tasks`, `task-log`), and a skill. Actions wait for their task and
   exit 1 when it fails. GUEST is a vmid or a name.
 
@@ -45,6 +53,7 @@ and an API token.
   states, a guest by name, a configuration in rows, sizes and times.
 - `store.ts`: what's read, kept current, and the actions.
 - `page.tsx`, `view.tsx`: the page, its meters and graphs.
+  `actions.tsx`: backups, clone, move and edit, and the Backups view.
 - `settings.tsx`: its page of Settings. `cli.ts`: the command line.
   `skills/proxmox/SKILL.md`, `AGENTS.md`: for agents.
 

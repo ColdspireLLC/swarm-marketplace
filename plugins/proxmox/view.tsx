@@ -386,3 +386,20 @@ export function graph(key: string, title: string, times: number[], series: Serie
 		</ui.card>
 	);
 }
+
+/** A question before what can't be undone at once, as Swarm asks it: what happens, then the act and a way out. */
+export function confirmBox(title: string, detail: string, act: string, onYes: () => void, onNo: () => void, keep = "Cancel"): Child {
+	return (
+		<ui.box style={{ flexDirection: "row", gap: "s4", alignItems: "flex-start", padding: "s4 s5", borderRadius: "card", backgroundColor: "redSoft" }}>
+			<ui.icon icon="alert" style={{ width: 15, height: 15, color: "red", flexShrink: 0 }} />
+			<ui.box style={{ flex: 1, minWidth: 0, gap: 8 }}>
+				<ui.text style={{ fontWeight: 500 }}>{title}</ui.text>
+				<ui.text style={{ fontSize: "small", color: "text2" }}>{detail}</ui.text>
+				<ui.box style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
+					<ui.button kind="danger" size="sm" onClick={onYes}>{act}</ui.button>
+					<ui.button kind="ghost" size="sm" onClick={onNo}>{keep}</ui.button>
+				</ui.box>
+			</ui.box>
+		</ui.box>
+	);
+}

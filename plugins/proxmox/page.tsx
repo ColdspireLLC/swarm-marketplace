@@ -25,6 +25,7 @@ import {
 	PAGE,
 	press,
 	readGuest,
+	readAllBackups,
 	readList,
 	readNode,
 	readSnapshots,
@@ -39,9 +40,10 @@ import {
 	type OpenedNode,
 	type Timeframe,
 } from "./store";
-import { badge, columnStyle, empty, fact, faint, graph, line, list, loading, logBox, phone, problem, refresh, rowOf, searchField, sectionHead, setPhone, stats, top, usage, meter, type Series } from "./view";
+import { backupsTab, backupsView, guestForm, openForm, otherNodes } from "./actions";
+import { badge, columnStyle, empty, fact, faint, graph, line, list, loading, logBox, phone, problem, refresh, rowOf, searchField, sectionHead, setPhone, stats, top, usage, meter, confirmBox, type Series } from "./view";
 
-type View = { kind: "overview" } | { kind: "guests" } | { kind: "tasks" } | { kind: "storage" } | { kind: "node"; node: string };
+type View = { kind: "overview" } | { kind: "guests" } | { kind: "tasks" } | { kind: "storage" } | { kind: "backups" } | { kind: "node"; node: string };
 
 export function parsePath(path: string): { view: View; base: string; open: string } {
 	const m = /^(.*?)(?:^|\/)g\/(qemu|lxc)-(\d+)$/.exec(path);
@@ -52,6 +54,7 @@ export function parsePath(path: string): { view: View; base: string; open: strin
 	if (parts[0] === "guests") view = { kind: "guests" };
 	else if (parts[0] === "tasks") view = { kind: "tasks" };
 	else if (parts[0] === "storage") view = { kind: "storage" };
+	else if (parts[0] === "backups") view = { kind: "backups" };
 	else if (parts[0] === "n" && parts[1]) view = { kind: "node", node: decodeURIComponent(parts[1]) };
 	return { view, base: parts.join("/"), open };
 }
@@ -393,22 +396,6 @@ function graphsOf(key: string, rrd: api.Point[] | undefined, node: boolean): Chi
 	return out;
 }
 
-function confirmBox(title: string, detail: string, act: string, onYes: () => void, onNo: () => void, keep = "Cancel"): Child {
-	return (
-		<ui.box style={{ flexDirection: "row", gap: "s4", alignItems: "flex-start", padding: "s4 s5", borderRadius: "card", backgroundColor: "redSoft" }}>
-			<ui.icon icon="alert" style={{ width: 15, height: 15, color: "red", flexShrink: 0 }} />
-			<ui.box style={{ flex: 1, minWidth: 0, gap: 8 }}>
-				<ui.text style={{ fontWeight: 500 }}>{title}</ui.text>
-				<ui.text style={{ fontSize: "small", color: "text2" }}>{detail}</ui.text>
-				<ui.box style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
-					<ui.button kind="danger" size="sm" onClick={onYes}>{act}</ui.button>
-					<ui.button kind="ghost" size="sm" onClick={onNo}>{keep}</ui.button>
-				</ui.box>
-			</ui.box>
-		</ui.box>
-	);
-}
-
 function nodeView(name: string, base: string, open: string): Child {
 	const n = nodeByName(name);
 	if (!n) return empty("server", "Not in the cluster", `Proxmox has no node ${name}, or this token can't see it.`);
@@ -506,7 +493,10 @@ function board(view: View, base: string, open: string, head = false): Child {
 		title = "VMs & containers";
 		count = state.list ? String(guests().length) : "";
 	} else if (view.kind === "tasks") title = "Tasks";
-	else if (view.kind === "storage") {
+	else if (view.kind === "backups") {
+		title = "Backups";
+		end[0] = refresh(state.backupsReading, () => void readAllBackups());
+	} else if (view.kind === "storage") {
 		title = "Storage";
 		search = false;
 	} else if (view.kind === "node") {
@@ -523,7 +513,7 @@ function board(view: View, base: string, open: string, head = false): Child {
 	} else if (!state.list) {
 		body = loading("Reading Proxmox…", true);
 	} else {
-		const inner = view.kind === "overview" ? overview(base, open) : view.kind === "guests" ? guestsView(base, open) : view.kind === "tasks" ? tasksView() : view.kind === "storage" ? storageView() : nodeView(view.node, base, open);
+		const inner = view.kind === "overview" ? overview(base, open) : view.kind === "guests" ? guestsView(base, open) : view.kind === "tasks" ? tasksView() : view.kind === "storage" ? storageView() : view.kind === "backups" ? backupsView(open, (id) => openIn(base, id)) : nodeView(view.node, base, open);
 		body = (
 			<ui.scroll style={{ flexGrow: 1, minHeight: 0 }}>
 				<ui.box style={{ ...columnStyle(), gap: phone.on ? 20 : 16, paddingBottom: phone.on ? 32 : 24 }}>
@@ -584,14 +574,16 @@ function summaryTab(g: Guest, o: OpenedGuest): Child {
 				</ui.card>
 			) : null}
 			{list(facts)}
-			<ui.box style={{ gap: 10 }}>
-				<ui.box style={{ flexDirection: "row", alignItems: "center" }}>
-					<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2" }}>Graphs</ui.text>
-					<ui.spacer />
-					<ui.segmented label="Graphs over" value={o.timeframe} options={timeframes} onChange={(v) => { o.timeframe = v as Timeframe; void readGuest(g, o, false); }} />
+			{g.template ? null : (
+				<ui.box style={{ gap: 10 }}>
+					<ui.box style={{ flexDirection: "row", alignItems: "center" }}>
+						<ui.text style={{ fontSize: "small", fontWeight: 600, color: "text2" }}>Graphs</ui.text>
+						<ui.spacer />
+						<ui.segmented label="Graphs over" value={o.timeframe} options={timeframes} onChange={(v) => { o.timeframe = v as Timeframe; void readGuest(g, o, false); }} />
+					</ui.box>
+					{graphsOf(`g-${g.id}`, o.rrdFor === o.timeframe ? o.rrd : undefined, false)}
 				</ui.box>
-				{graphsOf(`g-${g.id}`, o.rrdFor === o.timeframe ? o.rrd : undefined, false)}
-			</ui.box>
+			)}
 		</ui.box>
 	);
 }
@@ -612,7 +604,13 @@ function hardwareTab(g: Guest, o: OpenedGuest): Child {
 					</ui.card>
 				</ui.box>
 			) : null}
-			<ui.text style={faint}>Change its hardware in Proxmox.</ui.text>
+			{g.template ? null : (
+				<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+					<ui.button size="sm" icon="pencil" onClick={() => openForm(g, o, "edit")}>Edit name, cores, memory and tags</ui.button>
+					<ui.spacer />
+					<ui.text style={faint}>Disks and networks change in Proxmox.</ui.text>
+				</ui.box>
+			)}
 		</ui.box>
 	);
 }
@@ -703,7 +701,8 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 	const running = g.status === "running" && !paused;
 	const doing = (w: string) => o.busy === w;
 	const wide = phone.on ? { flex: 1 } : undefined;
-	const tabs = [{ value: "summary", label: "Summary" }, { value: "hardware", label: "Hardware" }, { value: "snapshots", label: "Snapshots" }, { value: "tasks", label: "Tasks" }];
+	const tabs = [{ value: "summary", label: "Summary" }, { value: "hardware", label: "Hardware" }, ...(g.template ? [] : [{ value: "snapshots", label: phone.on ? "Snaps" : "Snapshots" }]), { value: "backups", label: "Backups" }, { value: "tasks", label: "Tasks" }];
+	if (!tabs.some((t) => t.value === o.tab)) o.tab = "summary";
 	const askFirst: Record<string, [string, string, string]> = {
 		shutdown: [`Shut ${api.guestName(g)} down?`, "It's asked to shut down as its own power button would, and stays off until it's started again.", "Shut down"],
 		reboot: [`Reboot ${api.guestName(g)}?`, "It's asked to restart: what it serves is down until it's back.", "Reboot"],
@@ -730,7 +729,11 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 						</ui.box>
 					</ui.box>
 
-					{g.template ? null : (
+					{g.template ? (
+						<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+							<ui.button kind="primary" icon="plus" disabled={!!o.busy} onClick={() => openForm(g, o, "clone")} style={wide}>New guest from it</ui.button>
+						</ui.box>
+					) : (
 						<ui.box style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
 							{!running && !paused ? <ui.button kind="primary" icon="play" disabled={!!o.busy} onClick={() => void press(g, o, "start")} style={wide}>{doing("start") ? "Starting…" : "Start"}</ui.button> : null}
 							{paused ? <ui.button kind="primary" icon="play" disabled={!!o.busy} onClick={() => void press(g, o, "resume")} style={wide}>{doing("resume") ? "Resuming…" : "Resume"}</ui.button> : null}
@@ -740,12 +743,17 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 							<ui.menu label={phone.on ? "" : "More actions"} tooltip="More actions" icon="more" kind={phone.on ? "secondary" : "ghost"}>
 								{running && g.type === "qemu" ? <ui.item icon="pause" label="Pause" onClick={() => void press(g, o, "suspend")} /> : null}
 								<ui.item icon="camera" label="Take snapshot…" onClick={() => { o.tab = "snapshots"; o.snapForm = { name: "", description: "", vmstate: false }; }} />
-								<ui.item icon="copy" label="Copy vmid" onClick={() => ui.copy(String(g.vmid))} />
+								<ui.item icon="archive" label="Back up now…" onClick={() => { o.tab = "backups"; openForm(g, o, "backup"); }} />
+								<ui.item icon="copy" label="Clone…" onClick={() => openForm(g, o, "clone")} />
+								{otherNodes(g.node).length ? <ui.item icon="arrow-right" label="Move to another node…" onClick={() => openForm(g, o, "migrate")} /> : null}
+								<ui.item icon="pencil" label="Edit…" onClick={() => openForm(g, o, "edit")} />
+								<ui.item icon="tag" label="Copy vmid" onClick={() => ui.copy(String(g.vmid))} />
 								{running || paused ? <ui.separator /> : null}
 								{running || paused ? <ui.item icon="stop" label="Stop at once…" danger onClick={() => void (o.confirm = "stop")} /> : null}
 							</ui.menu>
 						</ui.box>
 					)}
+					{guestForm(g, o, (id) => openIn(base, id))}
 					{ask ? confirmBox(ask[0], ask[1], ask[2], () => void press(g, o, o.confirm as api.Power), () => void (o.confirm = ""), "Keep it running") : null}
 					{o.actErr ? problem(o.actErr) : null}
 
@@ -753,6 +761,7 @@ function guestPane(g: Guest | undefined, id: string, base: string): Child {
 					{o.tab === "summary" ? summaryTab(g, o) : null}
 					{o.tab === "hardware" ? hardwareTab(g, o) : null}
 					{o.tab === "snapshots" ? snapshotsTab(g, o) : null}
+					{o.tab === "backups" ? backupsTab(g, o) : null}
 					{o.tab === "tasks" ? guestTasksTab(g) : null}
 				</ui.box>
 			</ui.scroll>
