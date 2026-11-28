@@ -1,0 +1,57 @@
+{
+  "$schema": "./plugin.schema.json",
+  "id": "proxmox",
+  "name": "Proxmox",
+  "version": "0.1.0",
+  "description": "Your Proxmox VE in Swarm: the cluster's nodes, VMs and containers with their graphs; start, shut down, reboot and snapshot them; tasks and their logs; and agents that do the same with swarm proxmox.",
+  "adds": [
+    "App page",
+    "Settings page",
+    "Agent skill",
+    "Agent instructions",
+    "Consoles"
+  ],
+  "icon": "proxmox.svg",
+  "main": "main.tsx",
+  "permissions": {
+    "required": [
+      "network:*"
+    ],
+    "network": [
+      "*"
+    ],
+    "localNetwork": true,
+    "terminal": true,
+    "storage": true
+  },
+  "settings": [
+    {
+      "key": "servers",
+      "title": "Servers",
+      "type": "text",
+      "default": "",
+      "description": "The Proxmox servers: each one's name, address, how it signs in and the certificate trusted. Proxmox's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "secrets",
+      "title": "Their secrets",
+      "type": "secret",
+      "description": "Each server's token secret or password, and the ticket it last gave. Proxmox's page of Settings sets it.",
+      "hidden": true
+    },
+    {
+      "key": "current",
+      "title": "Current server",
+      "type": "text",
+      "default": "",
+      "description": "The server the page and the command line act on. The page's sidebar chooses it.",
+      "hidden": true
+    }
+  ],
+  "skills": "skills",
+  "instructions": "AGENTS.md",
+  "engines": {
+    "swarm": ">=0.3.0"
+  }
+}
